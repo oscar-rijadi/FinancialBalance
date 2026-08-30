@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <configSections>
+    </configSections>
+    <startup>
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
+    </startup>
+    <connectionStrings>
+        <add name="FinancialBalance.Properties.Settings.Financial_BalanceConnectionString"
+            connectionString="Provider=Microsoft.Jet.OLEDB.4.0;Data Source=&quot;|DataDirectory|\database\Financial Balance.mdb&quot;;Persist Security Info=True;Jet OLEDB:Database Password=01121980"
+            providerName="System.Data.OleDb" />
+        <add name="FinancialBalance.Properties.Settings.Financial_BalanceConnectionString1"
+            connectionString="Provider=Microsoft.Jet.OLEDB.4.0;Data Source=&quot;|DataDirectory|\Financial Balance.mdb&quot;;Persist Security Info=True;Jet OLEDB:Database Password=01121980"
+            providerName="System.Data.OleDb" />
+    </connectionStrings>
+</configuration>
