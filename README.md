@@ -90,6 +90,7 @@ flowchart LR
 
     MAIN --> DI["Daily_Input"]
     MAIN --> MC["Monthly_Closing"]
+    MAIN --> ETX["ETF_Stocks_Transaction"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
@@ -104,6 +105,7 @@ flowchart LR
     ADMIN --> SET["Setup_ETF_Stocks"]
 
     DI <--> MC
+    MC <--> ETX
 
     SATR <--> SAR
     SAR <--> SC
@@ -118,6 +120,7 @@ flowchart LR
 | `Main_Form` | Splash screen with an animated marquee, clock, version label. Enables the transaction menus only once `TblAcctRef` has at least one row. |
 | `Daily_Input` | Enter, amend or delete a dated voucher. Up to 5 debit and 5 credit lines; refuses to save unless the two sides balance. |
 | `Monthly_Closing` | Snapshots `TblAsset` and `TblLiability` into `TblMonthlyTrans` for a chosen month. Defaults to the month after the last close. |
+| `ETF_Stocks_Transaction` | Add / update / delete ETF and stock trades for one date. `Total_Cost_Base` is derived; DRIP zeroes `Real_Total_Cost_Base`. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Year-over-year trend for a single asset or income account, drawn with `System.Windows.Forms.DataVisualization` charting. |
@@ -133,7 +136,7 @@ flowchart LR
 
 ## Data model
 
-Ten tables. **No foreign keys or relationships are defined in the database** — the links below are
+Eleven tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -146,6 +149,8 @@ erDiagram
     TblAcctRef      ||--o| TblLiability    : "balance of (type 2)"
     TblAcctRef      ||--o{ TblMonthlyTrans : "bucketed by"
     TblETFStocksExchangeSuffix ||--o{ TblETFStocks : "suffixes"
+    TblETFStocks    ||--o{ TblETFStocksTrans : "traded in"
+    TblCurrCode     ||--o{ TblETFStocksTrans : "denominates"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -199,6 +204,18 @@ erDiagram
         text Full_Ticker PK "derived, never typed"
         bool In_YahooFinance
     }
+    TblETFStocksTrans {
+        text    Trans_Date "yyyyMMdd"
+        text    Trans_Type "1 char: + or -"
+        text    Full_Ticker "joins TblETFStocks"
+        text    Currency "3 chars"
+        decimal Unit "4 dp"
+        decimal Cost_Base "2 dp"
+        decimal Fee "2 dp"
+        decimal Total_Cost_Base "2 dp"
+        decimal Real_Total_Cost_Base "2 dp"
+        bool    Is_Sold
+    }
 ```
 
 ### Reference data
@@ -222,6 +239,34 @@ otherwise                  ->  Full_Ticker = Ticker + "." + Exchange_Suffix
 
 So suffixes are stored **without** a leading dot — `AX`, not `.AX` — since the dot is added
 by the rule. `Full_Ticker` is the table's primary key.
+
+### ETF/stock transaction rules
+
+`ETF_Stocks_Transaction` writes `TblETFStocksTrans` and applies these rules:
+
+| Field | Rule |
+| --- | --- |
+| `Trans_Date` | From the date picker, stored `yyyyMMdd`. |
+| `Trans_Type` | `Buy` is stored as `+`, `Sell` as `-`. |
+| `Unit` | Numeric, not negative, at most 4 decimal places. |
+| `Cost_Base`, `Fee` | Numeric, not negative, at most 2 decimal places. |
+| `Total_Cost_Base` | Derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
+| `Real_Total_Cost_Base` | `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
+| `Is_Sold` | The Sold checkbox. |
+
+DRIP is **not stored**. The form re-derives it on selection as `Real_Total_Cost_Base == 0`.
+
+> **Access stores Yes/No `True` as `-1`.** A `WHERE Is_Sold = 1` matches nothing and fails
+> silently. Compare against `True`/`False` instead. Likewise, `Currency` is a reserved word:
+> it needs brackets in DDL (`[Currency]`), though plain DML tolerates it.
+
+Because the table has no key, update and delete match on **all ten original column values**.
+If two identical transactions exist on one date, the form says so and asks before touching
+both — it cannot tell them apart.
+
+`TblETFStocksTrans` is the only table here **without a primary key** — the same ticker can be
+bought twice on one day, so no combination of its columns is reliably unique. Add one if you
+later define what makes a transaction distinct.
 
 The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — and 215 accounts.
 

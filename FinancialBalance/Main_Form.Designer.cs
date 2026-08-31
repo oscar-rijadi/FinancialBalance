@@ -34,6 +34,7 @@
             this.MnProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.MnDailyInput = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
             this.MnInquiry = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyInq = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearStat = new System.Windows.Forms.ToolStripMenuItem();
@@ -93,7 +94,8 @@
             // 
             this.MnProcess.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnDailyInput,
-            this.MnMonthlyClosing});
+            this.MnMonthlyClosing,
+            this.MnETFStocksTrans});
             this.MnProcess.Name = "MnProcess";
             this.MnProcess.Size = new System.Drawing.Size(56, 20);
             this.MnProcess.Text = "&Process";
@@ -111,6 +113,13 @@
             this.MnMonthlyClosing.Size = new System.Drawing.Size(160, 22);
             this.MnMonthlyClosing.Text = "&Monthly Closing";
             this.MnMonthlyClosing.Click += new System.EventHandler(this.MnMonthlyClosing_Click);
+            // 
+            // MnETFStocksTrans
+            // 
+            this.MnETFStocksTrans.Name = "MnETFStocksTrans";
+            this.MnETFStocksTrans.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
+            this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
             // 
             // MnInquiry
             // 
@@ -654,6 +663,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnProcess;
         public System.Windows.Forms.ToolStripMenuItem MnDailyInput;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
         public System.Windows.Forms.ToolStripMenuItem MnInquiry;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyInq;
         public System.Windows.Forms.ToolStripMenuItem MnYearStat;

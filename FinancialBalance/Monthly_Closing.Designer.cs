@@ -33,6 +33,7 @@
             this.CmdBack = new System.Windows.Forms.Button();
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
             this.Label4 = new System.Windows.Forms.Label();
             this.lblLastClosingMonth = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
@@ -75,7 +76,8 @@
             // MainMenu1
             // 
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnDaily});
+            this.MnDaily,
+            this.MnETFStocksTrans});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(361, 24);
@@ -87,6 +89,13 @@
             this.MnDaily.Size = new System.Drawing.Size(71, 20);
             this.MnDaily.Text = "Daily &Input";
             this.MnDaily.Click += new System.EventHandler(this.MnDaily_Click);
+            // 
+            // MnETFStocksTrans
+            // 
+            this.MnETFStocksTrans.Name = "MnETFStocksTrans";
+            this.MnETFStocksTrans.Size = new System.Drawing.Size(137, 20);
+            this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
+            this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
             // 
             // Label4
             // 
@@ -222,6 +231,7 @@
         public System.Windows.Forms.Button CmdBack;
         private System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
         public System.Windows.Forms.Label Label4;
         public System.Windows.Forms.Label lblLastClosingMonth;
         public System.Windows.Forms.Label Label1;

@@ -32,6 +32,7 @@
             this.CmdBack = new System.Windows.Forms.Button();
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbDD = new System.Windows.Forms.ComboBox();
             this.Label2 = new System.Windows.Forms.Label();
@@ -133,7 +134,8 @@
             // MainMenu1
             // 
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnMonthlyClosing});
+            this.MnMonthlyClosing,
+            this.MnETFStocksTrans});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(852, 24);
@@ -145,6 +147,13 @@
             this.MnMonthlyClosing.Size = new System.Drawing.Size(107, 20);
             this.MnMonthlyClosing.Text = "&Monthly Closing";
             this.MnMonthlyClosing.Click += new System.EventHandler(this.MnMonthlyClosing_Click);
+            // 
+            // MnETFStocksTrans
+            // 
+            this.MnETFStocksTrans.Name = "MnETFStocksTrans";
+            this.MnETFStocksTrans.Size = new System.Drawing.Size(137, 20);
+            this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
+            this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
             // 
             // Label1
             // 
@@ -1521,6 +1530,7 @@
         public System.Windows.Forms.Button CmdBack;
         private System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbDD;
         public System.Windows.Forms.Label Label2;
