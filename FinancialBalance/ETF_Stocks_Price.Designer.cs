@@ -32,6 +32,7 @@
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
@@ -61,7 +62,7 @@
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnDaily,
             this.MnMonthlyClosing,
-            this.MnETFStocksTrans});
+            this.MnETFStockProcessGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(700, 24);
@@ -80,6 +81,14 @@
             this.MnMonthlyClosing.Size = new System.Drawing.Size(107, 20);
             this.MnMonthlyClosing.Text = "&Monthly Closing";
             this.MnMonthlyClosing.Click += new System.EventHandler(this.MnMonthlyClosing_Click);
+            // 
+            // MnETFStockProcessGroup
+            // 
+            this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnETFStocksTrans});
+            this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
+            this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnETFStockProcessGroup.Text = "&ETF/Stock";
             //
             // MnETFStocksTrans
             //
@@ -365,6 +374,7 @@
         public System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label Label1;

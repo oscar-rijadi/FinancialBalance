@@ -34,6 +34,7 @@
             this.MnProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.MnDailyInput = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.MnInquiry = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,9 +44,11 @@
             this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnCurrencyGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -97,8 +100,7 @@
             this.MnProcess.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnDailyInput,
             this.MnMonthlyClosing,
-            this.MnETFStocksTrans,
-            this.MnETFStocksPrice});
+            this.MnETFStockProcessGroup});
             this.MnProcess.Name = "MnProcess";
             this.MnProcess.Size = new System.Drawing.Size(56, 20);
             this.MnProcess.Text = "&Process";
@@ -116,6 +118,15 @@
             this.MnMonthlyClosing.Size = new System.Drawing.Size(160, 22);
             this.MnMonthlyClosing.Text = "&Monthly Closing";
             this.MnMonthlyClosing.Click += new System.EventHandler(this.MnMonthlyClosing_Click);
+            // 
+            // MnETFStockProcessGroup
+            // 
+            this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnETFStocksTrans,
+            this.MnETFStocksPrice});
+            this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
+            this.MnETFStockProcessGroup.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStockProcessGroup.Text = "&ETF/Stock";
             // 
             // MnETFStocksTrans
             // 
@@ -167,12 +178,9 @@
             this.MnAdmin.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnAcctTypeRefSetup,
             this.MnAcctRefSetup,
-            this.MnCurrSetup,
-            this.MnCurrRateSetup,
+            this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
-            this.MnETFStocksSuffixSetup,
-            this.MnETFStocksSetup,
-            this.MnETFStocksFlagSetup});
+            this.MnETFStockGroup});
             this.MnAdmin.Name = "MnAdmin";
             this.MnAdmin.Size = new System.Drawing.Size(87, 20);
             this.MnAdmin.Text = "&Administration";
@@ -190,6 +198,15 @@
             this.MnAcctRefSetup.Size = new System.Drawing.Size(216, 22);
             this.MnAcctRefSetup.Text = "&Accounting Ref Setup";
             this.MnAcctRefSetup.Click += new System.EventHandler(this.MnAcctRefSetup_Click);
+            // 
+            // MnCurrencyGroup
+            // 
+            this.MnCurrencyGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnCurrSetup,
+            this.MnCurrRateSetup});
+            this.MnCurrencyGroup.Name = "MnCurrencyGroup";
+            this.MnCurrencyGroup.Size = new System.Drawing.Size(216, 22);
+            this.MnCurrencyGroup.Text = "&Currency";
             // 
             // MnCurrSetup
             // 
@@ -211,6 +228,16 @@
             this.MnActivaPassivaSetup.Size = new System.Drawing.Size(216, 22);
             this.MnActivaPassivaSetup.Text = "Activa &Passiva Setup";
             this.MnActivaPassivaSetup.Click += new System.EventHandler(this.MnActivaPassivaSetup_Click);
+            // 
+            // MnETFStockGroup
+            // 
+            this.MnETFStockGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnETFStocksSuffixSetup,
+            this.MnETFStocksSetup,
+            this.MnETFStocksFlagSetup});
+            this.MnETFStockGroup.Name = "MnETFStockGroup";
+            this.MnETFStockGroup.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStockGroup.Text = "&ETF/Stock";
             // 
             // MnETFStocksSuffixSetup
             // 
@@ -681,6 +708,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnProcess;
         public System.Windows.Forms.ToolStripMenuItem MnDailyInput;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.ToolStripMenuItem MnInquiry;
@@ -690,9 +718,11 @@
         public System.Windows.Forms.ToolStripMenuItem MnAdmin;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnAcctRefSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnCurrencyGroup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrSetup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;

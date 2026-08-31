@@ -35,9 +35,11 @@
             this.Label21 = new System.Windows.Forms.Label();
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnCurrencyGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -113,12 +115,9 @@
             // 
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnAcctRefSetup,
-            this.MnCurrSetup,
-            this.MnCurrRateSetup,
+            this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
-            this.MnETFStocksSuffixSetup,
-            this.MnETFStocksSetup,
-            this.MnETFStocksFlagSetup});
+            this.MnETFStockGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(576, 24);
@@ -130,6 +129,15 @@
             this.MnAcctRefSetup.Size = new System.Drawing.Size(123, 20);
             this.MnAcctRefSetup.Text = "&Accounting Ref Setup";
             this.MnAcctRefSetup.Click += new System.EventHandler(this.MnAcctRefSetup_Click);
+            // 
+            // MnCurrencyGroup
+            // 
+            this.MnCurrencyGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnCurrSetup,
+            this.MnCurrRateSetup});
+            this.MnCurrencyGroup.Name = "MnCurrencyGroup";
+            this.MnCurrencyGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnCurrencyGroup.Text = "&Currency";
             // 
             // MnCurrSetup
             // 
@@ -151,6 +159,16 @@
             this.MnActivaPassivaSetup.Size = new System.Drawing.Size(119, 20);
             this.MnActivaPassivaSetup.Text = "Activa &Passiva Setup";
             this.MnActivaPassivaSetup.Click += new System.EventHandler(this.MnActivaPassivaSetup_Click);
+            // 
+            // MnETFStockGroup
+            // 
+            this.MnETFStockGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnETFStocksSuffixSetup,
+            this.MnETFStocksSetup,
+            this.MnETFStocksFlagSetup});
+            this.MnETFStockGroup.Name = "MnETFStockGroup";
+            this.MnETFStockGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnETFStockGroup.Text = "&ETF/Stock";
             // 
             // MnETFStocksSuffixSetup
             // 
@@ -282,9 +300,11 @@
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnAcctRefSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnCurrencyGroup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrSetup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;

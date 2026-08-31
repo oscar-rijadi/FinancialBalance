@@ -84,14 +84,28 @@ Every form is a full-screen window that hides its predecessor; there is no MDI c
 `Administration` menu is reachable from `Main_Form`, and each setup form carries a menu strip
 letting you hop directly between the other setup forms.
 
+Related pages are collected into submenus rather than sitting flat:
+
+| Menu | Submenu | Contains |
+| --- | --- | --- |
+| `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
+| `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
+| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Flag Setup |
+
+The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
+never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
+submenu offers only Currency Rate Setup, and it disappears to a single child rather than being
+flattened, so the layout stays the same everywhere.
+
 ```mermaid
 flowchart LR
     MAIN["Main_Form<br/><i>splash + menu</i>"]
 
     MAIN --> DI["Daily_Input"]
     MAIN --> MC["Monthly_Closing"]
-    MAIN --> ETX["ETF_Stocks_Transaction"]
-    MAIN --> ETP["ETF_Stocks_Price"]
+    MAIN --> PETFG{{"ETF/Stock"}}
+    PETFG --> ETX["ETF_Stocks_Transaction"]
+    PETFG --> ETP["ETF_Stocks_Price"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
@@ -99,12 +113,14 @@ flowchart LR
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
     ADMIN --> SAR["Setup_Acct_Ref"]
-    ADMIN --> SC["Setup_Curr"]
-    ADMIN --> SCR["Setup_Curr_Rate"]
+    ADMIN --> CURG{{"Currency"}}
+    CURG --> SC["Setup_Curr"]
+    CURG --> SCR["Setup_Curr_Rate"]
     ADMIN --> SAP["Setup_Activa_Passiva"]
-    ADMIN --> SES["Setup_ETF_Stocks_Suffix"]
-    ADMIN --> SET["Setup_ETF_Stocks"]
-    ADMIN --> SEF["Setup_ETF_Stocks_Flag"]
+    ADMIN --> ETFG{{"ETF/Stock"}}
+    ETFG --> SES["Setup_ETF_Stocks_Suffix"]
+    ETFG --> SET["Setup_ETF_Stocks"]
+    ETFG --> SEF["Setup_ETF_Stocks_Flag"]
 
     DI <--> MC
     MC <--> ETX
@@ -509,9 +525,6 @@ Things worth knowing before changing this code.
 - **`ETF_Stocks_Price` reaches the network** on the sync button, the only outbound call in the
   app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes for
   the duration of the request. Yahoo's endpoint is undocumented and can change without notice.
-- **The setup forms' menu strips now carry eight items each** and overflow into a `»` chevron on a
-  616px form. `Main_Form` avoids this by nesting them under one `Administration` dropdown; the
-  setup forms could do the same.
 - `Microsoft.Office.Interop.Excel` and `adodb` are referenced in the project file but **not used by
   any code** — both references can be dropped.
 
