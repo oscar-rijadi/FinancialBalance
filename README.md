@@ -136,7 +136,7 @@ flowchart LR
 
 ## Data model
 
-Eleven tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twelve tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -149,8 +149,10 @@ erDiagram
     TblAcctRef      ||--o| TblLiability    : "balance of (type 2)"
     TblAcctRef      ||--o{ TblMonthlyTrans : "bucketed by"
     TblETFStocksExchangeSuffix ||--o{ TblETFStocks : "suffixes"
-    TblETFStocks    ||--o{ TblETFStocksTrans : "traded in"
-    TblCurrCode     ||--o{ TblETFStocksTrans : "denominates"
+    TblETFStocks    ||--o{ TblETFStocksPurchase : "bought"
+    TblETFStocks    ||--o{ TblETFStocksSale : "sold"
+    TblCurrCode     ||--o{ TblETFStocksPurchase : "denominates"
+    TblCurrCode     ||--o{ TblETFStocksSale : "denominates"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -204,9 +206,8 @@ erDiagram
         text Full_Ticker PK "derived, never typed"
         bool In_YahooFinance
     }
-    TblETFStocksTrans {
+    TblETFStocksPurchase {
         text    Trans_Date "yyyyMMdd"
-        text    Trans_Type "1 char: + or -"
         text    Full_Ticker "joins TblETFStocks"
         text    Currency "3 chars"
         decimal Unit "4 dp"
@@ -215,6 +216,14 @@ erDiagram
         decimal Total_Cost_Base "2 dp"
         decimal Real_Total_Cost_Base "2 dp"
         bool    Is_Sold
+    }
+    TblETFStocksSale {
+        text    Trans_Date "yyyyMMdd"
+        text    Full_Ticker "joins TblETFStocks"
+        text    Currency "3 chars"
+        decimal Unit "4 dp"
+        decimal Selling_Price_Per_Unit "2 dp"
+        decimal Selling_Total_Amount "2 dp"
     }
 ```
 
@@ -242,17 +251,24 @@ by the rule. `Full_Ticker` is the table's primary key.
 
 ### ETF/stock transaction rules
 
-`ETF_Stocks_Transaction` writes `TblETFStocksTrans` and applies these rules:
+`ETF_Stocks_Transaction` writes **two tables**: a Buy goes to `TblETFStocksPurchase`, a Sell to
+`TblETFStocksSale`. There is no stored transaction type — the table a row lives in *is* its type.
+The page shows both for a chosen date, purchases first.
 
 | Field | Rule |
 | --- | --- |
 | `Trans_Date` | From the date picker, stored `yyyyMMdd`. |
-| `Trans_Type` | `Buy` is stored as `+`, `Sell` as `-`. |
-| `Unit` | Numeric, not negative, at most 4 decimal places. |
-| `Cost_Base`, `Fee` | Numeric, not negative, at most 2 decimal places. |
-| `Total_Cost_Base` | Derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
-| `Real_Total_Cost_Base` | `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
-| `Is_Sold` | The Sold checkbox. |
+| `Unit` | Numeric, not negative, at most 4 decimal places. Both tables. |
+| `Cost_Base`, `Fee` | Buy only. Numeric, not negative, at most 2 decimal places. |
+| `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
+| `Real_Total_Cost_Base` | Buy only. `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
+| `Is_Sold` | Buy only. The Sold checkbox. |
+| `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
+| `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
+
+The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, DRIP and Sold;
+a Sell shows Selling Price/Unit and Selling Total Amount. Hidden fields are reset rather than
+carried over, and validation only covers what is on screen.
 
 DRIP is **not stored**. The form re-derives it on selection as `Real_Total_Cost_Base == 0`.
 
@@ -260,13 +276,12 @@ DRIP is **not stored**. The form re-derives it on selection as `Real_Total_Cost_
 > silently. Compare against `True`/`False` instead. Likewise, `Currency` is a reserved word:
 > it needs brackets in DDL (`[Currency]`), though plain DML tolerates it.
 
-Because the table has no key, update and delete match on **all ten original column values**.
-If two identical transactions exist on one date, the form says so and asks before touching
-both — it cannot tell them apart.
-
-`TblETFStocksTrans` is the only table here **without a primary key** — the same ticker can be
-bought twice on one day, so no combination of its columns is reliably unique. Add one if you
-later define what makes a transaction distinct.
+Neither table has a primary key — the same ticker can be bought twice on one day, so no
+combination of columns is reliably unique. Update and delete therefore match on **all of the
+row's original column values**, and each grid row remembers which table it came from. If two
+identical transactions exist on one date, the form says so and asks before touching both.
+Changing an existing row's type moves it between the tables (delete then insert), since an
+in-place update cannot cross tables.
 
 The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — and 215 accounts.
 

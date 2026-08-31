@@ -16,11 +16,16 @@ namespace FinancialBalance
         bool FirstLoad;
         bool Filling;
 
-        //TblETFStocksTrans has no primary key, so a row is identified by the values it
-        //held when it was picked out of the grid.  A null entry means the column was Null.
+        //Buys live in TblETFStocksPurchase, sells in TblETFStocksSale.  The grid shows both,
+        //so each grid row remembers which table it came from and its position within it.
+        List<string> RowSource = new List<string>();
+        List<int> RowOrdinal = new List<int>();
+
+        //Neither table has a primary key, so a row is identified by the values it held when
+        //it was picked out of the grid.  A null entry means the column was Null.
         bool RowSelected;
+        string OrgSource;
         string OrgTransDate;
-        string OrgTransType;
         string OrgFullTicker;
         string OrgCurrency;
         string OrgUnit;
@@ -81,6 +86,16 @@ namespace FinancialBalance
         private bool Is_Sell()
         {
             return (CmbTransType.Text.Trim() == "Sell");
+        }
+
+        private string Cur_Table()
+        {
+            return (Is_Sell() ? "TblETFStocksSale" : "TblETFStocksPurchase");
+        }
+
+        private string Org_Table()
+        {
+            return (OrgSource == "S" ? "TblETFStocksSale" : "TblETFStocksPurchase");
         }
 
         private void Show_Fields_For_Type()
@@ -275,48 +290,82 @@ namespace FinancialBalance
             }
         }
 
-        private string Select_Cols()
+        private string Select_Purchases()
         {
-            return "select Trans_Date, Trans_Type, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Selling_Price_Per_Unit], [Selling_Total_Amount] from TblETFStocksTrans"
-                 + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker, Trans_Type";
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold from TblETFStocksPurchase"
+                 + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
+        }
+
+        private string Select_Sales()
+        {
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount] from TblETFStocksSale"
+                 + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
         private void Get_Data()
         {
             Filling = true;
             RowSelected = false;
+            RowSource.Clear();
+            RowOrdinal.Clear();
 
             Clear_Grid();
 
             string[] row;
 
-            Mdl1.Ssql = Select_Cols();
+            //purchases first, then sales
+            Mdl1.Ssql = Select_Purchases();
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
-            if (reader.HasRows)
+            int i = 0;
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    bool Sell = (reader["Trans_Type"].ToString().Trim() == "-");
-                    double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
+                double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
+                row = new string[] {
+                    "Buy",
+                    reader["Full_Ticker"].ToString().Trim(),
+                    reader["Currency"].ToString().Trim(),
+                    Format_Unit(reader["Unit"]),
+                    Mdl1.FormatAmt(Read_Double(reader["Cost_Base"])),
+                    Mdl1.FormatAmt(Read_Double(reader["Fee"])),
+                    Mdl1.FormatAmt(Read_Double(reader["Total_Cost_Base"])),
+                    Mdl1.FormatAmt(TmpRealTotal),
+                    (TmpRealTotal == 0 ? "Y" : "N"),
+                    (reader["Is_Sold"].ToString().Trim() == "True" ? "Y" : "N"),
+                    "-",
+                    "-"
+                };
+                gvTrans.Rows.Add(row);
+                RowSource.Add("P");
+                RowOrdinal.Add(i);
+                i++;
+            }
+            reader.Close();
 
-                    //columns that do not apply to this transaction type read as "-"
-                    row = new string[] {
-                        From_Db_Trans_Type(reader["Trans_Type"].ToString().Trim()),
-                        reader["Full_Ticker"].ToString().Trim(),
-                        reader["Currency"].ToString().Trim(),
-                        Format_Unit(reader["Unit"]),
-                        (Sell ? "-" : Mdl1.FormatAmt(Read_Double(reader["Cost_Base"]))),
-                        (Sell ? "-" : Mdl1.FormatAmt(Read_Double(reader["Fee"]))),
-                        (Sell ? "-" : Mdl1.FormatAmt(Read_Double(reader["Total_Cost_Base"]))),
-                        (Sell ? "-" : Mdl1.FormatAmt(TmpRealTotal)),
-                        (Sell ? "-" : (TmpRealTotal == 0 ? "Y" : "N")),
-                        (Sell ? "-" : (reader["Is_Sold"].ToString().Trim() == "True" ? "Y" : "N")),
-                        (Sell ? Mdl1.FormatAmt(Read_Double(reader["Selling_Price_Per_Unit"])) : "-"),
-                        (Sell ? Mdl1.FormatAmt(Read_Double(reader["Selling_Total_Amount"])) : "-")
-                    };
-                    gvTrans.Rows.Add(row);
-                }
+            Mdl1.Ssql = Select_Sales();
+            cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            reader = cmd.ExecuteReader();
+            i = 0;
+            while (reader.Read())
+            {
+                row = new string[] {
+                    "Sell",
+                    reader["Full_Ticker"].ToString().Trim(),
+                    reader["Currency"].ToString().Trim(),
+                    Format_Unit(reader["Unit"]),
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    Mdl1.FormatAmt(Read_Double(reader["Selling_Price_Per_Unit"])),
+                    Mdl1.FormatAmt(Read_Double(reader["Selling_Total_Amount"]))
+                };
+                gvTrans.Rows.Add(row);
+                RowSource.Add("S");
+                RowOrdinal.Add(i);
+                i++;
             }
             reader.Close();
 
@@ -342,25 +391,6 @@ namespace FinancialBalance
         private string Format_Unit(object parValue)
         {
             return Read_Double(parValue).ToString("#,##0.0000");
-        }
-
-        //Buy is stored as "+", Sell as "-"
-        private string To_Db_Trans_Type(string parDisplay)
-        {
-            if (parDisplay.Trim() == "Sell")
-            {
-                return "-";
-            }
-            return "+";
-        }
-
-        private string From_Db_Trans_Type(string parStored)
-        {
-            if (parStored.Trim() == "-")
-            {
-                return "Sell";
-            }
-            return "Buy";
         }
 
         private void Clear_Entry()
@@ -472,30 +502,43 @@ namespace FinancialBalance
                 return;
             }
 
-            //Re-read the row from the database so the originals are exact, not display-rounded
             int idx = gvTrans.CurrentRow.Index;
+            if (idx < 0 || idx >= RowSource.Count)
+            {
+                return;
+            }
 
-            Mdl1.Ssql = Select_Cols();
+            string Src = RowSource[idx];
+            int Ord = RowOrdinal[idx];
+
+            //Re-read from the owning table so the originals are exact, not display-rounded
+            Mdl1.Ssql = (Src == "P" ? Select_Purchases() : Select_Sales());
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             int i = 0;
             bool Found = false;
             while (reader.Read())
             {
-                if (i == idx)
+                if (i == Ord)
                 {
+                    OrgSource = Src;
                     OrgTransDate = reader["Trans_Date"].ToString().Trim();
-                    OrgTransType = reader["Trans_Type"].ToString().Trim();
                     OrgFullTicker = reader["Full_Ticker"].ToString().Trim();
                     OrgCurrency = reader["Currency"].ToString().Trim();
                     OrgUnit = Sql_Num(reader["Unit"], 4);
-                    OrgCostBase = Sql_Num(reader["Cost_Base"], 2);
-                    OrgFee = Sql_Num(reader["Fee"], 2);
-                    OrgTotalCostBase = Sql_Num(reader["Total_Cost_Base"], 2);
-                    OrgRealTotalCostBase = Sql_Num(reader["Real_Total_Cost_Base"], 2);
-                    OrgIsSold = (reader["Is_Sold"].ToString().Trim() == "True" ? "True" : "False");
-                    OrgSellingPricePerUnit = Sql_Num(reader["Selling_Price_Per_Unit"], 2);
-                    OrgSellingTotalAmount = Sql_Num(reader["Selling_Total_Amount"], 2);
+                    if (Src == "P")
+                    {
+                        OrgCostBase = Sql_Num(reader["Cost_Base"], 2);
+                        OrgFee = Sql_Num(reader["Fee"], 2);
+                        OrgTotalCostBase = Sql_Num(reader["Total_Cost_Base"], 2);
+                        OrgRealTotalCostBase = Sql_Num(reader["Real_Total_Cost_Base"], 2);
+                        OrgIsSold = (reader["Is_Sold"].ToString().Trim() == "True" ? "True" : "False");
+                    }
+                    else
+                    {
+                        OrgSellingPricePerUnit = Sql_Num(reader["Selling_Price_Per_Unit"], 2);
+                        OrgSellingTotalAmount = Sql_Num(reader["Selling_Total_Amount"], 2);
+                    }
                     Found = true;
                     break;
                 }
@@ -509,15 +552,26 @@ namespace FinancialBalance
             }
 
             Filling = true;
-            CmbTransType.Text = From_Db_Trans_Type(OrgTransType);
+            CmbTransType.Text = (Src == "P" ? "Buy" : "Sell");
             CmbFullTicker.Text = OrgFullTicker;
             CmbCurrency.Text = OrgCurrency;
             txtUnit.Text = (OrgUnit == null ? "0.0000" : OrgUnit);
-            txtCostBase.Text = (OrgCostBase == null ? "0.00" : OrgCostBase);
-            txtFee.Text = (OrgFee == null ? "0.00" : OrgFee);
-            txtSellingPricePerUnit.Text = (OrgSellingPricePerUnit == null ? "0.00" : OrgSellingPricePerUnit);
-            chkDRIP.Checked = (Read_Double(OrgRealTotalCostBase) == 0);
-            chkSold.Checked = (OrgIsSold == "True");
+            if (Src == "P")
+            {
+                txtCostBase.Text = (OrgCostBase == null ? "0.00" : OrgCostBase);
+                txtFee.Text = (OrgFee == null ? "0.00" : OrgFee);
+                txtSellingPricePerUnit.Text = "0.00";
+                chkDRIP.Checked = (Read_Double(OrgRealTotalCostBase) == 0);
+                chkSold.Checked = (OrgIsSold == "True");
+            }
+            else
+            {
+                txtCostBase.Text = "0.00";
+                txtFee.Text = "0.00";
+                txtSellingPricePerUnit.Text = (OrgSellingPricePerUnit == null ? "0.00" : OrgSellingPricePerUnit);
+                chkDRIP.Checked = false;
+                chkSold.Checked = false;
+            }
             Filling = false;
 
             //show the half of the form this row's type uses, without wiping what was just loaded
@@ -575,7 +629,7 @@ namespace FinancialBalance
             return true;
         }
 
-        //Only the fields on show for the current type are captured; the rest are stored as zero
+        //Only the fields on show for the current type are captured
         private bool Validate_Entry(out decimal parUnit, out decimal parCostBase, out decimal parFee,
                                     out decimal parTotal, out decimal parRealTotal,
                                     out decimal parSellingPrice, out decimal parSellingTotal)
@@ -645,25 +699,32 @@ namespace FinancialBalance
         //never 1/0 - "Is_Sold = 1" silently matches nothing
         private string Where_Original()
         {
-            return " where Trans_Date = '" + OrgTransDate + "'"
-                 + " and Trans_Type = '" + OrgTransType + "'"
-                 + " and Full_Ticker = '" + OrgFullTicker + "'"
-                 + " and [Currency] = '" + OrgCurrency + "'"
-                 + Where_Col("Unit", OrgUnit)
-                 + Where_Col("Cost_Base", OrgCostBase)
-                 + Where_Col("Fee", OrgFee)
-                 + Where_Col("Total_Cost_Base", OrgTotalCostBase)
-                 + Where_Col("Real_Total_Cost_Base", OrgRealTotalCostBase)
-                 + " and Is_Sold = " + OrgIsSold
-                 + Where_Col("[Selling_Price_Per_Unit]", OrgSellingPricePerUnit)
-                 + Where_Col("[Selling_Total_Amount]", OrgSellingTotalAmount);
+            string Where = " where Trans_Date = '" + OrgTransDate + "'"
+                         + " and Full_Ticker = '" + OrgFullTicker + "'"
+                         + " and [Currency] = '" + OrgCurrency + "'"
+                         + Where_Col("Unit", OrgUnit);
+
+            if (OrgSource == "P")
+            {
+                Where += Where_Col("Cost_Base", OrgCostBase)
+                       + Where_Col("Fee", OrgFee)
+                       + Where_Col("Total_Cost_Base", OrgTotalCostBase)
+                       + Where_Col("Real_Total_Cost_Base", OrgRealTotalCostBase)
+                       + " and Is_Sold = " + OrgIsSold;
+            }
+            else
+            {
+                Where += Where_Col("[Selling_Price_Per_Unit]", OrgSellingPricePerUnit)
+                       + Where_Col("[Selling_Total_Amount]", OrgSellingTotalAmount);
+            }
+            return Where;
         }
 
         //Without a key, identical rows are indistinguishable - warn before touching them all
         private bool Confirm_Affected(string parAction)
         {
             int TmpCount = 0;
-            Mdl1.Ssql = "select count(*) as N from TblETFStocksTrans" + Where_Original();
+            Mdl1.Ssql = "select count(*) as N from " + Org_Table() + Where_Original();
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
@@ -688,6 +749,38 @@ namespace FinancialBalance
             return true;
         }
 
+        //Insert the entry area into whichever table matches the current type
+        private void Insert_Current(decimal parUnit, decimal parCostBase, decimal parFee,
+                                    decimal parTotal, decimal parRealTotal,
+                                    decimal parSellingPrice, decimal parSellingTotal)
+        {
+            if (Is_Sell())
+            {
+                Mdl1.Ssql = "Insert into TblETFStocksSale (Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount]) values ("
+                    + "'" + Get_Trans_Date() + "', "
+                    + "'" + CmbFullTicker.Text.Trim() + "', "
+                    + "'" + CmbCurrency.Text.Trim() + "', "
+                    + Num(parUnit, 4) + ", "
+                    + Num(parSellingPrice, 2) + ", "
+                    + Num(parSellingTotal, 2) + ")";
+            }
+            else
+            {
+                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold) values ("
+                    + "'" + Get_Trans_Date() + "', "
+                    + "'" + CmbFullTicker.Text.Trim() + "', "
+                    + "'" + CmbCurrency.Text.Trim() + "', "
+                    + Num(parUnit, 4) + ", "
+                    + Num(parCostBase, 2) + ", "
+                    + Num(parFee, 2) + ", "
+                    + Num(parTotal, 2) + ", "
+                    + Num(parRealTotal, 2) + ", "
+                    + (chkSold.Checked ? "True" : "False") + ")";
+            }
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            cmd.ExecuteNonQuery();
+        }
+
         private void CmdCreate_Click(object sender, EventArgs e)
         {
             try
@@ -705,21 +798,7 @@ namespace FinancialBalance
                     return;
                 }
 
-                Mdl1.Ssql = "Insert into TblETFStocksTrans (Trans_Date, Trans_Type, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Selling_Price_Per_Unit], [Selling_Total_Amount]) values ("
-                    + "'" + Get_Trans_Date() + "', "
-                    + "'" + To_Db_Trans_Type(CmbTransType.Text) + "', "
-                    + "'" + CmbFullTicker.Text.Trim() + "', "
-                    + "'" + CmbCurrency.Text.Trim() + "', "
-                    + Num(TmpUnit, 4) + ", "
-                    + Num(TmpCostBase, 2) + ", "
-                    + Num(TmpFee, 2) + ", "
-                    + Num(TmpTotal, 2) + ", "
-                    + Num(TmpRealTotal, 2) + ", "
-                    + (chkSold.Checked ? "True" : "False") + ", "
-                    + Num(TmpSellingPrice, 2) + ", "
-                    + Num(TmpSellingTotal, 2) + ")";
-                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
-                cmd.ExecuteNonQuery();
+                Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpSellingPrice, TmpSellingTotal);
 
                 MessageBox.Show("Create successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()), "Success");
 
@@ -758,21 +837,45 @@ namespace FinancialBalance
                     return;
                 }
 
-                Mdl1.Ssql = "Update TblETFStocksTrans set "
-                    + "Trans_Type = '" + To_Db_Trans_Type(CmbTransType.Text) + "', "
-                    + "Full_Ticker = '" + CmbFullTicker.Text.Trim() + "', "
-                    + "[Currency] = '" + CmbCurrency.Text.Trim() + "', "
-                    + "Unit = " + Num(TmpUnit, 4) + ", "
-                    + "Cost_Base = " + Num(TmpCostBase, 2) + ", "
-                    + "Fee = " + Num(TmpFee, 2) + ", "
-                    + "Total_Cost_Base = " + Num(TmpTotal, 2) + ", "
-                    + "Real_Total_Cost_Base = " + Num(TmpRealTotal, 2) + ", "
-                    + "Is_Sold = " + (chkSold.Checked ? "True" : "False") + ", "
-                    + "[Selling_Price_Per_Unit] = " + Num(TmpSellingPrice, 2) + ", "
-                    + "[Selling_Total_Amount] = " + Num(TmpSellingTotal, 2)
-                    + Where_Original();
-                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
-                cmd.ExecuteNonQuery();
+                bool WasSell = (OrgSource == "S");
+                OleDbCommand cmd;
+
+                if (WasSell != Is_Sell())
+                {
+                    //the type changed, so the row moves between tables
+                    Mdl1.Ssql = "Delete from " + Org_Table() + Where_Original();
+                    cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                    cmd.ExecuteNonQuery();
+
+                    Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpSellingPrice, TmpSellingTotal);
+                }
+                else if (Is_Sell())
+                {
+                    Mdl1.Ssql = "Update TblETFStocksSale set "
+                        + "Full_Ticker = '" + CmbFullTicker.Text.Trim() + "', "
+                        + "[Currency] = '" + CmbCurrency.Text.Trim() + "', "
+                        + "Unit = " + Num(TmpUnit, 4) + ", "
+                        + "[Selling_Price_Per_Unit] = " + Num(TmpSellingPrice, 2) + ", "
+                        + "[Selling_Total_Amount] = " + Num(TmpSellingTotal, 2)
+                        + Where_Original();
+                    cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                    cmd.ExecuteNonQuery();
+                }
+                else
+                {
+                    Mdl1.Ssql = "Update TblETFStocksPurchase set "
+                        + "Full_Ticker = '" + CmbFullTicker.Text.Trim() + "', "
+                        + "[Currency] = '" + CmbCurrency.Text.Trim() + "', "
+                        + "Unit = " + Num(TmpUnit, 4) + ", "
+                        + "Cost_Base = " + Num(TmpCostBase, 2) + ", "
+                        + "Fee = " + Num(TmpFee, 2) + ", "
+                        + "Total_Cost_Base = " + Num(TmpTotal, 2) + ", "
+                        + "Real_Total_Cost_Base = " + Num(TmpRealTotal, 2) + ", "
+                        + "Is_Sold = " + (chkSold.Checked ? "True" : "False")
+                        + Where_Original();
+                    cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                    cmd.ExecuteNonQuery();
+                }
 
                 MessageBox.Show("Update successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()), "Success");
 
@@ -799,7 +902,7 @@ namespace FinancialBalance
                     return;
                 }
 
-                Mdl1.Ssql = "Delete from TblETFStocksTrans" + Where_Original();
+                Mdl1.Ssql = "Delete from " + Org_Table() + Where_Original();
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
