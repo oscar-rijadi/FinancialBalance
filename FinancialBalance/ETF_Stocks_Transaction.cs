@@ -82,6 +82,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksPrice_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Price ETF_Stocks_Price = new ETF_Stocks_Price();
+            ETF_Stocks_Price.Show();
+            this.Close();
+        }
+
         //A Buy captures cost; a Sell captures proceeds.  Only one set applies at a time.
         private bool Is_Sell()
         {

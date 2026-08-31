@@ -1,0 +1,586 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Data.OleDb;
+using System.Globalization;
+using System.Net;
+using System.Text.RegularExpressions;
+
+namespace FinancialBalance
+{
+    public partial class ETF_Stocks_Price : Form
+    {
+        bool FirstLoad;
+        bool Filling;
+
+        //TblETFStocksPrice is keyed on (Price_Date, Full_Ticker), so one price per ticker
+        //per day.  That makes Add an upsert and Delete an exact match - no guessing.
+        const int MaxRows = 5;
+
+        public ETF_Stocks_Price()
+        {
+            InitializeComponent();
+        }
+
+        private void ETF_Stocks_Price_Load(object sender, EventArgs e)
+        {
+            FirstLoad = true;
+            Mdl1.Fill_Date(CmbDD, CmbMM, CmbYear);
+            CmbDD.Text = String.Format("{0:dd}", DateTime.Now);
+            CmbMM.Text = String.Format("{0:MM}", DateTime.Now);
+            CmbYear.Text = String.Format("{0:yyyy}", DateTime.Now);
+
+            Filling = true;
+            Fill_Full_Ticker();
+            Filling = false;
+
+            txtPrice.Text = "0.00";
+            ChangeLblDay();
+            Clear_Grid();
+            Apply_Ticker_Rules();
+            FirstLoad = false;
+
+            monthCalendar1.Hide();
+        }
+
+        private void MnDaily_Click(object sender, EventArgs e)
+        {
+            Daily_Input Daily_Input = new Daily_Input();
+            Daily_Input.Show();
+            this.Close();
+        }
+
+        private void MnMonthlyClosing_Click(object sender, EventArgs e)
+        {
+            Monthly_Closing Monthly_Closing = new Monthly_Closing();
+            Monthly_Closing.Show();
+            this.Close();
+        }
+
+        private void MnETFStocksTrans_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Transaction ETF_Stocks_Transaction = new ETF_Stocks_Transaction();
+            ETF_Stocks_Transaction.Show();
+            this.Close();
+        }
+
+        //Starts blank so nothing is loaded until a ticker is actually chosen
+        private void Fill_Full_Ticker()
+        {
+            CmbFullTicker.Items.Clear();
+            CmbFullTicker.Items.Add("");
+            Mdl1.Ssql = "Select Full_Ticker from TblETFStocks order by Full_Ticker";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    CmbFullTicker.Items.Add(reader["Full_Ticker"].ToString().Trim());
+                }
+            }
+            reader.Close();
+            CmbFullTicker.Text = "";
+        }
+
+        private bool In_Yahoo_Finance(string parFullTicker)
+        {
+            bool Result = false;
+            Mdl1.Ssql = "Select In_YahooFinance from TblETFStocks where Full_Ticker = '" + parFullTicker + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                Result = (reader["In_YahooFinance"].ToString().Trim() == "True");
+            }
+            reader.Close();
+            return Result;
+        }
+
+        //The sync button only makes sense for tickers Yahoo actually carries
+        private void Apply_Ticker_Rules()
+        {
+            string Ticker = CmbFullTicker.Text.Trim();
+
+            if (Ticker == "")
+            {
+                CmdSync.Enabled = false;
+                LblSyncNote.Text = "";
+                LblGridCaption.Text = "Last " + MaxRows.ToString() + " prices";
+                return;
+            }
+
+            LblGridCaption.Text = "Last " + MaxRows.ToString() + " prices for " + Ticker;
+
+            if (In_Yahoo_Finance(Ticker))
+            {
+                CmdSync.Enabled = true;
+                LblSyncNote.Text = "";
+            }
+            else
+            {
+                CmdSync.Enabled = false;
+                LblSyncNote.Text = "Not flagged as In Yahoo Finance";
+            }
+        }
+
+        private void CmbFullTicker_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            Apply_Ticker_Rules();
+            Get_Data();
+        }
+
+        private string Get_Price_Date()
+        {
+            return CmbYear.Text + CmbMM.Text + CmbDD.Text;
+        }
+
+        private void ChangeLblDay()
+        {
+            switch (DateTime.Parse(Mdl1.toLongDate(Get_Price_Date())).DayOfWeek)
+            {
+                case DayOfWeek.Monday:
+                    LblDay.Text = "Monday";
+                    LblDay.ForeColor = System.Drawing.ColorTranslator.FromOle(12582912);
+                    break;
+                case DayOfWeek.Tuesday:
+                    LblDay.Text = "Tuesday";
+                    LblDay.ForeColor = System.Drawing.ColorTranslator.FromOle(12582912);
+                    break;
+                case DayOfWeek.Wednesday:
+                    LblDay.Text = "Wednesday";
+                    LblDay.ForeColor = System.Drawing.ColorTranslator.FromOle(12582912);
+                    break;
+                case DayOfWeek.Thursday:
+                    LblDay.Text = "Thursday";
+                    LblDay.ForeColor = System.Drawing.ColorTranslator.FromOle(12582912);
+                    break;
+                case DayOfWeek.Friday:
+                    LblDay.Text = "Friday";
+                    LblDay.ForeColor = System.Drawing.ColorTranslator.FromOle(12582912);
+                    break;
+                case DayOfWeek.Saturday:
+                    LblDay.Text = "Saturday";
+                    LblDay.ForeColor = System.Drawing.ColorTranslator.FromOle(12582912);
+                    break;
+                case DayOfWeek.Sunday:
+                    LblDay.Text = "Sunday";
+                    LblDay.ForeColor = System.Drawing.ColorTranslator.FromOle(255);
+                    break;
+            }
+        }
+
+        private void DateChanged()
+        {
+            if (FirstLoad)
+            {
+                return;
+            }
+            if (Mdl1.k_Date(CmbDD.Text + CmbMM.Text + CmbYear.Text))
+            {
+                ChangeLblDay();
+            }
+            else
+            {
+                MessageBox.Show("Invalid Date !", "Error Message");
+            }
+        }
+
+        private void CmbDD_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DateChanged();
+        }
+
+        private void CmbMM_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DateChanged();
+        }
+
+        private void CmbYear_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DateChanged();
+        }
+
+        private void CmdCal_Click(object sender, EventArgs e)
+        {
+            monthCalendar1.SetDate(new System.DateTime(int.Parse(CmbYear.Text), int.Parse(CmbMM.Text), int.Parse(CmbDD.Text), 0, 0, 0, 0));
+            monthCalendar1.Show();
+            monthCalendar1.BringToFront();
+        }
+
+        private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            FirstLoad = true;
+            CmbDD.Text = e.Start.Day.ToString("00");
+            CmbMM.Text = e.Start.Month.ToString("00");
+            CmbYear.Text = e.Start.Year.ToString("0000");
+            FirstLoad = false;
+            monthCalendar1.Hide();
+            DateChanged();
+        }
+
+        private void Set_Date(string parYyyyMMdd)
+        {
+            FirstLoad = true;
+            CmbYear.Text = parYyyyMMdd.Substring(0, 4);
+            CmbMM.Text = parYyyyMMdd.Substring(4, 2);
+            CmbDD.Text = parYyyyMMdd.Substring(6, 2);
+            FirstLoad = false;
+            ChangeLblDay();
+        }
+
+        private void Clear_Grid()
+        {
+            gvPrice.Columns.Clear();
+            gvPrice.ColumnCount = 2;
+            gvPrice.Columns[0].Name = "Price Date";
+            gvPrice.Columns[0].FillWeight = 60;
+            gvPrice.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvPrice.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvPrice.Columns[1].Name = "Price";
+            gvPrice.Columns[1].FillWeight = 40;
+            gvPrice.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvPrice.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+        }
+
+        //Most recent first, capped at MaxRows
+        private void Get_Data()
+        {
+            Filling = true;
+
+            Clear_Grid();
+
+            string Ticker = CmbFullTicker.Text.Trim();
+            if (Ticker != "")
+            {
+                string[] row;
+                Mdl1.Ssql = "select top " + MaxRows.ToString() + " Price_Date, [Price] from TblETFStocksPrice"
+                          + " where Full_Ticker = '" + Ticker + "' order by Price_Date Desc";
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string TmpDate = reader["Price_Date"].ToString().Trim();
+                    row = new string[] { Mdl1.toLongDate(TmpDate), Mdl1.FormatAmt(Read_Double(reader["Price"])) };
+                    gvPrice.Rows.Add(row);
+                    gvPrice.Rows[gvPrice.Rows.Count - 1].Tag = TmpDate;
+                }
+                reader.Close();
+            }
+
+            gvPrice.ClearSelection();
+
+            Filling = false;
+        }
+
+        private double Read_Double(object parValue)
+        {
+            double TmpValue;
+            if (parValue == null || parValue == DBNull.Value)
+            {
+                return 0;
+            }
+            if (double.TryParse(parValue.ToString(), out TmpValue))
+            {
+                return TmpValue;
+            }
+            return 0;
+        }
+
+        //Clicking a row loads it back into the date picker and price box
+        private void gvPrice_SelectionChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            if (gvPrice.CurrentRow == null || gvPrice.CurrentRow.Tag == null)
+            {
+                return;
+            }
+
+            Set_Date(gvPrice.CurrentRow.Tag.ToString());
+            txtPrice.Text = gvPrice.CurrentRow.Cells[1].Value.ToString().Replace(",", "");
+        }
+
+        private void txtPrice_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            short KeyAscii = (short)e.KeyChar;
+            KeyAscii = Mdl1.NumericKeyPress(KeyAscii);
+            e.KeyChar = (char)KeyAscii;
+            if (KeyAscii == 0)
+            {
+                e.Handled = true;
+            }
+        }
+
+        //Numeric, not negative, at most 2 decimal places
+        private bool Valid_Price(string parText, out decimal parValue)
+        {
+            parValue = 0;
+
+            string TmpText = parText.Trim();
+            if (TmpText == "")
+            {
+                MessageBox.Show("Price cannot be empty !", "Error Message");
+                return false;
+            }
+            if (!decimal.TryParse(TmpText, NumberStyles.Number, CultureInfo.CurrentCulture, out parValue))
+            {
+                MessageBox.Show("Price must be a number !", "Error Message");
+                return false;
+            }
+            if (parValue < 0)
+            {
+                MessageBox.Show("Price cannot be negative !", "Error Message");
+                return false;
+            }
+
+            string TmpPlain = TmpText.Replace(",", "");
+            int TmpDot = TmpPlain.IndexOf('.');
+            if (TmpDot >= 0 && (TmpPlain.Length - TmpDot - 1) > 2)
+            {
+                MessageBox.Show("Price can have a maximum of 2 decimal points !", "Error Message");
+                return false;
+            }
+            return true;
+        }
+
+        //One row per ticker per date: insert when new, update when it already exists
+        private bool Save_Price(string parTicker, string parDate, decimal parPrice, out bool parWasUpdate)
+        {
+            parWasUpdate = false;
+
+            Mdl1.Ssql = "select * from TblETFStocksPrice where Price_Date = '" + parDate + "' and Full_Ticker = '" + parTicker + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            parWasUpdate = reader.HasRows;
+            reader.Close();
+
+            string TmpPrice = parPrice.ToString("0.00", CultureInfo.InvariantCulture);
+
+            if (parWasUpdate)
+            {
+                Mdl1.Ssql = "Update TblETFStocksPrice set [Price] = " + TmpPrice
+                          + " where Price_Date = '" + parDate + "' and Full_Ticker = '" + parTicker + "'";
+            }
+            else
+            {
+                Mdl1.Ssql = "Insert into TblETFStocksPrice (Price_Date, Full_Ticker, [Price]) values ("
+                          + "'" + parDate + "', '" + parTicker + "', " + TmpPrice + ")";
+            }
+            cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            cmd.ExecuteNonQuery();
+            return true;
+        }
+
+        private void CmdAdd_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                decimal TmpPrice;
+                bool WasUpdate;
+
+                string Ticker = CmbFullTicker.Text.Trim();
+                if (Ticker == "")
+                {
+                    MessageBox.Show("Full Ticker must be selected !", "Error Message");
+                    return;
+                }
+                if (!Valid_Price(txtPrice.Text, out TmpPrice))
+                {
+                    return;
+                }
+
+                Save_Price(Ticker, Get_Price_Date(), TmpPrice, out WasUpdate);
+
+                MessageBox.Show((WasUpdate ? "Update" : "Create") + " successfully for " + Ticker
+                    + " on " + Mdl1.toLongDate(Get_Price_Date()), "Success");
+
+                Get_Data();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+        }
+
+        private void CmdDel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string Ticker = CmbFullTicker.Text.Trim();
+                if (Ticker == "")
+                {
+                    MessageBox.Show("Full Ticker must be selected !", "Error Message");
+                    return;
+                }
+
+                string TmpDate = Get_Price_Date();
+
+                Mdl1.Ssql = "select * from TblETFStocksPrice where Price_Date = '" + TmpDate + "' and Full_Ticker = '" + Ticker + "'";
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                bool Exists = reader.HasRows;
+                reader.Close();
+
+                if (!Exists)
+                {
+                    MessageBox.Show("Data not found for " + Ticker + " on " + Mdl1.toLongDate(TmpDate), "Error Message");
+                    return;
+                }
+
+                Mdl1.Ssql = "Delete from TblETFStocksPrice where Price_Date = '" + TmpDate + "' and Full_Ticker = '" + Ticker + "'";
+                cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                cmd.ExecuteNonQuery();
+
+                MessageBox.Show("Delete successfully for " + Ticker + " on " + Mdl1.toLongDate(TmpDate), "Success");
+
+                Get_Data();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+        }
+
+        //Yahoo's chart endpoint carries the last traded price and its timestamp in the
+        //meta block.  Only those two values are needed, so they are pulled out directly
+        //rather than pulling in a JSON library.
+        private bool Fetch_Yahoo_Price(string parTicker, out decimal parPrice, out string parDate, out string parError)
+        {
+            parPrice = 0;
+            parDate = "";
+            parError = "";
+
+            try
+            {
+                ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol | SecurityProtocolType.Tls12;
+
+                string Url = "https://query1.finance.yahoo.com/v8/finance/chart/"
+                           + Uri.EscapeDataString(parTicker) + "?interval=1d&range=1d";
+
+                string Json;
+                using (WebClient Client = new WebClient())
+                {
+                    Client.Headers.Add("User-Agent", "Mozilla/5.0");
+                    Json = Client.DownloadString(Url);
+                }
+
+                Match PriceMatch = Regex.Match(Json, "\"regularMarketPrice\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
+                if (!PriceMatch.Success)
+                {
+                    parError = "Yahoo Finance did not return a price for " + parTicker + ".";
+                    return false;
+                }
+                if (!decimal.TryParse(PriceMatch.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out parPrice))
+                {
+                    parError = "Could not read the price returned for " + parTicker + ".";
+                    return false;
+                }
+                parPrice = Math.Round(parPrice, 2);
+
+                //date the price belongs to, from the market timestamp where available
+                Match TimeMatch = Regex.Match(Json, "\"regularMarketTime\"\\s*:\\s*([0-9]+)");
+                if (TimeMatch.Success)
+                {
+                    long Epoch;
+                    if (long.TryParse(TimeMatch.Groups[1].Value, out Epoch))
+                    {
+                        parDate = DateTimeOffset.FromUnixTimeSeconds(Epoch).LocalDateTime.ToString("yyyyMMdd");
+                    }
+                }
+                if (parDate == "")
+                {
+                    parDate = DateTime.Now.ToString("yyyyMMdd");
+                }
+                return true;
+            }
+            catch (WebException ex)
+            {
+                HttpWebResponse Response = ex.Response as HttpWebResponse;
+                if (Response != null && Response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    parError = "Yahoo Finance does not recognise the ticker " + parTicker + ".";
+                }
+                else
+                {
+                    parError = "Could not reach Yahoo Finance : " + ex.Message;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                parError = ex.Message;
+                return false;
+            }
+        }
+
+        private void CmdSync_Click(object sender, EventArgs e)
+        {
+            decimal TmpPrice;
+            string TmpDate;
+            string TmpError;
+            bool WasUpdate;
+
+            string Ticker = CmbFullTicker.Text.Trim();
+            if (Ticker == "")
+            {
+                MessageBox.Show("Full Ticker must be selected !", "Error Message");
+                return;
+            }
+            if (!In_Yahoo_Finance(Ticker))
+            {
+                MessageBox.Show(Ticker + " is not flagged as In Yahoo Finance in ETF/Stock Setup.", "Error Message");
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            CmdSync.Enabled = false;
+            try
+            {
+                if (!Fetch_Yahoo_Price(Ticker, out TmpPrice, out TmpDate, out TmpError))
+                {
+                    MessageBox.Show(TmpError, "Error Message");
+                    return;
+                }
+
+                Save_Price(Ticker, TmpDate, TmpPrice, out WasUpdate);
+
+                Set_Date(TmpDate);
+                txtPrice.Text = TmpPrice.ToString("0.00", CultureInfo.InvariantCulture);
+
+                MessageBox.Show("Yahoo Finance price for " + Ticker + " on " + Mdl1.toLongDate(TmpDate)
+                    + " is " + Mdl1.FormatAmt((double)TmpPrice) + " and has been "
+                    + (WasUpdate ? "updated" : "saved") + ".", "Success");
+
+                Get_Data();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+                Apply_Ticker_Rules();
+            }
+        }
+
+        private void CmdBack_Click(object sender, EventArgs e)
+        {
+            Main_Form Main_Form = new Main_Form();
+            Main_Form.Show();
+            this.Close();
+        }
+    }
+}

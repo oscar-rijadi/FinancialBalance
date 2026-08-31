@@ -34,6 +34,7 @@
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.Label4 = new System.Windows.Forms.Label();
             this.lblLastClosingMonth = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
@@ -77,7 +78,8 @@
             // 
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnDaily,
-            this.MnETFStocksTrans});
+            this.MnETFStocksTrans,
+            this.MnETFStocksPrice});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(361, 24);
@@ -96,6 +98,13 @@
             this.MnETFStocksTrans.Size = new System.Drawing.Size(137, 20);
             this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
             this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
+            // 
+            // MnETFStocksPrice
+            // 
+            this.MnETFStocksPrice.Name = "MnETFStocksPrice";
+            this.MnETFStocksPrice.Size = new System.Drawing.Size(104, 20);
+            this.MnETFStocksPrice.Text = "ETF/Stock &Price";
+            this.MnETFStocksPrice.Click += new System.EventHandler(this.MnETFStocksPrice_Click);
             // 
             // Label4
             // 
@@ -232,6 +241,7 @@
         private System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.Label Label4;
         public System.Windows.Forms.Label lblLastClosingMonth;
         public System.Windows.Forms.Label Label1;

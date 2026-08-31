@@ -32,6 +32,7 @@
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.LblDateCaption = new System.Windows.Forms.Label();
             this.CmbDD = new System.Windows.Forms.ComboBox();
@@ -75,7 +76,8 @@
             //
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnDaily,
-            this.MnMonthlyClosing});
+            this.MnMonthlyClosing,
+            this.MnETFStocksPrice});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(1000, 24);
@@ -94,6 +96,13 @@
             this.MnMonthlyClosing.Size = new System.Drawing.Size(107, 20);
             this.MnMonthlyClosing.Text = "&Monthly Closing";
             this.MnMonthlyClosing.Click += new System.EventHandler(this.MnMonthlyClosing_Click);
+            // 
+            // MnETFStocksPrice
+            // 
+            this.MnETFStocksPrice.Name = "MnETFStocksPrice";
+            this.MnETFStocksPrice.Size = new System.Drawing.Size(104, 20);
+            this.MnETFStocksPrice.Text = "ETF/Stock &Price";
+            this.MnETFStocksPrice.Click += new System.EventHandler(this.MnETFStocksPrice_Click);
             //
             // Label21
             //
@@ -596,6 +605,7 @@
         public System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label LblDateCaption;
         public System.Windows.Forms.ComboBox CmbDD;

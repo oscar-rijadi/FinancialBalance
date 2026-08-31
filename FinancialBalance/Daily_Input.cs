@@ -48,6 +48,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksPrice_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Price ETF_Stocks_Price = new ETF_Stocks_Price();
+            ETF_Stocks_Price.Show();
+            this.Close();
+        }
+
         private void Clear_Data()
         {
             for (int i = 1; i <= 5; i++)
