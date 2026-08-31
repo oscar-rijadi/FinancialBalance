@@ -161,6 +161,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksPortfolioSummary_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Portfolio_Summary ETF_Stocks_Portfolio_Summary = new ETF_Stocks_Portfolio_Summary();
+            ETF_Stocks_Portfolio_Summary.Show();
+            this.Hide();
+        }
+
         private void MnAcctTypeRefSetup_Click(object sender, EventArgs e)
         {
             Setup_Acct_Type_Ref Setup_Acct_Type_Ref = new Setup_Acct_Type_Ref();

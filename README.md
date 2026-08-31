@@ -89,6 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
+| `Inquiry` | **ETF/Stock Portfolio** | ETF/Stock Portfolio Summary |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Flag Setup |
 
@@ -109,6 +110,8 @@ flowchart LR
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
+    MAIN --> PORTG{{"ETF/Stock Portfolio"}}
+    PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -145,6 +148,7 @@ flowchart LR
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Year-over-year trend for a single asset or income account, drawn with `System.Windows.Forms.DataVisualization` charting. |
+| `ETF_Stocks_Portfolio_Summary` | Unsold holdings per ticker for a chosen portfolio, valued at the latest price, with profit/loss in red or green. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -347,6 +351,32 @@ as such; network failures report the underlying error.
 > The synced date is the market timestamp **converted to local time**, not the exchange's own
 > date. A US close therefore lands under the following Australian date, so US and ASX tickers
 > can sit on different `Price_Date` values for the same trading session.
+
+### Portfolio summary
+
+`ETF_Stocks_Portfolio_Summary` aggregates `TblETFStocksPurchase` into one row per `Full_Ticker`.
+It only ever counts **unsold** lots (`Is_Sold = False`) — a sold lot leaves the portfolio.
+
+The **Portfolio** dropdown offers `All` plus one entry per row in `TblETFStocksPurchaseFlag`,
+showing the `Description`. Picking one filters on that flag's `Flag_Code`; `All` applies no
+flag filter. The dropdown holds descriptions but the codes are kept in an index-aligned list, so
+two flags sharing a description still filter correctly.
+
+| Column | Derivation |
+| --- | --- |
+| `Full Ticker` | Grouping key. |
+| `Total Unit` | `SUM(Unit)` |
+| `Total Investment` | `SUM(Real_Total_Cost_Base)` — so DRIP lots add units but no cost. |
+| `Current Price` | Latest `TblETFStocksPrice` row for the ticker, by `Price_Date`. |
+| `Total Current Amount` | `round(Total Unit x Current Price, 2)` |
+| `Current Real Profit/Loss` | `Total Current Amount - Total Investment`. **Green** above zero, **red** below. |
+| `Percentage Current Real Profit/Loss` | `Profit / Total Investment x 100` when investment is above zero, otherwise `0`. Same colouring. |
+
+> **A ticker with no price row shows `-`** in the four price-derived columns rather than
+> computing against a price of zero, which would misreport the holding as a total loss.
+
+The aggregate is read fully before any price lookup, so no second reader is opened on the shared
+connection while the first is still live.
 
 The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — 8 accounts,
 11 tickers with their latest prices, and a single purchase flag `OB` ("Oz Betashares Direct")

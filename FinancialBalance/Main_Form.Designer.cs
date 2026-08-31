@@ -41,6 +41,8 @@
             this.MnMonthlyInq = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearStat = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearSumm = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStockPortfolioGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksPortfolioSummary = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -147,7 +149,8 @@
             this.MnInquiry.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnMonthlyInq,
             this.MnYearStat,
-            this.MnYearSumm});
+            this.MnYearSumm,
+            this.MnETFStockPortfolioGroup});
             this.MnInquiry.Name = "MnInquiry";
             this.MnInquiry.Size = new System.Drawing.Size(53, 20);
             this.MnInquiry.Text = "&Inquiry";
@@ -172,6 +175,21 @@
             this.MnYearSumm.Size = new System.Drawing.Size(162, 22);
             this.MnYearSumm.Text = "Yearly S&ummary";
             this.MnYearSumm.Click += new System.EventHandler(this.MnYearSumm_Click);
+            // 
+            // MnETFStockPortfolioGroup
+            // 
+            this.MnETFStockPortfolioGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnETFStocksPortfolioSummary});
+            this.MnETFStockPortfolioGroup.Name = "MnETFStockPortfolioGroup";
+            this.MnETFStockPortfolioGroup.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStockPortfolioGroup.Text = "ETF/Stock &Portfolio";
+            // 
+            // MnETFStocksPortfolioSummary
+            // 
+            this.MnETFStocksPortfolioSummary.Name = "MnETFStocksPortfolioSummary";
+            this.MnETFStocksPortfolioSummary.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksPortfolioSummary.Text = "ETF/Stock Portfolio &Summary";
+            this.MnETFStocksPortfolioSummary.Click += new System.EventHandler(this.MnETFStocksPortfolioSummary_Click);
             // 
             // MnAdmin
             // 
@@ -715,6 +733,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyInq;
         public System.Windows.Forms.ToolStripMenuItem MnYearStat;
         public System.Windows.Forms.ToolStripMenuItem MnYearSumm;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStockPortfolioGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioSummary;
         public System.Windows.Forms.ToolStripMenuItem MnAdmin;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnAcctRefSetup;
