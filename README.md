@@ -101,6 +101,7 @@ flowchart LR
     ADMIN --> SCR["Setup_Curr_Rate"]
     ADMIN --> SAP["Setup_Activa_Passiva"]
     ADMIN --> SES["Setup_ETF_Stocks_Suffix"]
+    ADMIN --> SET["Setup_ETF_Stocks"]
 
     DI <--> MC
 
@@ -109,6 +110,7 @@ flowchart LR
     SC <--> SCR
     SCR <--> SAP
     SAP <--> SES
+    SES <--> SET
 ```
 
 | Form | Purpose |
@@ -125,12 +127,13 @@ flowchart LR
 | `Setup_Curr_Rate` | Dated exchange rates. |
 | `Setup_Activa_Passiva` | Directly set the opening/running balance of an asset or liability account. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
+| `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
 
 ---
 
 ## Data model
 
-Nine tables. **No foreign keys or relationships are defined in the database** — the links below are
+Ten tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -142,6 +145,7 @@ erDiagram
     TblAcctRef      ||--o| TblAsset        : "balance of (type 1)"
     TblAcctRef      ||--o| TblLiability    : "balance of (type 2)"
     TblAcctRef      ||--o{ TblMonthlyTrans : "bucketed by"
+    TblETFStocksExchangeSuffix ||--o{ TblETFStocks : "suffixes"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -187,7 +191,13 @@ erDiagram
         decimal Balance "account currency"
     }
     TblETFStocksExchangeSuffix {
-        text Suffix PK "10 chars, standalone"
+        text Suffix PK "10 chars"
+    }
+    TblETFStocks {
+        text Ticker "20 chars"
+        text Exchange_Suffix "from the suffix list"
+        text Full_Ticker PK "derived, never typed"
+        bool In_YahooFinance
     }
 ```
 
@@ -201,6 +211,17 @@ erDiagram
 | `2` | Liability | `L` |
 | `3` | Income | `I` |
 | `4` | Expense | `E` |
+
+`TblETFStocks.Full_Ticker` is **derived, never entered by hand**. `Setup_ETF_Stocks`
+recomputes it whenever the ticker or the suffix changes:
+
+```
+Exchange_Suffix == "None"  ->  Full_Ticker = Ticker
+otherwise                  ->  Full_Ticker = Ticker + "." + Exchange_Suffix
+```
+
+So suffixes are stored **without** a leading dot — `AX`, not `.AX` — since the dot is added
+by the rule. `Full_Ticker` is the table's primary key.
 
 The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — and 215 accounts.
 

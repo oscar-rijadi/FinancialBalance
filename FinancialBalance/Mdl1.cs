@@ -233,6 +233,52 @@ namespace FinancialBalance
             ComboCurrentAsset.Items.Add("N");
             ComboCurrentAsset.Text = ComboCurrentAsset.Items[0].ToString();
         }
+        public static void Fill_ETF_Stocks_Exchange_Suffix(ComboBox ComboSuffix)
+        {
+            bool DataExist;
+            bool NoneExist = false;
+            ComboSuffix.Items.Clear();
+            Ssql = "Select Suffix from TblETFStocksExchangeSuffix order by Suffix";
+            OleDbCommand cmd = new OleDbCommand(Ssql, conn);
+            reader = cmd.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    string TmpSuffix = reader["Suffix"].ToString().Trim();
+                    ComboSuffix.Items.Add(TmpSuffix);
+                    if (TmpSuffix == "None")
+                    {
+                        NoneExist = true;
+                    }
+                }
+                DataExist = true;
+            }
+            else
+            {
+                DataExist = false;
+            }
+            reader.Close();
+            if (DataExist)
+            {
+                if (NoneExist)
+                {
+                    ComboSuffix.Text = "None";
+                }
+                else
+                {
+                    ComboSuffix.Text = ComboSuffix.Items[0].ToString();
+                }
+            }
+        }
+        public static void Fill_Yes_No(ComboBox ComboYesNo)
+        {
+            ComboYesNo.Items.Clear();
+            ComboYesNo.Items.Add("Y");
+            ComboYesNo.Items.Add("N");
+            ComboYesNo.Text = ComboYesNo.Items[0].ToString();
+        }
         public static string FormatAmt(double parAmt)
         {
             return parAmt.ToString("##,###,###,###,###,###,##0.00");

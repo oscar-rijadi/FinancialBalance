@@ -36,6 +36,7 @@
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
             this.CmdCreate = new System.Windows.Forms.Button();
@@ -80,7 +81,8 @@
             this.MnCurrSetup,
             this.MnCurrRateSetup,
             this.MnActivaPassivaSetup,
-            this.MnETFStocksSuffixSetup});
+            this.MnETFStocksSuffixSetup,
+            this.MnETFStocksSetup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(576, 24);
@@ -120,6 +122,13 @@
             this.MnETFStocksSuffixSetup.Size = new System.Drawing.Size(140, 20);
             this.MnETFStocksSuffixSetup.Text = "&ETF/Stock Suffix Setup";
             this.MnETFStocksSuffixSetup.Click += new System.EventHandler(this.MnETFStocksSuffixSetup_Click);
+            // 
+            // MnETFStocksSetup
+            // 
+            this.MnETFStocksSetup.Name = "MnETFStocksSetup";
+            this.MnETFStocksSetup.Size = new System.Drawing.Size(115, 20);
+            this.MnETFStocksSetup.Text = "ETF/&Stock Setup";
+            this.MnETFStocksSetup.Click += new System.EventHandler(this.MnETFStocksSetup_Click);
             // 
             // CmdDel
             // 
@@ -405,6 +414,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.Button CmdDel;
         public System.Windows.Forms.Button CmdUpdate;
         public System.Windows.Forms.Button CmdCreate;

@@ -72,6 +72,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks Setup_ETF_Stocks = new Setup_ETF_Stocks();
+            Setup_ETF_Stocks.Show();
+            this.Close();
+        }
+
         private void ChangeLblDay()
         {
             switch (DateTime.Parse(Mdl1.toLongDate(CmbYear.Text + CmbMM.Text + int.Parse(CmbDD.Text).ToString("00"))).DayOfWeek)

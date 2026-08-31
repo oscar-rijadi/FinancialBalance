@@ -189,6 +189,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks Setup_ETF_Stocks = new Setup_ETF_Stocks();
+            Setup_ETF_Stocks.Show();
+            this.Hide();
+        }
+
         private void MnExit_Click(object sender, EventArgs e)
         {
             DialogResult Response = MessageBox.Show("Are You Sure Want to Exit ?", "Confirmation", MessageBoxButtons.OKCancel);

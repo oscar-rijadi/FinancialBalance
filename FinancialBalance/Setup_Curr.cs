@@ -57,6 +57,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks Setup_ETF_Stocks = new Setup_ETF_Stocks();
+            Setup_ETF_Stocks.Show();
+            this.Close();
+        }
+
         private void Clear_Grid()
         {
             gvCurr.Columns.Clear();
