@@ -10,14 +10,16 @@ using System.Data.OleDb;
 
 namespace FinancialBalance
 {
-    public partial class Setup_Curr : Form
+    public partial class Setup_ETF_Stocks_Suffix : Form
     {
-        public Setup_Curr()
+        bool Filling;
+
+        public Setup_ETF_Stocks_Suffix()
         {
             InitializeComponent();
         }
 
-        private void Setup_Curr_Load(object sender, EventArgs e)
+        private void Setup_ETF_Stocks_Suffix_Load(object sender, EventArgs e)
         {
             Get_Data();
         }
@@ -36,6 +38,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnCurrSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Curr Setup_Curr = new Setup_Curr();
+            Setup_Curr.Show();
+            this.Close();
+        }
+
         private void MnCurrRateSetup_Click(object sender, EventArgs e)
         {
             Setup_Curr_Rate Setup_Curr_Rate = new Setup_Curr_Rate();
@@ -50,45 +59,54 @@ namespace FinancialBalance
             this.Close();
         }
 
-        private void MnETFStocksSuffixSetup_Click(object sender, EventArgs e)
-        {
-            Setup_ETF_Stocks_Suffix Setup_ETF_Stocks_Suffix = new Setup_ETF_Stocks_Suffix();
-            Setup_ETF_Stocks_Suffix.Show();
-            this.Close();
-        }
-
         private void Clear_Grid()
         {
-            gvCurr.Columns.Clear();
-            gvCurr.ColumnCount = 2;
-            gvCurr.Columns[0].Name = "Curr Code";
-            gvCurr.Columns[0].FillWeight = 25;
-            gvCurr.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvCurr.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvCurr.Columns[1].Name = "Curr Name";
-            gvCurr.Columns[1].FillWeight = 75;
-            gvCurr.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            gvCurr.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;            
+            gvSuffix.Columns.Clear();
+            gvSuffix.ColumnCount = 1;
+            gvSuffix.Columns[0].Name = "Suffix";
+            gvSuffix.Columns[0].FillWeight = 100;
+            gvSuffix.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvSuffix.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
         }
 
         private void Get_Data()
         {
+            Filling = true;
+
             Clear_Grid();
 
             string[] row;
 
-            Mdl1.Ssql = "select Curr_Code, Curr_Name from TblCurrCode order by Curr_Code";
+            Mdl1.Ssql = "select Suffix from TblETFStocksExchangeSuffix order by Suffix";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    row = new string[] { reader["Curr_Code"].ToString().Trim(), reader["Curr_Name"].ToString().Trim() };
-                    gvCurr.Rows.Add(row);
+                    row = new string[] { reader["Suffix"].ToString().Trim() };
+                    gvSuffix.Rows.Add(row);
                 }
             }
             reader.Close();
+
+            gvSuffix.ClearSelection();
+
+            Filling = false;
+        }
+
+        //Clicking a row copies it into the text box so it can be deleted
+        private void gvSuffix_SelectionChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            if (gvSuffix.CurrentRow == null || gvSuffix.CurrentRow.Cells[0].Value == null)
+            {
+                return;
+            }
+            Suffix.Text = gvSuffix.CurrentRow.Cells[0].Value.ToString().Trim();
         }
 
         private void CmdSetup_Click(object sender, EventArgs e)
@@ -97,7 +115,13 @@ namespace FinancialBalance
             {
                 bool FlagRecNotExist;
 
-                Mdl1.Ssql = "select * from TblCurrCode where Curr_Code = '" + Curr_Code.Text.Trim() + "'";
+                if (Suffix.Text.Trim() == "")
+                {
+                    MessageBox.Show("Suffix cannot be empty !", "Error Message");
+                    return;
+                }
+
+                Mdl1.Ssql = "select * from TblETFStocksExchangeSuffix where Suffix = '" + Suffix.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
@@ -110,18 +134,17 @@ namespace FinancialBalance
                 }
                 reader.Close();
 
-                if (FlagRecNotExist)
+                if (!FlagRecNotExist)
                 {
-                    Mdl1.Ssql = "Insert into TblCurrCode values ('" + Curr_Code.Text.Trim() + "', '" + Curr_Name.Text.Trim() + "')";
+                    MessageBox.Show("Suffix already exists : " + Suffix.Text.Trim(), "Error Message");
+                    return;
                 }
-                else
-                {
-                    Mdl1.Ssql = "Update TblCurrCode set Curr_Name = '" + Curr_Name.Text.Trim() + "' where Curr_Code = '" + Curr_Code.Text.Trim() + "'";
-                }
+
+                Mdl1.Ssql = "Insert into TblETFStocksExchangeSuffix (Suffix) values ('" + Suffix.Text.Trim() + "')";
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Create or Update successfully for Currency Code : " + Curr_Code.Text.Trim(), "Success");
+                MessageBox.Show("Create successfully for Suffix : " + Suffix.Text.Trim(), "Success");
 
                 Get_Data();
             }
@@ -137,7 +160,7 @@ namespace FinancialBalance
             {
                 bool FlagRecNotExist;
 
-                Mdl1.Ssql = "select * from TblCurrCode where Curr_Code = '" + Curr_Code.Text.Trim() + "'";
+                Mdl1.Ssql = "select * from TblETFStocksExchangeSuffix where Suffix = '" + Suffix.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
@@ -152,17 +175,17 @@ namespace FinancialBalance
 
                 if (FlagRecNotExist)
                 {
-                    MessageBox.Show("Data not found for Currency Code : " + Curr_Code.Text.Trim(), "Error Message");
+                    MessageBox.Show("Data not found for Suffix : " + Suffix.Text.Trim(), "Error Message");
                     return;
                 }
                 else
                 {
-                    Mdl1.Ssql = "Delete from TblCurrCode  where Curr_Code = '" + Curr_Code.Text.Trim() + "'";
+                    Mdl1.Ssql = "Delete from TblETFStocksExchangeSuffix  where Suffix = '" + Suffix.Text.Trim() + "'";
                 }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for Currency Code : " + Curr_Code.Text.Trim(), "Success");
+                MessageBox.Show("Delete successfully for Suffix : " + Suffix.Text.Trim(), "Success");
 
                 Get_Data();
             }

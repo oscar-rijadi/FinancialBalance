@@ -24,3 +24,4 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBal
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.exe
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.pdb
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Yearly_Statistic.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Setup_ETF_Stocks_Suffix.resources

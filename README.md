@@ -100,6 +100,7 @@ flowchart LR
     ADMIN --> SC["Setup_Curr"]
     ADMIN --> SCR["Setup_Curr_Rate"]
     ADMIN --> SAP["Setup_Activa_Passiva"]
+    ADMIN --> SES["Setup_ETF_Stocks_Suffix"]
 
     DI <--> MC
 
@@ -107,6 +108,7 @@ flowchart LR
     SAR <--> SC
     SC <--> SCR
     SCR <--> SAP
+    SAP <--> SES
 ```
 
 | Form | Purpose |
@@ -122,12 +124,13 @@ flowchart LR
 | `Setup_Curr` | Currency codes and names. |
 | `Setup_Curr_Rate` | Dated exchange rates. |
 | `Setup_Activa_Passiva` | Directly set the opening/running balance of an asset or liability account. |
+| `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 
 ---
 
 ## Data model
 
-Eight tables. **No foreign keys or relationships are defined in the database** — the links below are
+Nine tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -182,6 +185,9 @@ erDiagram
         text    Trans_Month PK "yyyyMM"
         text    Acct_Code PK
         decimal Balance "account currency"
+    }
+    TblETFStocksExchangeSuffix {
+        text Suffix PK "10 chars, standalone"
     }
 ```
 

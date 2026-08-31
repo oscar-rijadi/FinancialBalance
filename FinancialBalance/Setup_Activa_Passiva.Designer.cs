@@ -37,6 +37,7 @@
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.txtBalance = new System.Windows.Forms.TextBox();
             this.Label2 = new System.Windows.Forms.Label();
@@ -103,7 +104,8 @@
             this.MnAcctTypeRefSetup,
             this.MnAcctRefSetup,
             this.MnCurrSetup,
-            this.MnCurrRateSetup});
+            this.MnCurrRateSetup,
+            this.MnETFStocksSuffixSetup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(576, 24);
@@ -136,6 +138,13 @@
             this.MnCurrRateSetup.Size = new System.Drawing.Size(120, 20);
             this.MnCurrRateSetup.Text = "Currency &Rate Setup";
             this.MnCurrRateSetup.Click += new System.EventHandler(this.MnCurrRateSetup_Click);
+            // 
+            // MnETFStocksSuffixSetup
+            // 
+            this.MnETFStocksSuffixSetup.Name = "MnETFStocksSuffixSetup";
+            this.MnETFStocksSuffixSetup.Size = new System.Drawing.Size(140, 20);
+            this.MnETFStocksSuffixSetup.Text = "&ETF/Stock Suffix Setup";
+            this.MnETFStocksSuffixSetup.Click += new System.EventHandler(this.MnETFStocksSuffixSetup_Click);
             // 
             // Label21
             // 
@@ -320,6 +329,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnAcctRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrSetup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.TextBox txtBalance;
         public System.Windows.Forms.Label Label2;
