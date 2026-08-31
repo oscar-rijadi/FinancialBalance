@@ -91,6 +91,7 @@ flowchart LR
     MAIN --> DI["Daily_Input"]
     MAIN --> MC["Monthly_Closing"]
     MAIN --> ETX["ETF_Stocks_Transaction"]
+    MAIN --> ETP["ETF_Stocks_Price"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
@@ -103,9 +104,11 @@ flowchart LR
     ADMIN --> SAP["Setup_Activa_Passiva"]
     ADMIN --> SES["Setup_ETF_Stocks_Suffix"]
     ADMIN --> SET["Setup_ETF_Stocks"]
+    ADMIN --> SEF["Setup_ETF_Stocks_Flag"]
 
     DI <--> MC
     MC <--> ETX
+    ETX <--> ETP
 
     SATR <--> SAR
     SAR <--> SC
@@ -113,6 +116,7 @@ flowchart LR
     SCR <--> SAP
     SAP <--> SES
     SES <--> SET
+    SET <--> SEF
 ```
 
 | Form | Purpose |
@@ -121,6 +125,7 @@ flowchart LR
 | `Daily_Input` | Enter, amend or delete a dated voucher. Up to 5 debit and 5 credit lines; refuses to save unless the two sides balance. |
 | `Monthly_Closing` | Snapshots `TblAsset` and `TblLiability` into `TblMonthlyTrans` for a chosen month. Defaults to the month after the last close. |
 | `ETF_Stocks_Transaction` | Add / update / delete ETF and stock trades for one date. `Total_Cost_Base` is derived; DRIP zeroes `Real_Total_Cost_Base`. |
+| `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Year-over-year trend for a single asset or income account, drawn with `System.Windows.Forms.DataVisualization` charting. |
@@ -131,12 +136,13 @@ flowchart LR
 | `Setup_Activa_Passiva` | Directly set the opening/running balance of an asset or liability account. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 | `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
+| `Setup_ETF_Stocks_Flag` | Maintains purchase flag codes and descriptions. |
 
 ---
 
 ## Data model
 
-Twelve tables. **No foreign keys or relationships are defined in the database** — the links below are
+Fourteen tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -153,6 +159,8 @@ erDiagram
     TblETFStocks    ||--o{ TblETFStocksSale : "sold"
     TblCurrCode     ||--o{ TblETFStocksPurchase : "denominates"
     TblCurrCode     ||--o{ TblETFStocksSale : "denominates"
+    TblETFStocks    ||--o{ TblETFStocksPrice : "priced by"
+    TblETFStocksPurchaseFlag ||--o{ TblETFStocksPurchase : "flags"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -216,6 +224,7 @@ erDiagram
         decimal Total_Cost_Base "2 dp"
         decimal Real_Total_Cost_Base "2 dp"
         bool    Is_Sold
+        text    Flag_Code "from the flag list"
     }
     TblETFStocksSale {
         text    Trans_Date "yyyyMMdd"
@@ -224,6 +233,15 @@ erDiagram
         decimal Unit "4 dp"
         decimal Selling_Price_Per_Unit "2 dp"
         decimal Selling_Total_Amount "2 dp"
+    }
+    TblETFStocksPrice {
+        text    Price_Date PK "yyyyMMdd"
+        text    Full_Ticker PK "joins TblETFStocks"
+        decimal Price "2 dp"
+    }
+    TblETFStocksPurchaseFlag {
+        text Flag_Code PK "5 chars"
+        text Description "50 chars"
     }
 ```
 
@@ -263,6 +281,7 @@ The page shows both for a chosen date, purchases first.
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
 | `Real_Total_Cost_Base` | Buy only. `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
+| `Flag_Code` | Buy only. Dropdown from `TblETFStocksPurchaseFlag`, defaulting to `OB`. |
 | `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
 
@@ -283,7 +302,39 @@ identical transactions exist on one date, the form says so and asks before touch
 Changing an existing row's type moves it between the tables (delete then insert), since an
 in-place update cannot cross tables.
 
-The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — and 215 accounts.
+### ETF/stock price rules
+
+`ETF_Stocks_Price` maintains `TblETFStocksPrice`, which is keyed on `(Price_Date, Full_Ticker)` —
+**one price per ticker per day**. That key makes Add an upsert: it updates the row when the
+ticker and date already exist, and inserts otherwise. The page opens with a blank ticker and
+loads nothing until one is picked, then shows that ticker's most recent 5 prices.
+
+Prices arrive two ways:
+
+| Route | Behaviour |
+| --- | --- |
+| **Manual** | Pick a date and type a price — numeric, not negative, at most 2 decimal places. |
+| **Sync with Yahoo Finance** | Enabled only when the ticker's `In_YahooFinance` is `True`, otherwise greyed with a note. |
+
+The sync calls Yahoo's chart endpoint and reads two values out of the response:
+
+```
+https://query1.finance.yahoo.com/v8/finance/chart/{Full_Ticker}?interval=1d&range=1d
+  regularMarketPrice  ->  Price      (rounded to 2 dp)
+  regularMarketTime   ->  Price_Date (epoch, converted to LOCAL date)
+```
+
+There is no JSON library in the project, so those two fields are pulled out with regular
+expressions rather than adding a dependency. An unknown ticker returns HTTP 404 and is reported
+as such; network failures report the underlying error.
+
+> The synced date is the market timestamp **converted to local time**, not the exchange's own
+> date. A US close therefore lands under the following Australian date, so US and ASX tickers
+> can sit on different `Price_Date` values for the same trading session.
+
+The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — 8 accounts,
+11 tickers with their latest prices, and a single purchase flag `OB` ("Oz Betashares Direct")
+which is the default the transaction page selects.
 
 ---
 
@@ -375,6 +426,11 @@ C#.Net/
 │   ├── Setup_Curr.*
 │   ├── Setup_Curr_Rate.*
 │   ├── Setup_Activa_Passiva.*
+│   ├── Setup_ETF_Stocks_Suffix.*
+│   ├── Setup_ETF_Stocks.*
+│   ├── Setup_ETF_Stocks_Flag.*
+│   ├── ETF_Stocks_Transaction.*     # buy / sell entry
+│   ├── ETF_Stocks_Price.*           # prices + Yahoo sync
 │   ├── images/Project1.ico
 │   └── bin/{Debug,Release}/         # build output + a copy of the .mdb
 ├── Sample Database/
@@ -450,6 +506,12 @@ Things worth knowing before changing this code.
 - **`decimal` columns are read through `double`**, which introduces rounding on large IDR figures.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
+- **`ETF_Stocks_Price` reaches the network** on the sync button, the only outbound call in the
+  app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes for
+  the duration of the request. Yahoo's endpoint is undocumented and can change without notice.
+- **The setup forms' menu strips now carry eight items each** and overflow into a `»` chevron on a
+  616px form. `Main_Form` avoids this by nesting them under one `Administration` dropdown; the
+  setup forms could do the same.
 - `Microsoft.Office.Interop.Excel` and `adodb` are referenced in the project file but **not used by
   any code** — both references can be dropped.
 
