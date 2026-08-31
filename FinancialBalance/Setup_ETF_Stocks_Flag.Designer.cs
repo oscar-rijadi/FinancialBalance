@@ -1,6 +1,6 @@
 ﻿namespace FinancialBalance
 {
-    partial class Setup_ETF_Stocks
+    partial class Setup_ETF_Stocks_Flag
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_ETF_Stocks));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_ETF_Stocks_Flag));
             this.CmdBack = new System.Windows.Forms.Button();
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -37,21 +37,17 @@
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdSetup = new System.Windows.Forms.Button();
-            this.Ticker = new System.Windows.Forms.TextBox();
-            this.CmbExchangeSuffix = new System.Windows.Forms.ComboBox();
-            this.Full_Ticker = new System.Windows.Forms.TextBox();
-            this.CmbInYahooFinance = new System.Windows.Forms.ComboBox();
+            this.Flag_Code = new System.Windows.Forms.TextBox();
+            this.Description = new System.Windows.Forms.TextBox();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
-            this.Label3 = new System.Windows.Forms.Label();
-            this.Label4 = new System.Windows.Forms.Label();
-            this.gvETFStocks = new System.Windows.Forms.DataGridView();
+            this.gvFlag = new System.Windows.Forms.DataGridView();
             this.MainMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvETFStocks)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvFlag)).BeginInit();
             this.SuspendLayout();
             //
             // CmdBack
@@ -61,7 +57,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(320, 380);
+            this.CmdBack.Location = new System.Drawing.Point(320, 326);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -79,7 +75,7 @@
             this.MnCurrRateSetup,
             this.MnActivaPassivaSetup,
             this.MnETFStocksSuffixSetup,
-            this.MnETFStocksFlagSetup});
+            this.MnETFStocksSetup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(616, 24);
@@ -126,13 +122,13 @@
             this.MnETFStocksSuffixSetup.Size = new System.Drawing.Size(140, 20);
             this.MnETFStocksSuffixSetup.Text = "&ETF/Stock Suffix Setup";
             this.MnETFStocksSuffixSetup.Click += new System.EventHandler(this.MnETFStocksSuffixSetup_Click);
-            // 
-            // MnETFStocksFlagSetup
-            // 
-            this.MnETFStocksFlagSetup.Name = "MnETFStocksFlagSetup";
-            this.MnETFStocksFlagSetup.Size = new System.Drawing.Size(130, 20);
-            this.MnETFStocksFlagSetup.Text = "ETF/Stock &Flag Setup";
-            this.MnETFStocksFlagSetup.Click += new System.EventHandler(this.MnETFStocksFlagSetup_Click);
+            //
+            // MnETFStocksSetup
+            //
+            this.MnETFStocksSetup.Name = "MnETFStocksSetup";
+            this.MnETFStocksSetup.Size = new System.Drawing.Size(115, 20);
+            this.MnETFStocksSetup.Text = "ETF/&Stock Setup";
+            this.MnETFStocksSetup.Click += new System.EventHandler(this.MnETFStocksSetup_Click);
             //
             // Label21
             //
@@ -140,12 +136,12 @@
             this.Label21.Cursor = System.Windows.Forms.Cursors.Default;
             this.Label21.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(150, 30);
+            this.Label21.Location = new System.Drawing.Point(110, 30);
             this.Label21.Name = "Label21";
             this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label21.Size = new System.Drawing.Size(340, 41);
+            this.Label21.Size = new System.Drawing.Size(430, 41);
             this.Label21.TabIndex = 10;
-            this.Label21.Text = "ETF/STOCK SETUP";
+            this.Label21.Text = "ETF/STOCK FLAG SETUP";
             //
             // CmdDel
             //
@@ -153,7 +149,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(232, 380);
+            this.CmdDel.Location = new System.Drawing.Point(232, 326);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -168,7 +164,7 @@
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(144, 380);
+            this.CmdSetup.Location = new System.Drawing.Point(144, 326);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -177,55 +173,33 @@
             this.CmdSetup.UseVisualStyleBackColor = false;
             this.CmdSetup.Click += new System.EventHandler(this.CmdSetup_Click);
             //
-            // Ticker
+            // Flag_Code
             //
-            this.Ticker.AcceptsReturn = true;
-            this.Ticker.BackColor = System.Drawing.SystemColors.Window;
-            this.Ticker.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.Ticker.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Ticker.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.Ticker.Location = new System.Drawing.Point(150, 278);
-            this.Ticker.MaxLength = 20;
-            this.Ticker.Name = "Ticker";
-            this.Ticker.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Ticker.Size = new System.Drawing.Size(140, 20);
-            this.Ticker.TabIndex = 13;
-            this.Ticker.TextChanged += new System.EventHandler(this.Ticker_TextChanged);
+            this.Flag_Code.AcceptsReturn = true;
+            this.Flag_Code.BackColor = System.Drawing.SystemColors.Window;
+            this.Flag_Code.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.Flag_Code.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Flag_Code.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.Flag_Code.Location = new System.Drawing.Point(128, 270);
+            this.Flag_Code.MaxLength = 5;
+            this.Flag_Code.Name = "Flag_Code";
+            this.Flag_Code.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Flag_Code.Size = new System.Drawing.Size(54, 20);
+            this.Flag_Code.TabIndex = 13;
             //
-            // CmbExchangeSuffix
+            // Description
             //
-            this.CmbExchangeSuffix.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbExchangeSuffix.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbExchangeSuffix.FormattingEnabled = true;
-            this.CmbExchangeSuffix.Location = new System.Drawing.Point(150, 302);
-            this.CmbExchangeSuffix.Name = "CmbExchangeSuffix";
-            this.CmbExchangeSuffix.Size = new System.Drawing.Size(140, 22);
-            this.CmbExchangeSuffix.TabIndex = 14;
-            this.CmbExchangeSuffix.SelectedIndexChanged += new System.EventHandler(this.CmbExchangeSuffix_SelectedIndexChanged);
-            //
-            // Full_Ticker
-            //
-            this.Full_Ticker.BackColor = System.Drawing.SystemColors.Control;
-            this.Full_Ticker.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Full_Ticker.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.Full_Ticker.Location = new System.Drawing.Point(150, 328);
-            this.Full_Ticker.MaxLength = 31;
-            this.Full_Ticker.Name = "Full_Ticker";
-            this.Full_Ticker.ReadOnly = true;
-            this.Full_Ticker.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Full_Ticker.Size = new System.Drawing.Size(140, 20);
-            this.Full_Ticker.TabIndex = 15;
-            this.Full_Ticker.TabStop = false;
-            //
-            // CmbInYahooFinance
-            //
-            this.CmbInYahooFinance.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbInYahooFinance.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbInYahooFinance.FormattingEnabled = true;
-            this.CmbInYahooFinance.Location = new System.Drawing.Point(150, 352);
-            this.CmbInYahooFinance.Name = "CmbInYahooFinance";
-            this.CmbInYahooFinance.Size = new System.Drawing.Size(48, 22);
-            this.CmbInYahooFinance.TabIndex = 16;
+            this.Description.AcceptsReturn = true;
+            this.Description.BackColor = System.Drawing.SystemColors.Window;
+            this.Description.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.Description.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Description.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.Description.Location = new System.Drawing.Point(128, 294);
+            this.Description.MaxLength = 50;
+            this.Description.Name = "Description";
+            this.Description.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Description.Size = new System.Drawing.Size(320, 20);
+            this.Description.TabIndex = 14;
             //
             // Label1
             //
@@ -233,12 +207,12 @@
             this.Label1.Cursor = System.Windows.Forms.Cursors.Default;
             this.Label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label1.ForeColor = System.Drawing.Color.Black;
-            this.Label1.Location = new System.Drawing.Point(16, 278);
+            this.Label1.Location = new System.Drawing.Point(16, 270);
             this.Label1.Name = "Label1";
             this.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label1.Size = new System.Drawing.Size(120, 25);
-            this.Label1.TabIndex = 17;
-            this.Label1.Text = "Ticker";
+            this.Label1.Size = new System.Drawing.Size(106, 25);
+            this.Label1.TabIndex = 15;
+            this.Label1.Text = "Flag Code";
             //
             // Label2
             //
@@ -246,70 +220,41 @@
             this.Label2.Cursor = System.Windows.Forms.Cursors.Default;
             this.Label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label2.ForeColor = System.Drawing.Color.Black;
-            this.Label2.Location = new System.Drawing.Point(16, 304);
+            this.Label2.Location = new System.Drawing.Point(16, 294);
             this.Label2.Name = "Label2";
             this.Label2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label2.Size = new System.Drawing.Size(120, 25);
-            this.Label2.TabIndex = 18;
-            this.Label2.Text = "Exchange Suffix";
+            this.Label2.Size = new System.Drawing.Size(106, 25);
+            this.Label2.TabIndex = 16;
+            this.Label2.Text = "Description";
             //
-            // Label3
+            // gvFlag
             //
-            this.Label3.BackColor = System.Drawing.Color.Transparent;
-            this.Label3.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Label3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label3.ForeColor = System.Drawing.Color.Black;
-            this.Label3.Location = new System.Drawing.Point(16, 330);
-            this.Label3.Name = "Label3";
-            this.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label3.Size = new System.Drawing.Size(120, 25);
-            this.Label3.TabIndex = 19;
-            this.Label3.Text = "Full Ticker";
+            this.gvFlag.AllowUserToAddRows = false;
+            this.gvFlag.AllowUserToDeleteRows = false;
+            this.gvFlag.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvFlag.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvFlag.Location = new System.Drawing.Point(19, 71);
+            this.gvFlag.MultiSelect = false;
+            this.gvFlag.Name = "gvFlag";
+            this.gvFlag.ReadOnly = true;
+            this.gvFlag.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvFlag.Size = new System.Drawing.Size(557, 190);
+            this.gvFlag.TabIndex = 17;
+            this.gvFlag.SelectionChanged += new System.EventHandler(this.gvFlag_SelectionChanged);
             //
-            // Label4
-            //
-            this.Label4.BackColor = System.Drawing.Color.Transparent;
-            this.Label4.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Label4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label4.ForeColor = System.Drawing.Color.Black;
-            this.Label4.Location = new System.Drawing.Point(16, 354);
-            this.Label4.Name = "Label4";
-            this.Label4.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label4.Size = new System.Drawing.Size(130, 25);
-            this.Label4.TabIndex = 20;
-            this.Label4.Text = "In Yahoo Finance";
-            //
-            // gvETFStocks
-            //
-            this.gvETFStocks.AllowUserToAddRows = false;
-            this.gvETFStocks.AllowUserToDeleteRows = false;
-            this.gvETFStocks.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.gvETFStocks.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvETFStocks.Location = new System.Drawing.Point(19, 71);
-            this.gvETFStocks.MultiSelect = false;
-            this.gvETFStocks.Name = "gvETFStocks";
-            this.gvETFStocks.ReadOnly = true;
-            this.gvETFStocks.Size = new System.Drawing.Size(557, 190);
-            this.gvETFStocks.TabIndex = 21;
-            this.gvETFStocks.SelectionChanged += new System.EventHandler(this.gvETFStocks_SelectionChanged);
-            //
-            // Setup_ETF_Stocks
+            // Setup_ETF_Stocks_Flag
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 426);
+            this.ClientSize = new System.Drawing.Size(616, 372);
             this.ControlBox = false;
-            this.Controls.Add(this.gvETFStocks);
-            this.Controls.Add(this.Label4);
-            this.Controls.Add(this.Label3);
+            this.Controls.Add(this.gvFlag);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
-            this.Controls.Add(this.CmbInYahooFinance);
-            this.Controls.Add(this.Full_Ticker);
-            this.Controls.Add(this.CmbExchangeSuffix);
-            this.Controls.Add(this.Ticker);
+            this.Controls.Add(this.Description);
+            this.Controls.Add(this.Flag_Code);
             this.Controls.Add(this.CmdSetup);
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.Label21);
@@ -319,13 +264,13 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = new System.Drawing.Point(4, 43);
             this.MainMenuStrip = this.MainMenu1;
-            this.Name = "Setup_ETF_Stocks";
+            this.Name = "Setup_ETF_Stocks_Flag";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "ETF/Stock Setup";
-            this.Load += new System.EventHandler(this.Setup_ETF_Stocks_Load);
+            this.Text = "ETF/Stock Flag Setup";
+            this.Load += new System.EventHandler(this.Setup_ETF_Stocks_Flag_Load);
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvETFStocks)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvFlag)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -341,18 +286,14 @@
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
-        public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Button CmdDel;
         public System.Windows.Forms.Button CmdSetup;
-        public System.Windows.Forms.TextBox Ticker;
-        public System.Windows.Forms.ComboBox CmbExchangeSuffix;
-        public System.Windows.Forms.TextBox Full_Ticker;
-        public System.Windows.Forms.ComboBox CmbInYahooFinance;
+        public System.Windows.Forms.TextBox Flag_Code;
+        public System.Windows.Forms.TextBox Description;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
-        public System.Windows.Forms.Label Label3;
-        public System.Windows.Forms.Label Label4;
-        private System.Windows.Forms.DataGridView gvETFStocks;
+        private System.Windows.Forms.DataGridView gvFlag;
     }
 }

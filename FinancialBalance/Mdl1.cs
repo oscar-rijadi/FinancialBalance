@@ -272,6 +272,45 @@ namespace FinancialBalance
                 }
             }
         }
+        public static void Fill_ETF_Stocks_Purchase_Flag(ComboBox ComboFlag)
+        {
+            bool DataExist;
+            bool DefaultExist = false;
+            ComboFlag.Items.Clear();
+            Ssql = "Select Flag_Code from TblETFStocksPurchaseFlag order by Flag_Code";
+            OleDbCommand cmd = new OleDbCommand(Ssql, conn);
+            reader = cmd.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    string TmpFlag = reader["Flag_Code"].ToString().Trim();
+                    ComboFlag.Items.Add(TmpFlag);
+                    if (TmpFlag == "OB")
+                    {
+                        DefaultExist = true;
+                    }
+                }
+                DataExist = true;
+            }
+            else
+            {
+                DataExist = false;
+            }
+            reader.Close();
+            if (DataExist)
+            {
+                if (DefaultExist)
+                {
+                    ComboFlag.Text = "OB";
+                }
+                else
+                {
+                    ComboFlag.Text = ComboFlag.Items[0].ToString();
+                }
+            }
+        }
         public static void Fill_Yes_No(ComboBox ComboYesNo)
         {
             ComboYesNo.Items.Clear();

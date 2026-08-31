@@ -40,6 +40,7 @@
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Acct_Type_Name = new System.Windows.Forms.TextBox();
             this.Label2 = new System.Windows.Forms.Label();
             this.Acct_Type = new System.Windows.Forms.TextBox();
@@ -116,7 +117,8 @@
             this.MnCurrRateSetup,
             this.MnActivaPassivaSetup,
             this.MnETFStocksSuffixSetup,
-            this.MnETFStocksSetup});
+            this.MnETFStocksSetup,
+            this.MnETFStocksFlagSetup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(576, 24);
@@ -163,6 +165,13 @@
             this.MnETFStocksSetup.Size = new System.Drawing.Size(115, 20);
             this.MnETFStocksSetup.Text = "ETF/&Stock Setup";
             this.MnETFStocksSetup.Click += new System.EventHandler(this.MnETFStocksSetup_Click);
+            // 
+            // MnETFStocksFlagSetup
+            // 
+            this.MnETFStocksFlagSetup.Name = "MnETFStocksFlagSetup";
+            this.MnETFStocksFlagSetup.Size = new System.Drawing.Size(130, 20);
+            this.MnETFStocksFlagSetup.Text = "ETF/Stock &Flag Setup";
+            this.MnETFStocksFlagSetup.Click += new System.EventHandler(this.MnETFStocksFlagSetup_Click);
             // 
             // Acct_Type_Name
             // 
@@ -278,6 +287,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;
         public System.Windows.Forms.TextBox Acct_Type_Name;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.TextBox Acct_Type;

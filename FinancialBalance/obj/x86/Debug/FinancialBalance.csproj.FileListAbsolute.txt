@@ -28,3 +28,4 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBal
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Setup_ETF_Stocks.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.ETF_Stocks_Transaction.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.ETF_Stocks_Price.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Setup_ETF_Stocks_Flag.resources

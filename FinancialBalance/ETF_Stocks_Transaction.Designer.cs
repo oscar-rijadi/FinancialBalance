@@ -62,6 +62,8 @@
             this.Label10 = new System.Windows.Forms.Label();
             this.txtSellingPricePerUnit = new System.Windows.Forms.TextBox();
             this.txtSellingTotalAmount = new System.Windows.Forms.TextBox();
+            this.Label11 = new System.Windows.Forms.Label();
+            this.CmbFlagCode = new System.Windows.Forms.ComboBox();
             this.chkDRIP = new System.Windows.Forms.CheckBox();
             this.chkSold = new System.Windows.Forms.CheckBox();
             this.CmdCreate = new System.Windows.Forms.Button();
@@ -464,6 +466,27 @@
             this.txtSellingTotalAmount.TabStop = false;
             this.txtSellingTotalAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             //
+            // Label11
+            //
+            this.Label11.BackColor = System.Drawing.Color.Transparent;
+            this.Label11.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label11.ForeColor = System.Drawing.Color.Black;
+            this.Label11.Location = new System.Drawing.Point(460, 452);
+            this.Label11.Name = "Label11";
+            this.Label11.Size = new System.Drawing.Size(160, 22);
+            this.Label11.TabIndex = 36;
+            this.Label11.Text = "Flag";
+            //
+            // CmbFlagCode
+            //
+            this.CmbFlagCode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbFlagCode.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbFlagCode.FormattingEnabled = true;
+            this.CmbFlagCode.Location = new System.Drawing.Point(625, 450);
+            this.CmbFlagCode.Name = "CmbFlagCode";
+            this.CmbFlagCode.Size = new System.Drawing.Size(140, 22);
+            this.CmbFlagCode.TabIndex = 37;
+            //
             // chkDRIP
             //
             this.chkDRIP.BackColor = System.Drawing.Color.Transparent;
@@ -554,6 +577,8 @@
             this.Controls.Add(this.CmdCreate);
             this.Controls.Add(this.chkSold);
             this.Controls.Add(this.chkDRIP);
+            this.Controls.Add(this.CmbFlagCode);
+            this.Controls.Add(this.Label11);
             this.Controls.Add(this.txtSellingTotalAmount);
             this.Controls.Add(this.txtSellingPricePerUnit);
             this.Controls.Add(this.Label10);
@@ -635,6 +660,8 @@
         public System.Windows.Forms.Label Label10;
         public System.Windows.Forms.TextBox txtSellingPricePerUnit;
         public System.Windows.Forms.TextBox txtSellingTotalAmount;
+        public System.Windows.Forms.Label Label11;
+        public System.Windows.Forms.ComboBox CmbFlagCode;
         public System.Windows.Forms.CheckBox chkDRIP;
         public System.Windows.Forms.CheckBox chkSold;
         public System.Windows.Forms.Button CmdCreate;

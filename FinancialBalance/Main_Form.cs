@@ -210,6 +210,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksFlagSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Flag Setup_ETF_Stocks_Flag = new Setup_ETF_Stocks_Flag();
+            Setup_ETF_Stocks_Flag.Show();
+            this.Hide();
+        }
+
         private void MnExit_Click(object sender, EventArgs e)
         {
             DialogResult Response = MessageBox.Show("Are You Sure Want to Exit ?", "Confirmation", MessageBoxButtons.OKCancel);

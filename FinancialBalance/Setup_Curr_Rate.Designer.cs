@@ -38,6 +38,7 @@
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbCurr = new System.Windows.Forms.ComboBox();
@@ -97,7 +98,8 @@
             this.MnCurrSetup,
             this.MnActivaPassivaSetup,
             this.MnETFStocksSuffixSetup,
-            this.MnETFStocksSetup});
+            this.MnETFStocksSetup,
+            this.MnETFStocksFlagSetup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(574, 24);
@@ -144,6 +146,13 @@
             this.MnETFStocksSetup.Size = new System.Drawing.Size(115, 20);
             this.MnETFStocksSetup.Text = "ETF/&Stock Setup";
             this.MnETFStocksSetup.Click += new System.EventHandler(this.MnETFStocksSetup_Click);
+            // 
+            // MnETFStocksFlagSetup
+            // 
+            this.MnETFStocksFlagSetup.Name = "MnETFStocksFlagSetup";
+            this.MnETFStocksFlagSetup.Size = new System.Drawing.Size(130, 20);
+            this.MnETFStocksFlagSetup.Text = "ETF/Stock &Flag Setup";
+            this.MnETFStocksFlagSetup.Click += new System.EventHandler(this.MnETFStocksFlagSetup_Click);
             // 
             // Label21
             // 
@@ -412,6 +421,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbCurr;

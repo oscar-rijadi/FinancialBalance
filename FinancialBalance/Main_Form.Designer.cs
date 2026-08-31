@@ -48,6 +48,7 @@
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnExit = new System.Windows.Forms.ToolStripMenuItem();
             this.LblDate = new System.Windows.Forms.Label();
             this.LblVer = new System.Windows.Forms.Label();
@@ -170,7 +171,8 @@
             this.MnCurrRateSetup,
             this.MnActivaPassivaSetup,
             this.MnETFStocksSuffixSetup,
-            this.MnETFStocksSetup});
+            this.MnETFStocksSetup,
+            this.MnETFStocksFlagSetup});
             this.MnAdmin.Name = "MnAdmin";
             this.MnAdmin.Size = new System.Drawing.Size(87, 20);
             this.MnAdmin.Text = "&Administration";
@@ -223,6 +225,13 @@
             this.MnETFStocksSetup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksSetup.Text = "ETF/&Stock Setup";
             this.MnETFStocksSetup.Click += new System.EventHandler(this.MnETFStocksSetup_Click);
+            // 
+            // MnETFStocksFlagSetup
+            // 
+            this.MnETFStocksFlagSetup.Name = "MnETFStocksFlagSetup";
+            this.MnETFStocksFlagSetup.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksFlagSetup.Text = "ETF/Stock &Flag Setup";
+            this.MnETFStocksFlagSetup.Click += new System.EventHandler(this.MnETFStocksFlagSetup_Click);
             // 
             // MnExit
             // 
@@ -686,6 +695,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;
         public System.Windows.Forms.ToolStripMenuItem MnExit;
         public System.Windows.Forms.Timer DateTimeTimer;
         public System.Windows.Forms.Label LblDate;

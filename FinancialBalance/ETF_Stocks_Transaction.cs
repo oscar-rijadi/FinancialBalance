@@ -34,6 +34,7 @@ namespace FinancialBalance
         string OrgTotalCostBase;
         string OrgRealTotalCostBase;
         string OrgIsSold;
+        string OrgFlagCode;
         string OrgSellingPricePerUnit;
         string OrgSellingTotalAmount;
 
@@ -58,6 +59,7 @@ namespace FinancialBalance
             Fill_Full_Ticker();
             Mdl1.Fill_Curr(CmbCurrency);
             Set_Default_Currency();
+            Mdl1.Fill_ETF_Stocks_Purchase_Flag(CmbFlagCode);
             Filling = false;
 
             ChangeLblDay();
@@ -120,6 +122,8 @@ namespace FinancialBalance
             txtRealTotalCostBase.Visible = !Sell;
             chkDRIP.Visible = !Sell;
             chkSold.Visible = !Sell;
+            Label11.Visible = !Sell;
+            CmbFlagCode.Visible = !Sell;
 
             //Sell-only inputs
             Label9.Visible = Sell;
@@ -151,6 +155,15 @@ namespace FinancialBalance
             Apply_Trans_Type_Rules();
             //the reset above changes what the derived boxes should read
             Calculate_Totals();
+        }
+
+        //Purchases default to the OB flag
+        private void Set_Default_Flag()
+        {
+            if (CmbFlagCode.Items.Contains("OB"))
+            {
+                CmbFlagCode.Text = "OB";
+            }
         }
 
         //Fill_Curr defaults to IDR for the accounting pages; ETF trades default to AUD
@@ -277,14 +290,14 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvTrans.Columns.Clear();
-            gvTrans.ColumnCount = 12;
-            string[] names = new string[] { "Type", "Full Ticker", "Currency", "Unit", "Cost Base", "Fee", "Total Cost Base", "Real Total Cost Base", "DRIP", "Sold", "Selling Price/Unit", "Selling Total Amount" };
-            int[] weights = new int[] { 6, 10, 7, 9, 9, 6, 10, 11, 5, 5, 10, 12 };
-            for (int i = 0; i < 12; i++)
+            gvTrans.ColumnCount = 13;
+            string[] names = new string[] { "Type", "Full Ticker", "Currency", "Unit", "Cost Base", "Fee", "Total Cost Base", "Real Total Cost Base", "DRIP", "Sold", "Flag", "Selling Price/Unit", "Selling Total Amount" };
+            int[] weights = new int[] { 5, 9, 6, 8, 8, 5, 9, 10, 5, 5, 5, 9, 11 };
+            for (int i = 0; i < 13; i++)
             {
                 gvTrans.Columns[i].Name = names[i];
                 gvTrans.Columns[i].FillWeight = weights[i];
-                if ((i >= 3 && i <= 7) || i >= 10)
+                if ((i >= 3 && i <= 7) || i >= 11)
                 {
                     gvTrans.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
                     gvTrans.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -299,7 +312,7 @@ namespace FinancialBalance
 
         private string Select_Purchases()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold from TblETFStocksPurchase"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code] from TblETFStocksPurchase"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -339,6 +352,7 @@ namespace FinancialBalance
                     Mdl1.FormatAmt(TmpRealTotal),
                     (TmpRealTotal == 0 ? "Y" : "N"),
                     (reader["Is_Sold"].ToString().Trim() == "True" ? "Y" : "N"),
+                    reader["Flag_Code"].ToString().Trim(),
                     "-",
                     "-"
                 };
@@ -360,6 +374,7 @@ namespace FinancialBalance
                     reader["Full_Ticker"].ToString().Trim(),
                     reader["Currency"].ToString().Trim(),
                     Format_Unit(reader["Unit"]),
+                    "-",
                     "-",
                     "-",
                     "-",
@@ -416,6 +431,7 @@ namespace FinancialBalance
             txtSellingPricePerUnit.Text = "0.00";
             chkDRIP.Checked = false;
             chkSold.Checked = false;
+            Set_Default_Flag();
             Filling = false;
             Apply_Trans_Type_Rules();
             Calculate_Totals();
@@ -540,6 +556,7 @@ namespace FinancialBalance
                         OrgTotalCostBase = Sql_Num(reader["Total_Cost_Base"], 2);
                         OrgRealTotalCostBase = Sql_Num(reader["Real_Total_Cost_Base"], 2);
                         OrgIsSold = (reader["Is_Sold"].ToString().Trim() == "True" ? "True" : "False");
+                        OrgFlagCode = (reader["Flag_Code"] == DBNull.Value ? null : reader["Flag_Code"].ToString().Trim());
                     }
                     else
                     {
@@ -570,6 +587,14 @@ namespace FinancialBalance
                 txtSellingPricePerUnit.Text = "0.00";
                 chkDRIP.Checked = (Read_Double(OrgRealTotalCostBase) == 0);
                 chkSold.Checked = (OrgIsSold == "True");
+                if (OrgFlagCode != null && CmbFlagCode.Items.Contains(OrgFlagCode))
+                {
+                    CmbFlagCode.Text = OrgFlagCode;
+                }
+                else
+                {
+                    Set_Default_Flag();
+                }
             }
             else
             {
@@ -578,6 +603,7 @@ namespace FinancialBalance
                 txtSellingPricePerUnit.Text = (OrgSellingPricePerUnit == null ? "0.00" : OrgSellingPricePerUnit);
                 chkDRIP.Checked = false;
                 chkSold.Checked = false;
+                Set_Default_Flag();
             }
             Filling = false;
 
@@ -717,7 +743,8 @@ namespace FinancialBalance
                        + Where_Col("Fee", OrgFee)
                        + Where_Col("Total_Cost_Base", OrgTotalCostBase)
                        + Where_Col("Real_Total_Cost_Base", OrgRealTotalCostBase)
-                       + " and Is_Sold = " + OrgIsSold;
+                       + " and Is_Sold = " + OrgIsSold
+                       + (OrgFlagCode == null ? " and [Flag_Code] Is Null" : " and [Flag_Code] = '" + OrgFlagCode + "'");
             }
             else
             {
@@ -773,7 +800,7 @@ namespace FinancialBalance
             }
             else
             {
-                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold) values ("
+                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code]) values ("
                     + "'" + Get_Trans_Date() + "', "
                     + "'" + CmbFullTicker.Text.Trim() + "', "
                     + "'" + CmbCurrency.Text.Trim() + "', "
@@ -782,7 +809,8 @@ namespace FinancialBalance
                     + Num(parFee, 2) + ", "
                     + Num(parTotal, 2) + ", "
                     + Num(parRealTotal, 2) + ", "
-                    + (chkSold.Checked ? "True" : "False") + ")";
+                    + (chkSold.Checked ? "True" : "False") + ", "
+                    + "'" + CmbFlagCode.Text.Trim() + "')";
             }
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
@@ -878,7 +906,8 @@ namespace FinancialBalance
                         + "Fee = " + Num(TmpFee, 2) + ", "
                         + "Total_Cost_Base = " + Num(TmpTotal, 2) + ", "
                         + "Real_Total_Cost_Base = " + Num(TmpRealTotal, 2) + ", "
-                        + "Is_Sold = " + (chkSold.Checked ? "True" : "False")
+                        + "Is_Sold = " + (chkSold.Checked ? "True" : "False") + ", "
+                        + "[Flag_Code] = '" + CmbFlagCode.Text.Trim() + "'"
                         + Where_Original();
                     cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                     cmd.ExecuteNonQuery();

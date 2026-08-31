@@ -10,16 +10,16 @@ using System.Data.OleDb;
 
 namespace FinancialBalance
 {
-    public partial class Setup_ETF_Stocks_Suffix : Form
+    public partial class Setup_ETF_Stocks_Flag : Form
     {
         bool Filling;
 
-        public Setup_ETF_Stocks_Suffix()
+        public Setup_ETF_Stocks_Flag()
         {
             InitializeComponent();
         }
 
-        private void Setup_ETF_Stocks_Suffix_Load(object sender, EventArgs e)
+        private void Setup_ETF_Stocks_Flag_Load(object sender, EventArgs e)
         {
             Get_Data();
         }
@@ -59,6 +59,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksSuffixSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Suffix Setup_ETF_Stocks_Suffix = new Setup_ETF_Stocks_Suffix();
+            Setup_ETF_Stocks_Suffix.Show();
+            this.Close();
+        }
+
         private void MnETFStocksSetup_Click(object sender, EventArgs e)
         {
             Setup_ETF_Stocks Setup_ETF_Stocks = new Setup_ETF_Stocks();
@@ -66,21 +73,18 @@ namespace FinancialBalance
             this.Close();
         }
 
-        private void MnETFStocksFlagSetup_Click(object sender, EventArgs e)
-        {
-            Setup_ETF_Stocks_Flag Setup_ETF_Stocks_Flag = new Setup_ETF_Stocks_Flag();
-            Setup_ETF_Stocks_Flag.Show();
-            this.Close();
-        }
-
         private void Clear_Grid()
         {
-            gvSuffix.Columns.Clear();
-            gvSuffix.ColumnCount = 1;
-            gvSuffix.Columns[0].Name = "Suffix";
-            gvSuffix.Columns[0].FillWeight = 100;
-            gvSuffix.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            gvSuffix.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvFlag.Columns.Clear();
+            gvFlag.ColumnCount = 2;
+            gvFlag.Columns[0].Name = "Flag Code";
+            gvFlag.Columns[0].FillWeight = 25;
+            gvFlag.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvFlag.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvFlag.Columns[1].Name = "Description";
+            gvFlag.Columns[1].FillWeight = 75;
+            gvFlag.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvFlag.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
         }
 
         private void Get_Data()
@@ -91,36 +95,45 @@ namespace FinancialBalance
 
             string[] row;
 
-            Mdl1.Ssql = "select Suffix from TblETFStocksExchangeSuffix order by Suffix";
+            Mdl1.Ssql = "select Flag_Code, [Description] from TblETFStocksPurchaseFlag order by Flag_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    row = new string[] { reader["Suffix"].ToString().Trim() };
-                    gvSuffix.Rows.Add(row);
+                    row = new string[] { reader["Flag_Code"].ToString().Trim(), reader["Description"].ToString().Trim() };
+                    gvFlag.Rows.Add(row);
                 }
             }
             reader.Close();
 
-            gvSuffix.ClearSelection();
+            gvFlag.ClearSelection();
 
             Filling = false;
         }
 
-        //Clicking a row copies it into the text box so it can be deleted
-        private void gvSuffix_SelectionChanged(object sender, EventArgs e)
+        //Clicking a row loads it back into the inputs so it can be amended or deleted
+        private void gvFlag_SelectionChanged(object sender, EventArgs e)
         {
             if (Filling)
             {
                 return;
             }
-            if (gvSuffix.CurrentRow == null || gvSuffix.CurrentRow.Cells[0].Value == null)
+            if (gvFlag.CurrentRow == null || gvFlag.CurrentRow.Cells[0].Value == null)
             {
                 return;
             }
-            Suffix.Text = gvSuffix.CurrentRow.Cells[0].Value.ToString().Trim();
+
+            Flag_Code.Text = gvFlag.CurrentRow.Cells[0].Value.ToString().Trim();
+            if (gvFlag.CurrentRow.Cells[1].Value != null)
+            {
+                Description.Text = gvFlag.CurrentRow.Cells[1].Value.ToString().Trim();
+            }
+            else
+            {
+                Description.Text = "";
+            }
         }
 
         private void CmdSetup_Click(object sender, EventArgs e)
@@ -129,13 +142,13 @@ namespace FinancialBalance
             {
                 bool FlagRecNotExist;
 
-                if (Suffix.Text.Trim() == "")
+                if (Flag_Code.Text.Trim() == "")
                 {
-                    MessageBox.Show("Suffix cannot be empty !", "Error Message");
+                    MessageBox.Show("Flag Code cannot be empty !", "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "select * from TblETFStocksExchangeSuffix where Suffix = '" + Suffix.Text.Trim() + "'";
+                Mdl1.Ssql = "select * from TblETFStocksPurchaseFlag where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
@@ -148,17 +161,20 @@ namespace FinancialBalance
                 }
                 reader.Close();
 
-                if (!FlagRecNotExist)
+                if (FlagRecNotExist)
                 {
-                    MessageBox.Show("Suffix already exists : " + Suffix.Text.Trim(), "Error Message");
-                    return;
+                    Mdl1.Ssql = "Insert into TblETFStocksPurchaseFlag ([Flag_Code], [Description]) values ('"
+                        + Flag_Code.Text.Trim() + "', '" + Description.Text.Trim() + "')";
                 }
-
-                Mdl1.Ssql = "Insert into TblETFStocksExchangeSuffix (Suffix) values ('" + Suffix.Text.Trim() + "')";
+                else
+                {
+                    Mdl1.Ssql = "Update TblETFStocksPurchaseFlag set [Description] = '" + Description.Text.Trim()
+                        + "' where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
+                }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Create successfully for Suffix : " + Suffix.Text.Trim(), "Success");
+                MessageBox.Show("Create or Update successfully for Flag Code : " + Flag_Code.Text.Trim(), "Success");
 
                 Get_Data();
             }
@@ -174,7 +190,7 @@ namespace FinancialBalance
             {
                 bool FlagRecNotExist;
 
-                Mdl1.Ssql = "select * from TblETFStocksExchangeSuffix where Suffix = '" + Suffix.Text.Trim() + "'";
+                Mdl1.Ssql = "select * from TblETFStocksPurchaseFlag where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
@@ -189,17 +205,17 @@ namespace FinancialBalance
 
                 if (FlagRecNotExist)
                 {
-                    MessageBox.Show("Data not found for Suffix : " + Suffix.Text.Trim(), "Error Message");
+                    MessageBox.Show("Data not found for Flag Code : " + Flag_Code.Text.Trim(), "Error Message");
                     return;
                 }
                 else
                 {
-                    Mdl1.Ssql = "Delete from TblETFStocksExchangeSuffix  where Suffix = '" + Suffix.Text.Trim() + "'";
+                    Mdl1.Ssql = "Delete from TblETFStocksPurchaseFlag  where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
                 }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for Suffix : " + Suffix.Text.Trim(), "Success");
+                MessageBox.Show("Delete successfully for Flag Code : " + Flag_Code.Text.Trim(), "Success");
 
                 Get_Data();
             }
