@@ -14,7 +14,9 @@ namespace FinancialBalance
     public partial class Yearly_Statistic : Form
     {
         private const string AllAsset = "ALL ASSET (as a whole)";
+        private const string AllLiability = "ALL LIABILITY (as a whole)";
         private const string AllIncome = "ALL INCOME (as a whole)";
+        private const string AllExpense = "ALL EXPENSE (as a whole)";
 
         private bool Filling;
 
@@ -28,7 +30,9 @@ namespace FinancialBalance
             Filling = true;
             CmbCategory.Items.Clear();
             CmbCategory.Items.Add("Asset");
+            CmbCategory.Items.Add("Liability");
             CmbCategory.Items.Add("Income");
+            CmbCategory.Items.Add("Expense");
             CmbCategory.Text = "Asset";
             Fill_Account();
             Filling = false;
@@ -58,21 +62,85 @@ namespace FinancialBalance
             Get_Data();
         }
 
+        //Asset and Liability are balances at a point in time; Income and Expense are amounts
+        //accumulated over a year.  Everything below keys off these helpers.
+        private string Cat_Type()
+        {
+            if (CmbCategory.Text == "Liability")
+            {
+                return "2";
+            }
+            if (CmbCategory.Text == "Income")
+            {
+                return "3";
+            }
+            if (CmbCategory.Text == "Expense")
+            {
+                return "4";
+            }
+            return "1";
+        }
+
+        private string Cat_Prefix()
+        {
+            string strType = Cat_Type();
+            if (strType == "2")
+            {
+                return "L";
+            }
+            if (strType == "3")
+            {
+                return "I";
+            }
+            if (strType == "4")
+            {
+                return "E";
+            }
+            return "A";
+        }
+
+        //Income and Expense accumulate over the year; Asset and Liability are a closing balance
+        private bool Cat_Is_Flow()
+        {
+            string strType = Cat_Type();
+            return (strType == "3" || strType == "4");
+        }
+
+        //Where the live balance sits for the current year
+        private string Cat_Balance_Table()
+        {
+            if (Cat_Type() == "2")
+            {
+                return "TblLiability";
+            }
+            return "TblAsset";
+        }
+
+        private string Cat_All_Item()
+        {
+            string strType = Cat_Type();
+            if (strType == "2")
+            {
+                return AllLiability;
+            }
+            if (strType == "3")
+            {
+                return AllIncome;
+            }
+            if (strType == "4")
+            {
+                return AllExpense;
+            }
+            return AllAsset;
+        }
+
         //Second drop down follows the category picked in the first one
         private void Fill_Account()
         {
             CmbAccount.Items.Clear();
 
-            if (CmbCategory.Text == "Income")
-            {
-                CmbAccount.Items.Add(AllIncome);
-                Mdl1.Ssql = "Select Acct_Code, Acct_Name from TblAcctRef where Acct_Type = '3' Order by Acct_Order";
-            }
-            else
-            {
-                CmbAccount.Items.Add(AllAsset);
-                Mdl1.Ssql = "Select Acct_Code, Acct_Name from TblAcctRef where Acct_Type = '1' Order by Acct_Order";
-            }
+            CmbAccount.Items.Add(Cat_All_Item());
+            Mdl1.Ssql = "Select Acct_Code, Acct_Name from TblAcctRef where Acct_Type = '" + Cat_Type() + "' Order by Acct_Order";
 
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
@@ -93,7 +161,8 @@ namespace FinancialBalance
         {
             string strItem = CmbAccount.Text.Trim();
 
-            if (strItem == "" || strItem == AllAsset || strItem == AllIncome)
+            if (strItem == "" || strItem == AllAsset || strItem == AllLiability
+                || strItem == AllIncome || strItem == AllExpense)
             {
                 return "";
             }
@@ -134,7 +203,7 @@ namespace FinancialBalance
             int EndYear;
             int StartYear;
             string strAcctCode;
-            bool IsIncome;
+            bool IsFlow;
             bool AsWhole;
             string strCurr;
             double TmpAmt;
@@ -150,7 +219,7 @@ namespace FinancialBalance
                 EndYear = DateTime.Now.Year;
                 StartYear = EndYear - 9;
                 strAcctCode = Selected_Acct_Code();
-                IsIncome = (CmbCategory.Text == "Income");
+                IsFlow = Cat_Is_Flow();
                 AsWhole = (strAcctCode == "");
 
                 //A single account keeps its own currency, the whole category is converted to AUD
@@ -168,26 +237,26 @@ namespace FinancialBalance
 
                 for (int Yr = StartYear; Yr <= EndYear; Yr++)
                 {
-                    if (IsIncome)
+                    if (IsFlow)
                     {
                         if (AsWhole)
                         {
-                            TmpAmt = Total_Income_AUD(Yr);
+                            TmpAmt = Total_Flow_AUD(Yr);
                         }
                         else
                         {
-                            TmpAmt = Acct_Income(strAcctCode, Yr);
+                            TmpAmt = Acct_Flow(strAcctCode, Yr);
                         }
                     }
                     else
                     {
                         if (AsWhole)
                         {
-                            TmpAmt = Total_Asset_AUD(Yr);
+                            TmpAmt = Total_Balance_AUD(Yr);
                         }
                         else
                         {
-                            TmpAmt = Acct_Asset(strAcctCode, Yr);
+                            TmpAmt = Acct_Balance(strAcctCode, Yr);
                         }
                     }
 
@@ -225,8 +294,8 @@ namespace FinancialBalance
                 gvStat.ClearSelection();
 
                 chartYearly.ChartAreas["ChartArea1"].AxisY.Title = "Amount (" + strCurr + ")";
-                chartYearly.Titles["MainTitle"].Text = Chart_Title(IsIncome, AsWhole, strCurr);
-                lblNote.Text = Note_Text(IsIncome, AsWhole);
+                chartYearly.Titles["MainTitle"].Text = Chart_Title(AsWhole, strCurr);
+                lblNote.Text = Note_Text(AsWhole);
             }
             catch (Exception ex)
             {
@@ -234,20 +303,13 @@ namespace FinancialBalance
             }
         }
 
-        private string Chart_Title(bool parIsIncome, bool parAsWhole, string parCurr)
+        private string Chart_Title(bool parAsWhole, string parCurr)
         {
             string strWhat;
 
             if (parAsWhole)
             {
-                if (parIsIncome)
-                {
-                    strWhat = "Total Income";
-                }
-                else
-                {
-                    strWhat = "Total Asset";
-                }
+                strWhat = "Total " + CmbCategory.Text;
             }
             else
             {
@@ -262,24 +324,24 @@ namespace FinancialBalance
                 }
             }
 
-            if (parIsIncome)
+            if (Cat_Is_Flow())
             {
-                return strWhat + " - Yearly Income in " + parCurr;
+                return strWhat + " - Yearly " + CmbCategory.Text + " in " + parCurr;
             }
             return strWhat + " - Closing Balance in " + parCurr;
         }
 
-        private string Note_Text(bool parIsIncome, bool parAsWhole)
+        private string Note_Text(bool parAsWhole)
         {
             string strNote;
 
-            if (parIsIncome)
+            if (Cat_Is_Flow())
             {
-                strNote = "Income is the total of all monthly transactions posted in each year.";
+                strNote = CmbCategory.Text + " is the total of all monthly transactions posted in each year.";
             }
             else
             {
-                strNote = "Asset is the closing balance at the end of each year. The current year uses the live balance.";
+                strNote = CmbCategory.Text + " is the closing balance at the end of each year. The current year uses the live balance.";
             }
 
             if (parAsWhole)
@@ -379,17 +441,17 @@ namespace FinancialBalance
             return TotIDR / CurrRate("AUD", parYear);
         }
 
-        private double Total_Income_AUD(int parYear)
+        private double Total_Flow_AUD(int parYear)
         {
-            Mdl1.Ssql = "Select B.Curr_Code, Sum(A.Balance) As TotBalance from TblMonthlyTrans A left join TblAcctRef B on B.Acct_Code = A.Acct_Code " + "where left(A.Trans_Month,4) = '" + parYear.ToString("0000") + "' and left(A.Acct_Code, 1) = 'I' Group By B.Curr_Code";
+            Mdl1.Ssql = "Select B.Curr_Code, Sum(A.Balance) As TotBalance from TblMonthlyTrans A left join TblAcctRef B on B.Acct_Code = A.Acct_Code " + "where left(A.Trans_Month,4) = '" + parYear.ToString("0000") + "' and left(A.Acct_Code, 1) = '" + Cat_Prefix() + "' Group By B.Curr_Code";
             return Sum_To_AUD(parYear);
         }
 
-        private double Total_Asset_AUD(int parYear)
+        private double Total_Balance_AUD(int parYear)
         {
             if (parYear == DateTime.Now.Year)
             {
-                Mdl1.Ssql = "Select B.Curr_Code, Sum(A.Balance) As TotBalance from TblAsset A left join TblAcctRef B on B.Acct_Code = A.Acct_Code " + "where B.Acct_Type = '1' Group By B.Curr_Code";
+                Mdl1.Ssql = "Select B.Curr_Code, Sum(A.Balance) As TotBalance from " + Cat_Balance_Table() + " A left join TblAcctRef B on B.Acct_Code = A.Acct_Code " + "where B.Acct_Type = '" + Cat_Type() + "' Group By B.Curr_Code";
             }
             else
             {
@@ -398,23 +460,23 @@ namespace FinancialBalance
                 {
                     return 0;
                 }
-                Mdl1.Ssql = "Select B.Curr_Code, Sum(A.Balance) As TotBalance from TblMonthlyTrans A left join TblAcctRef B on B.Acct_Code = A.Acct_Code " + "where A.Trans_Month = '" + strMonth + "' and B.Acct_Type = '1' Group By B.Curr_Code";
+                Mdl1.Ssql = "Select B.Curr_Code, Sum(A.Balance) As TotBalance from TblMonthlyTrans A left join TblAcctRef B on B.Acct_Code = A.Acct_Code " + "where A.Trans_Month = '" + strMonth + "' and B.Acct_Type = '" + Cat_Type() + "' Group By B.Curr_Code";
             }
 
             return Sum_To_AUD(parYear);
         }
 
-        private double Acct_Income(string parAcctCode, int parYear)
+        private double Acct_Flow(string parAcctCode, int parYear)
         {
             Mdl1.Ssql = "Select Sum(Balance) As TotBalance from TblMonthlyTrans " + "where Acct_Code = '" + parAcctCode + "' and left(Trans_Month,4) = '" + parYear.ToString("0000") + "'";
             return Read_Amt();
         }
 
-        private double Acct_Asset(string parAcctCode, int parYear)
+        private double Acct_Balance(string parAcctCode, int parYear)
         {
             if (parYear == DateTime.Now.Year)
             {
-                Mdl1.Ssql = "Select Sum(Balance) As TotBalance from TblAsset where Acct_Code = '" + parAcctCode + "'";
+                Mdl1.Ssql = "Select Sum(Balance) As TotBalance from " + Cat_Balance_Table() + " where Acct_Code = '" + parAcctCode + "'";
             }
             else
             {

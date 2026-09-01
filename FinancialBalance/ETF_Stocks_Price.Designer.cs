@@ -40,6 +40,9 @@
             this.CmdSync = new System.Windows.Forms.Button();
             this.LblSyncNote = new System.Windows.Forms.Label();
             this.gvPrice = new System.Windows.Forms.DataGridView();
+            this.CmdSyncAll = new System.Windows.Forms.Button();
+            this.LblAllCaption = new System.Windows.Forms.Label();
+            this.gvAllPrices = new System.Windows.Forms.DataGridView();
             this.LblGridCaption = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.CmbDD = new System.Windows.Forms.ComboBox();
@@ -55,6 +58,7 @@
             this.CmdBack = new System.Windows.Forms.Button();
             this.MainMenu1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvPrice)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvAllPrices)).BeginInit();
             this.SuspendLayout();
             //
             // MainMenu1
@@ -110,12 +114,51 @@
             this.Label21.TabIndex = 1;
             this.Label21.Text = "ETF/STOCK PRICE";
             //
+            // CmdSyncAll
+            //
+            this.CmdSyncAll.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdSyncAll.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdSyncAll.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdSyncAll.Location = new System.Drawing.Point(19, 78);
+            this.CmdSyncAll.Name = "CmdSyncAll";
+            this.CmdSyncAll.Size = new System.Drawing.Size(200, 27);
+            this.CmdSyncAll.TabIndex = 20;
+            this.CmdSyncAll.Text = "Sync &all with Yahoo Finance";
+            this.CmdSyncAll.UseVisualStyleBackColor = false;
+            this.CmdSyncAll.Click += new System.EventHandler(this.CmdSyncAll_Click);
+            //
+            // LblAllCaption
+            //
+            this.LblAllCaption.BackColor = System.Drawing.Color.Transparent;
+            this.LblAllCaption.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAllCaption.ForeColor = System.Drawing.Color.Black;
+            this.LblAllCaption.Location = new System.Drawing.Point(232, 84);
+            this.LblAllCaption.Name = "LblAllCaption";
+            this.LblAllCaption.Size = new System.Drawing.Size(450, 20);
+            this.LblAllCaption.TabIndex = 21;
+            this.LblAllCaption.Text = "Latest price of every ticker";
+            //
+            // gvAllPrices
+            //
+            this.gvAllPrices.AllowUserToAddRows = false;
+            this.gvAllPrices.AllowUserToDeleteRows = false;
+            this.gvAllPrices.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvAllPrices.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvAllPrices.Location = new System.Drawing.Point(19, 112);
+            this.gvAllPrices.MultiSelect = false;
+            this.gvAllPrices.Name = "gvAllPrices";
+            this.gvAllPrices.ReadOnly = true;
+            this.gvAllPrices.RowHeadersVisible = false;
+            this.gvAllPrices.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvAllPrices.Size = new System.Drawing.Size(660, 150);
+            this.gvAllPrices.TabIndex = 22;
+            //
             // Label1
             //
             this.Label1.BackColor = System.Drawing.Color.Transparent;
             this.Label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label1.ForeColor = System.Drawing.Color.Black;
-            this.Label1.Location = new System.Drawing.Point(19, 86);
+            this.Label1.Location = new System.Drawing.Point(19, 288);
             this.Label1.Name = "Label1";
             this.Label1.Size = new System.Drawing.Size(90, 22);
             this.Label1.TabIndex = 2;
@@ -126,7 +169,7 @@
             this.CmbFullTicker.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbFullTicker.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbFullTicker.FormattingEnabled = true;
-            this.CmbFullTicker.Location = new System.Drawing.Point(115, 84);
+            this.CmbFullTicker.Location = new System.Drawing.Point(115, 286);
             this.CmbFullTicker.Name = "CmbFullTicker";
             this.CmbFullTicker.Size = new System.Drawing.Size(150, 22);
             this.CmbFullTicker.TabIndex = 3;
@@ -137,7 +180,7 @@
             this.CmdSync.BackColor = System.Drawing.SystemColors.Control;
             this.CmdSync.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSync.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSync.Location = new System.Drawing.Point(290, 82);
+            this.CmdSync.Location = new System.Drawing.Point(290, 284);
             this.CmdSync.Name = "CmdSync";
             this.CmdSync.Size = new System.Drawing.Size(175, 27);
             this.CmdSync.TabIndex = 4;
@@ -150,7 +193,7 @@
             this.LblSyncNote.BackColor = System.Drawing.Color.Transparent;
             this.LblSyncNote.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSyncNote.ForeColor = System.Drawing.Color.DimGray;
-            this.LblSyncNote.Location = new System.Drawing.Point(475, 88);
+            this.LblSyncNote.Location = new System.Drawing.Point(475, 290);
             this.LblSyncNote.Name = "LblSyncNote";
             this.LblSyncNote.Size = new System.Drawing.Size(210, 20);
             this.LblSyncNote.TabIndex = 5;
@@ -161,7 +204,7 @@
             this.LblGridCaption.BackColor = System.Drawing.Color.Transparent;
             this.LblGridCaption.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblGridCaption.ForeColor = System.Drawing.Color.Black;
-            this.LblGridCaption.Location = new System.Drawing.Point(19, 120);
+            this.LblGridCaption.Location = new System.Drawing.Point(19, 320);
             this.LblGridCaption.Name = "LblGridCaption";
             this.LblGridCaption.Size = new System.Drawing.Size(400, 20);
             this.LblGridCaption.TabIndex = 6;
@@ -173,7 +216,7 @@
             this.gvPrice.AllowUserToDeleteRows = false;
             this.gvPrice.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.gvPrice.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvPrice.Location = new System.Drawing.Point(19, 143);
+            this.gvPrice.Location = new System.Drawing.Point(19, 343);
             this.gvPrice.MultiSelect = false;
             this.gvPrice.Name = "gvPrice";
             this.gvPrice.ReadOnly = true;
@@ -187,7 +230,7 @@
             this.Label2.BackColor = System.Drawing.Color.Transparent;
             this.Label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label2.ForeColor = System.Drawing.Color.Black;
-            this.Label2.Location = new System.Drawing.Point(19, 325);
+            this.Label2.Location = new System.Drawing.Point(19, 510);
             this.Label2.Name = "Label2";
             this.Label2.Size = new System.Drawing.Size(90, 22);
             this.Label2.TabIndex = 8;
@@ -199,7 +242,7 @@
             this.CmbDD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbDD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbDD.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.CmbDD.Location = new System.Drawing.Point(115, 323);
+            this.CmbDD.Location = new System.Drawing.Point(115, 508);
             this.CmbDD.Name = "CmbDD";
             this.CmbDD.Size = new System.Drawing.Size(41, 22);
             this.CmbDD.TabIndex = 9;
@@ -211,7 +254,7 @@
             this.CmbMM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbMM.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbMM.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.CmbMM.Location = new System.Drawing.Point(165, 323);
+            this.CmbMM.Location = new System.Drawing.Point(165, 508);
             this.CmbMM.Name = "CmbMM";
             this.CmbMM.Size = new System.Drawing.Size(41, 22);
             this.CmbMM.TabIndex = 10;
@@ -223,7 +266,7 @@
             this.CmbYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbYear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbYear.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.CmbYear.Location = new System.Drawing.Point(215, 323);
+            this.CmbYear.Location = new System.Drawing.Point(215, 508);
             this.CmbYear.Name = "CmbYear";
             this.CmbYear.Size = new System.Drawing.Size(57, 22);
             this.CmbYear.TabIndex = 11;
@@ -234,7 +277,7 @@
             this.CmdCal.BackColor = System.Drawing.SystemColors.Control;
             this.CmdCal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCal.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCal.Location = new System.Drawing.Point(279, 323);
+            this.CmdCal.Location = new System.Drawing.Point(279, 508);
             this.CmdCal.Name = "CmdCal";
             this.CmdCal.Size = new System.Drawing.Size(25, 19);
             this.CmdCal.TabIndex = 12;
@@ -247,7 +290,7 @@
             this.LblDay.BackColor = System.Drawing.Color.Transparent;
             this.LblDay.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDay.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.LblDay.Location = new System.Drawing.Point(315, 326);
+            this.LblDay.Location = new System.Drawing.Point(315, 511);
             this.LblDay.Name = "LblDay";
             this.LblDay.Size = new System.Drawing.Size(91, 17);
             this.LblDay.TabIndex = 13;
@@ -255,7 +298,7 @@
             //
             // monthCalendar1
             //
-            this.monthCalendar1.Location = new System.Drawing.Point(430, 300);
+            this.monthCalendar1.Location = new System.Drawing.Point(430, 440);
             this.monthCalendar1.MaxSelectionCount = 1;
             this.monthCalendar1.Name = "monthCalendar1";
             this.monthCalendar1.TabIndex = 14;
@@ -266,7 +309,7 @@
             this.Label3.BackColor = System.Drawing.Color.Transparent;
             this.Label3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label3.ForeColor = System.Drawing.Color.Black;
-            this.Label3.Location = new System.Drawing.Point(19, 355);
+            this.Label3.Location = new System.Drawing.Point(19, 540);
             this.Label3.Name = "Label3";
             this.Label3.Size = new System.Drawing.Size(90, 22);
             this.Label3.TabIndex = 15;
@@ -277,7 +320,7 @@
             this.txtPrice.BackColor = System.Drawing.SystemColors.Window;
             this.txtPrice.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPrice.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtPrice.Location = new System.Drawing.Point(115, 355);
+            this.txtPrice.Location = new System.Drawing.Point(115, 540);
             this.txtPrice.MaxLength = 20;
             this.txtPrice.Name = "txtPrice";
             this.txtPrice.Size = new System.Drawing.Size(157, 20);
@@ -290,7 +333,7 @@
             this.CmdAdd.BackColor = System.Drawing.SystemColors.Control;
             this.CmdAdd.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdAdd.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdAdd.Location = new System.Drawing.Point(185, 400);
+            this.CmdAdd.Location = new System.Drawing.Point(185, 585);
             this.CmdAdd.Name = "CmdAdd";
             this.CmdAdd.Size = new System.Drawing.Size(100, 27);
             this.CmdAdd.TabIndex = 17;
@@ -303,7 +346,7 @@
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(295, 400);
+            this.CmdDel.Location = new System.Drawing.Point(295, 585);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 27);
             this.CmdDel.TabIndex = 18;
@@ -317,7 +360,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(390, 400);
+            this.CmdBack.Location = new System.Drawing.Point(390, 585);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
             this.CmdBack.TabIndex = 19;
@@ -331,7 +374,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(700, 445);
+            this.ClientSize = new System.Drawing.Size(700, 640);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
@@ -351,6 +394,9 @@
             this.Controls.Add(this.CmdSync);
             this.Controls.Add(this.CmbFullTicker);
             this.Controls.Add(this.Label1);
+            this.Controls.Add(this.gvAllPrices);
+            this.Controls.Add(this.LblAllCaption);
+            this.Controls.Add(this.CmdSyncAll);
             this.Controls.Add(this.Label21);
             this.Controls.Add(this.MainMenu1);
             this.Font = new System.Drawing.Font("Arial", 8F);
@@ -364,6 +410,7 @@
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvPrice)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvAllPrices)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -383,6 +430,9 @@
         public System.Windows.Forms.Label LblSyncNote;
         public System.Windows.Forms.Label LblGridCaption;
         private System.Windows.Forms.DataGridView gvPrice;
+        public System.Windows.Forms.Button CmdSyncAll;
+        public System.Windows.Forms.Label LblAllCaption;
+        private System.Windows.Forms.DataGridView gvAllPrices;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.ComboBox CmbDD;
         public System.Windows.Forms.ComboBox CmbMM;

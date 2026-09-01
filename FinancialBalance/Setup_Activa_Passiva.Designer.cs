@@ -193,7 +193,7 @@
             this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label21.Size = new System.Drawing.Size(274, 41);
             this.Label21.TabIndex = 14;
-            this.Label21.Text = "ACTIVA PASSIVA SETUP";
+            this.Label21.Text = "ASSET LIABILITY SETUP";
             // 
             // txtBalance
             // 
@@ -345,7 +345,7 @@
             this.MainMenuStrip = this.MainMenu1;
             this.Name = "Setup_Activa_Passiva";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Activa Passiva Setup";
+            this.Text = "Asset Liability Setup";
             this.Load += new System.EventHandler(this.Setup_Activa_Passiva_Load);
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();

@@ -42,6 +42,7 @@ namespace FinancialBalance
             txtPrice.Text = "0.00";
             ChangeLblDay();
             Clear_Grid();
+            Get_All_Prices();
             Apply_Ticker_Rules();
             FirstLoad = false;
 
@@ -238,6 +239,156 @@ namespace FinancialBalance
             ChangeLblDay();
         }
 
+        private void Clear_All_Grid()
+        {
+            gvAllPrices.Rows.Clear();
+            gvAllPrices.Columns.Clear();
+            gvAllPrices.ColumnCount = 2;
+            gvAllPrices.Columns[0].Name = "Full Ticker";
+            gvAllPrices.Columns[0].FillWeight = 60;
+            gvAllPrices.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvAllPrices.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvAllPrices.Columns[1].Name = "Current Price";
+            gvAllPrices.Columns[1].FillWeight = 40;
+            gvAllPrices.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvAllPrices.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+        }
+
+        //Latest stored price for a ticker; false when it has never been priced
+        private bool Latest_Price(string parFullTicker, out double parPrice)
+        {
+            parPrice = 0;
+            bool Found = false;
+
+            Mdl1.Ssql = "select top 1 [Price] from TblETFStocksPrice where Full_Ticker = '" + parFullTicker
+                      + "' order by Price_Date Desc";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                parPrice = Read_Double(reader["Price"]);
+                Found = true;
+            }
+            reader.Close();
+            return Found;
+        }
+
+        //Every ticker with its latest price, whether that price came from Yahoo or was typed in
+        private void Get_All_Prices()
+        {
+            Clear_All_Grid();
+
+            List<string> Tickers = new List<string>();
+            Mdl1.Ssql = "select Full_Ticker from TblETFStocks order by Full_Ticker";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                Tickers.Add(reader["Full_Ticker"].ToString().Trim());
+            }
+            reader.Close();
+
+            for (int i = 0; i < Tickers.Count; i++)
+            {
+                double TmpPrice;
+                string strPrice;
+                if (Latest_Price(Tickers[i], out TmpPrice))
+                {
+                    strPrice = Mdl1.FormatAmt(TmpPrice);
+                }
+                else
+                {
+                    strPrice = "-";
+                }
+                gvAllPrices.Rows.Add(new string[] { Tickers[i], strPrice });
+            }
+
+            gvAllPrices.ClearSelection();
+        }
+
+        //Pull every Yahoo-tracked ticker in one pass, reporting once at the end
+        private void CmdSyncAll_Click(object sender, EventArgs e)
+        {
+            List<string> Tickers = new List<string>();
+            List<string> Failed = new List<string>();
+            int Saved = 0;
+
+            try
+            {
+                Mdl1.Ssql = "select Full_Ticker from TblETFStocks where In_YahooFinance = True order by Full_Ticker";
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Tickers.Add(reader["Full_Ticker"].ToString().Trim());
+                }
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+                return;
+            }
+
+            if (Tickers.Count == 0)
+            {
+                MessageBox.Show("No ticker is flagged as In Yahoo Finance in ETF/Stock Setup.", "Error Message");
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            CmdSyncAll.Enabled = false;
+            CmdSync.Enabled = false;
+            try
+            {
+                for (int i = 0; i < Tickers.Count; i++)
+                {
+                    decimal TmpPrice;
+                    string TmpDate;
+                    string TmpError;
+                    bool WasUpdate;
+
+                    if (Fetch_Yahoo_Price(Tickers[i], out TmpPrice, out TmpDate, out TmpError))
+                    {
+                        Save_Price(Tickers[i], TmpDate, TmpPrice, out WasUpdate);
+                        Saved++;
+                    }
+                    else
+                    {
+                        Failed.Add(Tickers[i] + " : " + TmpError);
+                    }
+                }
+
+                Get_All_Prices();
+                Get_Data();
+
+                string strMsg = Saved.ToString() + " of " + Tickers.Count.ToString() + " ticker(s) updated from Yahoo Finance.";
+                if (Failed.Count > 0)
+                {
+                    strMsg = strMsg + Environment.NewLine + Environment.NewLine + "Not updated :" + Environment.NewLine;
+                    for (int i = 0; i < Failed.Count; i++)
+                    {
+                        strMsg = strMsg + Environment.NewLine + Failed[i];
+                    }
+                    MessageBox.Show(strMsg, "Error Message");
+                }
+                else
+                {
+                    MessageBox.Show(strMsg, "Success");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+                CmdSyncAll.Enabled = true;
+                Apply_Ticker_Rules();
+            }
+        }
+
         private void Clear_Grid()
         {
             gvPrice.Columns.Clear();
@@ -407,6 +558,7 @@ namespace FinancialBalance
                     + " on " + Mdl1.toLongDate(Get_Price_Date()), "Success");
 
                 Get_Data();
+                Get_All_Prices();
             }
             catch (Exception ex)
             {
@@ -446,6 +598,7 @@ namespace FinancialBalance
                 MessageBox.Show("Delete successfully for " + Ticker + " on " + Mdl1.toLongDate(TmpDate), "Success");
 
                 Get_Data();
+                Get_All_Prices();
             }
             catch (Exception ex)
             {
@@ -564,6 +717,7 @@ namespace FinancialBalance
                     + (WasUpdate ? "updated" : "saved") + ".", "Success");
 
                 Get_Data();
+                Get_All_Prices();
             }
             catch (Exception ex)
             {

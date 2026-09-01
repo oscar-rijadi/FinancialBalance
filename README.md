@@ -147,13 +147,13 @@ flowchart LR
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
-| `Yearly_Statistic` | Year-over-year trend for a single asset or income account, drawn with `System.Windows.Forms.DataVisualization` charting. |
+| `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings per ticker for a chosen portfolio, valued at the latest price, with profit/loss in red or green. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
 | `Setup_Curr_Rate` | Dated exchange rates. |
-| `Setup_Activa_Passiva` | Directly set the opening/running balance of an asset or liability account. |
+| `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 | `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Maintains purchase flag codes and descriptions. |
@@ -404,6 +404,25 @@ Amending a voucher is implemented as delete-then-reinsert:
 `Mdl1.DelActivaPassivaMonthlyTrans` reverses each stored line's effect on the balance tables before
 the new lines are posted.
 
+### Yearly statistic categories
+
+`Yearly_Statistic` charts ten years for one account, or for a whole category. The **Category**
+dropdown offers all four account types, and each is read the way its `Acct_Type` is maintained:
+
+| Category | `Acct_Type` | Code prefix | Read as | Current year comes from |
+| --- | --- | --- | --- | --- |
+| Asset | `1` | `A` | closing balance | `TblAsset` (live) |
+| Liability | `2` | `L` | closing balance | `TblLiability` (live) |
+| Income | `3` | `I` | total for the year | `TblMonthlyTrans` |
+| Expense | `4` | `E` | total for the year | `TblMonthlyTrans` |
+
+Asset and Liability are **stocks** — a balance at a point in time — so past years take the balance
+at that year's last closed month, and the current year reads the live balance table. Income and
+Expense are **flows**, summed across every month of the year.
+
+Picking a single account shows it in its own currency; picking `ALL <category> (as a whole)`
+converts every account to AUD using December's rate for that year.
+
 ---
 
 ## Conventions
@@ -555,6 +574,9 @@ Things worth knowing before changing this code.
 - **`ETF_Stocks_Price` reaches the network** on the sync button, the only outbound call in the
   app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes for
   the duration of the request. Yahoo's endpoint is undocumented and can change without notice.
+- **`Setup_Activa_Passiva` is displayed as "Asset Liability Setup".** The class, file and the
+  `Mdl1.*ActivaPassiva*` posting routines keep the older Indonesian naming, so searching the
+  code for the on-screen label will not find them.
 - `Microsoft.Office.Interop.Excel` and `adodb` are referenced in the project file but **not used by
   any code** — both references can be dropped.
 

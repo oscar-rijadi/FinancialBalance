@@ -123,7 +123,7 @@
             // 
             this.MnActivaPassivaSetup.Name = "MnActivaPassivaSetup";
             this.MnActivaPassivaSetup.Size = new System.Drawing.Size(126, 20);
-            this.MnActivaPassivaSetup.Text = "Activa &Passiva Setup";
+            this.MnActivaPassivaSetup.Text = "Asset &Liability Setup";
             this.MnActivaPassivaSetup.Click += new System.EventHandler(this.MnActivaPassivaSetup_Click);
             // 
             // MnETFStockGroup
