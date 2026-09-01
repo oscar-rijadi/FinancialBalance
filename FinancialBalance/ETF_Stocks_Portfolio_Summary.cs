@@ -46,7 +46,9 @@ namespace FinancialBalance
             CmbPortfolio.Items.Add("All");
             FlagCodes.Add(null);
 
-            Mdl1.Ssql = "select Flag_Code, [Description] from TblETFStocksPurchaseFlag order by Flag_Code";
+            Mdl1.Ssql = "select Flag_Code, [Description] from TblETFStocksPurchaseFlag"
+                      + (chkMainOnly.Checked ? " where [Is_Main] = True" : "")
+                      + " order by Flag_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -71,6 +73,30 @@ namespace FinancialBalance
             {
                 return;
             }
+            Refresh_All();
+        }
+
+        //With Main Only ticked, only purchases whose flag is marked Is_Main count.  A purchase
+        //with no flag at all is excluded too, since it belongs to no main portfolio.
+        private string Main_Filter()
+        {
+            if (!chkMainOnly.Checked)
+            {
+                return "";
+            }
+            return " and [Flag_Code] In (select Flag_Code from TblETFStocksPurchaseFlag where [Is_Main] = True)";
+        }
+
+        private void chkMainOnly_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            //the portfolio list itself changes, so rebuild from the top
+            Filling = true;
+            Fill_Portfolio();
+            Filling = false;
             Refresh_All();
         }
 
@@ -241,7 +267,10 @@ namespace FinancialBalance
                 {
                     TmpWhere += " and [Flag_Code] = '" + TmpFlagCode + "'";
                 }
-                LblNote.Text = "Unsold holdings only" + (TmpFlagCode == null ? "" : "  (flag " + TmpFlagCode + ")");
+                TmpWhere += Main_Filter();
+                LblNote.Text = "Unsold holdings only"
+                    + (TmpFlagCode == null ? "" : "  (flag " + TmpFlagCode + ")")
+                    + (chkMainOnly.Checked ? "  (main portfolios only)" : "");
 
                 double TotalInvestment = 0;
                 double TotalCurrent = 0;
@@ -443,9 +472,11 @@ namespace FinancialBalance
                 {
                     TmpWhere += " and [Flag_Code] = '" + TmpFlagCode + "'";
                 }
+                TmpWhere += Main_Filter();
 
                 LblNote.Text = "Unsold purchases of " + parFullTicker
                     + (TmpFlagCode == null ? "" : "  (flag " + TmpFlagCode + ")")
+                    + (chkMainOnly.Checked ? "  (main portfolios only)" : "")
                     + (Priced ? "  -  latest price " + Mdl1.FormatAmt(TmpPrice)
                               : "  -  no price on record, profit/loss unknown");
 

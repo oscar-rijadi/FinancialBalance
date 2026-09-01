@@ -47,6 +47,8 @@
             this.Description = new System.Windows.Forms.TextBox();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
+            this.Label3 = new System.Windows.Forms.Label();
+            this.CmbIsMain = new System.Windows.Forms.ComboBox();
             this.gvFlag = new System.Windows.Forms.DataGridView();
             this.MainMenu1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvFlag)).BeginInit();
@@ -59,7 +61,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(320, 326);
+            this.CmdBack.Location = new System.Drawing.Point(320, 350);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -167,7 +169,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(232, 326);
+            this.CmdDel.Location = new System.Drawing.Point(232, 350);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -182,7 +184,7 @@
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(144, 326);
+            this.CmdSetup.Location = new System.Drawing.Point(144, 350);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -245,6 +247,29 @@
             this.Label2.TabIndex = 16;
             this.Label2.Text = "Description";
             //
+            // Label3
+            //
+            this.Label3.BackColor = System.Drawing.Color.Transparent;
+            this.Label3.Cursor = System.Windows.Forms.Cursors.Default;
+            this.Label3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label3.ForeColor = System.Drawing.Color.Black;
+            this.Label3.Location = new System.Drawing.Point(16, 318);
+            this.Label3.Name = "Label3";
+            this.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Label3.Size = new System.Drawing.Size(106, 25);
+            this.Label3.TabIndex = 18;
+            this.Label3.Text = "Is Main";
+            //
+            // CmbIsMain
+            //
+            this.CmbIsMain.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbIsMain.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbIsMain.FormattingEnabled = true;
+            this.CmbIsMain.Location = new System.Drawing.Point(128, 316);
+            this.CmbIsMain.Name = "CmbIsMain";
+            this.CmbIsMain.Size = new System.Drawing.Size(48, 22);
+            this.CmbIsMain.TabIndex = 19;
+            //
             // gvFlag
             //
             this.gvFlag.AllowUserToAddRows = false;
@@ -266,9 +291,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 372);
+            this.ClientSize = new System.Drawing.Size(616, 396);
             this.ControlBox = false;
             this.Controls.Add(this.gvFlag);
+            this.Controls.Add(this.CmbIsMain);
+            this.Controls.Add(this.Label3);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.Description);
@@ -314,6 +341,8 @@
         public System.Windows.Forms.TextBox Description;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
+        public System.Windows.Forms.Label Label3;
+        public System.Windows.Forms.ComboBox CmbIsMain;
         private System.Windows.Forms.DataGridView gvFlag;
     }
 }

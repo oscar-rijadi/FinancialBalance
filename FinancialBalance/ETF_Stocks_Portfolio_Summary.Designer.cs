@@ -44,6 +44,7 @@
             this.LblTotPctCap = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.CmbTicker = new System.Windows.Forms.ComboBox();
+            this.chkMainOnly = new System.Windows.Forms.CheckBox();
             this.gvDetail = new System.Windows.Forms.DataGridView();
             this.LblDTotUnit = new System.Windows.Forms.Label();
             this.LblDTotUnitCap = new System.Windows.Forms.Label();
@@ -100,9 +101,9 @@
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
             this.LblNote.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblNote.ForeColor = System.Drawing.Color.DimGray;
-            this.LblNote.Location = new System.Drawing.Point(385, 78);
+            this.LblNote.Location = new System.Drawing.Point(492, 78);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(520, 20);
+            this.LblNote.Size = new System.Drawing.Size(425, 20);
             this.LblNote.TabIndex = 3;
             this.LblNote.Text = "Unsold holdings only";
             //
@@ -238,6 +239,18 @@
             this.CmbTicker.Size = new System.Drawing.Size(260, 22);
             this.CmbTicker.TabIndex = 31;
             this.CmbTicker.SelectedIndexChanged += new System.EventHandler(this.CmbTicker_SelectedIndexChanged);
+            //
+            // chkMainOnly
+            //
+            this.chkMainOnly.BackColor = System.Drawing.Color.Transparent;
+            this.chkMainOnly.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkMainOnly.Location = new System.Drawing.Point(380, 74);
+            this.chkMainOnly.Name = "chkMainOnly";
+            this.chkMainOnly.Size = new System.Drawing.Size(100, 24);
+            this.chkMainOnly.TabIndex = 43;
+            this.chkMainOnly.Text = "Main Only";
+            this.chkMainOnly.UseVisualStyleBackColor = false;
+            this.chkMainOnly.CheckedChanged += new System.EventHandler(this.chkMainOnly_CheckedChanged);
             //
             // gvDetail
             //
@@ -418,6 +431,7 @@
             this.Controls.Add(this.LblDTotPct);
             this.Controls.Add(this.LblDTotPctCap);
             this.Controls.Add(this.gvDetail);
+            this.Controls.Add(this.chkMainOnly);
             this.Controls.Add(this.CmbTicker);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.CmdBack);
@@ -456,6 +470,7 @@
         public System.Windows.Forms.Label LblTotPctCap;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.ComboBox CmbTicker;
+        public System.Windows.Forms.CheckBox chkMainOnly;
         private System.Windows.Forms.DataGridView gvDetail;
         public System.Windows.Forms.Label LblDTotUnit;
         public System.Windows.Forms.Label LblDTotUnitCap;

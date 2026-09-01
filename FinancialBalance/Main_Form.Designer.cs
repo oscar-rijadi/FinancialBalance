@@ -182,7 +182,7 @@
             this.MnETFStocksPortfolioSummary});
             this.MnETFStockPortfolioGroup.Name = "MnETFStockPortfolioGroup";
             this.MnETFStockPortfolioGroup.Size = new System.Drawing.Size(216, 22);
-            this.MnETFStockPortfolioGroup.Text = "ETF/Stock &Portfolio";
+            this.MnETFStockPortfolioGroup.Text = "&ETF/Stock";
             // 
             // MnETFStocksPortfolioSummary
             // 

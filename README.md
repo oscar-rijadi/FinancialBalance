@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
-| `Inquiry` | **ETF/Stock Portfolio** | ETF/Stock Portfolio Summary |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Flag Setup |
 
@@ -110,7 +110,7 @@ flowchart LR
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
-    MAIN --> PORTG{{"ETF/Stock Portfolio"}}
+    MAIN --> PORTG{{"ETF/Stock"}}
     PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
 
     MAIN --> ADMIN{{"Administration"}}
@@ -148,7 +148,7 @@ flowchart LR
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
-| `ETF_Stocks_Portfolio_Summary` | Unsold holdings per ticker for a chosen portfolio, valued at the latest price, with profit/loss in red or green. |
+| `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -156,7 +156,7 @@ flowchart LR
 | `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 | `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
-| `Setup_ETF_Stocks_Flag` | Maintains purchase flag codes and descriptions. |
+| `Setup_ETF_Stocks_Flag` | Maintains purchase flag codes, descriptions and the `Is_Main` marker. |
 
 ---
 
@@ -263,6 +263,7 @@ erDiagram
     TblETFStocksPurchaseFlag {
         text Flag_Code PK "5 chars"
         text Description "50 chars"
+        bool Is_Main
     }
 ```
 
@@ -319,8 +320,12 @@ picking a transaction date reloads the day's grid, picking a sold date deliberat
 DRIP is **not stored**. The form re-derives it on selection as `Real_Total_Cost_Base == 0`.
 
 > **Access stores Yes/No `True` as `-1`.** A `WHERE Is_Sold = 1` matches nothing and fails
-> silently. Compare against `True`/`False` instead. Likewise, `Currency` is a reserved word:
-> it needs brackets in DDL (`[Currency]`), though plain DML tolerates it.
+> silently. Compare against `True`/`False` instead — the same applies to `In_YahooFinance` and
+> `Is_Main`, which are written as literals rather than `1`/`0`. Likewise, `Currency` is a reserved
+> word: it needs brackets in DDL (`[Currency]`), though plain DML tolerates it.
+>
+> A Yes/No column **added to an existing table lands as `False` on every row**, so a migration that
+> wants `Yes` has to follow the `ALTER` with an `UPDATE`.
 
 Neither table has a primary key — the same ticker can be bought twice on one day, so no
 combination of columns is reliably unique. Update and delete therefore match on **all of the
@@ -378,6 +383,21 @@ showing the `Description`. Picking one filters on that flag's `Flag_Code`; `All`
 flag filter. The dropdown holds descriptions but the codes are kept in an index-aligned list, so
 two flags sharing a description still filter correctly.
 
+A **Main Only** checkbox narrows everything to flags marked `Is_Main`. It filters the Portfolio
+dropdown as well as the data, so a non-main portfolio cannot be selected while it is ticked —
+otherwise the page would show an empty table with no explanation. A purchase carrying **no flag
+at all** is excluded too, since it belongs to no main portfolio. The note line says when the
+filter is on.
+
+A second **Full Ticker** dropdown chooses between two views. It is filled from the tickers the
+selected portfolio actually holds — taken from the summary result rather than a separate query,
+so the two views cannot disagree — and resets to `All` whenever the portfolio changes.
+
+| Full Ticker | View |
+| --- | --- |
+| `All` | The per-ticker summary below, with its four totals. |
+| a ticker | That ticker's individual unsold purchases, with its own five totals. Summary and its totals are hidden. |
+
 | Column | Derivation |
 | --- | --- |
 | `Full Ticker` | Grouping key. |
@@ -404,6 +424,42 @@ Four totals sit below the grid, each the sum of its own column:
 > total while contributing nothing to the other two. The three money figures then stop
 > reconciling, and the note line says how many holdings were left out. With every holding priced,
 > `Current - Investment == Profit` holds exactly.
+
+#### Single-ticker view
+
+Picking a ticker lists every unsold purchase behind it, under the same portfolio filter:
+
+| Column | Source |
+| --- | --- |
+| `Date` | `Trans_Date`, shown `dd-MMM-yyyy`. |
+| `Unit` | `Unit` |
+| `Cost Base Per Unit` | `Cost_Base` |
+| `Fee` | `Fee` |
+| `Total Cost Base` | `Total_Cost_Base` |
+| `Real Total Cost Base` | `Real_Total_Cost_Base` |
+| `Real Current Profit/Loss` | `Unit x latest price - Real_Total_Cost_Base`. **Green** above zero, **red** below. |
+| `Flag Code` | `Flag_Code` |
+
+Its five totals: `Total Unit`, `Grand Total Cost Base`, `Grand Total Real Cost Base`,
+`Total Real Current Profit/Loss` (coloured), and `Percentage Total Real Current Profit/Loss` —
+the profit over the **real** cost base when that is above zero, otherwise `0`.
+
+A DRIP purchase is where the two cost-base totals separate: it has a `Total_Cost_Base` but a
+`Real_Total_Cost_Base` of `0`, so its whole current value counts as profit, and the percentage
+divides by the smaller real figure. If the ticker has no price at all, the profit column and
+both profit totals read `-`, while the unit and cost-base totals still compute.
+
+#### Money formatting
+
+`Total_Cost_Base` and friends are stored as bare numbers, and the currency lives on the purchase.
+Where a figure is denominated in **AUD or USD** it is shown with a `$`; any other currency prints
+the bare amount. A negative reads `-$75.30`, not `$-75.30`.
+
+Unit counts and percentages never take a sign. A **total** only takes one when *every* row
+feeding it is AUD or USD — mixing currencies into one sum is already approximate, so stamping a
+dollar sign on the result would overstate it. The summary reads each ticker's currency with
+`Max([Currency])` rather than grouping by it, which would otherwise split one ticker across
+several rows.
 
 The aggregate is read fully before any price lookup, so no second reader is opened on the shared
 connection while the first is still live.

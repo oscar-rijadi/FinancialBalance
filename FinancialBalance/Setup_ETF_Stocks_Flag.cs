@@ -21,6 +21,10 @@ namespace FinancialBalance
 
         private void Setup_ETF_Stocks_Flag_Load(object sender, EventArgs e)
         {
+            Filling = true;
+            Mdl1.Fill_Yes_No(CmbIsMain);
+            Filling = false;
+
             Get_Data();
         }
 
@@ -76,15 +80,19 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvFlag.Columns.Clear();
-            gvFlag.ColumnCount = 2;
+            gvFlag.ColumnCount = 3;
             gvFlag.Columns[0].Name = "Flag Code";
-            gvFlag.Columns[0].FillWeight = 25;
+            gvFlag.Columns[0].FillWeight = 22;
             gvFlag.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             gvFlag.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             gvFlag.Columns[1].Name = "Description";
-            gvFlag.Columns[1].FillWeight = 75;
+            gvFlag.Columns[1].FillWeight = 62;
             gvFlag.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvFlag.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvFlag.Columns[2].Name = "Is Main";
+            gvFlag.Columns[2].FillWeight = 16;
+            gvFlag.Columns[2].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvFlag.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
         }
 
         private void Get_Data()
@@ -95,14 +103,16 @@ namespace FinancialBalance
 
             string[] row;
 
-            Mdl1.Ssql = "select Flag_Code, [Description] from TblETFStocksPurchaseFlag order by Flag_Code";
+            Mdl1.Ssql = "select Flag_Code, [Description], [Is_Main] from TblETFStocksPurchaseFlag order by Flag_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    row = new string[] { reader["Flag_Code"].ToString().Trim(), reader["Description"].ToString().Trim() };
+                    row = new string[] { reader["Flag_Code"].ToString().Trim(),
+                                         reader["Description"].ToString().Trim(),
+                                         (reader["Is_Main"].ToString().Trim() == "True" ? "Y" : "N") };
                     gvFlag.Rows.Add(row);
                 }
             }
@@ -134,6 +144,10 @@ namespace FinancialBalance
             {
                 Description.Text = "";
             }
+            if (gvFlag.CurrentRow.Cells[2].Value != null)
+            {
+                CmbIsMain.Text = gvFlag.CurrentRow.Cells[2].Value.ToString().Trim();
+            }
         }
 
         private void CmdSetup_Click(object sender, EventArgs e)
@@ -161,15 +175,18 @@ namespace FinancialBalance
                 }
                 reader.Close();
 
+                string strIsMain = (CmbIsMain.Text.Trim() == "Y" ? "True" : "False");
+
                 if (FlagRecNotExist)
                 {
-                    Mdl1.Ssql = "Insert into TblETFStocksPurchaseFlag ([Flag_Code], [Description]) values ('"
-                        + Flag_Code.Text.Trim() + "', '" + Description.Text.Trim() + "')";
+                    Mdl1.Ssql = "Insert into TblETFStocksPurchaseFlag ([Flag_Code], [Description], [Is_Main]) values ('"
+                        + Flag_Code.Text.Trim() + "', '" + Description.Text.Trim() + "', " + strIsMain + ")";
                 }
                 else
                 {
                     Mdl1.Ssql = "Update TblETFStocksPurchaseFlag set [Description] = '" + Description.Text.Trim()
-                        + "' where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
+                        + "', [Is_Main] = " + strIsMain
+                        + " where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
                 }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
