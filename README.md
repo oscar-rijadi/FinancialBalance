@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
 
@@ -112,6 +112,7 @@ flowchart LR
     MAIN --> YS["Yearly_Summary"]
     MAIN --> PORTG{{"ETF/Stock"}}
     PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
+    PORTG --> PDIV["ETF_Stocks_Portfolio_Diversification"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -152,6 +153,7 @@ flowchart LR
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
+| `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -389,6 +391,28 @@ value simply has no row. `Clear All` drops the whole type for that ticker after 
 Diversification_Name)`**. The type is stored rather than looked up by name, because names repeat
 across types: without it a ticker could not hold both an Investment Style `Other` and a Geographic
 `Other`, and the per-type totals could not be grouped correctly.
+
+### Portfolio diversification
+
+`ETF_Stocks_Portfolio_Diversification` takes the same **Portfolio** dropdown and **Main Only**
+checkbox as the summary page — same filters, same defaults — and re-cuts the holdings as **one pie
+chart per diversification type**. The charts are built at run time from
+`TblETFStocksDiversificationType`, so adding a type adds a chart with no code change.
+
+A slice is a ticker's weight in the portfolio, split by how that ticker is allocated:
+
+```
+slice(type, name) = SUM over tickers of  portfolio share of ticker  x  allocation %  / 100
+```
+
+where the portfolio share is the same `Total Current Amount / Total Portfolio Current Amount`
+the summary page shows in its **Percentage from whole portfolio** column. An unpriced holding has
+no current amount, so it carries no weight into any pie.
+
+Because each ticker's allocation totals 100 within a type, and the shares themselves total 100,
+a fully allocated portfolio produces pies that total 100 %. **Any shortfall is drawn as a grey
+`(unallocated)` slice** rather than left out — a pie normalises to the sum of its slices, so
+omitting the gap would silently inflate every other wedge.
 
 ### ETF/stock price rules
 
