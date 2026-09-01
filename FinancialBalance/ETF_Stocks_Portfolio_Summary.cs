@@ -20,6 +20,9 @@ namespace FinancialBalance
         //are not unique in TblETFStocksPurchaseFlag.
         List<string> FlagCodes = new List<string>();
 
+        //tickers the current portfolio actually holds, feeding the Full Ticker dropdown
+        List<string> SummaryTickers = new List<string>();
+
         public ETF_Stocks_Portfolio_Summary()
         {
             InitializeComponent();
@@ -31,7 +34,7 @@ namespace FinancialBalance
             Fill_Portfolio();
             Filling = false;
 
-            Get_Data();
+            Refresh_All();
         }
 
         //"All" plus one entry per purchase flag, showing its description
@@ -68,7 +71,71 @@ namespace FinancialBalance
             {
                 return;
             }
+            Refresh_All();
+        }
+
+        //Changing portfolio rebuilds the holdings list, so the ticker choice resets to All
+        private void Refresh_All()
+        {
             Get_Data();
+            Fill_Ticker();
+            Show_View();
+        }
+
+        private void Fill_Ticker()
+        {
+            Filling = true;
+            CmbTicker.Items.Clear();
+            CmbTicker.Items.Add("All");
+            for (int i = 0; i < SummaryTickers.Count; i++)
+            {
+                CmbTicker.Items.Add(SummaryTickers[i]);
+            }
+            CmbTicker.Text = "All";
+            Filling = false;
+        }
+
+        private void CmbTicker_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            Show_View();
+        }
+
+        //All  -> the per-ticker summary and its totals
+        //ticker -> the individual purchases behind that one holding
+        private void Show_View()
+        {
+            bool ShowAll = (CmbTicker.Text.Trim() == "" || CmbTicker.Text.Trim() == "All");
+
+            gvSummary.Visible = ShowAll;
+            LblTotInvCap.Visible = ShowAll;
+            LblTotInv.Visible = ShowAll;
+            LblTotCurCap.Visible = ShowAll;
+            LblTotCur.Visible = ShowAll;
+            LblTotPLCap.Visible = ShowAll;
+            LblTotPL.Visible = ShowAll;
+            LblTotPctCap.Visible = ShowAll;
+            LblTotPct.Visible = ShowAll;
+
+            gvDetail.Visible = !ShowAll;
+            LblDTotUnitCap.Visible = !ShowAll;
+            LblDTotUnit.Visible = !ShowAll;
+            LblDGrandTCBCap.Visible = !ShowAll;
+            LblDGrandTCB.Visible = !ShowAll;
+            LblDGrandTRCBCap.Visible = !ShowAll;
+            LblDGrandTRCB.Visible = !ShowAll;
+            LblDTotPLCap.Visible = !ShowAll;
+            LblDTotPL.Visible = !ShowAll;
+            LblDTotPctCap.Visible = !ShowAll;
+            LblDTotPct.Visible = !ShowAll;
+
+            if (!ShowAll)
+            {
+                Get_Detail(CmbTicker.Text.Trim());
+            }
         }
 
         private void Clear_Grid()
@@ -223,6 +290,12 @@ namespace FinancialBalance
                 Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced);
 
                 gvSummary.ClearSelection();
+
+                SummaryTickers.Clear();
+                for (int i = 0; i < Tickers.Count; i++)
+                {
+                    SummaryTickers.Add(Tickers[i]);
+                }
             }
             catch (Exception ex)
             {
@@ -269,6 +342,158 @@ namespace FinancialBalance
             else
             {
                 parLabel.ForeColor = System.Drawing.Color.Black;
+            }
+        }
+
+        //yyyyMMdd as stored, shown the way a person reads a date
+        private string Format_Date(string parYyyyMMdd)
+        {
+            DateTime TmpDate;
+            if (DateTime.TryParseExact(parYyyyMMdd, "yyyyMMdd", new CultureInfo("en-AU"),
+                                       DateTimeStyles.None, out TmpDate))
+            {
+                return TmpDate.ToString("dd-MMM-yyyy", new CultureInfo("en-AU"));
+            }
+            return parYyyyMMdd;
+        }
+
+        private void Clear_Detail_Grid()
+        {
+            gvDetail.Rows.Clear();
+            gvDetail.Columns.Clear();
+            gvDetail.ColumnCount = 8;
+            string[] names = new string[] { "Date", "Unit", "Cost Base Per Unit", "Fee",
+                                            "Total Cost Base", "Real Total Cost Base",
+                                            "Real Current Profit/Loss", "Flag Code" };
+            int[] weights = new int[] { 12, 10, 14, 9, 13, 15, 17, 10 };
+            for (int i = 0; i < 8; i++)
+            {
+                gvDetail.Columns[i].Name = names[i];
+                gvDetail.Columns[i].FillWeight = weights[i];
+                if (i == 0 || i == 7)
+                {
+                    gvDetail.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                    gvDetail.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                }
+                else
+                {
+                    gvDetail.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+                    gvDetail.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+            }
+        }
+
+        //Every unsold purchase behind one ticker, under the same portfolio filter
+        private void Get_Detail(string parFullTicker)
+        {
+            try
+            {
+                Clear_Detail_Grid();
+
+                string TmpFlagCode = null;
+                int idx = CmbPortfolio.SelectedIndex;
+                if (idx > 0 && idx < FlagCodes.Count)
+                {
+                    TmpFlagCode = FlagCodes[idx];
+                }
+
+                double TmpPrice;
+                bool Priced = Get_Latest_Price(parFullTicker, out TmpPrice);
+
+                string TmpWhere = " where Is_Sold = False and Full_Ticker = '" + parFullTicker + "'";
+                if (TmpFlagCode != null)
+                {
+                    TmpWhere += " and [Flag_Code] = '" + TmpFlagCode + "'";
+                }
+
+                LblNote.Text = "Unsold purchases of " + parFullTicker
+                    + (TmpFlagCode == null ? "" : "  (flag " + TmpFlagCode + ")")
+                    + (Priced ? "  -  latest price " + Mdl1.FormatAmt(TmpPrice)
+                              : "  -  no price on record, profit/loss unknown");
+
+                double TotUnit = 0;
+                double TotCostBase = 0;
+                double TotRealCostBase = 0;
+                double TotProfit = 0;
+
+                Mdl1.Ssql = "select Trans_Date, Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, [Flag_Code]"
+                          + " from TblETFStocksPurchase" + TmpWhere + " order by Trans_Date";
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                List<string[]> Rows = new List<string[]>();
+                List<double> Profits = new List<double>();
+                while (reader.Read())
+                {
+                    double TmpUnit = Read_Double(reader["Unit"]);
+                    double TmpCostBase = Read_Double(reader["Cost_Base"]);
+                    double TmpFee = Read_Double(reader["Fee"]);
+                    double TmpTotal = Read_Double(reader["Total_Cost_Base"]);
+                    double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
+                    string TmpFlag = (reader["Flag_Code"] == DBNull.Value ? "" : reader["Flag_Code"].ToString().Trim());
+
+                    double TmpProfit = 0;
+                    string strProfit = "-";
+                    if (Priced)
+                    {
+                        TmpProfit = Math.Round((TmpUnit * TmpPrice) - TmpRealTotal, 2);
+                        strProfit = Mdl1.FormatAmt(TmpProfit);
+                        TotProfit += TmpProfit;
+                    }
+
+                    Rows.Add(new string[] {
+                        Format_Date(reader["Trans_Date"].ToString().Trim()),
+                        TmpUnit.ToString("#,##0.0000"),
+                        Mdl1.FormatAmt(TmpCostBase),
+                        Mdl1.FormatAmt(TmpFee),
+                        Mdl1.FormatAmt(TmpTotal),
+                        Mdl1.FormatAmt(TmpRealTotal),
+                        strProfit,
+                        TmpFlag });
+                    Profits.Add(TmpProfit);
+
+                    TotUnit += TmpUnit;
+                    TotCostBase += TmpTotal;
+                    TotRealCostBase += TmpRealTotal;
+                }
+                reader.Close();
+
+                for (int i = 0; i < Rows.Count; i++)
+                {
+                    gvDetail.Rows.Add(Rows[i]);
+                    if (Priced)
+                    {
+                        Colour_Cell(gvDetail.Rows[gvDetail.Rows.Count - 1].Cells[6], Profits[i]);
+                    }
+                }
+                gvDetail.ClearSelection();
+
+                double TmpPercent = 0;
+                if (TotRealCostBase > 0)
+                {
+                    TmpPercent = (TotProfit / TotRealCostBase) * 100;
+                }
+
+                LblDTotUnit.Text = TotUnit.ToString("#,##0.0000");
+                LblDGrandTCB.Text = Mdl1.FormatAmt(TotCostBase);
+                LblDGrandTRCB.Text = Mdl1.FormatAmt(TotRealCostBase);
+                if (Priced)
+                {
+                    LblDTotPL.Text = Mdl1.FormatAmt(TotProfit);
+                    LblDTotPct.Text = TmpPercent.ToString("#,##0.00") + " %";
+                    Colour_Label(LblDTotPL, TotProfit);
+                    Colour_Label(LblDTotPct, TmpPercent);
+                }
+                else
+                {
+                    LblDTotPL.Text = "-";
+                    LblDTotPct.Text = "-";
+                    Colour_Label(LblDTotPL, 0);
+                    Colour_Label(LblDTotPct, 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
             }
         }
 
