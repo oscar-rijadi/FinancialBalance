@@ -81,7 +81,7 @@ namespace FinancialBalance
         {
             gvFlag.Columns.Clear();
             gvFlag.ColumnCount = 3;
-            gvFlag.Columns[0].Name = "Flag Code";
+            gvFlag.Columns[0].Name = "Portfolio Code";
             gvFlag.Columns[0].FillWeight = 22;
             gvFlag.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             gvFlag.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -103,14 +103,14 @@ namespace FinancialBalance
 
             string[] row;
 
-            Mdl1.Ssql = "select Flag_Code, [Description], [Is_Main] from TblETFStocksPurchaseFlag order by Flag_Code";
+            Mdl1.Ssql = "select Portfolio_Code, [Description], [Is_Main] from TblETFStocksPortfolioCode order by Portfolio_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.HasRows)
             {
                 while (reader.Read())
                 {
-                    row = new string[] { reader["Flag_Code"].ToString().Trim(),
+                    row = new string[] { reader["Portfolio_Code"].ToString().Trim(),
                                          reader["Description"].ToString().Trim(),
                                          (reader["Is_Main"].ToString().Trim() == "True" ? "Y" : "N") };
                     gvFlag.Rows.Add(row);
@@ -135,7 +135,7 @@ namespace FinancialBalance
                 return;
             }
 
-            Flag_Code.Text = gvFlag.CurrentRow.Cells[0].Value.ToString().Trim();
+            Portfolio_Code.Text = gvFlag.CurrentRow.Cells[0].Value.ToString().Trim();
             if (gvFlag.CurrentRow.Cells[1].Value != null)
             {
                 Description.Text = gvFlag.CurrentRow.Cells[1].Value.ToString().Trim();
@@ -156,13 +156,13 @@ namespace FinancialBalance
             {
                 bool FlagRecNotExist;
 
-                if (Flag_Code.Text.Trim() == "")
+                if (Portfolio_Code.Text.Trim() == "")
                 {
-                    MessageBox.Show("Flag Code cannot be empty !", "Error Message");
+                    MessageBox.Show("Portfolio Code cannot be empty !", "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "select * from TblETFStocksPurchaseFlag where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
+                Mdl1.Ssql = "select * from TblETFStocksPortfolioCode where Portfolio_Code = '" + Portfolio_Code.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
@@ -179,19 +179,19 @@ namespace FinancialBalance
 
                 if (FlagRecNotExist)
                 {
-                    Mdl1.Ssql = "Insert into TblETFStocksPurchaseFlag ([Flag_Code], [Description], [Is_Main]) values ('"
-                        + Flag_Code.Text.Trim() + "', '" + Description.Text.Trim() + "', " + strIsMain + ")";
+                    Mdl1.Ssql = "Insert into TblETFStocksPortfolioCode ([Portfolio_Code], [Description], [Is_Main]) values ('"
+                        + Portfolio_Code.Text.Trim() + "', '" + Description.Text.Trim() + "', " + strIsMain + ")";
                 }
                 else
                 {
-                    Mdl1.Ssql = "Update TblETFStocksPurchaseFlag set [Description] = '" + Description.Text.Trim()
+                    Mdl1.Ssql = "Update TblETFStocksPortfolioCode set [Description] = '" + Description.Text.Trim()
                         + "', [Is_Main] = " + strIsMain
-                        + " where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
+                        + " where Portfolio_Code = '" + Portfolio_Code.Text.Trim() + "'";
                 }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Create or Update successfully for Flag Code : " + Flag_Code.Text.Trim(), "Success");
+                MessageBox.Show("Create or Update successfully for Portfolio Code : " + Portfolio_Code.Text.Trim(), "Success");
 
                 Get_Data();
             }
@@ -207,7 +207,7 @@ namespace FinancialBalance
             {
                 bool FlagRecNotExist;
 
-                Mdl1.Ssql = "select * from TblETFStocksPurchaseFlag where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
+                Mdl1.Ssql = "select * from TblETFStocksPortfolioCode where Portfolio_Code = '" + Portfolio_Code.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
@@ -222,17 +222,17 @@ namespace FinancialBalance
 
                 if (FlagRecNotExist)
                 {
-                    MessageBox.Show("Data not found for Flag Code : " + Flag_Code.Text.Trim(), "Error Message");
+                    MessageBox.Show("Data not found for Portfolio Code : " + Portfolio_Code.Text.Trim(), "Error Message");
                     return;
                 }
                 else
                 {
-                    Mdl1.Ssql = "Delete from TblETFStocksPurchaseFlag  where Flag_Code = '" + Flag_Code.Text.Trim() + "'";
+                    Mdl1.Ssql = "Delete from TblETFStocksPortfolioCode  where Portfolio_Code = '" + Portfolio_Code.Text.Trim() + "'";
                 }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for Flag Code : " + Flag_Code.Text.Trim(), "Success");
+                MessageBox.Show("Delete successfully for Portfolio Code : " + Portfolio_Code.Text.Trim(), "Success");
 
                 Get_Data();
             }

@@ -43,7 +43,7 @@
             this.Label21 = new System.Windows.Forms.Label();
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdSetup = new System.Windows.Forms.Button();
-            this.Flag_Code = new System.Windows.Forms.TextBox();
+            this.Portfolio_Code = new System.Windows.Forms.TextBox();
             this.Description = new System.Windows.Forms.TextBox();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
@@ -156,12 +156,13 @@
             this.Label21.Cursor = System.Windows.Forms.Cursors.Default;
             this.Label21.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(110, 30);
+            this.Label21.Location = new System.Drawing.Point(20, 30);
             this.Label21.Name = "Label21";
             this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label21.Size = new System.Drawing.Size(430, 41);
+            this.Label21.Size = new System.Drawing.Size(576, 41);
             this.Label21.TabIndex = 10;
-            this.Label21.Text = "ETF/STOCK FLAG SETUP";
+            this.Label21.Text = "ETF/STOCK PORTFOLIO CODE SETUP";
+            this.Label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             //
             // CmdDel
             //
@@ -193,19 +194,19 @@
             this.CmdSetup.UseVisualStyleBackColor = false;
             this.CmdSetup.Click += new System.EventHandler(this.CmdSetup_Click);
             //
-            // Flag_Code
+            // Portfolio_Code
             //
-            this.Flag_Code.AcceptsReturn = true;
-            this.Flag_Code.BackColor = System.Drawing.SystemColors.Window;
-            this.Flag_Code.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.Flag_Code.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Flag_Code.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.Flag_Code.Location = new System.Drawing.Point(128, 270);
-            this.Flag_Code.MaxLength = 5;
-            this.Flag_Code.Name = "Flag_Code";
-            this.Flag_Code.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Flag_Code.Size = new System.Drawing.Size(54, 20);
-            this.Flag_Code.TabIndex = 13;
+            this.Portfolio_Code.AcceptsReturn = true;
+            this.Portfolio_Code.BackColor = System.Drawing.SystemColors.Window;
+            this.Portfolio_Code.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.Portfolio_Code.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Portfolio_Code.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.Portfolio_Code.Location = new System.Drawing.Point(128, 270);
+            this.Portfolio_Code.MaxLength = 5;
+            this.Portfolio_Code.Name = "Portfolio_Code";
+            this.Portfolio_Code.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Portfolio_Code.Size = new System.Drawing.Size(54, 20);
+            this.Portfolio_Code.TabIndex = 13;
             //
             // Description
             //
@@ -232,7 +233,7 @@
             this.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label1.Size = new System.Drawing.Size(106, 25);
             this.Label1.TabIndex = 15;
-            this.Label1.Text = "Flag Code";
+            this.Label1.Text = "Portfolio Code";
             //
             // Label2
             //
@@ -299,7 +300,7 @@
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.Description);
-            this.Controls.Add(this.Flag_Code);
+            this.Controls.Add(this.Portfolio_Code);
             this.Controls.Add(this.CmdSetup);
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.Label21);
@@ -311,7 +312,7 @@
             this.MainMenuStrip = this.MainMenu1;
             this.Name = "Setup_ETF_Stocks_Flag";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "ETF/Stock Flag Setup";
+            this.Text = "ETF/Stock Portfolio Code Setup";
             this.Load += new System.EventHandler(this.Setup_ETF_Stocks_Flag_Load);
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
@@ -337,7 +338,7 @@
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Button CmdDel;
         public System.Windows.Forms.Button CmdSetup;
-        public System.Windows.Forms.TextBox Flag_Code;
+        public System.Windows.Forms.TextBox Portfolio_Code;
         public System.Windows.Forms.TextBox Description;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;

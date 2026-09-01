@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
-| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Flag Setup |
+| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup |
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -156,7 +156,7 @@ flowchart LR
 | `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 | `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
-| `Setup_ETF_Stocks_Flag` | Maintains purchase flag codes, descriptions and the `Is_Main` marker. |
+| `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
 
 ---
 
@@ -180,7 +180,7 @@ erDiagram
     TblCurrCode     ||--o{ TblETFStocksPurchase : "denominates"
     TblCurrCode     ||--o{ TblETFStocksSale : "denominates"
     TblETFStocks    ||--o{ TblETFStocksPrice : "priced by"
-    TblETFStocksPurchaseFlag ||--o{ TblETFStocksPurchase : "flags"
+    TblETFStocksPortfolioCode ||--o{ TblETFStocksPurchase : "codes"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -244,7 +244,7 @@ erDiagram
         decimal Total_Cost_Base "2 dp"
         decimal Real_Total_Cost_Base "2 dp"
         bool    Is_Sold
-        text    Flag_Code "from the flag list"
+        text    Portfolio_Code "from the portfolio code list"
         text    Sold_Date "yyyyMMdd, null unless sold"
     }
     TblETFStocksSale {
@@ -260,8 +260,8 @@ erDiagram
         text    Full_Ticker PK "joins TblETFStocks"
         decimal Price "2 dp"
     }
-    TblETFStocksPurchaseFlag {
-        text Flag_Code PK "5 chars"
+    TblETFStocksPortfolioCode {
+        text Portfolio_Code PK "5 chars"
         text Description "50 chars"
         bool Is_Main
     }
@@ -304,7 +304,7 @@ The page shows both for a chosen date, purchases first.
 | `Real_Total_Cost_Base` | Buy only. `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
 | `Sold_Date` | Buy only. Shown only while Sold is ticked; stored `yyyyMMdd`, otherwise `Null`. |
-| `Flag_Code` | Buy only. Dropdown from `TblETFStocksPurchaseFlag`, defaulting to `OB`. |
+| `Portfolio_Code` | Buy only. Dropdown from `TblETFStocksPortfolioCode`, defaulting to `OB`. |
 | `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
 
@@ -378,16 +378,16 @@ as such; network failures report the underlying error.
 `ETF_Stocks_Portfolio_Summary` aggregates `TblETFStocksPurchase` into one row per `Full_Ticker`.
 It only ever counts **unsold** lots (`Is_Sold = False`) — a sold lot leaves the portfolio.
 
-The **Portfolio** dropdown offers `All` plus one entry per row in `TblETFStocksPurchaseFlag`,
-showing the `Description`. Picking one filters on that flag's `Flag_Code`; `All` applies no
-flag filter. The dropdown holds descriptions but the codes are kept in an index-aligned list, so
-two flags sharing a description still filter correctly.
+The **Portfolio** dropdown offers `All` plus one entry per row in `TblETFStocksPortfolioCode`,
+showing the `Description`. Picking one filters on that row's `Portfolio_Code`; `All` applies no
+code filter. The dropdown holds descriptions but the codes are kept in an index-aligned list, so
+two portfolio codes sharing a description still filter correctly.
 
-A **Main Only** checkbox narrows everything to flags marked `Is_Main`, and is **ticked when the
+A **Main Only** checkbox narrows everything to portfolio codes marked `Is_Main`, and is **ticked when the
 page opens**, so the default view is main portfolios only. It filters the Portfolio dropdown as
 well as the data, so a non-main portfolio cannot be selected while it is ticked —
-otherwise the page would show an empty table with no explanation. A purchase carrying **no flag
-at all** is excluded too, since it belongs to no main portfolio. The note line says when the
+otherwise the page would show an empty table with no explanation. A purchase carrying **no
+portfolio code at all** is excluded too, since it belongs to no main portfolio. The note line says when the
 filter is on.
 
 A second **Full Ticker** dropdown chooses between two views. It is filled from the tickers the
@@ -445,7 +445,7 @@ Picking a ticker lists every unsold purchase behind it, under the same portfolio
 | `Total Cost Base` | `Total_Cost_Base` |
 | `Real Total Cost Base` | `Real_Total_Cost_Base` |
 | `Real Current Profit/Loss` | `Unit x latest price - Real_Total_Cost_Base`. **Green** above zero, **red** below. |
-| `Flag Code` | `Flag_Code` |
+| `Portfolio Code` | `Portfolio_Code` |
 
 Its five totals: `Total Unit`, `Grand Total Cost Base`, `Grand Total Real Cost Base`,
 `Total Real Current Profit/Loss` (coloured), and `Percentage Total Real Current Profit/Loss` —
@@ -472,7 +472,7 @@ The aggregate is read fully before any price lookup, so no second reader is open
 connection while the first is still live.
 
 The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — 8 accounts,
-11 tickers with their latest prices, and a single purchase flag `OB` ("Oz Betashares Direct")
+11 tickers with their latest prices, and a single portfolio code `OB` ("Oz Betashares Direct")
 which is the default the transaction page selects.
 
 ---
@@ -668,6 +668,11 @@ Things worth knowing before changing this code.
   the app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes
   for the duration. **Sync all** makes one request per flagged ticker in sequence, so the freeze
   scales with how many you track. Yahoo's endpoint is undocumented and can change without notice.
+- **`Setup_ETF_Stocks_Flag` still carries the older "Flag" naming internally.** It is displayed
+  as **ETF/Stock Portfolio Code Setup** and edits `TblETFStocksPortfolioCode.Portfolio_Code`, but
+  the form class, its file and the identifiers `CmbFlagCode`, `OrgFlagCode` and
+  `MnETFStocksFlagSetup` were left as they were — searching the code for the on-screen name will
+  not find them.
 - **`Setup_Activa_Passiva` is displayed as "Asset Liability Setup".** The class, file and the
   `Mdl1.*ActivaPassiva*` posting routines keep the older Indonesian naming, so searching the
   code for the on-screen label will not find them.

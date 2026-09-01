@@ -392,7 +392,7 @@ namespace FinancialBalance
 
         private string Select_Purchases()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code], [Sold_Date] from TblETFStocksPurchase"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date] from TblETFStocksPurchase"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -432,7 +432,7 @@ namespace FinancialBalance
                     Mdl1.FormatAmt(TmpRealTotal),
                     (TmpRealTotal == 0 ? "Y" : "N"),
                     (reader["Is_Sold"].ToString().Trim() == "True" ? "Y" : "N"),
-                    reader["Flag_Code"].ToString().Trim(),
+                    reader["Portfolio_Code"].ToString().Trim(),
                     "-",
                     "-"
                 };
@@ -637,7 +637,7 @@ namespace FinancialBalance
                         OrgTotalCostBase = Sql_Num(reader["Total_Cost_Base"], 2);
                         OrgRealTotalCostBase = Sql_Num(reader["Real_Total_Cost_Base"], 2);
                         OrgIsSold = (reader["Is_Sold"].ToString().Trim() == "True" ? "True" : "False");
-                        OrgFlagCode = (reader["Flag_Code"] == DBNull.Value ? null : reader["Flag_Code"].ToString().Trim());
+                        OrgFlagCode = (reader["Portfolio_Code"] == DBNull.Value ? null : reader["Portfolio_Code"].ToString().Trim());
                         OrgSoldDate = (reader["Sold_Date"] == DBNull.Value ? null : reader["Sold_Date"].ToString().Trim());
                         if (OrgSoldDate == "")
                         {
@@ -842,7 +842,7 @@ namespace FinancialBalance
                        + Where_Col("Total_Cost_Base", OrgTotalCostBase)
                        + Where_Col("Real_Total_Cost_Base", OrgRealTotalCostBase)
                        + " and Is_Sold = " + OrgIsSold
-                       + (OrgFlagCode == null ? " and [Flag_Code] Is Null" : " and [Flag_Code] = '" + OrgFlagCode + "'")
+                       + (OrgFlagCode == null ? " and [Portfolio_Code] Is Null" : " and [Portfolio_Code] = '" + OrgFlagCode + "'")
                        + (OrgSoldDate == null ? " and [Sold_Date] Is Null" : " and [Sold_Date] = '" + OrgSoldDate + "'");
             }
             else
@@ -899,7 +899,7 @@ namespace FinancialBalance
             }
             else
             {
-                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code], [Sold_Date]) values ("
+                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
                     + "'" + Get_Trans_Date() + "', "
                     + "'" + CmbFullTicker.Text.Trim() + "', "
                     + "'" + CmbCurrency.Text.Trim() + "', "
@@ -1007,7 +1007,7 @@ namespace FinancialBalance
                         + "Total_Cost_Base = " + Num(TmpTotal, 2) + ", "
                         + "Real_Total_Cost_Base = " + Num(TmpRealTotal, 2) + ", "
                         + "Is_Sold = " + (chkSold.Checked ? "True" : "False") + ", "
-                        + "[Flag_Code] = '" + CmbFlagCode.Text.Trim() + "', "
+                        + "[Portfolio_Code] = '" + CmbFlagCode.Text.Trim() + "', "
                         + "[Sold_Date] = " + Sql_Sold_Date()
                         + Where_Original();
                     cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);

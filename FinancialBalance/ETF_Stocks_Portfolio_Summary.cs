@@ -17,7 +17,7 @@ namespace FinancialBalance
 
         //Index-aligned with CmbPortfolio: entry 0 is "All" and carries no flag code.
         //Held as a list rather than looked up by description, because descriptions
-        //are not unique in TblETFStocksPurchaseFlag.
+        //are not unique in TblETFStocksPortfolioCode.
         List<string> FlagCodes = new List<string>();
 
         //tickers the current portfolio actually holds, feeding the Full Ticker dropdown
@@ -46,14 +46,14 @@ namespace FinancialBalance
             CmbPortfolio.Items.Add("All");
             FlagCodes.Add(null);
 
-            Mdl1.Ssql = "select Flag_Code, [Description] from TblETFStocksPurchaseFlag"
+            Mdl1.Ssql = "select Portfolio_Code, [Description] from TblETFStocksPortfolioCode"
                       + (chkMainOnly.Checked ? " where [Is_Main] = True" : "")
-                      + " order by Flag_Code";
+                      + " order by Portfolio_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                string TmpCode = reader["Flag_Code"].ToString().Trim();
+                string TmpCode = reader["Portfolio_Code"].ToString().Trim();
                 string TmpDesc = reader["Description"].ToString().Trim();
                 if (TmpDesc == "")
                 {
@@ -84,7 +84,7 @@ namespace FinancialBalance
             {
                 return "";
             }
-            return " and [Flag_Code] In (select Flag_Code from TblETFStocksPurchaseFlag where [Is_Main] = True)";
+            return " and [Portfolio_Code] In (select Portfolio_Code from TblETFStocksPortfolioCode where [Is_Main] = True)";
         }
 
         private void chkMainOnly_CheckedChanged(object sender, EventArgs e)
@@ -266,7 +266,7 @@ namespace FinancialBalance
                 string TmpWhere = " where Is_Sold = False";
                 if (TmpFlagCode != null)
                 {
-                    TmpWhere += " and [Flag_Code] = '" + TmpFlagCode + "'";
+                    TmpWhere += " and [Portfolio_Code] = '" + TmpFlagCode + "'";
                 }
                 TmpWhere += Main_Filter();
                 LblNote.Text = "Unsold holdings only"
@@ -461,7 +461,7 @@ namespace FinancialBalance
             gvDetail.ColumnCount = 8;
             string[] names = new string[] { "Date", "Unit", "Cost Base Per Unit", "Fee",
                                             "Total Cost Base", "Real Total Cost Base",
-                                            "Real Current Profit/Loss", "Flag Code" };
+                                            "Real Current Profit/Loss", "Portfolio Code" };
             int[] weights = new int[] { 12, 10, 14, 9, 13, 15, 17, 10 };
             for (int i = 0; i < 8; i++)
             {
@@ -500,7 +500,7 @@ namespace FinancialBalance
                 string TmpWhere = " where Is_Sold = False and Full_Ticker = '" + parFullTicker + "'";
                 if (TmpFlagCode != null)
                 {
-                    TmpWhere += " and [Flag_Code] = '" + TmpFlagCode + "'";
+                    TmpWhere += " and [Portfolio_Code] = '" + TmpFlagCode + "'";
                 }
                 TmpWhere += Main_Filter();
 
@@ -518,7 +518,7 @@ namespace FinancialBalance
                 bool AllDollar = true;
                 int RowCount = 0;
 
-                Mdl1.Ssql = "select Trans_Date, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, [Flag_Code]"
+                Mdl1.Ssql = "select Trans_Date, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, [Portfolio_Code]"
                           + " from TblETFStocksPurchase" + TmpWhere + " order by Trans_Date";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
@@ -531,7 +531,7 @@ namespace FinancialBalance
                     double TmpFee = Read_Double(reader["Fee"]);
                     double TmpTotal = Read_Double(reader["Total_Cost_Base"]);
                     double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
-                    string TmpFlag = (reader["Flag_Code"] == DBNull.Value ? "" : reader["Flag_Code"].ToString().Trim());
+                    string TmpFlag = (reader["Portfolio_Code"] == DBNull.Value ? "" : reader["Portfolio_Code"].ToString().Trim());
                     string TmpCurr = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
                     if (!Is_Dollar(TmpCurr))
                     {

@@ -277,7 +277,7 @@ namespace FinancialBalance
             bool DataExist;
             bool DefaultExist = false;
             ComboFlag.Items.Clear();
-            Ssql = "Select Flag_Code from TblETFStocksPurchaseFlag order by Flag_Code";
+            Ssql = "Select Portfolio_Code from TblETFStocksPortfolioCode order by Portfolio_Code";
             OleDbCommand cmd = new OleDbCommand(Ssql, conn);
             reader = cmd.ExecuteReader();
 
@@ -285,7 +285,7 @@ namespace FinancialBalance
             {
                 while (reader.Read())
                 {
-                    string TmpFlag = reader["Flag_Code"].ToString().Trim();
+                    string TmpFlag = reader["Portfolio_Code"].ToString().Trim();
                     ComboFlag.Items.Add(TmpFlag);
                     if (TmpFlag == "OB")
                     {

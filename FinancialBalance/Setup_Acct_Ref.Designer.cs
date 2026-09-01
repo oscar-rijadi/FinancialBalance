@@ -154,7 +154,7 @@
             // 
             this.MnETFStocksFlagSetup.Name = "MnETFStocksFlagSetup";
             this.MnETFStocksFlagSetup.Size = new System.Drawing.Size(130, 20);
-            this.MnETFStocksFlagSetup.Text = "ETF/Stock &Flag Setup";
+            this.MnETFStocksFlagSetup.Text = "ETF/Stock &Portfolio Code Setup";
             this.MnETFStocksFlagSetup.Click += new System.EventHandler(this.MnETFStocksFlagSetup_Click);
             // 
             // CmdDel
