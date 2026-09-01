@@ -164,6 +164,31 @@ namespace FinancialBalance
             }
         }
 
+        //AUD and USD are shown with a dollar sign; any other currency stays bare.
+        //A negative reads -$12.34 rather than $-12.34.
+        private bool Is_Dollar(string parCurr)
+        {
+            if (parCurr == null)
+            {
+                return false;
+            }
+            string TmpCurr = parCurr.Trim().ToUpper();
+            return (TmpCurr == "AUD" || TmpCurr == "USD");
+        }
+
+        private string Money(double parValue, string parCurr)
+        {
+            if (!Is_Dollar(parCurr))
+            {
+                return Mdl1.FormatAmt(parValue);
+            }
+            if (parValue < 0)
+            {
+                return "-$" + Mdl1.FormatAmt(Math.Abs(parValue));
+            }
+            return "$" + Mdl1.FormatAmt(parValue);
+        }
+
         private double Read_Double(object parValue)
         {
             double TmpValue;
@@ -222,13 +247,16 @@ namespace FinancialBalance
                 double TotalCurrent = 0;
                 double TotalProfit = 0;
                 int Unpriced = 0;
+                bool AllDollar = true;
 
                 //read the aggregate first, so no reader is open while prices are looked up
                 List<string> Tickers = new List<string>();
+                List<string> Currs = new List<string>();
                 List<double> TotUnits = new List<double>();
                 List<double> TotInvs = new List<double>();
 
-                Mdl1.Ssql = "select Full_Ticker, Sum(Unit) as TotUnit, Sum(Real_Total_Cost_Base) as TotInv"
+                //a ticker is bought in one currency, so Max picks that one value
+                Mdl1.Ssql = "select Full_Ticker, Max([Currency]) as Curr, Sum(Unit) as TotUnit, Sum(Real_Total_Cost_Base) as TotInv"
                           + " from TblETFStocksPurchase" + TmpWhere
                           + " group by Full_Ticker order by Full_Ticker";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
@@ -236,6 +264,7 @@ namespace FinancialBalance
                 while (reader.Read())
                 {
                     Tickers.Add(reader["Full_Ticker"].ToString().Trim());
+                    Currs.Add(reader["Curr"] == DBNull.Value ? "" : reader["Curr"].ToString().Trim());
                     TotUnits.Add(Read_Double(reader["TotUnit"]));
                     TotInvs.Add(Read_Double(reader["TotInv"]));
                 }
@@ -251,9 +280,13 @@ namespace FinancialBalance
                     {
                         //no price on record - the derived figures are unknown, not zero
                         row = new string[] { Tickers[i], TotUnits[i].ToString("#,##0.0000"),
-                                             Mdl1.FormatAmt(TotInvs[i]), "-", "-", "-", "-" };
+                                             Money(TotInvs[i], Currs[i]), "-", "-", "-", "-" };
                         gvSummary.Rows.Add(row);
                         TotalInvestment += TotInvs[i];
+                        if (!Is_Dollar(Currs[i]))
+                        {
+                            AllDollar = false;
+                        }
                         Unpriced++;
                         continue;
                     }
@@ -269,10 +302,10 @@ namespace FinancialBalance
                     row = new string[] {
                         Tickers[i],
                         TotUnits[i].ToString("#,##0.0000"),
-                        Mdl1.FormatAmt(TotInvs[i]),
-                        Mdl1.FormatAmt(TmpPrice),
-                        Mdl1.FormatAmt(TmpCurrent),
-                        Mdl1.FormatAmt(TmpProfit),
+                        Money(TotInvs[i], Currs[i]),
+                        Money(TmpPrice, Currs[i]),
+                        Money(TmpCurrent, Currs[i]),
+                        Money(TmpProfit, Currs[i]),
                         TmpPercent.ToString("#,##0.00") + " %"
                     };
                     gvSummary.Rows.Add(row);
@@ -285,9 +318,14 @@ namespace FinancialBalance
                     TotalInvestment += TotInvs[i];
                     TotalCurrent += TmpCurrent;
                     TotalProfit += TmpProfit;
+                    if (!Is_Dollar(Currs[i]))
+                    {
+                        AllDollar = false;
+                    }
                 }
 
-                Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced);
+                Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced,
+                            (Tickers.Count > 0 && AllDollar ? "AUD" : ""));
 
                 gvSummary.ClearSelection();
 
@@ -306,7 +344,7 @@ namespace FinancialBalance
         //Each total is the sum of its own column.  An unpriced holding has a known
         //investment but no current value, so it lifts the investment total only - the
         //note says so, because the three figures then no longer reconcile.
-        private void Show_Totals(double parInvestment, double parCurrent, double parProfit, int parUnpriced)
+        private void Show_Totals(double parInvestment, double parCurrent, double parProfit, int parUnpriced, string parCurr)
         {
             double TmpPercent = 0;
             if (parInvestment > 0)
@@ -314,9 +352,9 @@ namespace FinancialBalance
                 TmpPercent = (parProfit / parInvestment) * 100;
             }
 
-            LblTotInv.Text = Mdl1.FormatAmt(parInvestment);
-            LblTotCur.Text = Mdl1.FormatAmt(parCurrent);
-            LblTotPL.Text = Mdl1.FormatAmt(parProfit);
+            LblTotInv.Text = Money(parInvestment, parCurr);
+            LblTotCur.Text = Money(parCurrent, parCurr);
+            LblTotPL.Text = Money(parProfit, parCurr);
             LblTotPct.Text = TmpPercent.ToString("#,##0.00") + " %";
 
             Colour_Label(LblTotPL, parProfit);
@@ -411,12 +449,15 @@ namespace FinancialBalance
                     + (Priced ? "  -  latest price " + Mdl1.FormatAmt(TmpPrice)
                               : "  -  no price on record, profit/loss unknown");
 
+
                 double TotUnit = 0;
                 double TotCostBase = 0;
                 double TotRealCostBase = 0;
                 double TotProfit = 0;
+                bool AllDollar = true;
+                int RowCount = 0;
 
-                Mdl1.Ssql = "select Trans_Date, Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, [Flag_Code]"
+                Mdl1.Ssql = "select Trans_Date, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, [Flag_Code]"
                           + " from TblETFStocksPurchase" + TmpWhere + " order by Trans_Date";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
@@ -430,23 +471,29 @@ namespace FinancialBalance
                     double TmpTotal = Read_Double(reader["Total_Cost_Base"]);
                     double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
                     string TmpFlag = (reader["Flag_Code"] == DBNull.Value ? "" : reader["Flag_Code"].ToString().Trim());
+                    string TmpCurr = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
+                    if (!Is_Dollar(TmpCurr))
+                    {
+                        AllDollar = false;
+                    }
+                    RowCount++;
 
                     double TmpProfit = 0;
                     string strProfit = "-";
                     if (Priced)
                     {
                         TmpProfit = Math.Round((TmpUnit * TmpPrice) - TmpRealTotal, 2);
-                        strProfit = Mdl1.FormatAmt(TmpProfit);
+                        strProfit = Money(TmpProfit, TmpCurr);
                         TotProfit += TmpProfit;
                     }
 
                     Rows.Add(new string[] {
                         Format_Date(reader["Trans_Date"].ToString().Trim()),
                         TmpUnit.ToString("#,##0.0000"),
-                        Mdl1.FormatAmt(TmpCostBase),
-                        Mdl1.FormatAmt(TmpFee),
-                        Mdl1.FormatAmt(TmpTotal),
-                        Mdl1.FormatAmt(TmpRealTotal),
+                        Money(TmpCostBase, TmpCurr),
+                        Money(TmpFee, TmpCurr),
+                        Money(TmpTotal, TmpCurr),
+                        Money(TmpRealTotal, TmpCurr),
                         strProfit,
                         TmpFlag });
                     Profits.Add(TmpProfit);
@@ -473,12 +520,14 @@ namespace FinancialBalance
                     TmpPercent = (TotProfit / TotRealCostBase) * 100;
                 }
 
+                string TmpTotCurr = (RowCount > 0 && AllDollar ? "AUD" : "");
+
                 LblDTotUnit.Text = TotUnit.ToString("#,##0.0000");
-                LblDGrandTCB.Text = Mdl1.FormatAmt(TotCostBase);
-                LblDGrandTRCB.Text = Mdl1.FormatAmt(TotRealCostBase);
+                LblDGrandTCB.Text = Money(TotCostBase, TmpTotCurr);
+                LblDGrandTRCB.Text = Money(TotRealCostBase, TmpTotCurr);
                 if (Priced)
                 {
-                    LblDTotPL.Text = Mdl1.FormatAmt(TotProfit);
+                    LblDTotPL.Text = Money(TotProfit, TmpTotCurr);
                     LblDTotPct.Text = TmpPercent.ToString("#,##0.00") + " %";
                     Colour_Label(LblDTotPL, TotProfit);
                     Colour_Label(LblDTotPct, TmpPercent);
