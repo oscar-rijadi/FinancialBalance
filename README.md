@@ -383,8 +383,9 @@ showing the `Description`. Picking one filters on that flag's `Flag_Code`; `All`
 flag filter. The dropdown holds descriptions but the codes are kept in an index-aligned list, so
 two flags sharing a description still filter correctly.
 
-A **Main Only** checkbox narrows everything to flags marked `Is_Main`. It filters the Portfolio
-dropdown as well as the data, so a non-main portfolio cannot be selected while it is ticked —
+A **Main Only** checkbox narrows everything to flags marked `Is_Main`, and is **ticked when the
+page opens**, so the default view is main portfolios only. It filters the Portfolio dropdown as
+well as the data, so a non-main portfolio cannot be selected while it is ticked —
 otherwise the page would show an empty table with no explanation. A purchase carrying **no flag
 at all** is excluded too, since it belongs to no main portfolio. The note line says when the
 filter is on.

@@ -243,6 +243,8 @@
             // chkMainOnly
             //
             this.chkMainOnly.BackColor = System.Drawing.Color.Transparent;
+            this.chkMainOnly.Checked = true;
+            this.chkMainOnly.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkMainOnly.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkMainOnly.Location = new System.Drawing.Point(380, 74);
             this.chkMainOnly.Name = "chkMainOnly";
