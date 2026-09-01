@@ -168,12 +168,13 @@ namespace FinancialBalance
         {
             gvSummary.Rows.Clear();
             gvSummary.Columns.Clear();
-            gvSummary.ColumnCount = 7;
+            gvSummary.ColumnCount = 8;
             string[] names = new string[] { "Full Ticker", "Total Unit", "Total Investment", "Current Price",
                                             "Total Current Amount", "Current Real Profit/Loss",
-                                            "Percentage Current Real Profit/Loss" };
-            int[] weights = new int[] { 11, 11, 14, 12, 16, 17, 19 };
-            for (int i = 0; i < 7; i++)
+                                            "Percentage Current Real Profit/Loss",
+                                            "Percentage from whole portfolio" };
+            int[] weights = new int[] { 10, 10, 12, 11, 14, 15, 16, 16 };
+            for (int i = 0; i < 8; i++)
             {
                 gvSummary.Columns[i].Name = names[i];
                 gvSummary.Columns[i].FillWeight = weights[i];
@@ -299,58 +300,87 @@ namespace FinancialBalance
                 }
                 reader.Close();
 
+                //first pass works out every figure and the portfolio totals
+                List<bool> PricedList = new List<bool>();
+                List<double> Prices = new List<double>();
+                List<double> Currents = new List<double>();
+                List<double> Profits = new List<double>();
+                List<double> Percents = new List<double>();
+
                 for (int i = 0; i < Tickers.Count; i++)
                 {
                     double TmpPrice;
                     bool Priced = Get_Latest_Price(Tickers[i], out TmpPrice);
 
+                    double TmpCurrent = 0;
+                    double TmpProfit = 0;
+                    double TmpPercent = 0;
+
+                    if (Priced)
+                    {
+                        TmpCurrent = Math.Round(TotUnits[i] * TmpPrice, 2);
+                        TmpProfit = Math.Round(TmpCurrent - TotInvs[i], 2);
+                        if (TotInvs[i] > 0)
+                        {
+                            TmpPercent = (TmpProfit / TotInvs[i]) * 100;
+                        }
+                        TotalCurrent += TmpCurrent;
+                        TotalProfit += TmpProfit;
+                    }
+                    else
+                    {
+                        Unpriced++;
+                    }
+
+                    TotalInvestment += TotInvs[i];
+                    if (!Is_Dollar(Currs[i]))
+                    {
+                        AllDollar = false;
+                    }
+
+                    PricedList.Add(Priced);
+                    Prices.Add(TmpPrice);
+                    Currents.Add(TmpCurrent);
+                    Profits.Add(TmpProfit);
+                    Percents.Add(TmpPercent);
+                }
+
+                //second pass renders, now that the share of the whole portfolio is known
+                for (int i = 0; i < Tickers.Count; i++)
+                {
                     string[] row;
-                    if (!Priced)
+
+                    if (!PricedList[i])
                     {
                         //no price on record - the derived figures are unknown, not zero
                         row = new string[] { Tickers[i], TotUnits[i].ToString("#,##0.0000"),
-                                             Money(TotInvs[i], Currs[i]), "-", "-", "-", "-" };
+                                             Money(TotInvs[i], Currs[i]), "-", "-", "-", "-", "-" };
                         gvSummary.Rows.Add(row);
-                        TotalInvestment += TotInvs[i];
-                        if (!Is_Dollar(Currs[i]))
-                        {
-                            AllDollar = false;
-                        }
-                        Unpriced++;
                         continue;
                     }
 
-                    double TmpCurrent = Math.Round(TotUnits[i] * TmpPrice, 2);
-                    double TmpProfit = Math.Round(TmpCurrent - TotInvs[i], 2);
-                    double TmpPercent = 0;
-                    if (TotInvs[i] > 0)
+                    double TmpShare = 0;
+                    if (TotalCurrent > 0)
                     {
-                        TmpPercent = (TmpProfit / TotInvs[i]) * 100;
+                        TmpShare = (Currents[i] / TotalCurrent) * 100;
                     }
 
                     row = new string[] {
                         Tickers[i],
                         TotUnits[i].ToString("#,##0.0000"),
                         Money(TotInvs[i], Currs[i]),
-                        Money(TmpPrice, Currs[i]),
-                        Money(TmpCurrent, Currs[i]),
-                        Money(TmpProfit, Currs[i]),
-                        TmpPercent.ToString("#,##0.00") + " %"
+                        Money(Prices[i], Currs[i]),
+                        Money(Currents[i], Currs[i]),
+                        Money(Profits[i], Currs[i]),
+                        Percents[i].ToString("#,##0.00") + " %",
+                        TmpShare.ToString("#,##0.00") + " %"
                     };
                     gvSummary.Rows.Add(row);
 
                     //gain green, loss red, break-even left alone
                     int RowIdx = gvSummary.Rows.Count - 1;
-                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[5], TmpProfit);
-                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[6], TmpPercent);
-
-                    TotalInvestment += TotInvs[i];
-                    TotalCurrent += TmpCurrent;
-                    TotalProfit += TmpProfit;
-                    if (!Is_Dollar(Currs[i]))
-                    {
-                        AllDollar = false;
-                    }
+                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[5], Profits[i]);
+                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[6], Percents[i]);
                 }
 
                 Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced,

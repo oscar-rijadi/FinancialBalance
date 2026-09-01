@@ -408,9 +408,15 @@ so the two views cannot disagree — and resets to `All` whenever the portfolio 
 | `Total Current Amount` | `round(Total Unit x Current Price, 2)` |
 | `Current Real Profit/Loss` | `Total Current Amount - Total Investment`. **Green** above zero, **red** below. |
 | `Percentage Current Real Profit/Loss` | `Profit / Total Investment x 100` when investment is above zero, otherwise `0`. Same colouring. |
+| `Percentage from whole portfolio` | `Total Current Amount / Total Portfolio Current Amount x 100` when that total is above zero, otherwise `0`. Not coloured. |
 
-> **A ticker with no price row shows `-`** in the four price-derived columns rather than
-> computing against a price of zero, which would misreport the holding as a total loss.
+> **A ticker with no price row shows `-`** in the five price-derived columns rather than
+> computing against a price of zero, which would misreport the holding as a total loss. It is
+> left out of the portfolio total as well, so the remaining shares still add up to 100 %.
+
+`Percentage from whole portfolio` divides by a figure that is only known once every row has been
+priced, so the grid is built in **two passes** — the first works out each row and the running
+totals, the second renders. Prices are still fetched once per ticker.
 
 Four totals sit below the grid, each the sum of its own column:
 
