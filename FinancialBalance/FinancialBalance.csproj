@@ -159,6 +159,18 @@
     <Compile Include="Setup_Curr_Rate.Designer.cs">
       <DependentUpon>Setup_Curr_Rate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Setup_ETF_Stocks_Div_Type.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Setup_ETF_Stocks_Div_Type.Designer.cs">
+      <DependentUpon>Setup_ETF_Stocks_Div_Type.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_ETF_Stocks_Div.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Setup_ETF_Stocks_Div.Designer.cs">
+      <DependentUpon>Setup_ETF_Stocks_Div.cs</DependentUpon>
+    </Compile>
     <Compile Include="Setup_ETF_Stocks_Flag.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -233,6 +245,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_Curr_Rate.resx">
       <DependentUpon>Setup_Curr_Rate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Setup_ETF_Stocks_Div_Type.resx">
+      <DependentUpon>Setup_ETF_Stocks_Div_Type.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Setup_ETF_Stocks_Div.resx">
+      <DependentUpon>Setup_ETF_Stocks_Div.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_ETF_Stocks_Flag.resx">
       <DependentUpon>Setup_ETF_Stocks_Flag.cs</DependentUpon>

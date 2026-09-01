@@ -43,6 +43,8 @@
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksDivTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksDivSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Acct_Type_Name = new System.Windows.Forms.TextBox();
             this.Label2 = new System.Windows.Forms.Label();
             this.Acct_Type = new System.Windows.Forms.TextBox();
@@ -165,7 +167,9 @@
             this.MnETFStockGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksSuffixSetup,
             this.MnETFStocksSetup,
-            this.MnETFStocksFlagSetup});
+            this.MnETFStocksFlagSetup,
+            this.MnETFStocksDivTypeSetup,
+            this.MnETFStocksDivSetup});
             this.MnETFStockGroup.Name = "MnETFStockGroup";
             this.MnETFStockGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockGroup.Text = "&ETF/Stock";
@@ -190,6 +194,20 @@
             this.MnETFStocksFlagSetup.Size = new System.Drawing.Size(130, 20);
             this.MnETFStocksFlagSetup.Text = "ETF/Stock &Portfolio Code Setup";
             this.MnETFStocksFlagSetup.Click += new System.EventHandler(this.MnETFStocksFlagSetup_Click);
+            // 
+            // MnETFStocksDivTypeSetup
+            // 
+            this.MnETFStocksDivTypeSetup.Name = "MnETFStocksDivTypeSetup";
+            this.MnETFStocksDivTypeSetup.Size = new System.Drawing.Size(130, 20);
+            this.MnETFStocksDivTypeSetup.Text = "ETF/Stock &Diversification Type Setup";
+            this.MnETFStocksDivTypeSetup.Click += new System.EventHandler(this.MnETFStocksDivTypeSetup_Click);
+            // 
+            // MnETFStocksDivSetup
+            // 
+            this.MnETFStocksDivSetup.Name = "MnETFStocksDivSetup";
+            this.MnETFStocksDivSetup.Size = new System.Drawing.Size(130, 20);
+            this.MnETFStocksDivSetup.Text = "ETF/Stock Di&versification Setup";
+            this.MnETFStocksDivSetup.Click += new System.EventHandler(this.MnETFStocksDivSetup_Click);
             // 
             // Acct_Type_Name
             // 
@@ -308,6 +326,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivTypeSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivSetup;
         public System.Windows.Forms.TextBox Acct_Type_Name;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.TextBox Acct_Type;

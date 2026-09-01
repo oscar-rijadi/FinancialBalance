@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
-| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup |
+| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup |
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -124,6 +124,8 @@ flowchart LR
     ETFG --> SES["Setup_ETF_Stocks_Suffix"]
     ETFG --> SET["Setup_ETF_Stocks"]
     ETFG --> SEF["Setup_ETF_Stocks_Flag"]
+    ETFG --> SDT["Setup_ETF_Stocks_Div_Type"]
+    ETFG --> SDV["Setup_ETF_Stocks_Div"]
 
     DI <--> MC
     MC <--> ETX
@@ -157,12 +159,14 @@ flowchart LR
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 | `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
+| `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
+| `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 
 ---
 
 ## Data model
 
-Fourteen tables. **No foreign keys or relationships are defined in the database** — the links below are
+Sixteen tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -181,6 +185,7 @@ erDiagram
     TblCurrCode     ||--o{ TblETFStocksSale : "denominates"
     TblETFStocks    ||--o{ TblETFStocksPrice : "priced by"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPurchase : "codes"
+    TblETFStocksDiversificationType ||--o{ TblETFStocksDiversification : "groups"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -265,6 +270,13 @@ erDiagram
         text Description "50 chars"
         bool Is_Main
     }
+    TblETFStocksDiversificationType {
+        text Name PK "50 chars"
+    }
+    TblETFStocksDiversification {
+        text Type PK "matches a Type Name"
+        text Name PK "50 chars"
+    }
 ```
 
 ### Reference data
@@ -333,6 +345,25 @@ row's original column values**, and each grid row remembers which table it came 
 identical transactions exist on one date, the form says so and asks before touching both.
 Changing an existing row's type moves it between the tables (delete then insert), since an
 in-place update cannot cross tables.
+
+### Diversification
+
+Holdings can be classified along several axes at once. `TblETFStocksDiversificationType` names the
+axes, and `TblETFStocksDiversification` holds the values available within each one — its `Type`
+column carries the `Name` of a row in the type table.
+
+| Type | Values |
+| --- | --- |
+| `Asset Class` | Stock, Commodity, Defensive Asset |
+| `Investment Style` | High Growth, High Yield, Market Capitalization Driven, Other |
+| `Geographic` | Australia, US, Ex Australia and Ex US, Other |
+
+The diversification table is keyed on **`(Type, Name)`**, so the same name can appear under two
+different types — `Other` exists under both Investment Style and Geographic — while a duplicate
+within one type is rejected.
+
+Deleting a type that still has values is refused with a count of what depends on it. Nothing in
+the database enforces that link, so the check lives in `Setup_ETF_Stocks_Div_Type`.
 
 ### ETF/stock price rules
 

@@ -10,16 +10,16 @@ using System.Data.OleDb;
 
 namespace FinancialBalance
 {
-    public partial class Setup_ETF_Stocks_Suffix : Form
+    public partial class Setup_ETF_Stocks_Div_Type : Form
     {
         bool Filling;
 
-        public Setup_ETF_Stocks_Suffix()
+        public Setup_ETF_Stocks_Div_Type()
         {
             InitializeComponent();
         }
 
-        private void Setup_ETF_Stocks_Suffix_Load(object sender, EventArgs e)
+        private void Setup_ETF_Stocks_Div_Type_Load(object sender, EventArgs e)
         {
             Get_Data();
         }
@@ -59,6 +59,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksSuffixSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Suffix Setup_ETF_Stocks_Suffix = new Setup_ETF_Stocks_Suffix();
+            Setup_ETF_Stocks_Suffix.Show();
+            this.Close();
+        }
+
         private void MnETFStocksSetup_Click(object sender, EventArgs e)
         {
             Setup_ETF_Stocks Setup_ETF_Stocks = new Setup_ETF_Stocks();
@@ -73,13 +80,6 @@ namespace FinancialBalance
             this.Close();
         }
 
-        private void MnETFStocksDivTypeSetup_Click(object sender, EventArgs e)
-        {
-            Setup_ETF_Stocks_Div_Type Setup_ETF_Stocks_Div_Type = new Setup_ETF_Stocks_Div_Type();
-            Setup_ETF_Stocks_Div_Type.Show();
-            this.Close();
-        }
-
         private void MnETFStocksDivSetup_Click(object sender, EventArgs e)
         {
             Setup_ETF_Stocks_Div Setup_ETF_Stocks_Div = new Setup_ETF_Stocks_Div();
@@ -89,12 +89,13 @@ namespace FinancialBalance
 
         private void Clear_Grid()
         {
-            gvSuffix.Columns.Clear();
-            gvSuffix.ColumnCount = 1;
-            gvSuffix.Columns[0].Name = "Suffix";
-            gvSuffix.Columns[0].FillWeight = 100;
-            gvSuffix.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            gvSuffix.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvDivType.Rows.Clear();
+            gvDivType.Columns.Clear();
+            gvDivType.ColumnCount = 1;
+            gvDivType.Columns[0].Name = "Name";
+            gvDivType.Columns[0].FillWeight = 100;
+            gvDivType.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvDivType.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
         }
 
         private void Get_Data()
@@ -103,38 +104,32 @@ namespace FinancialBalance
 
             Clear_Grid();
 
-            string[] row;
-
-            Mdl1.Ssql = "select Suffix from TblETFStocksExchangeSuffix order by Suffix";
+            Mdl1.Ssql = "select [Name] from TblETFStocksDiversificationType order by [Name]";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
-            if (reader.HasRows)
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    row = new string[] { reader["Suffix"].ToString().Trim() };
-                    gvSuffix.Rows.Add(row);
-                }
+                gvDivType.Rows.Add(new string[] { reader["Name"].ToString().Trim() });
             }
             reader.Close();
 
-            gvSuffix.ClearSelection();
+            gvDivType.ClearSelection();
 
             Filling = false;
         }
 
-        //Clicking a row copies it into the text box so it can be deleted
-        private void gvSuffix_SelectionChanged(object sender, EventArgs e)
+        //Clicking a row loads it back into the input so it can be amended or deleted
+        private void gvDivType_SelectionChanged(object sender, EventArgs e)
         {
             if (Filling)
             {
                 return;
             }
-            if (gvSuffix.CurrentRow == null || gvSuffix.CurrentRow.Cells[0].Value == null)
+            if (gvDivType.CurrentRow == null || gvDivType.CurrentRow.Cells[0].Value == null)
             {
                 return;
             }
-            Suffix.Text = gvSuffix.CurrentRow.Cells[0].Value.ToString().Trim();
+            Div_Type_Name.Text = gvDivType.CurrentRow.Cells[0].Value.ToString().Trim();
         }
 
         private void CmdSetup_Click(object sender, EventArgs e)
@@ -143,36 +138,29 @@ namespace FinancialBalance
             {
                 bool FlagRecNotExist;
 
-                if (Suffix.Text.Trim() == "")
+                if (Div_Type_Name.Text.Trim() == "")
                 {
-                    MessageBox.Show("Suffix cannot be empty !", "Error Message");
+                    MessageBox.Show("Name cannot be empty !", "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "select * from TblETFStocksExchangeSuffix where Suffix = '" + Suffix.Text.Trim() + "'";
+                Mdl1.Ssql = "select * from TblETFStocksDiversificationType where [Name] = '" + Div_Type_Name.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    FlagRecNotExist = false;
-                }
-                else
-                {
-                    FlagRecNotExist = true;
-                }
+                FlagRecNotExist = !reader.HasRows;
                 reader.Close();
 
                 if (!FlagRecNotExist)
                 {
-                    MessageBox.Show("Suffix already exists : " + Suffix.Text.Trim(), "Error Message");
+                    MessageBox.Show("Diversification Type already exists : " + Div_Type_Name.Text.Trim(), "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "Insert into TblETFStocksExchangeSuffix (Suffix) values ('" + Suffix.Text.Trim() + "')";
+                Mdl1.Ssql = "Insert into TblETFStocksDiversificationType ([Name]) values ('" + Div_Type_Name.Text.Trim() + "')";
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Create successfully for Suffix : " + Suffix.Text.Trim(), "Success");
+                MessageBox.Show("Create successfully for Diversification Type : " + Div_Type_Name.Text.Trim(), "Success");
 
                 Get_Data();
             }
@@ -182,38 +170,47 @@ namespace FinancialBalance
             }
         }
 
+        //A type in use by TblETFStocksDiversification is kept, so the two tables stay in step
         private void CmdDel_Click(object sender, EventArgs e)
         {
             try
             {
                 bool FlagRecNotExist;
+                int TmpUsed = 0;
 
-                Mdl1.Ssql = "select * from TblETFStocksExchangeSuffix where Suffix = '" + Suffix.Text.Trim() + "'";
+                Mdl1.Ssql = "select * from TblETFStocksDiversificationType where [Name] = '" + Div_Type_Name.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    FlagRecNotExist = false;
-                }
-                else
-                {
-                    FlagRecNotExist = true;
-                }
+                FlagRecNotExist = !reader.HasRows;
                 reader.Close();
 
                 if (FlagRecNotExist)
                 {
-                    MessageBox.Show("Data not found for Suffix : " + Suffix.Text.Trim(), "Error Message");
+                    MessageBox.Show("Data not found for Diversification Type : " + Div_Type_Name.Text.Trim(), "Error Message");
                     return;
                 }
-                else
+
+                Mdl1.Ssql = "select count(*) as N from TblETFStocksDiversification where [Type] = '" + Div_Type_Name.Text.Trim() + "'";
+                cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                reader = cmd.ExecuteReader();
+                if (reader.Read())
                 {
-                    Mdl1.Ssql = "Delete from TblETFStocksExchangeSuffix  where Suffix = '" + Suffix.Text.Trim() + "'";
+                    TmpUsed = int.Parse(reader["N"].ToString());
                 }
+                reader.Close();
+
+                if (TmpUsed > 0)
+                {
+                    MessageBox.Show(Div_Type_Name.Text.Trim() + " is used by " + TmpUsed.ToString()
+                        + " diversification(s). Remove those first.", "Error Message");
+                    return;
+                }
+
+                Mdl1.Ssql = "Delete from TblETFStocksDiversificationType  where [Name] = '" + Div_Type_Name.Text.Trim() + "'";
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for Suffix : " + Suffix.Text.Trim(), "Success");
+                MessageBox.Show("Delete successfully for Diversification Type : " + Div_Type_Name.Text.Trim(), "Success");
 
                 Get_Data();
             }

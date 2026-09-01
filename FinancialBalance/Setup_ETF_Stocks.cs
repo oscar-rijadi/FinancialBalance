@@ -79,6 +79,20 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksDivTypeSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Div_Type Setup_ETF_Stocks_Div_Type = new Setup_ETF_Stocks_Div_Type();
+            Setup_ETF_Stocks_Div_Type.Show();
+            this.Close();
+        }
+
+        private void MnETFStocksDivSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Div Setup_ETF_Stocks_Div = new Setup_ETF_Stocks_Div();
+            Setup_ETF_Stocks_Div.Show();
+            this.Close();
+        }
+
         //Full Ticker is derived, never typed : "None" suffix means the ticker stands alone
         private void Calculate_Full_Ticker()
         {
