@@ -41,6 +41,7 @@
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDivTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksDivAllocSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.CmdSetup = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
@@ -117,7 +118,8 @@
             this.MnETFStocksSuffixSetup,
             this.MnETFStocksSetup,
             this.MnETFStocksFlagSetup,
-            this.MnETFStocksDivTypeSetup});
+            this.MnETFStocksDivTypeSetup,
+            this.MnETFStocksDivAllocSetup});
             this.MnETFStockGroup.Name = "MnETFStockGroup";
             this.MnETFStockGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockGroup.Text = "&ETF/Stock";
@@ -149,6 +151,13 @@
             this.MnETFStocksDivTypeSetup.Size = new System.Drawing.Size(130, 20);
             this.MnETFStocksDivTypeSetup.Text = "ETF/Stock &Diversification Type Setup";
             this.MnETFStocksDivTypeSetup.Click += new System.EventHandler(this.MnETFStocksDivTypeSetup_Click);
+            // 
+            // MnETFStocksDivAllocSetup
+            // 
+            this.MnETFStocksDivAllocSetup.Name = "MnETFStocksDivAllocSetup";
+            this.MnETFStocksDivAllocSetup.Size = new System.Drawing.Size(130, 20);
+            this.MnETFStocksDivAllocSetup.Text = "ETF/Stock Diversification &Allocation";
+            this.MnETFStocksDivAllocSetup.Click += new System.EventHandler(this.MnETFStocksDivAllocSetup_Click);
             //
             // Label21
             //
@@ -324,6 +333,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivTypeSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivAllocSetup;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Button CmdSetup;
         public System.Windows.Forms.Button CmdDel;

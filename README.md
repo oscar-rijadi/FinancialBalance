@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
-| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup |
+| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -126,6 +126,7 @@ flowchart LR
     ETFG --> SEF["Setup_ETF_Stocks_Flag"]
     ETFG --> SDT["Setup_ETF_Stocks_Div_Type"]
     ETFG --> SDV["Setup_ETF_Stocks_Div"]
+    ETFG --> SDA["Setup_ETF_Stocks_Div_Alloc"]
 
     DI <--> MC
     MC <--> ETX
@@ -161,12 +162,13 @@ flowchart LR
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
+| `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 
 ---
 
 ## Data model
 
-Sixteen tables. **No foreign keys or relationships are defined in the database** — the links below are
+Seventeen tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -186,6 +188,8 @@ erDiagram
     TblETFStocks    ||--o{ TblETFStocksPrice : "priced by"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPurchase : "codes"
     TblETFStocksDiversificationType ||--o{ TblETFStocksDiversification : "groups"
+    TblETFStocksDiversification ||--o{ TblETFStocksDiversificationAllocation : "allocated by"
+    TblETFStocks ||--o{ TblETFStocksDiversificationAllocation : "split across"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -277,6 +281,12 @@ erDiagram
         text Type PK "matches a Type Name"
         text Name PK "50 chars"
     }
+    TblETFStocksDiversificationAllocation {
+        text Full_Ticker PK "joins TblETFStocks"
+        text Diversification_Type PK "50 chars"
+        text Diversification_Name PK "50 chars"
+        int  Percentage "whole number"
+    }
 ```
 
 ### Reference data
@@ -364,6 +374,21 @@ within one type is rejected.
 
 Deleting a type that still has values is refused with a count of what depends on it. Nothing in
 the database enforces that link, so the check lives in `Setup_ETF_Stocks_Div_Type`.
+
+#### Allocation
+
+`Setup_ETF_Stocks_Div_Alloc` splits one ticker across the values of **one type at a time**. It
+lists every value of the chosen type with an editable percentage, shows a running total that is
+green at 100 and red otherwise, and **refuses to save at any other total**.
+
+Saving rewrites that ticker-and-type in one pass — delete, then re-insert — so the stored data can
+never be left part-way at a total other than 100. Only non-zero rows are written, so an unused
+value simply has no row. `Clear All` drops the whole type for that ticker after a confirmation.
+
+`TblETFStocksDiversificationAllocation` is keyed on **`(Full_Ticker, Diversification_Type,
+Diversification_Name)`**. The type is stored rather than looked up by name, because names repeat
+across types: without it a ticker could not hold both an Investment Style `Other` and a Geographic
+`Other`, and the per-type totals could not be grouped correctly.
 
 ### ETF/stock price rules
 

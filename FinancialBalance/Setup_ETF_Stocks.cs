@@ -93,6 +93,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksDivAllocSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Div_Alloc Setup_ETF_Stocks_Div_Alloc = new Setup_ETF_Stocks_Div_Alloc();
+            Setup_ETF_Stocks_Div_Alloc.Show();
+            this.Close();
+        }
+
         //Full Ticker is derived, never typed : "None" suffix means the ticker stands alone
         private void Calculate_Full_Ticker()
         {

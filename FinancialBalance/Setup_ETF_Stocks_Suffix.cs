@@ -87,6 +87,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksDivAllocSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Div_Alloc Setup_ETF_Stocks_Div_Alloc = new Setup_ETF_Stocks_Div_Alloc();
+            Setup_ETF_Stocks_Div_Alloc.Show();
+            this.Close();
+        }
+
         private void Clear_Grid()
         {
             gvSuffix.Columns.Clear();

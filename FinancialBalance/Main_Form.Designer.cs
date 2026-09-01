@@ -56,6 +56,7 @@
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDivTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDivSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksDivAllocSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnExit = new System.Windows.Forms.ToolStripMenuItem();
             this.LblDate = new System.Windows.Forms.Label();
             this.LblVer = new System.Windows.Forms.Label();
@@ -256,7 +257,8 @@
             this.MnETFStocksSetup,
             this.MnETFStocksFlagSetup,
             this.MnETFStocksDivTypeSetup,
-            this.MnETFStocksDivSetup});
+            this.MnETFStocksDivSetup,
+            this.MnETFStocksDivAllocSetup});
             this.MnETFStockGroup.Name = "MnETFStockGroup";
             this.MnETFStockGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockGroup.Text = "&ETF/Stock";
@@ -295,6 +297,13 @@
             this.MnETFStocksDivSetup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksDivSetup.Text = "ETF/Stock Di&versification Setup";
             this.MnETFStocksDivSetup.Click += new System.EventHandler(this.MnETFStocksDivSetup_Click);
+            // 
+            // MnETFStocksDivAllocSetup
+            // 
+            this.MnETFStocksDivAllocSetup.Name = "MnETFStocksDivAllocSetup";
+            this.MnETFStocksDivAllocSetup.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksDivAllocSetup.Text = "ETF/Stock Diversification &Allocation";
+            this.MnETFStocksDivAllocSetup.Click += new System.EventHandler(this.MnETFStocksDivAllocSetup_Click);
             // 
             // MnExit
             // 
@@ -766,6 +775,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivTypeSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivAllocSetup;
         public System.Windows.Forms.ToolStripMenuItem MnExit;
         public System.Windows.Forms.Timer DateTimeTimer;
         public System.Windows.Forms.Label LblDate;
