@@ -65,6 +65,11 @@
             this.txtSellingTotalAmount = new System.Windows.Forms.TextBox();
             this.Label11 = new System.Windows.Forms.Label();
             this.CmbFlagCode = new System.Windows.Forms.ComboBox();
+            this.Label12 = new System.Windows.Forms.Label();
+            this.CmbSoldDD = new System.Windows.Forms.ComboBox();
+            this.CmbSoldMM = new System.Windows.Forms.ComboBox();
+            this.CmbSoldYear = new System.Windows.Forms.ComboBox();
+            this.CmdSoldCal = new System.Windows.Forms.Button();
             this.chkDRIP = new System.Windows.Forms.CheckBox();
             this.chkSold = new System.Windows.Forms.CheckBox();
             this.CmdCreate = new System.Windows.Forms.Button();
@@ -496,6 +501,63 @@
             this.CmbFlagCode.Size = new System.Drawing.Size(140, 22);
             this.CmbFlagCode.TabIndex = 37;
             //
+            // Label12
+            //
+            this.Label12.BackColor = System.Drawing.Color.Transparent;
+            this.Label12.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label12.ForeColor = System.Drawing.Color.Black;
+            this.Label12.Location = new System.Drawing.Point(19, 480);
+            this.Label12.Name = "Label12";
+            this.Label12.Size = new System.Drawing.Size(125, 22);
+            this.Label12.TabIndex = 38;
+            this.Label12.Text = "Sold Date";
+            //
+            // CmbSoldDD
+            //
+            this.CmbSoldDD.BackColor = System.Drawing.SystemColors.Window;
+            this.CmbSoldDD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbSoldDD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbSoldDD.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.CmbSoldDD.Location = new System.Drawing.Point(150, 478);
+            this.CmbSoldDD.Name = "CmbSoldDD";
+            this.CmbSoldDD.Size = new System.Drawing.Size(41, 22);
+            this.CmbSoldDD.TabIndex = 39;
+            //
+            // CmbSoldMM
+            //
+            this.CmbSoldMM.BackColor = System.Drawing.SystemColors.Window;
+            this.CmbSoldMM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbSoldMM.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbSoldMM.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.CmbSoldMM.Location = new System.Drawing.Point(200, 478);
+            this.CmbSoldMM.Name = "CmbSoldMM";
+            this.CmbSoldMM.Size = new System.Drawing.Size(41, 22);
+            this.CmbSoldMM.TabIndex = 40;
+            //
+            // CmbSoldYear
+            //
+            this.CmbSoldYear.BackColor = System.Drawing.SystemColors.Window;
+            this.CmbSoldYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbSoldYear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbSoldYear.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.CmbSoldYear.Location = new System.Drawing.Point(250, 478);
+            this.CmbSoldYear.Name = "CmbSoldYear";
+            this.CmbSoldYear.Size = new System.Drawing.Size(57, 22);
+            this.CmbSoldYear.TabIndex = 41;
+            //
+            // CmdSoldCal
+            //
+            this.CmdSoldCal.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdSoldCal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdSoldCal.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdSoldCal.Location = new System.Drawing.Point(314, 478);
+            this.CmdSoldCal.Name = "CmdSoldCal";
+            this.CmdSoldCal.Size = new System.Drawing.Size(25, 19);
+            this.CmdSoldCal.TabIndex = 42;
+            this.CmdSoldCal.Text = "..";
+            this.CmdSoldCal.UseVisualStyleBackColor = false;
+            this.CmdSoldCal.Click += new System.EventHandler(this.CmdSoldCal_Click);
+            //
             // chkDRIP
             //
             this.chkDRIP.BackColor = System.Drawing.Color.Transparent;
@@ -518,13 +580,14 @@
             this.chkSold.TabIndex = 27;
             this.chkSold.Text = "Sold";
             this.chkSold.UseVisualStyleBackColor = false;
+            this.chkSold.CheckedChanged += new System.EventHandler(this.chkSold_CheckedChanged);
             //
             // CmdCreate
             //
             this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCreate.Location = new System.Drawing.Point(305, 492);
+            this.CmdCreate.Location = new System.Drawing.Point(305, 520);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(85, 27);
             this.CmdCreate.TabIndex = 28;
@@ -537,7 +600,7 @@
             this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdUpdate.Location = new System.Drawing.Point(400, 492);
+            this.CmdUpdate.Location = new System.Drawing.Point(400, 520);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(85, 27);
             this.CmdUpdate.TabIndex = 29;
@@ -550,7 +613,7 @@
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(495, 492);
+            this.CmdDel.Location = new System.Drawing.Point(495, 520);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 27);
             this.CmdDel.TabIndex = 30;
@@ -564,7 +627,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(590, 492);
+            this.CmdBack.Location = new System.Drawing.Point(590, 520);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
             this.CmdBack.TabIndex = 31;
@@ -578,7 +641,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1000, 535);
+            this.ClientSize = new System.Drawing.Size(1000, 565);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
@@ -586,6 +649,11 @@
             this.Controls.Add(this.CmdCreate);
             this.Controls.Add(this.chkSold);
             this.Controls.Add(this.chkDRIP);
+            this.Controls.Add(this.CmdSoldCal);
+            this.Controls.Add(this.CmbSoldYear);
+            this.Controls.Add(this.CmbSoldMM);
+            this.Controls.Add(this.CmbSoldDD);
+            this.Controls.Add(this.Label12);
             this.Controls.Add(this.CmbFlagCode);
             this.Controls.Add(this.Label11);
             this.Controls.Add(this.txtSellingTotalAmount);
@@ -672,6 +740,11 @@
         public System.Windows.Forms.TextBox txtSellingTotalAmount;
         public System.Windows.Forms.Label Label11;
         public System.Windows.Forms.ComboBox CmbFlagCode;
+        public System.Windows.Forms.Label Label12;
+        public System.Windows.Forms.ComboBox CmbSoldDD;
+        public System.Windows.Forms.ComboBox CmbSoldMM;
+        public System.Windows.Forms.ComboBox CmbSoldYear;
+        public System.Windows.Forms.Button CmdSoldCal;
         public System.Windows.Forms.CheckBox chkDRIP;
         public System.Windows.Forms.CheckBox chkSold;
         public System.Windows.Forms.Button CmdCreate;

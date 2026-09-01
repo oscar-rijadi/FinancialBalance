@@ -35,6 +35,10 @@ namespace FinancialBalance
         string OrgRealTotalCostBase;
         string OrgIsSold;
         string OrgFlagCode;
+        string OrgSoldDate;
+
+        //one MonthCalendar serves both date pickers
+        string CalTarget = "TRANS";
         string OrgSellingPricePerUnit;
         string OrgSellingTotalAmount;
 
@@ -47,6 +51,7 @@ namespace FinancialBalance
         {
             FirstLoad = true;
             Mdl1.Fill_Date(CmbDD, CmbMM, CmbYear);
+            Mdl1.Fill_Date(CmbSoldDD, CmbSoldMM, CmbSoldYear);
             CmbDD.Text = String.Format("{0:dd}", DateTime.Now);
             CmbMM.Text = String.Format("{0:MM}", DateTime.Now);
             CmbYear.Text = String.Format("{0:yyyy}", DateTime.Now);
@@ -124,6 +129,7 @@ namespace FinancialBalance
             chkSold.Visible = !Sell;
             Label11.Visible = !Sell;
             CmbFlagCode.Visible = !Sell;
+            Show_Sold_Date();
 
             //Sell-only inputs
             Label9.Visible = Sell;
@@ -141,6 +147,7 @@ namespace FinancialBalance
             {
                 chkDRIP.Checked = false;
                 chkSold.Checked = false;
+                Reset_Sold_Date();
                 txtCostBase.Text = "0.00";
                 txtFee.Text = "0.00";
             }
@@ -164,6 +171,69 @@ namespace FinancialBalance
             {
                 CmbFlagCode.Text = "OB";
             }
+        }
+
+        //Sold Date belongs to a Buy that has been marked sold; nothing else shows it
+        private void Show_Sold_Date()
+        {
+            bool Visible = (!Is_Sell() && chkSold.Checked);
+
+            Label12.Visible = Visible;
+            CmbSoldDD.Visible = Visible;
+            CmbSoldMM.Visible = Visible;
+            CmbSoldYear.Visible = Visible;
+            CmdSoldCal.Visible = Visible;
+        }
+
+        private void Reset_Sold_Date()
+        {
+            CmbSoldDD.Text = String.Format("{0:dd}", DateTime.Now);
+            CmbSoldMM.Text = String.Format("{0:MM}", DateTime.Now);
+            CmbSoldYear.Text = String.Format("{0:yyyy}", DateTime.Now);
+        }
+
+        private void chkSold_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            //unticking discards the date rather than keeping it hidden
+            if (!chkSold.Checked)
+            {
+                Reset_Sold_Date();
+            }
+            Show_Sold_Date();
+        }
+
+        //Null unless this is a Buy that is marked sold
+        private string Get_Sold_Date()
+        {
+            if (Is_Sell() || !chkSold.Checked)
+            {
+                return null;
+            }
+            return CmbSoldYear.Text + CmbSoldMM.Text + CmbSoldDD.Text;
+        }
+
+        private void Set_Sold_Date(string parYyyyMMdd)
+        {
+            if (parYyyyMMdd == null || parYyyyMMdd.Trim().Length != 8)
+            {
+                Reset_Sold_Date();
+                return;
+            }
+            CmbSoldYear.Text = parYyyyMMdd.Substring(0, 4);
+            CmbSoldMM.Text = parYyyyMMdd.Substring(4, 2);
+            CmbSoldDD.Text = parYyyyMMdd.Substring(6, 2);
+        }
+
+        private void CmdSoldCal_Click(object sender, EventArgs e)
+        {
+            CalTarget = "SOLD";
+            monthCalendar1.SetDate(new System.DateTime(int.Parse(CmbSoldYear.Text), int.Parse(CmbSoldMM.Text), int.Parse(CmbSoldDD.Text), 0, 0, 0, 0));
+            monthCalendar1.Show();
+            monthCalendar1.BringToFront();
         }
 
         //Fill_Curr defaults to IDR for the accounting pages; ETF trades default to AUD
@@ -271,6 +341,7 @@ namespace FinancialBalance
 
         private void CmdCal_Click(object sender, EventArgs e)
         {
+            CalTarget = "TRANS";
             monthCalendar1.SetDate(new System.DateTime(int.Parse(CmbYear.Text), int.Parse(CmbMM.Text), int.Parse(CmbDD.Text), 0, 0, 0, 0));
             monthCalendar1.Show();
             monthCalendar1.BringToFront();
@@ -278,12 +349,21 @@ namespace FinancialBalance
 
         private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
         {
+            monthCalendar1.Hide();
+
+            if (CalTarget == "SOLD")
+            {
+                CmbSoldDD.Text = e.Start.Day.ToString("00");
+                CmbSoldMM.Text = e.Start.Month.ToString("00");
+                CmbSoldYear.Text = e.Start.Year.ToString("0000");
+                return;
+            }
+
             FirstLoad = true;
             CmbDD.Text = e.Start.Day.ToString("00");
             CmbMM.Text = e.Start.Month.ToString("00");
             CmbYear.Text = e.Start.Year.ToString("0000");
             FirstLoad = false;
-            monthCalendar1.Hide();
             DateChanged();
         }
 
@@ -312,7 +392,7 @@ namespace FinancialBalance
 
         private string Select_Purchases()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code] from TblETFStocksPurchase"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code], [Sold_Date] from TblETFStocksPurchase"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -431,6 +511,7 @@ namespace FinancialBalance
             txtSellingPricePerUnit.Text = "0.00";
             chkDRIP.Checked = false;
             chkSold.Checked = false;
+            Reset_Sold_Date();
             Set_Default_Flag();
             Filling = false;
             Apply_Trans_Type_Rules();
@@ -557,6 +638,11 @@ namespace FinancialBalance
                         OrgRealTotalCostBase = Sql_Num(reader["Real_Total_Cost_Base"], 2);
                         OrgIsSold = (reader["Is_Sold"].ToString().Trim() == "True" ? "True" : "False");
                         OrgFlagCode = (reader["Flag_Code"] == DBNull.Value ? null : reader["Flag_Code"].ToString().Trim());
+                        OrgSoldDate = (reader["Sold_Date"] == DBNull.Value ? null : reader["Sold_Date"].ToString().Trim());
+                        if (OrgSoldDate == "")
+                        {
+                            OrgSoldDate = null;
+                        }
                     }
                     else
                     {
@@ -587,6 +673,7 @@ namespace FinancialBalance
                 txtSellingPricePerUnit.Text = "0.00";
                 chkDRIP.Checked = (Read_Double(OrgRealTotalCostBase) == 0);
                 chkSold.Checked = (OrgIsSold == "True");
+                Set_Sold_Date(OrgSoldDate);
                 if (OrgFlagCode != null && CmbFlagCode.Items.Contains(OrgFlagCode))
                 {
                     CmbFlagCode.Text = OrgFlagCode;
@@ -603,6 +690,7 @@ namespace FinancialBalance
                 txtSellingPricePerUnit.Text = (OrgSellingPricePerUnit == null ? "0.00" : OrgSellingPricePerUnit);
                 chkDRIP.Checked = false;
                 chkSold.Checked = false;
+                Reset_Sold_Date();
                 Set_Default_Flag();
             }
             Filling = false;
@@ -714,6 +802,16 @@ namespace FinancialBalance
             return true;
         }
 
+        private string Sql_Sold_Date()
+        {
+            string TmpDate = Get_Sold_Date();
+            if (TmpDate == null)
+            {
+                return "Null";
+            }
+            return "'" + TmpDate + "'";
+        }
+
         private string Num(decimal parValue, int parDecimals)
         {
             return parValue.ToString("0." + new string('0', parDecimals), CultureInfo.InvariantCulture);
@@ -744,7 +842,8 @@ namespace FinancialBalance
                        + Where_Col("Total_Cost_Base", OrgTotalCostBase)
                        + Where_Col("Real_Total_Cost_Base", OrgRealTotalCostBase)
                        + " and Is_Sold = " + OrgIsSold
-                       + (OrgFlagCode == null ? " and [Flag_Code] Is Null" : " and [Flag_Code] = '" + OrgFlagCode + "'");
+                       + (OrgFlagCode == null ? " and [Flag_Code] Is Null" : " and [Flag_Code] = '" + OrgFlagCode + "'")
+                       + (OrgSoldDate == null ? " and [Sold_Date] Is Null" : " and [Sold_Date] = '" + OrgSoldDate + "'");
             }
             else
             {
@@ -800,7 +899,7 @@ namespace FinancialBalance
             }
             else
             {
-                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code]) values ("
+                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Flag_Code], [Sold_Date]) values ("
                     + "'" + Get_Trans_Date() + "', "
                     + "'" + CmbFullTicker.Text.Trim() + "', "
                     + "'" + CmbCurrency.Text.Trim() + "', "
@@ -810,7 +909,8 @@ namespace FinancialBalance
                     + Num(parTotal, 2) + ", "
                     + Num(parRealTotal, 2) + ", "
                     + (chkSold.Checked ? "True" : "False") + ", "
-                    + "'" + CmbFlagCode.Text.Trim() + "')";
+                    + "'" + CmbFlagCode.Text.Trim() + "', "
+                    + Sql_Sold_Date() + ")";
             }
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
@@ -907,7 +1007,8 @@ namespace FinancialBalance
                         + "Total_Cost_Base = " + Num(TmpTotal, 2) + ", "
                         + "Real_Total_Cost_Base = " + Num(TmpRealTotal, 2) + ", "
                         + "Is_Sold = " + (chkSold.Checked ? "True" : "False") + ", "
-                        + "[Flag_Code] = '" + CmbFlagCode.Text.Trim() + "'"
+                        + "[Flag_Code] = '" + CmbFlagCode.Text.Trim() + "', "
+                        + "[Sold_Date] = " + Sql_Sold_Date()
                         + Where_Original();
                     cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                     cmd.ExecuteNonQuery();

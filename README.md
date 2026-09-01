@@ -245,6 +245,7 @@ erDiagram
         decimal Real_Total_Cost_Base "2 dp"
         bool    Is_Sold
         text    Flag_Code "from the flag list"
+        text    Sold_Date "yyyyMMdd, null unless sold"
     }
     TblETFStocksSale {
         text    Trans_Date "yyyyMMdd"
@@ -301,13 +302,19 @@ The page shows both for a chosen date, purchases first.
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
 | `Real_Total_Cost_Base` | Buy only. `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
+| `Sold_Date` | Buy only. Shown only while Sold is ticked; stored `yyyyMMdd`, otherwise `Null`. |
 | `Flag_Code` | Buy only. Dropdown from `TblETFStocksPurchaseFlag`, defaulting to `OB`. |
 | `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
 
-The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, DRIP and Sold;
-a Sell shows Selling Price/Unit and Selling Total Amount. Hidden fields are reset rather than
-carried over, and validation only covers what is on screen.
+The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, DRIP, Sold and
+Flag; a Sell shows Selling Price/Unit and Selling Total Amount. Hidden fields are reset rather
+than carried over, and validation only covers what is on screen.
+
+**Sold Date** is nested one level deeper: it appears only when the Sold box is ticked on a Buy,
+and unticking clears the value as well as hiding it, so a stale date cannot survive out of sight.
+Both date pickers share the single `MonthCalendar` on the form, routed by a `CalTarget` flag —
+picking a transaction date reloads the day's grid, picking a sold date deliberately does not.
 
 DRIP is **not stored**. The form re-derives it on selection as `Real_Total_Cost_Base == 0`.
 
@@ -334,7 +341,16 @@ Prices arrive two ways:
 | Route | Behaviour |
 | --- | --- |
 | **Manual** | Pick a date and type a price — numeric, not negative, at most 2 decimal places. |
-| **Sync with Yahoo Finance** | Enabled only when the ticker's `In_YahooFinance` is `True`, otherwise greyed with a note. |
+| **Sync with Yahoo Finance** | One ticker. Enabled only when its `In_YahooFinance` is `True`, otherwise greyed with a note. |
+| **Sync all with Yahoo Finance** | Every ticker flagged `In_YahooFinance`, in one pass. |
+
+A grid at the top of the page lists **every** ticker in `TblETFStocks` with its latest stored
+price, whether that price came from Yahoo or was typed in; a ticker with no price shows `-`. It
+refreshes after any add, update, delete or sync, so it never goes stale.
+
+The bulk sync attempts each ticker independently — one failure does not abort the run. Results
+are reported once at the end as *"n of m ticker(s) updated"*, with any failures listed, rather
+than a dialog per ticker. Both sync buttons disable while it runs.
 
 The sync calls Yahoo's chart endpoint and reads two values out of the response:
 
@@ -374,6 +390,20 @@ two flags sharing a description still filter correctly.
 
 > **A ticker with no price row shows `-`** in the four price-derived columns rather than
 > computing against a price of zero, which would misreport the holding as a total loss.
+
+Four totals sit below the grid, each the sum of its own column:
+
+| Total | Derivation |
+| --- | --- |
+| `Total Portfolio Investment` | Sum of `Total Investment` across every row. |
+| `Total Portfolio Current Amount` | Sum of `Total Current Amount`. |
+| `Total Portfolio Current Real Profit/Loss` | Sum of `Current Real Profit/Loss`. **Green** above zero, **red** below. |
+| `Percentage Portfolio Current Real Profit/Loss` | `Profit / Investment x 100` when investment is above zero, otherwise `0`. Same colouring. |
+
+> An **unpriced holding has a known investment but no current value**, so it lifts the investment
+> total while contributing nothing to the other two. The three money figures then stop
+> reconciling, and the note line says how many holdings were left out. With every holding priced,
+> `Current - Investment == Profit` holds exactly.
 
 The aggregate is read fully before any price lookup, so no second reader is opened on the shared
 connection while the first is still live.
@@ -571,9 +601,10 @@ Things worth knowing before changing this code.
 - **`decimal` columns are read through `double`**, which introduces rounding on large IDR figures.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
-- **`ETF_Stocks_Price` reaches the network** on the sync button, the only outbound call in the
-  app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes for
-  the duration of the request. Yahoo's endpoint is undocumented and can change without notice.
+- **`ETF_Stocks_Price` reaches the network** on either sync button, the only outbound calls in
+  the app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes
+  for the duration. **Sync all** makes one request per flagged ticker in sequence, so the freeze
+  scales with how many you track. Yahoo's endpoint is undocumented and can change without notice.
 - **`Setup_Activa_Passiva` is displayed as "Asset Liability Setup".** The class, file and the
   `Mdl1.*ActivaPassiva*` posting routines keep the older Indonesian naming, so searching the
   code for the on-screen label will not find them.

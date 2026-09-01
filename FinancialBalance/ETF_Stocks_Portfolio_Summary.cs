@@ -151,6 +151,11 @@ namespace FinancialBalance
                 }
                 LblNote.Text = "Unsold holdings only" + (TmpFlagCode == null ? "" : "  (flag " + TmpFlagCode + ")");
 
+                double TotalInvestment = 0;
+                double TotalCurrent = 0;
+                double TotalProfit = 0;
+                int Unpriced = 0;
+
                 //read the aggregate first, so no reader is open while prices are looked up
                 List<string> Tickers = new List<string>();
                 List<double> TotUnits = new List<double>();
@@ -181,6 +186,8 @@ namespace FinancialBalance
                         row = new string[] { Tickers[i], TotUnits[i].ToString("#,##0.0000"),
                                              Mdl1.FormatAmt(TotInvs[i]), "-", "-", "-", "-" };
                         gvSummary.Rows.Add(row);
+                        TotalInvestment += TotInvs[i];
+                        Unpriced++;
                         continue;
                     }
 
@@ -207,13 +214,61 @@ namespace FinancialBalance
                     int RowIdx = gvSummary.Rows.Count - 1;
                     Colour_Cell(gvSummary.Rows[RowIdx].Cells[5], TmpProfit);
                     Colour_Cell(gvSummary.Rows[RowIdx].Cells[6], TmpPercent);
+
+                    TotalInvestment += TotInvs[i];
+                    TotalCurrent += TmpCurrent;
+                    TotalProfit += TmpProfit;
                 }
+
+                Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced);
 
                 gvSummary.ClearSelection();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error Message");
+            }
+        }
+
+        //Each total is the sum of its own column.  An unpriced holding has a known
+        //investment but no current value, so it lifts the investment total only - the
+        //note says so, because the three figures then no longer reconcile.
+        private void Show_Totals(double parInvestment, double parCurrent, double parProfit, int parUnpriced)
+        {
+            double TmpPercent = 0;
+            if (parInvestment > 0)
+            {
+                TmpPercent = (parProfit / parInvestment) * 100;
+            }
+
+            LblTotInv.Text = Mdl1.FormatAmt(parInvestment);
+            LblTotCur.Text = Mdl1.FormatAmt(parCurrent);
+            LblTotPL.Text = Mdl1.FormatAmt(parProfit);
+            LblTotPct.Text = TmpPercent.ToString("#,##0.00") + " %";
+
+            Colour_Label(LblTotPL, parProfit);
+            Colour_Label(LblTotPct, TmpPercent);
+
+            if (parUnpriced > 0)
+            {
+                LblNote.Text = LblNote.Text + "   -   " + parUnpriced.ToString()
+                    + " holding(s) have no price and are excluded from the current amount and profit totals";
+            }
+        }
+
+        private void Colour_Label(Label parLabel, double parValue)
+        {
+            if (parValue < 0)
+            {
+                parLabel.ForeColor = System.Drawing.Color.Red;
+            }
+            else if (parValue > 0)
+            {
+                parLabel.ForeColor = System.Drawing.Color.Green;
+            }
+            else
+            {
+                parLabel.ForeColor = System.Drawing.Color.Black;
             }
         }
 

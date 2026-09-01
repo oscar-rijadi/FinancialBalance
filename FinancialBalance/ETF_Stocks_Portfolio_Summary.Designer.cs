@@ -34,6 +34,14 @@
             this.CmbPortfolio = new System.Windows.Forms.ComboBox();
             this.gvSummary = new System.Windows.Forms.DataGridView();
             this.LblNote = new System.Windows.Forms.Label();
+            this.LblTotInv = new System.Windows.Forms.Label();
+            this.LblTotInvCap = new System.Windows.Forms.Label();
+            this.LblTotCur = new System.Windows.Forms.Label();
+            this.LblTotCurCap = new System.Windows.Forms.Label();
+            this.LblTotPL = new System.Windows.Forms.Label();
+            this.LblTotPLCap = new System.Windows.Forms.Label();
+            this.LblTotPct = new System.Windows.Forms.Label();
+            this.LblTotPctCap = new System.Windows.Forms.Label();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvSummary)).BeginInit();
             this.SuspendLayout();
@@ -99,6 +107,102 @@
             this.gvSummary.Size = new System.Drawing.Size(900, 330);
             this.gvSummary.TabIndex = 4;
             //
+            // LblTotInvCap
+            //
+            this.LblTotInvCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotInvCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotInvCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotInvCap.Location = new System.Drawing.Point(360, 450);
+            this.LblTotInvCap.Name = "LblTotInvCap";
+            this.LblTotInvCap.Size = new System.Drawing.Size(320, 20);
+            this.LblTotInvCap.TabIndex = 10;
+            this.LblTotInvCap.Text = "Total Portfolio Investment";
+            this.LblTotInvCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotInv
+            //
+            this.LblTotInv.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotInv.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotInv.ForeColor = System.Drawing.Color.Black;
+            this.LblTotInv.Location = new System.Drawing.Point(690, 450);
+            this.LblTotInv.Name = "LblTotInv";
+            this.LblTotInv.Size = new System.Drawing.Size(210, 20);
+            this.LblTotInv.TabIndex = 11;
+            this.LblTotInv.Text = "0.00";
+            this.LblTotInv.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotCurCap
+            //
+            this.LblTotCurCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotCurCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotCurCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotCurCap.Location = new System.Drawing.Point(360, 474);
+            this.LblTotCurCap.Name = "LblTotCurCap";
+            this.LblTotCurCap.Size = new System.Drawing.Size(320, 20);
+            this.LblTotCurCap.TabIndex = 12;
+            this.LblTotCurCap.Text = "Total Portfolio Current Amount";
+            this.LblTotCurCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotCur
+            //
+            this.LblTotCur.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotCur.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotCur.ForeColor = System.Drawing.Color.Black;
+            this.LblTotCur.Location = new System.Drawing.Point(690, 474);
+            this.LblTotCur.Name = "LblTotCur";
+            this.LblTotCur.Size = new System.Drawing.Size(210, 20);
+            this.LblTotCur.TabIndex = 13;
+            this.LblTotCur.Text = "0.00";
+            this.LblTotCur.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotPLCap
+            //
+            this.LblTotPLCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotPLCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotPLCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotPLCap.Location = new System.Drawing.Point(360, 498);
+            this.LblTotPLCap.Name = "LblTotPLCap";
+            this.LblTotPLCap.Size = new System.Drawing.Size(320, 20);
+            this.LblTotPLCap.TabIndex = 14;
+            this.LblTotPLCap.Text = "Total Portfolio Current Real Profit/Loss";
+            this.LblTotPLCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotPL
+            //
+            this.LblTotPL.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotPL.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotPL.ForeColor = System.Drawing.Color.Black;
+            this.LblTotPL.Location = new System.Drawing.Point(690, 498);
+            this.LblTotPL.Name = "LblTotPL";
+            this.LblTotPL.Size = new System.Drawing.Size(210, 20);
+            this.LblTotPL.TabIndex = 15;
+            this.LblTotPL.Text = "0.00";
+            this.LblTotPL.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotPctCap
+            //
+            this.LblTotPctCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotPctCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotPctCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotPctCap.Location = new System.Drawing.Point(360, 522);
+            this.LblTotPctCap.Name = "LblTotPctCap";
+            this.LblTotPctCap.Size = new System.Drawing.Size(320, 20);
+            this.LblTotPctCap.TabIndex = 16;
+            this.LblTotPctCap.Text = "Percentage Portfolio Current Real Profit/Loss";
+            this.LblTotPctCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotPct
+            //
+            this.LblTotPct.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotPct.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotPct.ForeColor = System.Drawing.Color.Black;
+            this.LblTotPct.Location = new System.Drawing.Point(690, 522);
+            this.LblTotPct.Name = "LblTotPct";
+            this.LblTotPct.Size = new System.Drawing.Size(210, 20);
+            this.LblTotPct.TabIndex = 17;
+            this.LblTotPct.Text = "0.00";
+            this.LblTotPct.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
             // CmdBack
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
@@ -106,7 +210,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(425, 450);
+            this.CmdBack.Location = new System.Drawing.Point(425, 560);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -121,8 +225,16 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(940, 495);
+            this.ClientSize = new System.Drawing.Size(940, 605);
             this.ControlBox = false;
+            this.Controls.Add(this.LblTotInv);
+            this.Controls.Add(this.LblTotInvCap);
+            this.Controls.Add(this.LblTotCur);
+            this.Controls.Add(this.LblTotCurCap);
+            this.Controls.Add(this.LblTotPL);
+            this.Controls.Add(this.LblTotPLCap);
+            this.Controls.Add(this.LblTotPct);
+            this.Controls.Add(this.LblTotPctCap);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.gvSummary);
             this.Controls.Add(this.LblNote);
@@ -148,6 +260,14 @@
         public System.Windows.Forms.ComboBox CmbPortfolio;
         public System.Windows.Forms.Label LblNote;
         private System.Windows.Forms.DataGridView gvSummary;
+        public System.Windows.Forms.Label LblTotInv;
+        public System.Windows.Forms.Label LblTotInvCap;
+        public System.Windows.Forms.Label LblTotCur;
+        public System.Windows.Forms.Label LblTotCurCap;
+        public System.Windows.Forms.Label LblTotPL;
+        public System.Windows.Forms.Label LblTotPLCap;
+        public System.Windows.Forms.Label LblTotPct;
+        public System.Windows.Forms.Label LblTotPctCap;
         public System.Windows.Forms.Button CmdBack;
     }
 }
