@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price |
+| `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price, ETF/Stock Investment |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
@@ -107,6 +107,7 @@ flowchart LR
     MAIN --> PETFG{{"ETF/Stock"}}
     PETFG --> ETX["ETF_Stocks_Transaction"]
     PETFG --> ETP["ETF_Stocks_Price"]
+    PETFG --> ETI["ETF_Stocks_Investment"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
@@ -132,6 +133,7 @@ flowchart LR
     DI <--> MC
     MC <--> ETX
     ETX <--> ETP
+    ETP <--> ETI
 
     SATR <--> SAR
     SAR <--> SC
@@ -149,6 +151,7 @@ flowchart LR
 | `Monthly_Closing` | Snapshots `TblAsset` and `TblLiability` into `TblMonthlyTrans` for a chosen month. Defaults to the month after the last close. |
 | `ETF_Stocks_Transaction` | Add / update / delete ETF and stock trades for one date. A Sell is built against the purchase lots it draws from, which it then settles. |
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
+| `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
@@ -170,7 +173,7 @@ flowchart LR
 
 ## Data model
 
-Seventeen tables. **No foreign keys or relationships are defined in the database** — the links below are
+Nineteen tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -189,6 +192,10 @@ erDiagram
     TblCurrCode     ||--o{ TblETFStocksSale : "denominates"
     TblETFStocks    ||--o{ TblETFStocksPrice : "priced by"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPurchase : "codes"
+    TblETFStocksPortfolioCode ||--o| TblETFStocksPortfolio : "describes"
+    TblETFStocksPortfolioCode ||--o{ TblETFStocksPortfolioInvestment : "codes"
+    TblETFStocksPortfolio ||--o{ TblETFStocksPortfolioInvestment : "moved by"
+    TblCurrCode     ||--o{ TblETFStocksPortfolio : "denominates"
     TblETFStocksDiversificationType ||--o{ TblETFStocksDiversification : "groups"
     TblETFStocksDiversification ||--o{ TblETFStocksDiversificationAllocation : "allocated by"
     TblETFStocks ||--o{ TblETFStocksDiversificationAllocation : "split across"
@@ -276,6 +283,19 @@ erDiagram
         text Portfolio_Code PK "5 chars"
         text Description "50 chars"
         bool Is_Main
+    }
+    TblETFStocksPortfolio {
+        text    Portfolio_Code PK "5 chars"
+        text    Currency "3 chars"
+        decimal Cash "2 dp, running balance"
+        decimal Investment_Amount "2 dp"
+    }
+    TblETFStocksPortfolioInvestment {
+        text    Investment_Date "yyyyMMdd"
+        text    Portfolio_Code "joins TblETFStocksPortfolioCode"
+        text    Investment_Type "1 char: + or -"
+        text    Currency "3 chars"
+        decimal Amount "2 dp, always positive"
     }
     TblETFStocksDiversificationType {
         text Name PK "50 chars"
@@ -510,6 +530,48 @@ Two cases are worth knowing:
 > price takes whatever the dropdown is showing, and that defaults to `AUD`. A sync sets it from
 > the exchange instead. Prices written before the column existed read back as null and display
 > as `-`.
+
+### ETF/stock investment rules
+
+`ETF_Stocks_Investment` keeps track of the **cash sitting in each portfolio** — money paid in and
+taken out, separate from what has been spent on securities. It writes two tables:
+
+| Table | Holds |
+| --- | --- |
+| `TblETFStocksPortfolioInvestment` | Every movement, one row each, never amended. |
+| `TblETFStocksPortfolio` | One running row per portfolio code: its currency, `Cash` and `Investment_Amount`. |
+
+The grid shows the running rows, with `Portfolio` resolved from `TblETFStocksPortfolioCode` by
+matching `Portfolio_Code`. `Cash` and `Investment_Amount` follow the same rule as everywhere else —
+a `$` for AUD and USD, bare otherwise, and a negative reads `-$1,234.56`. A code with no matching
+description shows `-` rather than a blank.
+
+Adding a movement takes a date, a portfolio code, a type, a currency and an amount. **The amount is
+always positive; the sign lives in Investment Type** (`+` pays in, `-` takes out), which is why that
+box uses the same digits-only keypress guard as every other amount field in the app. The entry is
+appended to `TblETFStocksPortfolioInvestment`, and then:
+
+- **The portfolio already exists** — `Cash` moves by the signed amount.
+- **It does not** — a row is created with the chosen currency, `Cash` set to the signed amount and
+  `Investment_Amount` set to `0`.
+
+> `Investment_Amount` is **not** touched by adding a movement. It only changes through the edit
+> panel. Paying cash in does not by itself mean it has been invested.
+
+Selecting a row in the grid reveals an edit panel for that portfolio's `Currency`, `Cash` and
+`Investment_Amount`. Those two amounts are running balances that can legitimately go negative, so
+they accept a leading minus that the shared numeric guard would otherwise reject.
+
+Two things are worth knowing:
+
+- **A movement whose currency disagrees with the portfolio is refused.** Adding a USD amount to an
+  AUD balance would quietly corrupt the running total, so the entry is blocked with both currencies
+  named rather than silently added.
+- **A `-` on a portfolio that does not exist yet creates it with negative cash.** That is taken as a
+  real state — money owed — rather than an error to reject.
+
+There is no delete on this page. A movement, once recorded, stays; a balance is corrected through the
+edit panel, which leaves the movement history intact.
 
 ### Portfolio summary
 

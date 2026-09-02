@@ -72,6 +72,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksInvestment_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Investment ETF_Stocks_Investment = new ETF_Stocks_Investment();
+            ETF_Stocks_Investment.Show();
+            this.Close();
+        }
+
         //Starts blank so nothing is loaded until a ticker is actually chosen
         private void Fill_Full_Ticker()
         {

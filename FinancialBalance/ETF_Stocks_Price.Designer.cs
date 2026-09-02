@@ -34,6 +34,7 @@
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbFullTicker = new System.Windows.Forms.ComboBox();
@@ -91,7 +92,8 @@
             // MnETFStockProcessGroup
             // 
             this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnETFStocksTrans});
+            this.MnETFStocksTrans,
+            this.MnETFStocksInvestment});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
@@ -102,6 +104,13 @@
             this.MnETFStocksTrans.Size = new System.Drawing.Size(137, 20);
             this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
             this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
+            //
+            // MnETFStocksInvestment
+            //
+            this.MnETFStocksInvestment.Name = "MnETFStocksInvestment";
+            this.MnETFStocksInvestment.Size = new System.Drawing.Size(137, 20);
+            this.MnETFStocksInvestment.Text = "ETF/Stock &Investment";
+            this.MnETFStocksInvestment.Click += new System.EventHandler(this.MnETFStocksInvestment_Click);
             //
             // Label21
             //
@@ -448,6 +457,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbFullTicker;

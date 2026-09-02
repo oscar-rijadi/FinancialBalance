@@ -36,6 +36,7 @@
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.MnInquiry = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyInq = new System.Windows.Forms.ToolStripMenuItem();
@@ -129,7 +130,8 @@
             // 
             this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksTrans,
-            this.MnETFStocksPrice});
+            this.MnETFStocksPrice,
+            this.MnETFStocksInvestment});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
@@ -140,6 +142,13 @@
             this.MnETFStocksTrans.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
             this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
+            //
+            // MnETFStocksInvestment
+            //
+            this.MnETFStocksInvestment.Name = "MnETFStocksInvestment";
+            this.MnETFStocksInvestment.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksInvestment.Text = "ETF/Stock &Investment";
+            this.MnETFStocksInvestment.Click += new System.EventHandler(this.MnETFStocksInvestment_Click);
             // 
             // MnETFStocksPrice
             // 
@@ -764,6 +773,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.ToolStripMenuItem MnInquiry;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyInq;
