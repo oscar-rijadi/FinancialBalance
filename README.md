@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction |
+| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Distribution/Dividend, ETF/Stock Transaction |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
@@ -107,6 +107,7 @@ flowchart LR
     MAIN --> PETFG{{"ETF/Stock"}}
     PETFG --> ETP["ETF_Stocks_Price"]
     PETFG --> ETI["ETF_Stocks_Investment"]
+    PETFG --> ETD["ETF_Stocks_Distribution"]
     PETFG --> ETX["ETF_Stocks_Transaction"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -152,6 +153,7 @@ flowchart LR
 | `ETF_Stocks_Transaction` | Add / update / delete ETF and stock trades for one date. A Sell is built against the purchase lots it draws from, which it then settles. |
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
+| `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
@@ -173,7 +175,7 @@ flowchart LR
 
 ## Data model
 
-Nineteen tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -193,6 +195,9 @@ erDiagram
     TblETFStocks    ||--o{ TblETFStocksPrice : "priced by"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPurchase : "codes"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksSale : "codes"
+    TblETFStocksPortfolioCode ||--o{ TblETFStocksDistributionDividend : "codes"
+    TblETFStocks    ||--o{ TblETFStocksDistributionDividend : "pays"
+    TblCurrCode     ||--o{ TblETFStocksDistributionDividend : "denominates"
     TblETFStocksPortfolioCode ||--o| TblETFStocksPortfolio : "describes"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPortfolioInvestment : "codes"
     TblETFStocksPortfolio ||--o{ TblETFStocksPortfolioInvestment : "moved by"
@@ -287,6 +292,16 @@ erDiagram
         text Portfolio_Code PK "5 chars"
         text Description "50 chars"
         bool Is_Main
+    }
+    TblETFStocksDistributionDividend {
+        text    Pay_Date "yyyyMMdd"
+        text    Full_Ticker "joins TblETFStocks"
+        text    Portfolio_Code "5 chars"
+        text    Currency "3 chars"
+        decimal Entitled_Unit "4 dp"
+        decimal Amount_Per_Unit "4 dp"
+        decimal Total_Amount "2 dp"
+        bool    Is_Drip
     }
     TblETFStocksPortfolio {
         text    Portfolio_Code PK "5 chars"
@@ -618,6 +633,48 @@ Two things are worth knowing:
 
 There is no delete on this page. A movement, once recorded, stays; a balance is corrected through the
 edit panel, which leaves the movement history intact.
+
+### ETF/stock distribution and dividend rules
+
+`ETF_Stocks_Distribution` records what a holding actually **paid** — distributions and dividends —
+in `TblETFStocksDistributionDividend`, one row per payment.
+
+The page is filtered rather than dated. Two dropdowns at the top choose a **Full Ticker** and a
+**Portfolio**, and the table below shows that combination's payments **newest first** by `Pay_Date`.
+The portfolio dropdown carries a description label, as everywhere else. There is no `All` option on
+either filter, so the table always shows one ticker in one portfolio.
+
+A second, independent set of inputs below the table is what actually writes:
+
+| Field | Rule |
+| --- | --- |
+| `Pay_Date` | From the date picker, stored `yyyyMMdd`. |
+| `Full_Ticker` | Dropdown from `TblETFStocks`. |
+| `Portfolio_Code` | Dropdown from `TblETFStocksPortfolioCode`, with its `Description` beside it. |
+| `Currency` | Dropdown from `TblCurrCode`, defaulting to `AUD`. |
+| `Entitled_Unit` | Numeric, not negative, at most 4 decimal places. |
+| `Amount_Per_Unit` | Numeric, not negative, at most 4 decimal places. |
+| `Total_Amount` | Derived as `round(Entitled_Unit x Amount_Per_Unit, 2)` — **but editable**. |
+| `Is_Drip` | The DRIP checkbox, for a payment taken as units rather than cash. |
+
+**Total Amount is derived but not locked.** It is recomputed whenever Entitled Unit or Amount Per
+Unit changes, and a figure typed over it stands until one of those two changes again. That matters
+because a registry's rounding or a withholding deduction can leave the paid total slightly off the
+product of the two.
+
+> The rounding is `Math.Round`, which is **banker's rounding** — `round(12.345, 2)` gives `12.34`,
+> not `12.35`. This is the same helper every other derived total in the app uses, so the behaviour
+> is consistent across pages rather than correct in isolation.
+
+Add, Update and Delete all work. The entry area defaults its ticker and portfolio to whatever the
+filter is showing, and after a save the filter moves to the row just written — otherwise a payment
+saved outside the current filter would vanish with no explanation. Clicking a row loads it for
+editing; **Clear** abandons the edit and returns to entering a new payment.
+
+Like the transaction tables, this one has **no primary key** — the same ticker can pay twice on one
+date — so update and delete match on **all eight of the row's original column values**, re-read from
+the table rather than taken from the display, and the form warns before touching more than one
+identical row.
 
 ### Portfolio summary
 

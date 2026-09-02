@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -74,6 +74,13 @@ namespace FinancialBalance
         {
             ETF_Stocks_Transaction ETF_Stocks_Transaction = new ETF_Stocks_Transaction();
             ETF_Stocks_Transaction.Show();
+            this.Close();
+        }
+
+        private void MnETFStocksDistribution_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Distribution ETF_Stocks_Distribution = new ETF_Stocks_Distribution();
+            ETF_Stocks_Distribution.Show();
             this.Close();
         }
 

@@ -34,6 +34,7 @@
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
@@ -93,6 +94,7 @@
             // 
             this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksInvestment,
+            this.MnETFStocksDistribution,
             this.MnETFStocksTrans});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
@@ -104,6 +106,13 @@
             this.MnETFStocksTrans.Size = new System.Drawing.Size(137, 20);
             this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
             this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
+            //
+            // MnETFStocksDistribution
+            //
+            this.MnETFStocksDistribution.Name = "MnETFStocksDistribution";
+            this.MnETFStocksDistribution.Size = new System.Drawing.Size(137, 20);
+            this.MnETFStocksDistribution.Text = "ETF/Stock &Distribution/Dividend";
+            this.MnETFStocksDistribution.Click += new System.EventHandler(this.MnETFStocksDistribution_Click);
             //
             // MnETFStocksInvestment
             //
@@ -457,6 +466,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label Label1;

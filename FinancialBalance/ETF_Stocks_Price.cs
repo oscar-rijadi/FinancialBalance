@@ -72,6 +72,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksDistribution_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Distribution ETF_Stocks_Distribution = new ETF_Stocks_Distribution();
+            ETF_Stocks_Distribution.Show();
+            this.Close();
+        }
+
         private void MnETFStocksInvestment_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Investment ETF_Stocks_Investment = new ETF_Stocks_Investment();
