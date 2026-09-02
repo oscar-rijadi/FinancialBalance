@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Transaction, ETF/Stock Price, ETF/Stock Investment |
+| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
@@ -105,9 +105,9 @@ flowchart LR
     MAIN --> DI["Daily_Input"]
     MAIN --> MC["Monthly_Closing"]
     MAIN --> PETFG{{"ETF/Stock"}}
-    PETFG --> ETX["ETF_Stocks_Transaction"]
     PETFG --> ETP["ETF_Stocks_Price"]
     PETFG --> ETI["ETF_Stocks_Investment"]
+    PETFG --> ETX["ETF_Stocks_Transaction"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]

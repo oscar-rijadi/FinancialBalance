@@ -96,9 +96,9 @@
             // MnETFStockProcessGroup
             // 
             this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnETFStocksTrans,
             this.MnETFStocksPrice,
-            this.MnETFStocksInvestment});
+            this.MnETFStocksInvestment,
+            this.MnETFStocksTrans});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
