@@ -192,6 +192,7 @@ erDiagram
     TblCurrCode     ||--o{ TblETFStocksSale : "denominates"
     TblETFStocks    ||--o{ TblETFStocksPrice : "priced by"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPurchase : "codes"
+    TblETFStocksPortfolioCode ||--o{ TblETFStocksSale : "codes"
     TblETFStocksPortfolioCode ||--o| TblETFStocksPortfolio : "describes"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPortfolioInvestment : "codes"
     TblETFStocksPortfolio ||--o{ TblETFStocksPortfolioInvestment : "moved by"
@@ -274,6 +275,7 @@ erDiagram
         decimal Selling_Total_Amount "2 dp"
         decimal Profit_Or_Loss_On_Paper "2 dp"
         decimal Real_Profit_Or_Loss "2 dp"
+        text    Portfolio_Code "5 chars"
     }
     TblETFStocksPrice {
         text    Price_Date PK "yyyyMMdd"
@@ -351,20 +353,26 @@ The page shows both for a chosen date, purchases first.
 | `Real_Total_Cost_Base` | Buy only. `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
 | `Sold_Date` | Buy only. Shown only while Sold is ticked; stored `yyyyMMdd`, otherwise `Null`. |
-| `Portfolio_Code` | Buy only. Dropdown from `TblETFStocksPortfolioCode`, defaulting to `OB`. |
+| `Portfolio_Code` | **Both types**, from a dropdown labelled **Portfolio** filled from `TblETFStocksPortfolioCode` and defaulting to `OB`. Each type has its own dropdown, and the chosen code's `Description` is shown beside it (`-` when blank). On a Sell it also **filters the lots on offer** — see below. Appears as **Portfolio Code** in the grid. |
 | `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
 | `Profit_Or_Loss_On_Paper` | Sell only, derived on **Add** from the lots being sold — see below. Not shown on screen. |
 | `Real_Profit_Or_Loss` | Sell only, derived on **Add**, ignoring what the DRIP lots cost — see below. Not shown on screen. |
 
 The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, DRIP, Sold and
-Flag; a Sell shows Selling Price/Unit, Selling Total Amount and the lot grid below. Hidden fields
-are reset rather than carried over, and validation only covers what is on screen.
+Portfolio; a Sell shows Selling Price/Unit, Selling Total Amount, its own Portfolio and the lot
+grid below. Hidden fields are reset rather than carried over, and validation only covers what is
+on screen. Each Portfolio dropdown carries its own description label, and both are refreshed
+whenever the halves swap — the dropdowns are filled while events are suppressed, so a dropdown
+that has never been touched would otherwise sit beside an empty description.
 
 #### Selling against lots
 
-A Sell is not entered as a bare quantity. Choosing **Sell** lists the ticker's unsold purchases,
-and the units come from the lots they are actually being taken out of:
+A Sell is not entered as a bare quantity. Choosing **Sell** lists the ticker's unsold purchases
+**held in the chosen Portfolio**, and the units come from the lots they are actually being taken
+out of. Changing either the ticker or the Portfolio redraws the list, because units can only be
+sold out of the portfolio holding them — selling from one portfolio leaves another's lots alone.
+The code chosen here is stored on the sale as its `Portfolio_Code`:
 
 | Column | Source |
 | --- | --- |
@@ -911,9 +919,11 @@ Things worth knowing before changing this code.
   the app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes
   for the duration. **Sync all** makes one request per flagged ticker in sequence, so the freeze
   scales with how many you track. Yahoo's endpoint is undocumented and can change without notice.
-- **`Setup_ETF_Stocks_Flag` still carries the older "Flag" naming internally.** It is displayed
-  as **ETF/Stock Portfolio Code Setup** and edits `TblETFStocksPortfolioCode.Portfolio_Code`, but
-  the form class, its file and the identifiers `CmbFlagCode`, `OrgFlagCode` and
+- **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
+  `Setup_ETF_Stocks_Flag` is displayed as **ETF/Stock Portfolio Code Setup**, and on
+  `ETF_Stocks_Transaction` the dropdown is labelled **Portfolio** and its grid column
+  **Portfolio Code**. Both edit `TblETFStocksPortfolioCode.Portfolio_Code`. The form class, its
+  file and the identifiers `CmbFlagCode`, `OrgFlagCode`, `Set_Default_Flag` and
   `MnETFStocksFlagSetup` were left as they were — searching the code for the on-screen name will
   not find them.
 - **`Setup_Activa_Passiva` is displayed as "Asset Liability Setup".** The class, file and the

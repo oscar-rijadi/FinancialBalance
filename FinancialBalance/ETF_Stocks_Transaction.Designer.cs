@@ -68,6 +68,10 @@
             this.txtSellingTotalAmount = new System.Windows.Forms.TextBox();
             this.Label11 = new System.Windows.Forms.Label();
             this.CmbFlagCode = new System.Windows.Forms.ComboBox();
+            this.LblPortfolioDesc = new System.Windows.Forms.Label();
+            this.Label13 = new System.Windows.Forms.Label();
+            this.CmbSellPortfolio = new System.Windows.Forms.ComboBox();
+            this.LblSellPortfolioDesc = new System.Windows.Forms.Label();
             this.Label12 = new System.Windows.Forms.Label();
             this.CmbSoldDD = new System.Windows.Forms.ComboBox();
             this.CmbSoldMM = new System.Windows.Forms.ComboBox();
@@ -502,7 +506,7 @@
             this.Label11.Name = "Label11";
             this.Label11.Size = new System.Drawing.Size(160, 22);
             this.Label11.TabIndex = 36;
-            this.Label11.Text = "Flag";
+            this.Label11.Text = "Portfolio";
             //
             // CmbFlagCode
             //
@@ -513,6 +517,49 @@
             this.CmbFlagCode.Name = "CmbFlagCode";
             this.CmbFlagCode.Size = new System.Drawing.Size(140, 22);
             this.CmbFlagCode.TabIndex = 37;
+            this.CmbFlagCode.SelectedIndexChanged += new System.EventHandler(this.CmbFlagCode_SelectedIndexChanged);
+            //
+            // LblPortfolioDesc
+            //
+            this.LblPortfolioDesc.BackColor = System.Drawing.Color.Transparent;
+            this.LblPortfolioDesc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblPortfolioDesc.ForeColor = System.Drawing.Color.Black;
+            this.LblPortfolioDesc.Location = new System.Drawing.Point(775, 452);
+            this.LblPortfolioDesc.Name = "LblPortfolioDesc";
+            this.LblPortfolioDesc.Size = new System.Drawing.Size(210, 22);
+            this.LblPortfolioDesc.TabIndex = 60;
+            //
+            // Label13
+            //
+            this.Label13.BackColor = System.Drawing.Color.Transparent;
+            this.Label13.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label13.ForeColor = System.Drawing.Color.Black;
+            this.Label13.Location = new System.Drawing.Point(460, 398);
+            this.Label13.Name = "Label13";
+            this.Label13.Size = new System.Drawing.Size(160, 22);
+            this.Label13.TabIndex = 61;
+            this.Label13.Text = "Portfolio";
+            //
+            // CmbSellPortfolio
+            //
+            this.CmbSellPortfolio.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbSellPortfolio.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbSellPortfolio.FormattingEnabled = true;
+            this.CmbSellPortfolio.Location = new System.Drawing.Point(625, 396);
+            this.CmbSellPortfolio.Name = "CmbSellPortfolio";
+            this.CmbSellPortfolio.Size = new System.Drawing.Size(140, 22);
+            this.CmbSellPortfolio.TabIndex = 62;
+            this.CmbSellPortfolio.SelectedIndexChanged += new System.EventHandler(this.CmbSellPortfolio_SelectedIndexChanged);
+            //
+            // LblSellPortfolioDesc
+            //
+            this.LblSellPortfolioDesc.BackColor = System.Drawing.Color.Transparent;
+            this.LblSellPortfolioDesc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblSellPortfolioDesc.ForeColor = System.Drawing.Color.Black;
+            this.LblSellPortfolioDesc.Location = new System.Drawing.Point(775, 398);
+            this.LblSellPortfolioDesc.Name = "LblSellPortfolioDesc";
+            this.LblSellPortfolioDesc.Size = new System.Drawing.Size(210, 22);
+            this.LblSellPortfolioDesc.TabIndex = 63;
             //
             // Label12
             //
@@ -696,6 +743,10 @@
             this.Controls.Add(this.CmbSoldDD);
             this.Controls.Add(this.Label12);
             this.Controls.Add(this.CmbFlagCode);
+            this.Controls.Add(this.LblSellPortfolioDesc);
+            this.Controls.Add(this.CmbSellPortfolio);
+            this.Controls.Add(this.Label13);
+            this.Controls.Add(this.LblPortfolioDesc);
             this.Controls.Add(this.Label11);
             this.Controls.Add(this.txtSellingTotalAmount);
             this.Controls.Add(this.txtSellingPricePerUnit);
@@ -786,6 +837,10 @@
         public System.Windows.Forms.TextBox txtSellingPricePerUnit;
         public System.Windows.Forms.TextBox txtSellingTotalAmount;
         public System.Windows.Forms.Label Label11;
+        public System.Windows.Forms.Label LblPortfolioDesc;
+        public System.Windows.Forms.Label Label13;
+        public System.Windows.Forms.ComboBox CmbSellPortfolio;
+        public System.Windows.Forms.Label LblSellPortfolioDesc;
         public System.Windows.Forms.ComboBox CmbFlagCode;
         public System.Windows.Forms.Label Label12;
         public System.Windows.Forms.ComboBox CmbSoldDD;

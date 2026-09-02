@@ -41,6 +41,7 @@ namespace FinancialBalance
         string CalTarget = "TRANS";
         string OrgSellingPricePerUnit;
         string OrgSellingTotalAmount;
+        string OrgSellPortfolioCode;
 
         public ETF_Stocks_Transaction()
         {
@@ -65,6 +66,7 @@ namespace FinancialBalance
             Mdl1.Fill_Curr(CmbCurrency);
             Set_Default_Currency();
             Mdl1.Fill_ETF_Stocks_Purchase_Flag(CmbFlagCode);
+            Mdl1.Fill_ETF_Stocks_Purchase_Flag(CmbSellPortfolio);
             Filling = false;
 
             ChangeLblDay();
@@ -136,6 +138,7 @@ namespace FinancialBalance
             chkSold.Visible = !Sell;
             Label11.Visible = !Sell;
             CmbFlagCode.Visible = !Sell;
+            LblPortfolioDesc.Visible = !Sell;
             Show_Sold_Date();
 
             //Sell-only inputs
@@ -143,12 +146,20 @@ namespace FinancialBalance
             txtSellingPricePerUnit.Visible = Sell;
             Label10.Visible = Sell;
             txtSellingTotalAmount.Visible = Sell;
+            Label13.Visible = Sell;
+            CmbSellPortfolio.Visible = Sell;
+            LblSellPortfolioDesc.Visible = Sell;
 
             //a Sell is built from the lots being sold, so Unit is derived rather than typed
             LblLots.Visible = Sell;
             gvLots.Visible = Sell;
             txtUnit.ReadOnly = Sell;
             txtUnit.BackColor = (Sell ? System.Drawing.SystemColors.Control : System.Drawing.SystemColors.Window);
+
+            //Both dropdowns are filled while Filling suppresses events, so whichever half has
+            //just been shown would otherwise sit next to an empty description.
+            Show_Portfolio_Description();
+            Show_Sell_Portfolio_Description();
         }
 
         private void Apply_Trans_Type_Rules()
@@ -187,13 +198,78 @@ namespace FinancialBalance
             Load_Lots();
         }
 
-        //Purchases default to the OB flag
+        //Purchases default to the OB portfolio code
         private void Set_Default_Flag()
         {
             if (CmbFlagCode.Items.Contains("OB"))
             {
                 CmbFlagCode.Text = "OB";
             }
+            Show_Portfolio_Description();
+        }
+
+        private void CmbFlagCode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            Show_Portfolio_Description();
+        }
+
+        private void CmbSellPortfolio_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            Show_Sell_Portfolio_Description();
+            //the lots on offer belong to the chosen portfolio, so the list has to be redrawn
+            Load_Lots();
+        }
+
+        private void Show_Portfolio_Description()
+        {
+            Show_Description_For(CmbFlagCode, LblPortfolioDesc);
+        }
+
+        private void Show_Sell_Portfolio_Description()
+        {
+            Show_Description_For(CmbSellPortfolio, LblSellPortfolioDesc);
+        }
+
+        //The code is what gets stored, but it is only five characters; the description is
+        //shown beside it so the right portfolio is obvious without opening the setup page.
+        private void Show_Description_For(ComboBox parCombo, Label parLabel)
+        {
+            string TmpCode = parCombo.Text.Trim();
+            if (TmpCode == "")
+            {
+                parLabel.Text = "";
+                return;
+            }
+
+            string TmpDesc = "";
+            Mdl1.Ssql = "select Description from TblETFStocksPortfolioCode where Portfolio_Code = '" + TmpCode + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                TmpDesc = (reader["Description"] == DBNull.Value ? "" : reader["Description"].ToString().Trim());
+            }
+            reader.Close();
+
+            parLabel.Text = (TmpDesc == "" ? "-" : TmpDesc);
+        }
+
+        //Sells default to the OB portfolio, the same as purchases
+        private void Set_Default_Sell_Portfolio()
+        {
+            if (CmbSellPortfolio.Items.Contains("OB"))
+            {
+                CmbSellPortfolio.Text = "OB";
+            }
+            Show_Sell_Portfolio_Description();
         }
 
         //Sold Date belongs to a Buy that has been marked sold; nothing else shows it
@@ -394,7 +470,7 @@ namespace FinancialBalance
         {
             gvTrans.Columns.Clear();
             gvTrans.ColumnCount = 13;
-            string[] names = new string[] { "Type", "Full Ticker", "Currency", "Unit", "Cost Base", "Fee", "Total Cost Base", "Real Total Cost Base", "DRIP", "Sold", "Flag", "Selling Price/Unit", "Selling Total Amount" };
+            string[] names = new string[] { "Type", "Full Ticker", "Currency", "Unit", "Cost Base", "Fee", "Total Cost Base", "Real Total Cost Base", "DRIP", "Sold", "Portfolio Code", "Selling Price/Unit", "Selling Total Amount" };
             int[] weights = new int[] { 5, 9, 6, 8, 8, 5, 9, 10, 5, 5, 5, 9, 11 };
             for (int i = 0; i < 13; i++)
             {
@@ -421,7 +497,7 @@ namespace FinancialBalance
 
         private string Select_Sales()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount] from TblETFStocksSale"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount], [Portfolio_Code] from TblETFStocksSale"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -483,7 +559,7 @@ namespace FinancialBalance
                     "-",
                     "-",
                     "-",
-                    "-",
+                    (reader["Portfolio_Code"] == DBNull.Value ? "-" : reader["Portfolio_Code"].ToString().Trim()),
                     Mdl1.FormatAmt(Read_Double(reader["Selling_Price_Per_Unit"])),
                     Mdl1.FormatAmt(Read_Double(reader["Selling_Total_Amount"]))
                 };
@@ -672,6 +748,11 @@ namespace FinancialBalance
                     {
                         OrgSellingPricePerUnit = Sql_Num(reader["Selling_Price_Per_Unit"], 2);
                         OrgSellingTotalAmount = Sql_Num(reader["Selling_Total_Amount"], 2);
+                        OrgSellPortfolioCode = (reader["Portfolio_Code"] == DBNull.Value ? null : reader["Portfolio_Code"].ToString().Trim());
+                        if (OrgSellPortfolioCode == "")
+                        {
+                            OrgSellPortfolioCode = null;
+                        }
                     }
                     Found = true;
                     break;
@@ -701,6 +782,7 @@ namespace FinancialBalance
                 if (OrgFlagCode != null && CmbFlagCode.Items.Contains(OrgFlagCode))
                 {
                     CmbFlagCode.Text = OrgFlagCode;
+                    Show_Portfolio_Description();
                 }
                 else
                 {
@@ -716,6 +798,15 @@ namespace FinancialBalance
                 chkSold.Checked = false;
                 Reset_Sold_Date();
                 Set_Default_Flag();
+                if (OrgSellPortfolioCode != null && CmbSellPortfolio.Items.Contains(OrgSellPortfolioCode))
+                {
+                    CmbSellPortfolio.Text = OrgSellPortfolioCode;
+                    Show_Sell_Portfolio_Description();
+                }
+                else
+                {
+                    Set_Default_Sell_Portfolio();
+                }
             }
             Filling = false;
 
@@ -770,10 +861,14 @@ namespace FinancialBalance
                 string TmpTicker = CmbFullTicker.Text.Trim();
                 if (TmpTicker != "")
                 {
+                    //units can only be sold out of the portfolio that holds them
+                    string TmpPortfolio = CmbSellPortfolio.Text.Trim();
                     Mdl1.Ssql = "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee,"
                               + " Total_Cost_Base, Real_Total_Cost_Base, [Portfolio_Code]"
                               + " from TblETFStocksPurchase where Is_Sold = False and Full_Ticker = '"
-                              + TmpTicker + "' order by Trans_Date";
+                              + TmpTicker + "'"
+                              + (TmpPortfolio == "" ? "" : " and [Portfolio_Code] = '" + TmpPortfolio + "'")
+                              + " order by Trans_Date";
                     OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                     OleDbDataReader reader = cmd.ExecuteReader();
                     List<string[]> Lots = new List<string[]>();
@@ -1213,7 +1308,8 @@ namespace FinancialBalance
             else
             {
                 Where += Where_Col("[Selling_Price_Per_Unit]", OrgSellingPricePerUnit)
-                       + Where_Col("[Selling_Total_Amount]", OrgSellingTotalAmount);
+                       + Where_Col("[Selling_Total_Amount]", OrgSellingTotalAmount)
+                       + (OrgSellPortfolioCode == null ? " and [Portfolio_Code] Is Null" : " and [Portfolio_Code] = '" + OrgSellPortfolioCode + "'");
             }
             return Where;
         }
@@ -1264,7 +1360,7 @@ namespace FinancialBalance
                 double TmpPaperProfit = Math.Round(TmpSellingTotal - TmpPaperCost, 2);
                 double TmpRealProfit = Math.Round(TmpSellingTotal - TmpRealCost, 2);
 
-                Mdl1.Ssql = "Insert into TblETFStocksSale (Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount], [Profit_Or_Loss_On_Paper], [Real_Profit_Or_Loss]) values ("
+                Mdl1.Ssql = "Insert into TblETFStocksSale (Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount], [Profit_Or_Loss_On_Paper], [Real_Profit_Or_Loss], [Portfolio_Code]) values ("
                     + "'" + Get_Trans_Date() + "', "
                     + "'" + CmbFullTicker.Text.Trim() + "', "
                     + "'" + CmbCurrency.Text.Trim() + "', "
@@ -1272,7 +1368,8 @@ namespace FinancialBalance
                     + Num(parSellingPrice, 2) + ", "
                     + Num(parSellingTotal, 2) + ", "
                     + TmpPaperProfit.ToString("0.00", CultureInfo.InvariantCulture) + ", "
-                    + TmpRealProfit.ToString("0.00", CultureInfo.InvariantCulture) + ")";
+                    + TmpRealProfit.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                    + "'" + CmbSellPortfolio.Text.Trim() + "')";
             }
             else
             {
@@ -1375,7 +1472,8 @@ namespace FinancialBalance
                         + "[Currency] = '" + CmbCurrency.Text.Trim() + "', "
                         + "Unit = " + Num(TmpUnit, 4) + ", "
                         + "[Selling_Price_Per_Unit] = " + Num(TmpSellingPrice, 2) + ", "
-                        + "[Selling_Total_Amount] = " + Num(TmpSellingTotal, 2)
+                        + "[Selling_Total_Amount] = " + Num(TmpSellingTotal, 2) + ", "
+                        + "[Portfolio_Code] = '" + CmbSellPortfolio.Text.Trim() + "'"
                         + Where_Original();
                     cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                     cmd.ExecuteNonQuery();
