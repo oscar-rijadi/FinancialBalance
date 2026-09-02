@@ -43,6 +43,8 @@
             this.LblDay = new System.Windows.Forms.Label();
             this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.gvTrans = new System.Windows.Forms.DataGridView();
+            this.LblLots = new System.Windows.Forms.Label();
+            this.gvLots = new System.Windows.Forms.DataGridView();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
@@ -78,6 +80,7 @@
             this.CmdBack = new System.Windows.Forms.Button();
             this.MainMenu1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvTrans)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvLots)).BeginInit();
             this.SuspendLayout();
             //
             // MainMenu1
@@ -345,6 +348,7 @@
             this.CmbFullTicker.Name = "CmbFullTicker";
             this.CmbFullTicker.Size = new System.Drawing.Size(140, 22);
             this.CmbFullTicker.TabIndex = 19;
+            this.CmbFullTicker.SelectedIndexChanged += new System.EventHandler(this.CmbFullTicker_SelectedIndexChanged);
             //
             // CmbCurrency
             //
@@ -587,7 +591,7 @@
             this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCreate.Location = new System.Drawing.Point(305, 520);
+            this.CmdCreate.Location = new System.Drawing.Point(305, 610);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(85, 27);
             this.CmdCreate.TabIndex = 28;
@@ -600,7 +604,7 @@
             this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdUpdate.Location = new System.Drawing.Point(400, 520);
+            this.CmdUpdate.Location = new System.Drawing.Point(400, 610);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(85, 27);
             this.CmdUpdate.TabIndex = 29;
@@ -613,7 +617,7 @@
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(495, 520);
+            this.CmdDel.Location = new System.Drawing.Point(495, 610);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 27);
             this.CmdDel.TabIndex = 30;
@@ -627,7 +631,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(590, 520);
+            this.CmdBack.Location = new System.Drawing.Point(590, 610);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
             this.CmdBack.TabIndex = 31;
@@ -635,13 +639,41 @@
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
+            // LblLots
+            //
+            this.LblLots.BackColor = System.Drawing.Color.Transparent;
+            this.LblLots.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblLots.ForeColor = System.Drawing.Color.Black;
+            this.LblLots.Location = new System.Drawing.Point(19, 442);
+            this.LblLots.Name = "LblLots";
+            this.LblLots.Size = new System.Drawing.Size(600, 20);
+            this.LblLots.TabIndex = 43;
+            this.LblLots.Text = "Unsold purchases - enter how many units of each are being sold";
+            this.LblLots.Visible = false;
+            //
+            // gvLots
+            //
+            this.gvLots.AllowUserToAddRows = false;
+            this.gvLots.AllowUserToDeleteRows = false;
+            this.gvLots.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvLots.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvLots.Location = new System.Drawing.Point(19, 464);
+            this.gvLots.MultiSelect = false;
+            this.gvLots.Name = "gvLots";
+            this.gvLots.RowHeadersVisible = false;
+            this.gvLots.Size = new System.Drawing.Size(960, 130);
+            this.gvLots.TabIndex = 44;
+            this.gvLots.Visible = false;
+            this.gvLots.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvLots_CellEndEdit);
+            this.gvLots.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.gvLots_EditingControlShowing);
+            //
             // ETF_Stocks_Transaction
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1000, 565);
+            this.ClientSize = new System.Drawing.Size(1000, 655);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
@@ -677,6 +709,8 @@
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.monthCalendar1);
+            this.Controls.Add(this.gvLots);
+            this.Controls.Add(this.LblLots);
             this.Controls.Add(this.gvTrans);
             this.Controls.Add(this.LblDay);
             this.Controls.Add(this.CmdCal);
@@ -697,6 +731,7 @@
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvTrans)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvLots)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -718,6 +753,8 @@
         public System.Windows.Forms.Label LblDay;
         public System.Windows.Forms.MonthCalendar monthCalendar1;
         private System.Windows.Forms.DataGridView gvTrans;
+        public System.Windows.Forms.Label LblLots;
+        private System.Windows.Forms.DataGridView gvLots;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;

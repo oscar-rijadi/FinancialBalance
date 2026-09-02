@@ -147,7 +147,7 @@ flowchart LR
 | `Main_Form` | Splash screen with an animated marquee, clock, version label. Enables the transaction menus only once `TblAcctRef` has at least one row. |
 | `Daily_Input` | Enter, amend or delete a dated voucher. Up to 5 debit and 5 credit lines; refuses to save unless the two sides balance. |
 | `Monthly_Closing` | Snapshots `TblAsset` and `TblLiability` into `TblMonthlyTrans` for a chosen month. Defaults to the month after the last close. |
-| `ETF_Stocks_Transaction` | Add / update / delete ETF and stock trades for one date. `Total_Cost_Base` is derived; DRIP zeroes `Real_Total_Cost_Base`. |
+| `ETF_Stocks_Transaction` | Add / update / delete ETF and stock trades for one date. A Sell is built against the purchase lots it draws from, which it then settles. |
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
@@ -322,7 +322,7 @@ The page shows both for a chosen date, purchases first.
 | Field | Rule |
 | --- | --- |
 | `Trans_Date` | From the date picker, stored `yyyyMMdd`. |
-| `Unit` | Numeric, not negative, at most 4 decimal places. Both tables. |
+| `Unit` | Buy: typed, numeric, not negative, at most 4 decimal places. **Sell: derived** — see below. |
 | `Cost_Base`, `Fee` | Buy only. Numeric, not negative, at most 2 decimal places. |
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
 | `Real_Total_Cost_Base` | Buy only. `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
@@ -333,8 +333,40 @@ The page shows both for a chosen date, purchases first.
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
 
 The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, DRIP, Sold and
-Flag; a Sell shows Selling Price/Unit and Selling Total Amount. Hidden fields are reset rather
-than carried over, and validation only covers what is on screen.
+Flag; a Sell shows Selling Price/Unit, Selling Total Amount and the lot grid below. Hidden fields
+are reset rather than carried over, and validation only covers what is on screen.
+
+#### Selling against lots
+
+A Sell is not entered as a bare quantity. Choosing **Sell** lists the ticker's unsold purchases,
+and the units come from the lots they are actually being taken out of:
+
+| Column | Source |
+| --- | --- |
+| `Purchase Date` | `Trans_Date`, shown `dd-MMM-yyyy`. |
+| `Unit` | `Unit` — how many are held in that lot. |
+| `Purchase Price / Unit` | `Cost_Base` |
+| `Real Purchase Amount` | `Real_Total_Cost_Base` — `0` for a DRIP lot, so a reinvested holding is visible as costing nothing. |
+| `Sold Unit` | **Editable.** Numeric-only keystrokes, not negative, at most 4 decimal places, and never more than that lot's `Unit`. |
+
+The **Unit** box becomes read-only and holds the sum of every `Sold Unit`, so `Selling_Total_Amount`
+follows the lots automatically. Adding a Sell with nothing allocated is refused.
+
+**Add** writes the `TblETFStocksSale` row and then settles each lot it drew from:
+
+| Case | Effect on `TblETFStocksPurchase` |
+| --- | --- |
+| Whole lot sold | The row is closed as it stands — `Is_Sold = True`, `Sold_Date` set. |
+| Part of a lot sold | The row is cut down to the units **sold** and closed, keeping the original `Fee`; a **new open row** carries the remainder with `Fee = 0`. |
+
+So a 10-unit lot at 50.00 with a 9.95 fee, selling 3, leaves a closed `3 @ 50.00` row totalling
+`159.95` and an open `7 @ 50.00` row totalling `350.00`. The portfolio still shows 7 units held —
+the closed side is the part that left.
+
+`Total_Cost_Base` is recomputed on both rows, and `Real_Total_Cost_Base` follows the DRIP rule:
+**zero stays zero**, so splitting a reinvested lot leaves both halves at `0` rather than
+inventing a cost. Because the purchase table has no key, each lot row remembers the values it was
+read with and the update matches on all of them.
 
 **Sold Date** is nested one level deeper: it appears only when the Sold box is ticked on a Buy,
 and unticking clears the value as well as hiding it, so a stale date cannot survive out of sight.

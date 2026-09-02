@@ -136,6 +136,12 @@ namespace FinancialBalance
             txtSellingPricePerUnit.Visible = Sell;
             Label10.Visible = Sell;
             txtSellingTotalAmount.Visible = Sell;
+
+            //a Sell is built from the lots being sold, so Unit is derived rather than typed
+            LblLots.Visible = Sell;
+            gvLots.Visible = Sell;
+            txtUnit.ReadOnly = Sell;
+            txtUnit.BackColor = (Sell ? System.Drawing.SystemColors.Control : System.Drawing.SystemColors.Window);
         }
 
         private void Apply_Trans_Type_Rules()
@@ -160,8 +166,18 @@ namespace FinancialBalance
         private void CmbTransType_SelectedIndexChanged(object sender, EventArgs e)
         {
             Apply_Trans_Type_Rules();
+            Load_Lots();
             //the reset above changes what the derived boxes should read
             Calculate_Totals();
+        }
+
+        private void CmbFullTicker_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            Load_Lots();
         }
 
         //Purchases default to the OB flag
@@ -515,6 +531,7 @@ namespace FinancialBalance
             Set_Default_Flag();
             Filling = false;
             Apply_Trans_Type_Rules();
+            Load_Lots();
             Calculate_Totals();
         }
 
@@ -702,6 +719,304 @@ namespace FinancialBalance
             Calculate_Totals();
         }
 
+        private void Clear_Lots_Grid()
+        {
+            gvLots.Rows.Clear();
+            gvLots.Columns.Clear();
+            gvLots.ColumnCount = 5;
+            string[] names = new string[] { "Purchase Date", "Unit", "Purchase Price / Unit",
+                                            "Real Purchase Amount", "Sold Unit" };
+            int[] weights = new int[] { 20, 18, 22, 22, 18 };
+            for (int i = 0; i < 5; i++)
+            {
+                gvLots.Columns[i].Name = names[i];
+                gvLots.Columns[i].FillWeight = weights[i];
+                gvLots.Columns[i].ReadOnly = (i < 4);
+                if (i == 0)
+                {
+                    gvLots.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                    gvLots.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                }
+                else
+                {
+                    gvLots.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+                    gvLots.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+            }
+        }
+
+        //Each row keeps the values it was read with, because the purchase table has no key
+        //and the update has to find exactly this lot again.
+        private void Load_Lots()
+        {
+            if (!Is_Sell())
+            {
+                gvLots.Rows.Clear();
+                return;
+            }
+
+            try
+            {
+                Filling = true;
+                Clear_Lots_Grid();
+
+                string TmpTicker = CmbFullTicker.Text.Trim();
+                if (TmpTicker != "")
+                {
+                    Mdl1.Ssql = "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee,"
+                              + " Total_Cost_Base, Real_Total_Cost_Base, [Portfolio_Code]"
+                              + " from TblETFStocksPurchase where Is_Sold = False and Full_Ticker = '"
+                              + TmpTicker + "' order by Trans_Date";
+                    OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                    OleDbDataReader reader = cmd.ExecuteReader();
+                    List<string[]> Lots = new List<string[]>();
+                    while (reader.Read())
+                    {
+                        Lots.Add(new string[] {
+                            reader["Trans_Date"].ToString().Trim(),
+                            reader["Full_Ticker"].ToString().Trim(),
+                            reader["Currency"].ToString().Trim(),
+                            Sql_Num(reader["Unit"], 4),
+                            Sql_Num(reader["Cost_Base"], 2),
+                            Sql_Num(reader["Fee"], 2),
+                            Sql_Num(reader["Total_Cost_Base"], 2),
+                            Sql_Num(reader["Real_Total_Cost_Base"], 2),
+                            (reader["Portfolio_Code"] == DBNull.Value ? null : reader["Portfolio_Code"].ToString().Trim())
+                        });
+                    }
+                    reader.Close();
+
+                    for (int i = 0; i < Lots.Count; i++)
+                    {
+                        double TmpUnit = Read_Double(Lots[i][3]);
+                        gvLots.Rows.Add(new string[] {
+                            Format_Purchase_Date(Lots[i][0]),
+                            TmpUnit.ToString("#,##0.0000"),
+                            Mdl1.FormatAmt(Read_Double(Lots[i][4])),
+                            Mdl1.FormatAmt(Read_Double(Lots[i][7])),
+                            "0.0000" });
+                        gvLots.Rows[gvLots.Rows.Count - 1].Tag = Lots[i];
+                    }
+                }
+
+                gvLots.ClearSelection();
+                Filling = false;
+                Sum_Sold_Units();
+            }
+            catch (Exception ex)
+            {
+                Filling = false;
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+        }
+
+        private string Format_Purchase_Date(string parYyyyMMdd)
+        {
+            DateTime TmpDate;
+            if (DateTime.TryParseExact(parYyyyMMdd, "yyyyMMdd", new CultureInfo("en-AU"),
+                                       DateTimeStyles.None, out TmpDate))
+            {
+                return TmpDate.ToString("dd-MMM-yyyy", new CultureInfo("en-AU"));
+            }
+            return parYyyyMMdd;
+        }
+
+        private double Read_Double(string parText)
+        {
+            double TmpValue;
+            if (parText != null && double.TryParse(parText, NumberStyles.Number, CultureInfo.InvariantCulture, out TmpValue))
+            {
+                return TmpValue;
+            }
+            return 0;
+        }
+
+        private double Lot_Unit(int parRow)
+        {
+            string[] o = (string[])gvLots.Rows[parRow].Tag;
+            return Read_Double(o[3]);
+        }
+
+        private double Sold_Unit(int parRow)
+        {
+            object v = gvLots.Rows[parRow].Cells[4].Value;
+            double d;
+            if (v == null || !double.TryParse(v.ToString().Trim(), out d))
+            {
+                return 0;
+            }
+            return d;
+        }
+
+        //Unit on a Sell is the sum of what is being taken from each lot
+        private void Sum_Sold_Units()
+        {
+            double Tot = 0;
+            for (int i = 0; i < gvLots.Rows.Count; i++)
+            {
+                Tot += Sold_Unit(i);
+            }
+            Filling = true;
+            txtUnit.Text = Tot.ToString("0.0000");
+            Filling = false;
+            Calculate_Totals();
+        }
+
+        //Digits and a decimal point only, the same filter the amount boxes use
+        private void gvLots_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            TextBox box = e.Control as TextBox;
+            if (box == null)
+            {
+                return;
+            }
+            box.KeyPress -= new KeyPressEventHandler(Lot_KeyPress);
+            if (gvLots.CurrentCell != null && gvLots.CurrentCell.ColumnIndex == 4)
+            {
+                box.KeyPress += new KeyPressEventHandler(Lot_KeyPress);
+            }
+        }
+
+        private void Lot_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            CheckKeyPress(e);
+        }
+
+        private void gvLots_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (Filling || e.ColumnIndex != 4)
+            {
+                return;
+            }
+
+            object v = gvLots.Rows[e.RowIndex].Cells[4].Value;
+            string s = (v == null ? "" : v.ToString().Trim());
+            double d;
+
+            if (s == "")
+            {
+                d = 0;
+            }
+            else if (!double.TryParse(s, out d))
+            {
+                MessageBox.Show("Sold Unit must be a number !", "Error Message");
+                d = 0;
+            }
+            else if (d < 0)
+            {
+                MessageBox.Show("Sold Unit cannot be negative !", "Error Message");
+                d = 0;
+            }
+            else
+            {
+                string TmpPlain = s.Replace(",", "");
+                int TmpDot = TmpPlain.IndexOf('.');
+                if (TmpDot >= 0 && (TmpPlain.Length - TmpDot - 1) > 4)
+                {
+                    MessageBox.Show("Sold Unit can have a maximum of 4 decimal points !", "Error Message");
+                    d = Math.Round(d, 4);
+                }
+            }
+
+            double TmpMax = Lot_Unit(e.RowIndex);
+            if (d > TmpMax)
+            {
+                MessageBox.Show("Sold Unit cannot be more than the " + TmpMax.ToString("#,##0.0000")
+                    + " unit(s) held in that purchase !", "Error Message");
+                d = TmpMax;
+            }
+
+            Filling = true;
+            gvLots.Rows[e.RowIndex].Cells[4].Value = d.ToString("0.0000");
+            Filling = false;
+
+            Sum_Sold_Units();
+        }
+
+        //A Sell closes the units it takes and leaves the remainder open.  A lot sold in
+        //full is simply closed; a lot sold in part is split into a closed row for the
+        //units sold and a new open row for what is left.
+        private void Apply_Sale_To_Lots(string parSoldDate)
+        {
+            for (int i = 0; i < gvLots.Rows.Count; i++)
+            {
+                double TmpSold = Sold_Unit(i);
+                if (TmpSold <= 0)
+                {
+                    continue;
+                }
+
+                string[] o = (string[])gvLots.Rows[i].Tag;
+                string OrgDate = o[0];
+                string OrgTicker = o[1];
+                string OrgCurr = o[2];
+                string OrgUnit = o[3];
+                string OrgCost = o[4];
+                string OrgFee = o[5];
+                string OrgTotal = o[6];
+                string OrgReal = o[7];
+                string OrgCode = o[8];
+
+                string Where = " where Trans_Date = '" + OrgDate + "'"
+                             + " and Full_Ticker = '" + OrgTicker + "'"
+                             + " and [Currency] = '" + OrgCurr + "'"
+                             + " and Unit = " + OrgUnit
+                             + " and Cost_Base = " + OrgCost
+                             + " and Fee = " + OrgFee
+                             + " and Total_Cost_Base = " + OrgTotal
+                             + " and Real_Total_Cost_Base = " + OrgReal
+                             + " and Is_Sold = False"
+                             + (OrgCode == null ? " and [Portfolio_Code] Is Null" : " and [Portfolio_Code] = '" + OrgCode + "'");
+
+                double TmpLotUnit = Read_Double(OrgUnit);
+                double TmpCost = Read_Double(OrgCost);
+                double TmpFee = Read_Double(OrgFee);
+                bool RealWasZero = (Read_Double(OrgReal) == 0);
+
+                OleDbCommand cmd;
+
+                if (Math.Abs(TmpSold - TmpLotUnit) < 0.00005)
+                {
+                    //sold in full - close it as it stands
+                    Mdl1.Ssql = "Update TblETFStocksPurchase set Is_Sold = True, [Sold_Date] = '" + parSoldDate + "'" + Where;
+                    cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                    cmd.ExecuteNonQuery();
+                    continue;
+                }
+
+                //the closed part keeps the original fee
+                double SoldTotal = Math.Round(Math.Round(TmpSold * TmpCost, 2) + TmpFee, 2);
+                double SoldReal = (RealWasZero ? 0 : SoldTotal);
+
+                Mdl1.Ssql = "Update TblETFStocksPurchase set "
+                          + "Unit = " + TmpSold.ToString("0.0000", CultureInfo.InvariantCulture) + ", "
+                          + "Total_Cost_Base = " + SoldTotal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                          + "Real_Total_Cost_Base = " + SoldReal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                          + "Is_Sold = True, [Sold_Date] = '" + parSoldDate + "'"
+                          + Where;
+                cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                cmd.ExecuteNonQuery();
+
+                //the remainder carries on as a new open lot, with no fee of its own
+                double RestUnit = Math.Round(TmpLotUnit - TmpSold, 4);
+                double RestTotal = Math.Round(RestUnit * TmpCost, 2);
+                double RestReal = (RealWasZero ? 0 : RestTotal);
+
+                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee,"
+                          + " Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
+                          + "'" + OrgDate + "', '" + OrgTicker + "', '" + OrgCurr + "', "
+                          + RestUnit.ToString("0.0000", CultureInfo.InvariantCulture) + ", "
+                          + TmpCost.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                          + "0.00, "
+                          + RestTotal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                          + RestReal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                          + "False, "
+                          + (OrgCode == null ? "Null" : "'" + OrgCode + "'") + ", Null)";
+                cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         //Culture-independent literal for SQL, at the scale the column stores.
         //Returns null when the stored value is Null.
         private string Sql_Num(object parValue, int parDecimals)
@@ -780,6 +1095,11 @@ namespace FinancialBalance
 
             if (Is_Sell())
             {
+                if (parUnit <= 0)
+                {
+                    MessageBox.Show("Enter the units being sold against one or more purchases first !", "Error Message");
+                    return false;
+                }
                 if (!Valid_Amount(txtSellingPricePerUnit.Text, 2, "Selling Price/Unit", out parSellingPrice))
                 {
                     return false;
@@ -935,10 +1255,17 @@ namespace FinancialBalance
 
                 Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpSellingPrice, TmpSellingTotal);
 
+                //a Sell also has to take those units out of the purchases they came from
+                if (Is_Sell())
+                {
+                    Apply_Sale_To_Lots(Get_Trans_Date());
+                }
+
                 MessageBox.Show("Create successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()), "Success");
 
                 Get_Data();
                 Clear_Entry();
+                Load_Lots();
             }
             catch (Exception ex)
             {
