@@ -37,6 +37,8 @@ namespace FinancialBalance
 
             Filling = true;
             Fill_Full_Ticker();
+            Mdl1.Fill_Curr(CmbCurrency);
+            Set_Default_Currency();
             Filling = false;
 
             txtPrice.Text = "0.00";
@@ -87,6 +89,50 @@ namespace FinancialBalance
             }
             reader.Close();
             CmbFullTicker.Text = "";
+        }
+
+        //Fill_Curr defaults to IDR for the accounting pages; prices default to AUD
+        private void Set_Default_Currency()
+        {
+            if (CmbCurrency.Items.Contains("AUD"))
+            {
+                CmbCurrency.Text = "AUD";
+            }
+        }
+
+        //A synced currency need not be one of the codes set up in Currency Setup.  It is
+        //still what the price is quoted in, so it is added to the list rather than dropped,
+        //which keeps the dropdown showing what was actually stored.
+        private void Select_Currency(string parCurrency)
+        {
+            string TmpCurrency = parCurrency.Trim();
+            if (TmpCurrency == "")
+            {
+                return;
+            }
+            if (!CmbCurrency.Items.Contains(TmpCurrency))
+            {
+                CmbCurrency.Items.Add(TmpCurrency);
+            }
+            CmbCurrency.Text = TmpCurrency;
+        }
+
+        //Yahoo does not always send a currency back.  Rather than guess, fall back to
+        //whatever that ticker was last priced in, and only then to AUD.
+        private string Resolve_Currency(string parFullTicker, string parFetched)
+        {
+            if (parFetched.Trim() != "")
+            {
+                return parFetched.Trim();
+            }
+
+            double TmpPrice;
+            string TmpCurrency;
+            if (Latest_Price(parFullTicker, out TmpPrice, out TmpCurrency) && TmpCurrency != "")
+            {
+                return TmpCurrency;
+            }
+            return "AUD";
         }
 
         private bool In_Yahoo_Finance(string parFullTicker)
@@ -243,30 +289,36 @@ namespace FinancialBalance
         {
             gvAllPrices.Rows.Clear();
             gvAllPrices.Columns.Clear();
-            gvAllPrices.ColumnCount = 2;
+            gvAllPrices.ColumnCount = 3;
             gvAllPrices.Columns[0].Name = "Full Ticker";
-            gvAllPrices.Columns[0].FillWeight = 60;
+            gvAllPrices.Columns[0].FillWeight = 45;
             gvAllPrices.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvAllPrices.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            gvAllPrices.Columns[1].Name = "Current Price";
-            gvAllPrices.Columns[1].FillWeight = 40;
-            gvAllPrices.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvAllPrices.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvAllPrices.Columns[1].Name = "Currency";
+            gvAllPrices.Columns[1].FillWeight = 20;
+            gvAllPrices.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvAllPrices.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvAllPrices.Columns[2].Name = "Current Price";
+            gvAllPrices.Columns[2].FillWeight = 35;
+            gvAllPrices.Columns[2].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvAllPrices.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
 
         //Latest stored price for a ticker; false when it has never been priced
-        private bool Latest_Price(string parFullTicker, out double parPrice)
+        private bool Latest_Price(string parFullTicker, out double parPrice, out string parCurrency)
         {
             parPrice = 0;
+            parCurrency = "";
             bool Found = false;
 
-            Mdl1.Ssql = "select top 1 [Price] from TblETFStocksPrice where Full_Ticker = '" + parFullTicker
+            Mdl1.Ssql = "select top 1 [Price], [Currency] from TblETFStocksPrice where Full_Ticker = '" + parFullTicker
                       + "' order by Price_Date Desc";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
                 parPrice = Read_Double(reader["Price"]);
+                parCurrency = Read_Text(reader["Currency"]);
                 Found = true;
             }
             reader.Close();
@@ -291,16 +343,20 @@ namespace FinancialBalance
             for (int i = 0; i < Tickers.Count; i++)
             {
                 double TmpPrice;
+                string TmpCurrency;
                 string strPrice;
-                if (Latest_Price(Tickers[i], out TmpPrice))
+                string strCurrency;
+                if (Latest_Price(Tickers[i], out TmpPrice, out TmpCurrency))
                 {
                     strPrice = Mdl1.FormatAmt(TmpPrice);
+                    strCurrency = (TmpCurrency == "" ? "-" : TmpCurrency);
                 }
                 else
                 {
                     strPrice = "-";
+                    strCurrency = "-";
                 }
-                gvAllPrices.Rows.Add(new string[] { Tickers[i], strPrice });
+                gvAllPrices.Rows.Add(new string[] { Tickers[i], strCurrency, strPrice });
             }
 
             gvAllPrices.ClearSelection();
@@ -345,12 +401,13 @@ namespace FinancialBalance
                 {
                     decimal TmpPrice;
                     string TmpDate;
+                    string TmpCurrency;
                     string TmpError;
                     bool WasUpdate;
 
-                    if (Fetch_Yahoo_Price(Tickers[i], out TmpPrice, out TmpDate, out TmpError))
+                    if (Fetch_Yahoo_Price(Tickers[i], out TmpPrice, out TmpDate, out TmpCurrency, out TmpError))
                     {
-                        Save_Price(Tickers[i], TmpDate, TmpPrice, out WasUpdate);
+                        Save_Price(Tickers[i], TmpDate, TmpPrice, Resolve_Currency(Tickers[i], TmpCurrency), out WasUpdate);
                         Saved++;
                     }
                     else
@@ -392,15 +449,19 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvPrice.Columns.Clear();
-            gvPrice.ColumnCount = 2;
+            gvPrice.ColumnCount = 3;
             gvPrice.Columns[0].Name = "Price Date";
-            gvPrice.Columns[0].FillWeight = 60;
+            gvPrice.Columns[0].FillWeight = 45;
             gvPrice.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvPrice.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            gvPrice.Columns[1].Name = "Price";
-            gvPrice.Columns[1].FillWeight = 40;
-            gvPrice.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvPrice.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvPrice.Columns[1].Name = "Currency";
+            gvPrice.Columns[1].FillWeight = 20;
+            gvPrice.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvPrice.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvPrice.Columns[2].Name = "Price";
+            gvPrice.Columns[2].FillWeight = 35;
+            gvPrice.Columns[2].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvPrice.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
 
         //Most recent first, capped at MaxRows
@@ -414,14 +475,15 @@ namespace FinancialBalance
             if (Ticker != "")
             {
                 string[] row;
-                Mdl1.Ssql = "select top " + MaxRows.ToString() + " Price_Date, [Price] from TblETFStocksPrice"
+                Mdl1.Ssql = "select top " + MaxRows.ToString() + " Price_Date, [Price], [Currency] from TblETFStocksPrice"
                           + " where Full_Ticker = '" + Ticker + "' order by Price_Date Desc";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
                     string TmpDate = reader["Price_Date"].ToString().Trim();
-                    row = new string[] { Mdl1.toLongDate(TmpDate), Mdl1.FormatAmt(Read_Double(reader["Price"])) };
+                    string TmpCurrency = Read_Text(reader["Currency"]);
+                    row = new string[] { Mdl1.toLongDate(TmpDate), (TmpCurrency == "" ? "-" : TmpCurrency), Mdl1.FormatAmt(Read_Double(reader["Price"])) };
                     gvPrice.Rows.Add(row);
                     gvPrice.Rows[gvPrice.Rows.Count - 1].Tag = TmpDate;
                 }
@@ -431,6 +493,16 @@ namespace FinancialBalance
             gvPrice.ClearSelection();
 
             Filling = false;
+        }
+
+        //Rows written before Currency existed read back as null
+        private string Read_Text(object parValue)
+        {
+            if (parValue == null || parValue == DBNull.Value)
+            {
+                return "";
+            }
+            return parValue.ToString().Trim();
         }
 
         private double Read_Double(object parValue)
@@ -460,7 +532,8 @@ namespace FinancialBalance
             }
 
             Set_Date(gvPrice.CurrentRow.Tag.ToString());
-            txtPrice.Text = gvPrice.CurrentRow.Cells[1].Value.ToString().Replace(",", "");
+            Select_Currency(gvPrice.CurrentRow.Cells[1].Value.ToString().Replace("-", ""));
+            txtPrice.Text = gvPrice.CurrentRow.Cells[2].Value.ToString().Replace(",", "");
         }
 
         private void txtPrice_KeyPress(object sender, KeyPressEventArgs e)
@@ -507,7 +580,7 @@ namespace FinancialBalance
         }
 
         //One row per ticker per date: insert when new, update when it already exists
-        private bool Save_Price(string parTicker, string parDate, decimal parPrice, out bool parWasUpdate)
+        private bool Save_Price(string parTicker, string parDate, decimal parPrice, string parCurrency, out bool parWasUpdate)
         {
             parWasUpdate = false;
 
@@ -522,12 +595,13 @@ namespace FinancialBalance
             if (parWasUpdate)
             {
                 Mdl1.Ssql = "Update TblETFStocksPrice set [Price] = " + TmpPrice
+                          + ", [Currency] = '" + parCurrency.Trim() + "'"
                           + " where Price_Date = '" + parDate + "' and Full_Ticker = '" + parTicker + "'";
             }
             else
             {
-                Mdl1.Ssql = "Insert into TblETFStocksPrice (Price_Date, Full_Ticker, [Price]) values ("
-                          + "'" + parDate + "', '" + parTicker + "', " + TmpPrice + ")";
+                Mdl1.Ssql = "Insert into TblETFStocksPrice (Price_Date, Full_Ticker, [Price], [Currency]) values ("
+                          + "'" + parDate + "', '" + parTicker + "', " + TmpPrice + ", '" + parCurrency.Trim() + "')";
             }
             cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
@@ -547,12 +621,17 @@ namespace FinancialBalance
                     MessageBox.Show("Full Ticker must be selected !", "Error Message");
                     return;
                 }
+                if (CmbCurrency.Text.Trim() == "")
+                {
+                    MessageBox.Show("Currency must be selected !", "Error Message");
+                    return;
+                }
                 if (!Valid_Price(txtPrice.Text, out TmpPrice))
                 {
                     return;
                 }
 
-                Save_Price(Ticker, Get_Price_Date(), TmpPrice, out WasUpdate);
+                Save_Price(Ticker, Get_Price_Date(), TmpPrice, CmbCurrency.Text.Trim(), out WasUpdate);
 
                 MessageBox.Show((WasUpdate ? "Update" : "Create") + " successfully for " + Ticker
                     + " on " + Mdl1.toLongDate(Get_Price_Date()), "Success");
@@ -609,10 +688,11 @@ namespace FinancialBalance
         //Yahoo's chart endpoint carries the last traded price and its timestamp in the
         //meta block.  Only those two values are needed, so they are pulled out directly
         //rather than pulling in a JSON library.
-        private bool Fetch_Yahoo_Price(string parTicker, out decimal parPrice, out string parDate, out string parError)
+        private bool Fetch_Yahoo_Price(string parTicker, out decimal parPrice, out string parDate, out string parCurrency, out string parError)
         {
             parPrice = 0;
             parDate = "";
+            parCurrency = "";
             parError = "";
 
             try
@@ -641,6 +721,13 @@ namespace FinancialBalance
                     return false;
                 }
                 parPrice = Math.Round(parPrice, 2);
+
+                //currency the price is quoted in, straight from the same meta block
+                Match CurrMatch = Regex.Match(Json, "\"currency\"\\s*:\\s*\"([A-Za-z]{2,5})\"");
+                if (CurrMatch.Success)
+                {
+                    parCurrency = CurrMatch.Groups[1].Value.Trim();
+                }
 
                 //date the price belongs to, from the market timestamp where available
                 Match TimeMatch = Regex.Match(Json, "\"regularMarketTime\"\\s*:\\s*([0-9]+)");
@@ -682,6 +769,7 @@ namespace FinancialBalance
         {
             decimal TmpPrice;
             string TmpDate;
+            string TmpCurrency;
             string TmpError;
             bool WasUpdate;
 
@@ -701,19 +789,21 @@ namespace FinancialBalance
             CmdSync.Enabled = false;
             try
             {
-                if (!Fetch_Yahoo_Price(Ticker, out TmpPrice, out TmpDate, out TmpError))
+                if (!Fetch_Yahoo_Price(Ticker, out TmpPrice, out TmpDate, out TmpCurrency, out TmpError))
                 {
                     MessageBox.Show(TmpError, "Error Message");
                     return;
                 }
 
-                Save_Price(Ticker, TmpDate, TmpPrice, out WasUpdate);
+                TmpCurrency = Resolve_Currency(Ticker, TmpCurrency);
+                Save_Price(Ticker, TmpDate, TmpPrice, TmpCurrency, out WasUpdate);
 
                 Set_Date(TmpDate);
+                Select_Currency(TmpCurrency);
                 txtPrice.Text = TmpPrice.ToString("0.00", CultureInfo.InvariantCulture);
 
                 MessageBox.Show("Yahoo Finance price for " + Ticker + " on " + Mdl1.toLongDate(TmpDate)
-                    + " is " + Mdl1.FormatAmt((double)TmpPrice) + " and has been "
+                    + " is " + TmpCurrency + " " + Mdl1.FormatAmt((double)TmpPrice) + " and has been "
                     + (WasUpdate ? "updated" : "saved") + ".", "Success");
 
                 Get_Data();

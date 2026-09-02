@@ -53,6 +53,8 @@
             this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.Label3 = new System.Windows.Forms.Label();
             this.txtPrice = new System.Windows.Forms.TextBox();
+            this.Label4 = new System.Windows.Forms.Label();
+            this.CmbCurrency = new System.Windows.Forms.ComboBox();
             this.CmdAdd = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
@@ -328,15 +330,36 @@
             this.txtPrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtPrice.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPrice_KeyPress);
             //
+            // Label4
+            //
+            this.Label4.BackColor = System.Drawing.Color.Transparent;
+            this.Label4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label4.ForeColor = System.Drawing.Color.Black;
+            this.Label4.Location = new System.Drawing.Point(19, 570);
+            this.Label4.Name = "Label4";
+            this.Label4.Size = new System.Drawing.Size(90, 22);
+            this.Label4.TabIndex = 17;
+            this.Label4.Text = "Currency";
+            //
+            // CmbCurrency
+            //
+            this.CmbCurrency.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbCurrency.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbCurrency.FormattingEnabled = true;
+            this.CmbCurrency.Location = new System.Drawing.Point(115, 568);
+            this.CmbCurrency.Name = "CmbCurrency";
+            this.CmbCurrency.Size = new System.Drawing.Size(157, 22);
+            this.CmbCurrency.TabIndex = 18;
+            //
             // CmdAdd
             //
             this.CmdAdd.BackColor = System.Drawing.SystemColors.Control;
             this.CmdAdd.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdAdd.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdAdd.Location = new System.Drawing.Point(185, 585);
+            this.CmdAdd.Location = new System.Drawing.Point(185, 615);
             this.CmdAdd.Name = "CmdAdd";
             this.CmdAdd.Size = new System.Drawing.Size(100, 27);
-            this.CmdAdd.TabIndex = 17;
+            this.CmdAdd.TabIndex = 19;
             this.CmdAdd.Text = "&Add / Update";
             this.CmdAdd.UseVisualStyleBackColor = false;
             this.CmdAdd.Click += new System.EventHandler(this.CmdAdd_Click);
@@ -346,10 +369,10 @@
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(295, 585);
+            this.CmdDel.Location = new System.Drawing.Point(295, 615);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 27);
-            this.CmdDel.TabIndex = 18;
+            this.CmdDel.TabIndex = 20;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -360,10 +383,10 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(390, 585);
+            this.CmdBack.Location = new System.Drawing.Point(390, 615);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
-            this.CmdBack.TabIndex = 19;
+            this.CmdBack.TabIndex = 21;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -374,11 +397,13 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(700, 640);
+            this.ClientSize = new System.Drawing.Size(700, 670);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.CmdAdd);
+            this.Controls.Add(this.CmbCurrency);
+            this.Controls.Add(this.Label4);
             this.Controls.Add(this.txtPrice);
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.monthCalendar1);
@@ -442,6 +467,8 @@
         public System.Windows.Forms.MonthCalendar monthCalendar1;
         public System.Windows.Forms.Label Label3;
         public System.Windows.Forms.TextBox txtPrice;
+        public System.Windows.Forms.Label Label4;
+        public System.Windows.Forms.ComboBox CmbCurrency;
         public System.Windows.Forms.Button CmdAdd;
         public System.Windows.Forms.Button CmdDel;
         public System.Windows.Forms.Button CmdBack;

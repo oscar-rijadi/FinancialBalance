@@ -270,6 +270,7 @@ erDiagram
         text    Price_Date PK "yyyyMMdd"
         text    Full_Ticker PK "joins TblETFStocks"
         decimal Price "2 dp"
+        text    Currency "3 chars"
     }
     TblETFStocksPortfolioCode {
         text Portfolio_Code PK "5 chars"
@@ -457,33 +458,58 @@ Prices arrive two ways:
 
 | Route | Behaviour |
 | --- | --- |
-| **Manual** | Pick a date and type a price — numeric, not negative, at most 2 decimal places. |
+| **Manual** | Pick a date, a currency and type a price — numeric, not negative, at most 2 decimal places. |
 | **Sync with Yahoo Finance** | One ticker. Enabled only when its `In_YahooFinance` is `True`, otherwise greyed with a note. |
 | **Sync all with Yahoo Finance** | Every ticker flagged `In_YahooFinance`, in one pass. |
 
-A grid at the top of the page lists **every** ticker in `TblETFStocks` with its latest stored
-price, whether that price came from Yahoo or was typed in; a ticker with no price shows `-`. It
-refreshes after any add, update, delete or sync, so it never goes stale.
+A grid at the top of the page lists **every** ticker in `TblETFStocks` with the currency and
+latest stored price, whether that price came from Yahoo or was typed in; a ticker with no price
+shows `-`. It refreshes after any add, update, delete or sync, so it never goes stale. Its
+columns are `Full Ticker`, `Currency`, `Current Price`; the per-ticker grid below shows
+`Price Date`, `Currency`, `Price`.
 
 The bulk sync attempts each ticker independently — one failure does not abort the run. Results
 are reported once at the end as *"n of m ticker(s) updated"*, with any failures listed, rather
 than a dialog per ticker. Both sync buttons disable while it runs.
 
-The sync calls Yahoo's chart endpoint and reads two values out of the response:
+The sync calls Yahoo's chart endpoint and reads three values out of the response:
 
 ```
 https://query1.finance.yahoo.com/v8/finance/chart/{Full_Ticker}?interval=1d&range=1d
   regularMarketPrice  ->  Price      (rounded to 2 dp)
   regularMarketTime   ->  Price_Date (epoch, converted to LOCAL date)
+  currency            ->  Currency   (as quoted by the exchange)
 ```
 
-There is no JSON library in the project, so those two fields are pulled out with regular
+There is no JSON library in the project, so those three fields are pulled out with regular
 expressions rather than adding a dependency. An unknown ticker returns HTTP 404 and is reported
 as such; network failures report the underlying error.
 
 > The synced date is the market timestamp **converted to local time**, not the exchange's own
 > date. A US close therefore lands under the following Australian date, so US and ASX tickers
 > can sit on different `Price_Date` values for the same trading session.
+
+#### Currency on a price
+
+Every price records the currency it is quoted in. A sync takes that straight from the exchange,
+so an ASX ticker stores `AUD` and a US ticker stores `USD` without anyone choosing it. Manual
+entry uses the **Currency** dropdown, which is filled from `TblCurrCode` and defaults to `AUD`
+(`Fill_Curr` defaults to `IDR` for the accounting pages, so this page overrides it).
+
+Two cases are worth knowing:
+
+- **Yahoo returns a currency the database has never seen.** It is still what the price is quoted
+  in, so it is stored as-is and *added to the dropdown* rather than dropped. Silently discarding
+  it would leave the dropdown disagreeing with the stored row.
+- **Yahoo returns no currency at all.** Rather than guess, the sync falls back to whatever that
+  ticker was last priced in, and only then to `AUD`.
+
+> Rows that predate the column were backfilled to `AUD`, then `GOOGL` — the one holding not
+> quoted in Australian dollars — was corrected to `USD`, so the stored currencies now match the
+> exchanges. Worth remembering when **adding a ticker quoted somewhere new**: a manually entered
+> price takes whatever the dropdown is showing, and that defaults to `AUD`. A sync sets it from
+> the exchange instead. Prices written before the column existed read back as null and display
+> as `-`.
 
 ### Portfolio summary
 

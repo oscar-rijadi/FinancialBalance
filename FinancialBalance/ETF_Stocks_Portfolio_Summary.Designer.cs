@@ -56,6 +56,7 @@
             this.LblDTotPLCap = new System.Windows.Forms.Label();
             this.LblDTotPct = new System.Windows.Forms.Label();
             this.LblDTotPctCap = new System.Windows.Forms.Label();
+            this.CmdExcel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvSummary)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvDetail)).BeginInit();
@@ -390,6 +391,19 @@
             this.LblDTotPct.Text = "0.00";
             this.LblDTotPct.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
+            // CmdExcel
+            //
+            this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdExcel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdExcel.Location = new System.Drawing.Point(330, 578);
+            this.CmdExcel.Name = "CmdExcel";
+            this.CmdExcel.Size = new System.Drawing.Size(120, 27);
+            this.CmdExcel.TabIndex = 25;
+            this.CmdExcel.Text = "&Generate Excel";
+            this.CmdExcel.UseVisualStyleBackColor = false;
+            this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
+            //
             // CmdBack
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
@@ -397,7 +411,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(425, 578);
+            this.CmdBack.Location = new System.Drawing.Point(460, 578);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -436,6 +450,7 @@
             this.Controls.Add(this.chkMainOnly);
             this.Controls.Add(this.CmbTicker);
             this.Controls.Add(this.Label2);
+            this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.gvSummary);
             this.Controls.Add(this.LblNote);
@@ -484,6 +499,7 @@
         public System.Windows.Forms.Label LblDTotPLCap;
         public System.Windows.Forms.Label LblDTotPct;
         public System.Windows.Forms.Label LblDTotPctCap;
+        public System.Windows.Forms.Button CmdExcel;
         public System.Windows.Forms.Button CmdBack;
     }
 }
