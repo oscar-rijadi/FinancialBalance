@@ -272,6 +272,8 @@ erDiagram
         decimal Unit "4 dp"
         decimal Selling_Price_Per_Unit "2 dp"
         decimal Selling_Total_Amount "2 dp"
+        decimal Profit_Or_Loss_On_Paper "2 dp"
+        decimal Real_Profit_Or_Loss "2 dp"
     }
     TblETFStocksPrice {
         text    Price_Date PK "yyyyMMdd"
@@ -352,6 +354,8 @@ The page shows both for a chosen date, purchases first.
 | `Portfolio_Code` | Buy only. Dropdown from `TblETFStocksPortfolioCode`, defaulting to `OB`. |
 | `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
+| `Profit_Or_Loss_On_Paper` | Sell only, derived on **Add** from the lots being sold — see below. Not shown on screen. |
+| `Real_Profit_Or_Loss` | Sell only, derived on **Add**, ignoring what the DRIP lots cost — see below. Not shown on screen. |
 
 The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, DRIP, Sold and
 Flag; a Sell shows Selling Price/Unit, Selling Total Amount and the lot grid below. Hidden fields
@@ -383,6 +387,38 @@ follows the lots automatically. Adding a Sell with nothing allocated is refused.
 So a 10-unit lot at 50.00 with a 9.95 fee, selling 3, leaves a closed `3 @ 50.00` row totalling
 `159.95` and an open `7 @ 50.00` row totalling `350.00`. The portfolio still shows 7 units held —
 the closed side is the part that left.
+
+#### Profit recorded against a sale
+
+Add also works out what the units being sold originally cost, and stores two figures on the sale
+row. Both start from `Selling_Total_Amount` and subtract a cost totalled over the lots the sale
+draws from, where each lot contributes:
+
+```
+lot cost = round(round(Sold Unit x Purchase Price / Unit, 2) + Fee, 2)
+```
+
+The `Fee` there is **that purchase lot's own fee**, not a fee on the sale, and the closed part of a
+lot carries the whole of it — the same rule the split below uses.
+
+| Field | Cost subtracted |
+| --- | --- |
+| `Profit_Or_Loss_On_Paper` | Every lot contributes its `lot cost`. |
+| `Real_Profit_Or_Loss` | A lot whose `Real_Total_Cost_Base` is `0` contributes **nothing**; every other lot contributes its `lot cost`. |
+
+So a DRIP lot costs nothing real, and all of its proceeds land in `Real_Profit_Or_Loss` — which is why
+`Real_Profit_Or_Loss` is the larger of the two whenever a reinvested lot is sold. Selling 10 units bought
+at 100.00 with a 9.95 fee, 5 DRIP units, and 3 of a lot bought at 120.00 with a 5.00 fee, at
+150.00 each, gives proceeds of `2,700.00` against `1,924.95` on paper and `1,374.95` real —
+`775.05` and `1,325.05`.
+
+This arithmetic deliberately mirrors the settlement below, so the profit on a sale always agrees
+with the cost left behind on the closed purchase rows.
+
+> Both figures are written **on Add only**. Updating an existing Sell changes
+> `Selling_Total_Amount` but leaves the profits at their original values, because by then the lots
+> have been settled and the sale row does not record its own cost basis. This matches the existing
+> behaviour that updating a Sell does not re-settle lots either.
 
 `Total_Cost_Base` is recomputed on both rows, and `Real_Total_Cost_Base` follows the DRIP rule:
 **zero stays zero**, so splitting a reinvested lot leaves both halves at `0` rather than
@@ -546,7 +582,9 @@ matching `Portfolio_Code`. `Cash` and `Investment_Amount` follow the same rule a
 a `$` for AUD and USD, bare otherwise, and a negative reads `-$1,234.56`. A code with no matching
 description shows `-` rather than a blank.
 
-Adding a movement takes a date, a portfolio code, a type, a currency and an amount. **The amount is
+Adding a movement takes a date, a portfolio code, a type, a currency and an amount. The chosen
+code's `Description` is shown beside the dropdown, since a five-character code on its own is easy
+to pick wrongly; a code with a blank description shows `-`. **The amount is
 always positive; the sign lives in Investment Type** (`+` pays in, `-` takes out), which is why that
 box uses the same digits-only keypress guard as every other amount field in the app. The entry is
 appended to `TblETFStocksPortfolioInvestment`, and then:
@@ -733,6 +771,11 @@ broken.
 - **Combo boxes render as `"CODE - Name"`** and the code is recovered with `.Substring(0, 5)` for
   accounts or `.Substring(0, 1)` for types. Renaming the separator format would break every lookup.
 - **`Current_Asset`** splits type-1 accounts into current and non-current for the balance sheet.
+- **`Main_Form` hides, every other form closes.** `Program.Main` runs `Application.Run(new
+  Main_Form())`, so Main_Form *is* the message loop — a menu handler there must call `this.Hide()`.
+  Every other form navigates with `this.Show()` on the target followed by `this.Close()` on itself.
+  Calling `Close()` from a Main_Form handler quits the application instead of opening the page,
+  with no error to explain it.
 
 ---
 

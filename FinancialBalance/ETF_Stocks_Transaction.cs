@@ -940,6 +940,44 @@ namespace FinancialBalance
             Sum_Sold_Units();
         }
 
+        //What the units being sold originally cost, totalled over the lots they come from.
+        //
+        //Deliberately mirrors the arithmetic in Apply_Sale_To_Lots below - the closed part of
+        //a lot carries the whole of that lot's fee, and the same rounding is applied at the
+        //same points - so the profit recorded against a sale always agrees with the cost the
+        //settlement leaves behind on the purchase rows.
+        //
+        //parPaperCost counts every lot.  parRealCost skips lots bought with no real money
+        //(Real_Total_Cost_Base of 0, which is how a DRIP is held), because those units cost
+        //nothing and so all of their proceeds are real profit.
+        private void Sale_Cost_Of_Units(out double parPaperCost, out double parRealCost)
+        {
+            parPaperCost = 0;
+            parRealCost = 0;
+
+            for (int i = 0; i < gvLots.Rows.Count; i++)
+            {
+                double TmpSold = Sold_Unit(i);
+                if (TmpSold <= 0)
+                {
+                    continue;
+                }
+
+                string[] o = (string[])gvLots.Rows[i].Tag;
+                double TmpCost = Read_Double(o[4]);
+                double TmpFee = Read_Double(o[5]);
+                bool RealWasZero = (Read_Double(o[7]) == 0);
+
+                double SoldTotal = Math.Round(Math.Round(TmpSold * TmpCost, 2) + TmpFee, 2);
+
+                parPaperCost += SoldTotal;
+                parRealCost += (RealWasZero ? 0 : SoldTotal);
+            }
+
+            parPaperCost = Math.Round(parPaperCost, 2);
+            parRealCost = Math.Round(parRealCost, 2);
+        }
+
         //A Sell closes the units it takes and leaves the remainder open.  A lot sold in
         //full is simply closed; a lot sold in part is split into a closed row for the
         //units sold and a new open row for what is left.
@@ -1216,13 +1254,25 @@ namespace FinancialBalance
         {
             if (Is_Sell())
             {
-                Mdl1.Ssql = "Insert into TblETFStocksSale (Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount]) values ("
+                //worked out from the lots on screen, which is why this runs before
+                //Apply_Sale_To_Lots settles them away
+                double TmpPaperCost;
+                double TmpRealCost;
+                Sale_Cost_Of_Units(out TmpPaperCost, out TmpRealCost);
+
+                double TmpSellingTotal = (double)parSellingTotal;
+                double TmpPaperProfit = Math.Round(TmpSellingTotal - TmpPaperCost, 2);
+                double TmpRealProfit = Math.Round(TmpSellingTotal - TmpRealCost, 2);
+
+                Mdl1.Ssql = "Insert into TblETFStocksSale (Trans_Date, Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount], [Profit_Or_Loss_On_Paper], [Real_Profit_Or_Loss]) values ("
                     + "'" + Get_Trans_Date() + "', "
                     + "'" + CmbFullTicker.Text.Trim() + "', "
                     + "'" + CmbCurrency.Text.Trim() + "', "
                     + Num(parUnit, 4) + ", "
                     + Num(parSellingPrice, 2) + ", "
-                    + Num(parSellingTotal, 2) + ")";
+                    + Num(parSellingTotal, 2) + ", "
+                    + TmpPaperProfit.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                    + TmpRealProfit.ToString("0.00", CultureInfo.InvariantCulture) + ")";
             }
             else
             {
