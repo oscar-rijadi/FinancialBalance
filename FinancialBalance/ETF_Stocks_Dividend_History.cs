@@ -556,8 +556,9 @@ namespace FinancialBalance
         }
 
         //The figures under whichever table is showing.  There are five fixed slots, filled
-        //from the top, so the summary's five and the payment view's three both sit flush
-        //without gaps and the two sets can never appear at once.
+        //from the top, so both views sit flush without gaps and the two sets can never appear
+        //at once.  A slot given a null caption is put away, which keeps the helper usable if
+        //a view ever needs fewer than five.
         //
         //A dollar sign is only put on a total when every row that fed it shares one dollar
         //currency.  Adding AUD to USD does not produce an amount in either, so a mixed
@@ -606,16 +607,27 @@ namespace FinancialBalance
             Set_Slot(4, "Grand Total Not Reinvested", Money(parNo, TmpCurr));
         }
 
-        //Payment view: just the three amounts, so the last two slots are put away.
+        //Payment view: the same shape as the summary, but for the one ticker on screen.  The
+        //portfolio side still comes from the dropdown and Main Only rather than any single
+        //row, so the investment covers every portfolio the selection includes.
         private void Show_Detail_Totals(double parAll, double parYes, double parNo, List<string> parCurrencies)
         {
             string TmpCurr = One_Currency(parCurrencies);
 
-            Set_Slot(0, "Total Amount", Money(parAll, TmpCurr));
-            Set_Slot(1, "Total Amount Reinvested", Money(parYes, TmpCurr));
-            Set_Slot(2, "Total Amount Not Reinvested", Money(parNo, TmpCurr));
-            Set_Slot(3, null, null);
-            Set_Slot(4, null, null);
+            string TmpInvCurr;
+            double TmpInvestment = Net_Cost(Ticker_Filter(), Portfolio_Filter(), Cutoff_Date(), out TmpInvCurr);
+
+            double TmpYield = 0;
+            if (TmpInvestment > 0)
+            {
+                TmpYield = parAll / TmpInvestment * 100;
+            }
+
+            Set_Slot(0, "Total Investment", Money(TmpInvestment, TmpInvCurr));
+            Set_Slot(1, "Total Amount", Money(parAll, TmpCurr));
+            Set_Slot(2, "Yield", TmpYield.ToString("#,##0.00") + " %");
+            Set_Slot(3, "Total Amount Reinvested", Money(parYes, TmpCurr));
+            Set_Slot(4, "Total Amount Not Reinvested", Money(parNo, TmpCurr));
         }
 
         //Says which filters are narrowing what is on screen, so an empty table is explainable

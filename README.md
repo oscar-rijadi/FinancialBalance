@@ -759,11 +759,11 @@ view leaves a gap and the two sets can never appear at once:
 
 | Slot | Summary view | Payment view |
 | --- | --- | --- |
-| 1 | `Grand Total Investment` | `Total Amount` |
-| 2 | `Grand Total` | `Total Amount Reinvested` |
-| 3 | `Yield` | `Total Amount Not Reinvested` |
-| 4 | `Grand Total Reinvested` | *(hidden)* |
-| 5 | `Grand Total Not Reinvested` | *(hidden)* |
+| 1 | `Grand Total Investment` | `Total Investment` |
+| 2 | `Grand Total` | `Total Amount` |
+| 3 | `Yield` | `Yield` |
+| 4 | `Grand Total Reinvested` | `Total Amount Reinvested` |
+| 5 | `Grand Total Not Reinvested` | `Total Amount Not Reinvested` |
 
 `Grand Total Investment` is the **same two sums without the ticker filter** — every holding the
 current Portfolio and Main Only selection covers, not just the ones that paid a dividend. So it is
@@ -774,6 +774,15 @@ paid nothing and are absent from the table.
 Because it drops the ticker filter rather than walking every ticker in turn, it costs two queries
 regardless of how many holdings there are. `Yield` then measures the payments against it —
 `Grand Total / Grand Total Investment x 100`, or `0` when that is not above zero.
+
+The payment view carries the same two figures for the one ticker on screen. `Total Investment` runs
+the identical sums narrowed to that ticker, and `Yield` is `Total Amount / Total Investment x 100`.
+
+> Both are still filtered by the **Portfolio dropdown and Main Only**, not by any one row's code.
+> So a ticker held in two portfolios reports different figures as that filter changes: seeded with
+> `100.00` and `40.00` in a main portfolio and `25.00` in a non-main one, `Total Investment` reads
+> `140.00` with Main Only ticked, `165.00` unticked, and `25.00` with the non-main portfolio
+> selected on its own.
 
 > A total carries a `$` **only when every row feeding it shares one dollar currency**. Adding AUD to
 > USD does not produce an amount in either, so a mixed selection is left bare rather than labelled
