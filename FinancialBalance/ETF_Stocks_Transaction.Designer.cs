@@ -633,9 +633,9 @@
             this.chkDRIP.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkDRIP.Location = new System.Drawing.Point(150, 452);
             this.chkDRIP.Name = "chkDRIP";
-            this.chkDRIP.Size = new System.Drawing.Size(80, 24);
+            this.chkDRIP.Size = new System.Drawing.Size(120, 24);
             this.chkDRIP.TabIndex = 26;
-            this.chkDRIP.Text = "DRIP";
+            this.chkDRIP.Text = "Reinvestment";
             this.chkDRIP.UseVisualStyleBackColor = false;
             this.chkDRIP.CheckedChanged += new System.EventHandler(this.chkDRIP_CheckedChanged);
             //
@@ -643,7 +643,7 @@
             //
             this.chkSold.BackColor = System.Drawing.Color.Transparent;
             this.chkSold.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkSold.Location = new System.Drawing.Point(240, 452);
+            this.chkSold.Location = new System.Drawing.Point(285, 452);
             this.chkSold.Name = "chkSold";
             this.chkSold.Size = new System.Drawing.Size(80, 24);
             this.chkSold.TabIndex = 27;

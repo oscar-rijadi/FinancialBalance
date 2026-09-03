@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -326,7 +326,7 @@ namespace FinancialBalance
             gvDist.Columns.Clear();
             gvDist.ColumnCount = 8;
             string[] names = new string[] { "Pay Date", "Full Ticker", "Portfolio Code", "Currency",
-                                            "Entitled Unit", "Amount Per Unit", "Total Amount", "DRIP" };
+                                            "Entitled Unit", "Amount Per Unit", "Total Amount", "Reinvested" };
             int[] weights = new int[] { 13, 13, 12, 9, 13, 14, 14, 7 };
             for (int i = 0; i < 8; i++)
             {
@@ -353,7 +353,7 @@ namespace FinancialBalance
         private string Select_Rows()
         {
             return "select Pay_Date, Full_Ticker, [Portfolio_Code], [Currency], [Entitled_Unit],"
-                 + " [Amount_Per_Unit], [Total_Amount], [Is_Drip] from TblETFStocksDistributionDividend"
+                 + " [Amount_Per_Unit], [Total_Amount], [Is_Reinvested] from TblETFStocksDistributionDividend"
                  + " where Full_Ticker = '" + CmbFilterTicker.Text.Trim() + "'"
                  + " and [Portfolio_Code] = '" + CmbFilterPortfolio.Text.Trim() + "'"
                  + " order by Pay_Date Desc";
@@ -383,7 +383,7 @@ namespace FinancialBalance
                         Read_Double(reader["Entitled_Unit"]).ToString("#,##0.0000"),
                         Read_Double(reader["Amount_Per_Unit"]).ToString("#,##0.0000"),
                         Mdl1.FormatAmt(Read_Double(reader["Total_Amount"])),
-                        (reader["Is_Drip"].ToString().Trim() == "True" ? "Y" : "N") });
+                        (reader["Is_Reinvested"].ToString().Trim() == "True" ? "Y" : "N") });
                 }
                 reader.Close();
             }
@@ -435,7 +435,7 @@ namespace FinancialBalance
                     OrgEntitledUnit = Sql_Num(reader["Entitled_Unit"], 4);
                     OrgAmountPerUnit = Sql_Num(reader["Amount_Per_Unit"], 4);
                     OrgTotalAmount = Sql_Num(reader["Total_Amount"], 2);
-                    OrgIsDrip = (reader["Is_Drip"].ToString().Trim() == "True" ? "True" : "False");
+                    OrgIsDrip = (reader["Is_Reinvested"].ToString().Trim() == "True" ? "True" : "False");
                     Found = true;
                     break;
                 }
@@ -602,7 +602,7 @@ namespace FinancialBalance
                  + Where_Col("[Entitled_Unit]", OrgEntitledUnit)
                  + Where_Col("[Amount_Per_Unit]", OrgAmountPerUnit)
                  + Where_Col("[Total_Amount]", OrgTotalAmount)
-                 + " and [Is_Drip] = " + OrgIsDrip;
+                 + " and [Is_Reinvested] = " + OrgIsDrip;
         }
 
         //Without a key, identical rows are indistinguishable - warn before touching them all
@@ -684,7 +684,7 @@ namespace FinancialBalance
                 }
 
                 Mdl1.Ssql = "Insert into TblETFStocksDistributionDividend (Pay_Date, Full_Ticker, [Portfolio_Code],"
-                          + " [Currency], [Entitled_Unit], [Amount_Per_Unit], [Total_Amount], [Is_Drip]) values ("
+                          + " [Currency], [Entitled_Unit], [Amount_Per_Unit], [Total_Amount], [Is_Reinvested]) values ("
                           + "'" + Get_Pay_Date() + "', "
                           + "'" + CmbFullTicker.Text.Trim() + "', "
                           + "'" + CmbPortfolio.Text.Trim() + "', "
@@ -757,7 +757,7 @@ namespace FinancialBalance
                           + "[Entitled_Unit] = " + Num(TmpEntitledUnit, 4) + ", "
                           + "[Amount_Per_Unit] = " + Num(TmpAmountPerUnit, 4) + ", "
                           + "[Total_Amount] = " + Num(TmpTotalAmount, 2) + ", "
-                          + "[Is_Drip] = " + (chkDrip.Checked ? "True" : "False")
+                          + "[Is_Reinvested] = " + (chkDrip.Checked ? "True" : "False")
                           + Where_Original();
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();

@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Distribution/Dividend, ETF/Stock Transaction |
+| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction, ETF/Stock Distribution/Dividend |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
@@ -107,8 +107,8 @@ flowchart LR
     MAIN --> PETFG{{"ETF/Stock"}}
     PETFG --> ETP["ETF_Stocks_Price"]
     PETFG --> ETI["ETF_Stocks_Investment"]
-    PETFG --> ETD["ETF_Stocks_Distribution"]
     PETFG --> ETX["ETF_Stocks_Transaction"]
+    PETFG --> ETD["ETF_Stocks_Distribution"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
@@ -301,7 +301,7 @@ erDiagram
         decimal Entitled_Unit "4 dp"
         decimal Amount_Per_Unit "4 dp"
         decimal Total_Amount "2 dp"
-        bool    Is_Drip
+        bool    Is_Reinvested
     }
     TblETFStocksPortfolio {
         text    Portfolio_Code PK "5 chars"
@@ -365,7 +365,7 @@ The page shows both for a chosen date, purchases first.
 | `Unit` | Buy: typed, numeric, not negative, at most 4 decimal places. **Sell: derived** — see below. |
 | `Cost_Base`, `Fee` | Buy only. Numeric, not negative, at most 2 decimal places. |
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
-| `Real_Total_Cost_Base` | Buy only. `0` when the DRIP box is ticked, otherwise `Total_Cost_Base`. |
+| `Real_Total_Cost_Base` | Buy only. `0` when the **Reinvestment** box is ticked, otherwise `Total_Cost_Base`. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
 | `Sold_Date` | Buy only. Shown only while Sold is ticked; stored `yyyyMMdd`, otherwise `Null`. |
 | `Portfolio_Code` | **Both types**, from a dropdown labelled **Portfolio** filled from `TblETFStocksPortfolioCode` and defaulting to `OB`. Each type has its own dropdown, and the chosen code's `Description` is shown beside it (`-` when blank). On a Sell it also **filters the lots on offer** — see below. Appears as **Portfolio Code** in the grid. |
@@ -374,8 +374,8 @@ The page shows both for a chosen date, purchases first.
 | `Profit_Or_Loss_On_Paper` | Sell only, derived on **Add** from the lots being sold — see below. Not shown on screen. |
 | `Real_Profit_Or_Loss` | Sell only, derived on **Add**, ignoring what the DRIP lots cost — see below. Not shown on screen. |
 
-The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, DRIP, Sold and
-Portfolio; a Sell shows Selling Price/Unit, Selling Total Amount, its own Portfolio and the lot
+The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, Reinvestment, Sold
+and Portfolio; a Sell shows Selling Price/Unit, Selling Total Amount, its own Portfolio and the lot
 grid below. Hidden fields are reset rather than carried over, and validation only covers what is
 on screen. Each Portfolio dropdown carries its own description label, and both are refreshed
 whenever the halves swap — the dropdowns are filled while events are suppressed, so a dropdown
@@ -453,7 +453,11 @@ and unticking clears the value as well as hiding it, so a stale date cannot surv
 Both date pickers share the single `MonthCalendar` on the form, routed by a `CalTarget` flag —
 picking a transaction date reloads the day's grid, picking a sold date deliberately does not.
 
-DRIP is **not stored**. The form re-derives it on selection as `Real_Total_Cost_Base == 0`.
+The **Reinvestment** checkbox is **not stored**. The form re-derives it on selection as
+`Real_Total_Cost_Base == 0` — a lot bought with no real money is one that was reinvested. It was
+labelled *DRIP* until it was renamed; the identifier `chkDRIP` and the grid heading `DRIP` on the
+same page still carry the older word, so searching the code for the on-screen label will not find
+it.
 
 > **Access stores Yes/No `True` as `-1`.** A `WHERE Is_Sold = 1` matches nothing and fails
 > silently. Compare against `True`/`False` instead — the same applies to `In_YahooFinance` and
@@ -655,7 +659,7 @@ A second, independent set of inputs below the table is what actually writes:
 | `Entitled_Unit` | Numeric, not negative, at most 4 decimal places. |
 | `Amount_Per_Unit` | Numeric, not negative, at most 4 decimal places. |
 | `Total_Amount` | Derived as `round(Entitled_Unit x Amount_Per_Unit, 2)` — **but editable**. |
-| `Is_Drip` | The DRIP checkbox, for a payment taken as units rather than cash. |
+| `Is_Reinvested` | The **Reinvested** checkbox, for a payment taken as units rather than cash. Shown as **Reinvested** in the table too. |
 
 **Total Amount is derived but not locked.** It is recomputed whenever Entitled Unit or Amount Per
 Unit changes, and a figure typed over it stands until one of those two changes again. That matters

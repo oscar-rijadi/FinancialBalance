@@ -1,4 +1,4 @@
-namespace FinancialBalance
+﻿namespace FinancialBalance
 {
     partial class ETF_Stocks_Distribution
     {
@@ -467,7 +467,7 @@ namespace FinancialBalance
             this.chkDrip.Name = "chkDrip";
             this.chkDrip.Size = new System.Drawing.Size(100, 22);
             this.chkDrip.TabIndex = 30;
-            this.chkDrip.Text = "DRIP";
+            this.chkDrip.Text = "Reinvested";
             this.chkDrip.UseVisualStyleBackColor = false;
             //
             // CmdCreate
