@@ -224,6 +224,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnFinancialYearSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Financial_Year Setup_Financial_Year = new Setup_Financial_Year();
+            Setup_Financial_Year.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksSuffixSetup_Click(object sender, EventArgs e)
         {
             Setup_ETF_Stocks_Suffix Setup_ETF_Stocks_Suffix = new Setup_ETF_Stocks_Suffix();

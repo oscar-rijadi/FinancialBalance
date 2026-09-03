@@ -123,6 +123,7 @@ flowchart LR
     CURG --> SC["Setup_Curr"]
     CURG --> SCR["Setup_Curr_Rate"]
     ADMIN --> SAP["Setup_Activa_Passiva"]
+    ADMIN --> SFY["Setup_Financial_Year"]
     ADMIN --> ETFG{{"ETF/Stock"}}
     ETFG --> SES["Setup_ETF_Stocks_Suffix"]
     ETFG --> SET["Setup_ETF_Stocks"]
@@ -164,6 +165,7 @@ flowchart LR
 | `Setup_Curr` | Currency codes and names. |
 | `Setup_Curr_Rate` | Dated exchange rates. |
 | `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
+| `Setup_Financial_Year` | Shown as **Financial Year Setup**. Names a financial year and the dates it runs between. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 | `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
@@ -175,7 +177,7 @@ flowchart LR
 
 ## Data model
 
-Twenty tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty-one tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -293,6 +295,11 @@ erDiagram
         text Description "50 chars"
         bool Is_Main
     }
+    TblFinancialYear {
+        text Name PK "9 chars"
+        text Start_Date "yyyyMMdd"
+        text End_Date "yyyyMMdd"
+    }
     TblETFStocksDistributionDividend {
         text    Pay_Date "yyyyMMdd"
         text    Full_Ticker "joins TblETFStocks"
@@ -352,6 +359,21 @@ otherwise                  ->  Full_Ticker = Ticker + "." + Exchange_Suffix
 
 So suffixes are stored **without** a leading dot — `AX`, not `.AX` — since the dot is added
 by the rule. `Full_Ticker` is the table's primary key.
+
+#### Financial years
+
+`Setup_Financial_Year` maintains `TblFinancialYear`: a `Name` of up to 9 characters (`FY2025-26`
+fits exactly) and the two dates the year runs between, both stored `yyyyMMdd` like every other date
+in the database and shown as `dd-MMM-yyyy`. The list reads chronologically, by `Start_Date`.
+
+`Name` is treated as the key, the same way `Full_Ticker` is on ETF/Stock Setup: **Add / Update** is
+an upsert on it and **Delete** matches on it. Editing a row remembers the name it was loaded under,
+so changing the name *renames that year* rather than leaving the old row behind — and renaming onto
+a name that already exists is refused rather than merging two years into one. **Clear** abandons the
+edit and returns to entering a new year.
+
+A year whose `End_Date` falls before its `Start_Date` is rejected. Nothing else in the application
+reads this table yet; it stands alone until something is built on it.
 
 ### ETF/stock transaction rules
 
