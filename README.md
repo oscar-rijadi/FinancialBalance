@@ -720,8 +720,31 @@ The **Full Ticker** dropdown chooses between two tables, the same way the portfo
 
 | Full Ticker | Table |
 | --- | --- |
-| `All` | One row per ticker, with `Total`, `Total Reinvested` and `Total Not Reinvested`. |
+| `All` | One row per ticker: `Investment`, then `Total`, `Total Reinvested`, `Total Not Reinvested` and `Yield`. |
 | a ticker | Every payment for it, newest first, with `Amount`, `Amount Reinvested` and `Amount Not Reinvested`. |
+
+`Investment` values what that ticker and portfolio still held, **as at a cut-off date** — today when
+the Financial Year is `All`, otherwise the day the chosen year closes:
+
+```
+Investment = ( SUM(Unit) from TblETFStocksPurchase  up to the cut-off
+             - SUM(Unit) from TblETFStocksSale      up to the cut-off )  x  price at the cut-off
+```
+
+Both sums are filtered to the row's own `Full_Ticker` and `Portfolio_Code`. The purchase side is
+deliberately **not** filtered on `Is_Sold`: a part sale splits its purchase row into a closed part
+and an open one that together still hold the original units, so excluding sold rows would take the
+sold units off twice. The price is the most recent `TblETFStocksPrice` row on or before the cut-off;
+a ticker first priced *after* the cut-off falls back to its earliest price on record rather than
+being valued at zero, and one never priced at all shows `-`.
+
+> The column only appears on rows the table already has, and the table is driven by dividends. A
+> ticker that paid nothing in the chosen financial year is absent entirely, so its holding is not
+> shown for that year even if it was held throughout.
+
+`Yield` measures the payments against that holding — `Total / Investment x 100`, or `0` when
+`Investment` is not above zero. A holding that has never been priced therefore reads `-` for
+`Investment` and `0.00 %` for `Yield`, rather than dividing by nothing.
 
 The reinvested split is a single `Sum(IIf(...))` pass rather than three queries. In the per-payment
 table a payment is either reinvested or it is not, so its amount lands in one of those two columns

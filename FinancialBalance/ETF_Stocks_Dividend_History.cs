@@ -223,6 +223,103 @@ namespace FinancialBalance
             return " where 1 = 1" + Portfolio_Filter() + Year_Filter() + Ticker_Filter();
         }
 
+        //---- holdings ------------------------------------------------------------
+
+        //Everything is valued as at one date: today when no financial year is chosen, and
+        //otherwise the day the chosen year closes.
+        private string Cutoff_Date()
+        {
+            string TmpStart;
+            string TmpEnd;
+            if (Financial_Year_Range(out TmpStart, out TmpEnd))
+            {
+                return TmpEnd;
+            }
+            return DateTime.Now.ToString("yyyyMMdd");
+        }
+
+        private string Code_Match(string parCode)
+        {
+            if (parCode == null || parCode == "")
+            {
+                return " and [Portfolio_Code] Is Null";
+            }
+            return " and [Portfolio_Code] = '" + parCode + "'";
+        }
+
+        private double Sum_Units(string parTable, string parTicker, string parCode, string parCutoff)
+        {
+            double Result = 0;
+            Mdl1.Ssql = "select Sum(Unit) as N from " + parTable
+                      + " where Full_Ticker = '" + parTicker + "'"
+                      + Code_Match(parCode)
+                      + " and Trans_Date <= '" + parCutoff + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                Result = Read_Double(reader["N"]);
+            }
+            reader.Close();
+            return Result;
+        }
+
+        //Units still held: everything bought up to the cut-off, less everything sold.  A part
+        //sale splits its purchase row into a closed part and an open one that together still
+        //hold the original units, so the purchase side is deliberately not filtered on
+        //Is_Sold - doing that would take the sold units off twice.
+        private double Units_Held(string parTicker, string parCode, string parCutoff)
+        {
+            return Sum_Units("TblETFStocksPurchase", parTicker, parCode, parCutoff)
+                 - Sum_Units("TblETFStocksSale", parTicker, parCode, parCutoff);
+        }
+
+        //The price the holding is valued at: the most recent one on or before the cut-off.
+        //A ticker first priced after the cut-off has none, and rather than valuing it at zero
+        //its earliest price on record is used instead.
+        private bool Price_At(string parTicker, string parCutoff, out double parPrice, out string parCurrency)
+        {
+            parPrice = 0;
+            parCurrency = "";
+
+            for (int Pass = 0; Pass < 2; Pass++)
+            {
+                Mdl1.Ssql = "select top 1 [Price], [Currency] from TblETFStocksPrice"
+                          + " where Full_Ticker = '" + parTicker + "'"
+                          + (Pass == 0 ? " and Price_Date <= '" + parCutoff + "' order by Price_Date Desc"
+                                       : " order by Price_Date Asc");
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                bool Found = false;
+                if (reader.Read())
+                {
+                    parPrice = Read_Double(reader["Price"]);
+                    parCurrency = Read_Text(reader["Currency"]);
+                    Found = true;
+                }
+                reader.Close();
+                if (Found)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //What the units still held were worth at the cut-off.  Returns false when the ticker
+        //has never been priced, so the column can say so rather than show a confident zero.
+        private bool Investment_At(string parTicker, string parCode, string parCutoff, out double parValue, out string parCurrency)
+        {
+            parValue = 0;
+            double TmpPrice;
+            if (!Price_At(parTicker, parCutoff, out TmpPrice, out parCurrency))
+            {
+                return false;
+            }
+            parValue = Math.Round(Units_Held(parTicker, parCode, parCutoff) * TmpPrice, 2);
+            return true;
+        }
+
         //---- formatting ----------------------------------------------------------
 
         //AUD and USD are shown with a dollar sign; any other currency stays bare.
@@ -316,8 +413,8 @@ namespace FinancialBalance
         private void Clear_Summary_Grid()
         {
             Build_Grid(gvSummary,
-                new string[] { "Full Ticker", "Portfolio Code", "Currency", "Total", "Total Reinvested", "Total Not Reinvested" },
-                new int[] { 18, 14, 10, 19, 19, 20 }, 3);
+                new string[] { "Full Ticker", "Portfolio Code", "Currency", "Investment", "Total", "Total Reinvested", "Total Not Reinvested", "Yield" },
+                new int[] { 14, 11, 8, 14, 14, 14, 15, 10 }, 3);
         }
 
         private void Clear_Detail_Grid()
@@ -374,20 +471,48 @@ namespace FinancialBalance
             double GrandYes = 0;
             double GrandNo = 0;
             List<string> Currencies = new List<string>();
+            string TmpCutoff = Cutoff_Date();
             while (reader.Read())
             {
                 string TmpCurr = Read_Text(reader["Currency"]);
                 double TmpAll = Read_Double(reader["TotAll"]);
                 double TmpYes = Read_Double(reader["TotYes"]);
                 double TmpNo = Read_Double(reader["TotNo"]);
+                string TmpTicker = Read_Text(reader["Full_Ticker"]);
+                string TmpCode = Read_Text(reader["Portfolio_Code"]);
+
+                double TmpInvestment;
+                string TmpInvCurr;
+                string strInvestment;
+                if (Investment_At(TmpTicker, TmpCode, TmpCutoff, out TmpInvestment, out TmpInvCurr))
+                {
+                    strInvestment = Money(TmpInvestment, TmpInvCurr);
+                }
+                else
+                {
+                    //never priced, so there is nothing to measure the payments against
+                    TmpInvestment = 0;
+                    strInvestment = "-";
+                }
+
+                //what the payments came to against what the holding is worth.  An unpriced or
+                //empty holding gives no denominator, and the yield is reported as zero rather
+                //than left undefined.
+                double TmpYield = 0;
+                if (TmpInvestment > 0)
+                {
+                    TmpYield = TmpAll / TmpInvestment * 100;
+                }
 
                 gvSummary.Rows.Add(new string[] {
-                    Read_Text(reader["Full_Ticker"]),
-                    Read_Text(reader["Portfolio_Code"]),
+                    TmpTicker,
+                    TmpCode,
                     (TmpCurr == "" ? "-" : TmpCurr),
+                    strInvestment,
                     Money(TmpAll, TmpCurr),
                     Money(TmpYes, TmpCurr),
-                    Money(TmpNo, TmpCurr) });
+                    Money(TmpNo, TmpCurr),
+                    TmpYield.ToString("#,##0.00") + " %" });
 
                 GrandAll += TmpAll;
                 GrandYes += TmpYes;
