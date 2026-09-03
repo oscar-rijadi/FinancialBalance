@@ -189,6 +189,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksDividendHistory_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Dividend_History ETF_Stocks_Dividend_History = new ETF_Stocks_Dividend_History();
+            ETF_Stocks_Dividend_History.Show();
+            this.Hide();
+        }
+
         private void MnAcctTypeRefSetup_Click(object sender, EventArgs e)
         {
             Setup_Acct_Type_Ref Setup_Acct_Type_Ref = new Setup_Acct_Type_Ref();

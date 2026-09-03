@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction, ETF/Stock Distribution/Dividend |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
 
@@ -115,6 +115,7 @@ flowchart LR
     MAIN --> PORTG{{"ETF/Stock"}}
     PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
     PORTG --> PDIV["ETF_Stocks_Portfolio_Diversification"]
+    PORTG --> PDVH["ETF_Stocks_Dividend_History"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -160,6 +161,7 @@ flowchart LR
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
+| `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -701,6 +703,48 @@ Like the transaction tables, this one has **no primary key** — the same ticker
 date — so update and delete match on **all eight of the row's original column values**, re-read from
 the table rather than taken from the display, and the form warns before touching more than one
 identical row.
+
+### Dividend history
+
+`ETF_Stocks_Dividend_History` reads `TblETFStocksDistributionDividend` back out. It shares the
+**Portfolio** dropdown and **Main Only** checkbox with the portfolio summary — descriptions shown,
+codes filtered on, Main Only ticked when the page opens and narrowing the dropdown as well as the
+data — and adds a **Financial Year** dropdown listing `TblFinancialYear.Name` newest-closing first,
+plus `All`.
+
+Picking a financial year brackets `Pay_Date` between that year's `Start_Date` and `End_Date`. All
+three are stored `yyyyMMdd`, so a plain string comparison *is* a date comparison. `All` applies no
+date filter.
+
+The **Full Ticker** dropdown chooses between two tables, the same way the portfolio summary does:
+
+| Full Ticker | Table |
+| --- | --- |
+| `All` | One row per ticker, with `Total`, `Total Reinvested` and `Total Not Reinvested`. |
+| a ticker | Every payment for it, newest first, with `Amount`, `Amount Reinvested` and `Amount Not Reinvested`. |
+
+The reinvested split is a single `Sum(IIf(...))` pass rather than three queries. In the per-payment
+table a payment is either reinvested or it is not, so its amount lands in one of those two columns
+and the other reads zero. Amounts carry a `$` for AUD and USD and stay bare otherwise, as elsewhere.
+
+Three totals sit under whichever table is showing, adding up its three money columns. They are one
+set of labels with the captions swapped — `Grand Total` / `Grand Total Reinvested` / `Grand Total
+Not Reinvested` over the summary, `Total Amount` / `Total Amount Reinvested` / `Total Amount Not
+Reinvested` over the payments — so the two sets can never appear at once.
+
+> A total carries a `$` **only when every row feeding it shares one dollar currency**. Adding AUD to
+> USD does not produce an amount in either, so a mixed selection is left bare rather than labelled
+> with a currency it is not in. An empty table shows `0.00`, since with no rows there is no currency
+> to claim.
+
+> **The summary groups by ticker, portfolio code *and currency*.** Currency is not part of the
+> grouping the page was specified with, but without it a ticker paying in two currencies would have
+> its amounts added together into one meaningless `Total`, and the `Currency` column would show
+> whichever row happened to come last. The extra key only ever splits a row where summing would
+> have been wrong.
+
+A note line under the filters says how many rows are showing and which filters are narrowing them,
+so an empty table is explainable rather than mysterious.
 
 ### Portfolio summary
 
