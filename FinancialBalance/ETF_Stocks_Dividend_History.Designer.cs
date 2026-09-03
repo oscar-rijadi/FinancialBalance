@@ -40,12 +40,16 @@
             this.LblNote = new System.Windows.Forms.Label();
             this.gvSummary = new System.Windows.Forms.DataGridView();
             this.gvDetail = new System.Windows.Forms.DataGridView();
-            this.LblTotCap = new System.Windows.Forms.Label();
-            this.LblTot = new System.Windows.Forms.Label();
-            this.LblReinvCap = new System.Windows.Forms.Label();
-            this.LblReinv = new System.Windows.Forms.Label();
-            this.LblNotReinvCap = new System.Windows.Forms.Label();
-            this.LblNotReinv = new System.Windows.Forms.Label();
+            this.LblAgg1Cap = new System.Windows.Forms.Label();
+            this.LblAgg1 = new System.Windows.Forms.Label();
+            this.LblAgg2Cap = new System.Windows.Forms.Label();
+            this.LblAgg2 = new System.Windows.Forms.Label();
+            this.LblAgg3Cap = new System.Windows.Forms.Label();
+            this.LblAgg3 = new System.Windows.Forms.Label();
+            this.LblAgg4Cap = new System.Windows.Forms.Label();
+            this.LblAgg4 = new System.Windows.Forms.Label();
+            this.LblAgg5Cap = new System.Windows.Forms.Label();
+            this.LblAgg5 = new System.Windows.Forms.Label();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvSummary)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvDetail)).BeginInit();
@@ -167,7 +171,7 @@
             this.gvSummary.ReadOnly = true;
             this.gvSummary.RowHeadersVisible = false;
             this.gvSummary.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvSummary.Size = new System.Drawing.Size(900, 300);
+            this.gvSummary.Size = new System.Drawing.Size(900, 280);
             this.gvSummary.TabIndex = 9;
             //
             // gvDetail
@@ -182,79 +186,121 @@
             this.gvDetail.ReadOnly = true;
             this.gvDetail.RowHeadersVisible = false;
             this.gvDetail.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvDetail.Size = new System.Drawing.Size(900, 300);
+            this.gvDetail.Size = new System.Drawing.Size(900, 280);
             this.gvDetail.TabIndex = 10;
             this.gvDetail.Visible = false;
             //
-            // LblTotCap
+            // LblAgg1Cap
             //
-            this.LblTotCap.BackColor = System.Drawing.Color.Transparent;
-            this.LblTotCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblTotCap.ForeColor = System.Drawing.Color.Black;
-            this.LblTotCap.Location = new System.Drawing.Point(19, 492);
-            this.LblTotCap.Name = "LblTotCap";
-            this.LblTotCap.Size = new System.Drawing.Size(260, 20);
-            this.LblTotCap.TabIndex = 11;
+            this.LblAgg1Cap.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg1Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg1Cap.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg1Cap.Location = new System.Drawing.Point(19, 472);
+            this.LblAgg1Cap.Name = "LblAgg1Cap";
+            this.LblAgg1Cap.Size = new System.Drawing.Size(260, 20);
+            this.LblAgg1Cap.TabIndex = 11;
             //
-            // LblTot
+            // LblAgg1
             //
-            this.LblTot.BackColor = System.Drawing.Color.Transparent;
-            this.LblTot.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblTot.ForeColor = System.Drawing.Color.Black;
-            this.LblTot.Location = new System.Drawing.Point(285, 492);
-            this.LblTot.Name = "LblTot";
-            this.LblTot.Size = new System.Drawing.Size(160, 20);
-            this.LblTot.TabIndex = 12;
-            this.LblTot.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblAgg1.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg1.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg1.Location = new System.Drawing.Point(285, 472);
+            this.LblAgg1.Name = "LblAgg1";
+            this.LblAgg1.Size = new System.Drawing.Size(160, 20);
+            this.LblAgg1.TabIndex = 12;
+            this.LblAgg1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
-            // LblReinvCap
+            // LblAgg2Cap
             //
-            this.LblReinvCap.BackColor = System.Drawing.Color.Transparent;
-            this.LblReinvCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblReinvCap.ForeColor = System.Drawing.Color.Black;
-            this.LblReinvCap.Location = new System.Drawing.Point(19, 516);
-            this.LblReinvCap.Name = "LblReinvCap";
-            this.LblReinvCap.Size = new System.Drawing.Size(260, 20);
-            this.LblReinvCap.TabIndex = 13;
+            this.LblAgg2Cap.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg2Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg2Cap.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg2Cap.Location = new System.Drawing.Point(19, 496);
+            this.LblAgg2Cap.Name = "LblAgg2Cap";
+            this.LblAgg2Cap.Size = new System.Drawing.Size(260, 20);
+            this.LblAgg2Cap.TabIndex = 13;
             //
-            // LblReinv
+            // LblAgg2
             //
-            this.LblReinv.BackColor = System.Drawing.Color.Transparent;
-            this.LblReinv.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblReinv.ForeColor = System.Drawing.Color.Black;
-            this.LblReinv.Location = new System.Drawing.Point(285, 516);
-            this.LblReinv.Name = "LblReinv";
-            this.LblReinv.Size = new System.Drawing.Size(160, 20);
-            this.LblReinv.TabIndex = 14;
-            this.LblReinv.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblAgg2.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg2.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg2.Location = new System.Drawing.Point(285, 496);
+            this.LblAgg2.Name = "LblAgg2";
+            this.LblAgg2.Size = new System.Drawing.Size(160, 20);
+            this.LblAgg2.TabIndex = 14;
+            this.LblAgg2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
-            // LblNotReinvCap
+            // LblAgg3Cap
             //
-            this.LblNotReinvCap.BackColor = System.Drawing.Color.Transparent;
-            this.LblNotReinvCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblNotReinvCap.ForeColor = System.Drawing.Color.Black;
-            this.LblNotReinvCap.Location = new System.Drawing.Point(19, 540);
-            this.LblNotReinvCap.Name = "LblNotReinvCap";
-            this.LblNotReinvCap.Size = new System.Drawing.Size(260, 20);
-            this.LblNotReinvCap.TabIndex = 15;
+            this.LblAgg3Cap.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg3Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg3Cap.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg3Cap.Location = new System.Drawing.Point(19, 520);
+            this.LblAgg3Cap.Name = "LblAgg3Cap";
+            this.LblAgg3Cap.Size = new System.Drawing.Size(260, 20);
+            this.LblAgg3Cap.TabIndex = 15;
             //
-            // LblNotReinv
+            // LblAgg3
             //
-            this.LblNotReinv.BackColor = System.Drawing.Color.Transparent;
-            this.LblNotReinv.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblNotReinv.ForeColor = System.Drawing.Color.Black;
-            this.LblNotReinv.Location = new System.Drawing.Point(285, 540);
-            this.LblNotReinv.Name = "LblNotReinv";
-            this.LblNotReinv.Size = new System.Drawing.Size(160, 20);
-            this.LblNotReinv.TabIndex = 16;
-            this.LblNotReinv.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblAgg3.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg3.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg3.Location = new System.Drawing.Point(285, 520);
+            this.LblAgg3.Name = "LblAgg3";
+            this.LblAgg3.Size = new System.Drawing.Size(160, 20);
+            this.LblAgg3.TabIndex = 16;
+            this.LblAgg3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblAgg4Cap
+            //
+            this.LblAgg4Cap.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg4Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg4Cap.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg4Cap.Location = new System.Drawing.Point(19, 544);
+            this.LblAgg4Cap.Name = "LblAgg4Cap";
+            this.LblAgg4Cap.Size = new System.Drawing.Size(260, 20);
+            this.LblAgg4Cap.TabIndex = 17;
+            //
+            // LblAgg4
+            //
+            this.LblAgg4.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg4.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg4.Location = new System.Drawing.Point(285, 544);
+            this.LblAgg4.Name = "LblAgg4";
+            this.LblAgg4.Size = new System.Drawing.Size(160, 20);
+            this.LblAgg4.TabIndex = 18;
+            this.LblAgg4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblAgg5Cap
+            //
+            this.LblAgg5Cap.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg5Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg5Cap.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg5Cap.Location = new System.Drawing.Point(19, 568);
+            this.LblAgg5Cap.Name = "LblAgg5Cap";
+            this.LblAgg5Cap.Size = new System.Drawing.Size(260, 20);
+            this.LblAgg5Cap.TabIndex = 19;
+            //
+            // LblAgg5
+            //
+            this.LblAgg5.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg5.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg5.Location = new System.Drawing.Point(285, 568);
+            this.LblAgg5.Name = "LblAgg5";
+            this.LblAgg5.Size = new System.Drawing.Size(160, 20);
+            this.LblAgg5.TabIndex = 20;
+            this.LblAgg5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
             // CmdBack
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(834, 575);
+            this.CmdBack.Location = new System.Drawing.Point(834, 600);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
             this.CmdBack.TabIndex = 11;
@@ -268,15 +314,19 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(940, 615);
+            this.ClientSize = new System.Drawing.Size(940, 640);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
-            this.Controls.Add(this.LblNotReinv);
-            this.Controls.Add(this.LblNotReinvCap);
-            this.Controls.Add(this.LblReinv);
-            this.Controls.Add(this.LblReinvCap);
-            this.Controls.Add(this.LblTot);
-            this.Controls.Add(this.LblTotCap);
+            this.Controls.Add(this.LblAgg1);
+            this.Controls.Add(this.LblAgg1Cap);
+            this.Controls.Add(this.LblAgg2);
+            this.Controls.Add(this.LblAgg2Cap);
+            this.Controls.Add(this.LblAgg3);
+            this.Controls.Add(this.LblAgg3Cap);
+            this.Controls.Add(this.LblAgg4);
+            this.Controls.Add(this.LblAgg4Cap);
+            this.Controls.Add(this.LblAgg5);
+            this.Controls.Add(this.LblAgg5Cap);
             this.Controls.Add(this.gvDetail);
             this.Controls.Add(this.gvSummary);
             this.Controls.Add(this.LblNote);
@@ -314,12 +364,16 @@
         public System.Windows.Forms.Label LblNote;
         private System.Windows.Forms.DataGridView gvSummary;
         private System.Windows.Forms.DataGridView gvDetail;
-        public System.Windows.Forms.Label LblTotCap;
-        public System.Windows.Forms.Label LblTot;
-        public System.Windows.Forms.Label LblReinvCap;
-        public System.Windows.Forms.Label LblReinv;
-        public System.Windows.Forms.Label LblNotReinvCap;
-        public System.Windows.Forms.Label LblNotReinv;
+        public System.Windows.Forms.Label LblAgg1Cap;
+        public System.Windows.Forms.Label LblAgg1;
+        public System.Windows.Forms.Label LblAgg2Cap;
+        public System.Windows.Forms.Label LblAgg2;
+        public System.Windows.Forms.Label LblAgg3Cap;
+        public System.Windows.Forms.Label LblAgg3;
+        public System.Windows.Forms.Label LblAgg4Cap;
+        public System.Windows.Forms.Label LblAgg4;
+        public System.Windows.Forms.Label LblAgg5Cap;
+        public System.Windows.Forms.Label LblAgg5;
         public System.Windows.Forms.Button CmdBack;
     }
 }

@@ -720,40 +720,60 @@ The **Full Ticker** dropdown chooses between two tables, the same way the portfo
 
 | Full Ticker | Table |
 | --- | --- |
-| `All` | One row per ticker: `Investment`, then `Total`, `Total Reinvested`, `Total Not Reinvested` and `Yield`. |
+| `All` | One row per ticker: `Investment`, `Total`, `Yield`, `Total Reinvested`, `Total Not Reinvested`. |
 | a ticker | Every payment for it, newest first, with `Amount`, `Amount Reinvested` and `Amount Not Reinvested`. |
 
-`Investment` values what that ticker and portfolio still held, **as at a cut-off date** — today when
-the Financial Year is `All`, otherwise the day the chosen year closes:
+`Investment` is the **money actually put in and not yet taken back out**, as at a cut-off date —
+today when the Financial Year is `All`, otherwise the day the chosen year closes:
 
 ```
-Investment = ( SUM(Unit) from TblETFStocksPurchase  up to the cut-off
-             - SUM(Unit) from TblETFStocksSale      up to the cut-off )  x  price at the cut-off
+Investment = SUM(Real_Total_Cost_Base) from TblETFStocksPurchase  up to the cut-off
+           - SUM(Selling_Total_Amount) from TblETFStocksSale      up to the cut-off
 ```
 
-Both sums are filtered to the row's own `Full_Ticker` and `Portfolio_Code`. The purchase side is
-deliberately **not** filtered on `Is_Sold`: a part sale splits its purchase row into a closed part
-and an open one that together still hold the original units, so excluding sold rows would take the
-sold units off twice. The price is the most recent `TblETFStocksPrice` row on or before the cut-off;
-a ticker first priced *after* the cut-off falls back to its earliest price on record rather than
-being valued at zero, and one never priced at all shows `-`.
+Both sums are filtered to the row's own `Full_Ticker` and `Portfolio_Code`. It is a **cost** figure,
+not a market valuation — no price is consulted, and the page never reads `TblETFStocksPrice`.
+`Real_Total_Cost_Base` is `0` on a reinvested purchase, so units that arrived as a DRIP add no cost,
+which is the point of using that field rather than `Total_Cost_Base`.
+
+> Proceeds can exceed cost, so `Investment` can legitimately go **negative** — a holding bought for
+> `100.00` and sold for `150.00` reads `-$50.00`. Since the yield rule only divides when
+> `Investment` is above zero, such a row shows `0.00 %` rather than a negative yield.
 
 > The column only appears on rows the table already has, and the table is driven by dividends. A
 > ticker that paid nothing in the chosen financial year is absent entirely, so its holding is not
 > shown for that year even if it was held throughout.
 
-`Yield` measures the payments against that holding — `Total / Investment x 100`, or `0` when
-`Investment` is not above zero. A holding that has never been priced therefore reads `-` for
-`Investment` and `0.00 %` for `Yield`, rather than dividing by nothing.
+`Yield` sits directly after `Total` and measures the payments against that holding —
+`Total / Investment x 100`, or `0` when `Investment` is not above zero. A holding that has never
+been priced therefore reads `-` for `Investment` and `0.00 %` for `Yield`, rather than dividing by
+nothing. The columns run in the same order as the totals underneath, so a row reads the same way
+as the summary beneath it.
 
 The reinvested split is a single `Sum(IIf(...))` pass rather than three queries. In the per-payment
 table a payment is either reinvested or it is not, so its amount lands in one of those two columns
 and the other reads zero. Amounts carry a `$` for AUD and USD and stay bare otherwise, as elsewhere.
 
-Three totals sit under whichever table is showing, adding up its three money columns. They are one
-set of labels with the captions swapped — `Grand Total` / `Grand Total Reinvested` / `Grand Total
-Not Reinvested` over the summary, `Total Amount` / `Total Amount Reinvested` / `Total Amount Not
-Reinvested` over the payments — so the two sets can never appear at once.
+Totals sit under whichever table is showing, in five fixed slots filled from the top so neither
+view leaves a gap and the two sets can never appear at once:
+
+| Slot | Summary view | Payment view |
+| --- | --- | --- |
+| 1 | `Grand Total Investment` | `Total Amount` |
+| 2 | `Grand Total` | `Total Amount Reinvested` |
+| 3 | `Yield` | `Total Amount Not Reinvested` |
+| 4 | `Grand Total Reinvested` | *(hidden)* |
+| 5 | `Grand Total Not Reinvested` | *(hidden)* |
+
+`Grand Total Investment` is the **same two sums without the ticker filter** — every holding the
+current Portfolio and Main Only selection covers, not just the ones that paid a dividend. So it is
+**not the Investment column added up**: on real data the column summed to `$2,800.86` across the
+dividend-paying rows while the grand total came to `$3,315.61`, the difference being holdings that
+paid nothing and are absent from the table.
+
+Because it drops the ticker filter rather than walking every ticker in turn, it costs two queries
+regardless of how many holdings there are. `Yield` then measures the payments against it —
+`Grand Total / Grand Total Investment x 100`, or `0` when that is not above zero.
 
 > A total carries a `$` **only when every row feeding it shares one dollar currency**. Adding AUD to
 > USD does not produce an amount in either, so a mixed selection is left bare rather than labelled
