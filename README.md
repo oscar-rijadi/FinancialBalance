@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction, ETF/Stock Distribution/Dividend |
+| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction, ETF/Stock Distribution/Dividend, ETF/Stock Financial Year Reconciliation |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
@@ -109,6 +109,7 @@ flowchart LR
     PETFG --> ETI["ETF_Stocks_Investment"]
     PETFG --> ETX["ETF_Stocks_Transaction"]
     PETFG --> ETD["ETF_Stocks_Distribution"]
+    PETFG --> ETR["ETF_Stocks_FY_Reconciliation"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
@@ -156,6 +157,7 @@ flowchart LR
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
+| `ETF_Stocks_FY_Reconciliation` | Shown as **ETF/Stock Financial Year Reconciliation**. One financial year's result per portfolio, with an entry section that defaults every figure from the rest of the database. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
@@ -179,7 +181,7 @@ flowchart LR
 
 ## Data model
 
-Twenty-one tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty-two tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -200,6 +202,8 @@ erDiagram
     TblETFStocksPortfolioCode ||--o{ TblETFStocksPurchase : "codes"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksSale : "codes"
     TblETFStocksPortfolioCode ||--o{ TblETFStocksDistributionDividend : "codes"
+    TblETFStocksPortfolioCode ||--o{ TblETFStocksFinancialYear : "codes"
+    TblFinancialYear ||--o{ TblETFStocksFinancialYear : "covers"
     TblETFStocks    ||--o{ TblETFStocksDistributionDividend : "pays"
     TblCurrCode     ||--o{ TblETFStocksDistributionDividend : "denominates"
     TblETFStocksPortfolioCode ||--o| TblETFStocksPortfolio : "describes"
@@ -297,6 +301,28 @@ erDiagram
         text Description "50 chars"
         bool Is_Main
     }
+    TblETFStocksFinancialYear {
+        text    Financial_Year "joins TblFinancialYear"
+        text    Portfolio_Code "5 chars"
+        text    Currency "3 chars"
+        decimal Previous_Investment "2 dp"
+        decimal Investment "2 dp"
+        decimal Sold_Amount "2 dp"
+        decimal Ending_Investment "2 dp"
+        decimal On_Paper_Ending_Value "2 dp"
+        decimal On_Paper_Profit_Or_Loss "2 dp"
+        decimal Percentage_On_Paper_Profit_Or_Loss "2 dp"
+        decimal Total_DistributionDividend "2 dp"
+        decimal Total_DistributionDividend_Yield "2 dp"
+        decimal Total_DistributionDividend_Reinvested "2 dp"
+        decimal Total_DistributionDividend_Not_Reinvested "2 dp"
+        decimal Capital_Gains_On_Paper "2 dp"
+        decimal Real_Capital_Gains "2 dp"
+        decimal Investment_Loan_Interest "2 dp"
+        decimal Tax "2 dp"
+        decimal Real_Profit_Or_Loss "2 dp"
+        decimal Percentage_Real_Profit_Or_Loss "2 dp"
+    }
     TblFinancialYear {
         text Name PK "9 chars"
         text Start_Date "yyyyMMdd"
@@ -374,8 +400,13 @@ so changing the name *renames that year* rather than leaving the old row behind 
 a name that already exists is refused rather than merging two years into one. **Clear** abandons the
 edit and returns to entering a new year.
 
-A year whose `End_Date` falls before its `Start_Date` is rejected. Nothing else in the application
-reads this table yet; it stands alone until something is built on it.
+A year whose `End_Date` falls before its `Start_Date` is rejected.
+
+`TblETFStocksFinancialYear` holds one row per financial year per portfolio code, carrying that
+year's opening and closing investment, what was sold, the on-paper and realised results,
+distribution totals, capital gains, loan interest and tax. **No screen reads or writes either table
+yet** beyond Financial Year Setup maintaining the years themselves — both stand ready for whatever
+is built on them.
 
 ### ETF/stock transaction rules
 
@@ -703,6 +734,77 @@ Like the transaction tables, this one has **no primary key** — the same ticker
 date — so update and delete match on **all eight of the row's original column values**, re-read from
 the table rather than taken from the display, and the form warns before touching more than one
 identical row.
+
+### Financial year reconciliation
+
+`ETF_Stocks_FY_Reconciliation` reads `TblETFStocksFinancialYear` back out: a **Financial Year**
+dropdown listing `TblFinancialYear.Name` newest-closing first, plus the **Portfolio** dropdown and
+**Main Only** checkbox the other ETF pages use, and a table of the matching rows.
+
+The year dropdown has **no `All` option** — a reconciliation is read one year at a time — and it
+selects the most recently closing year when the page opens. Sixteen of the table's twenty columns
+are shown; `Investment`, `Sold_Amount`, `Investment_Loan_Interest` and `Tax` are stored but not
+displayed.
+
+Six columns are coloured **red below zero and green above it**, zero left alone: both profit/loss
+figures, both percentages, and both capital gains. The plain money columns are never coloured.
+
+Each row carries its own `Currency`, shown as the third column and driving the `$` on every money
+column beside it — a row left without one displays `-` and its amounts stay bare, the same rule the
+other ETF pages follow.
+
+#### Entering a reconciliation
+
+Below the table an entry section adds, updates and deletes rows. **`Financial_Year` and
+`Portfolio_Code` together identify a reconciliation** — one per portfolio per year — so Add refuses
+a pair that already exists, and Update and Delete match on that pair. Clicking a row in the table
+loads it back exactly as stored, without re-deriving anything.
+
+Choosing a year or a portfolio pulls a default for almost every figure out of the rest of the
+database, all of them still editable afterwards:
+
+| Field | Default |
+| --- | --- |
+| `Previous_Investment` | The preceding year's `Ending_Investment` for the same code — the year whose `End_Date` falls latest before this one starts. `0` when there is none. |
+| `Investment` | Money **in less money out** from `TblETFStocksPortfolioInvestment` inside the year: `SUM(Amount)` where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`. |
+| `Sold_Amount` | `SUM(Real_Total_Cost_Base)` from sold purchases inside the year. |
+| `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
+| `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below. |
+| `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year. |
+| `Capital_Gains_On_Paper`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
+| `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
+
+A note beside the box reads *"Please minus any amount in cash"*, since money paid in but left
+uninvested is not part of the year's investment.
+
+> `Amount` on a portfolio movement is **always stored positive**, with the direction held in
+> `Investment_Type`, so the two signs must be summed apart and subtracted. Adding the column
+> outright would count a withdrawal as money going in. A year of withdrawals alone gives a
+> negative `Investment`, which then carries into `Ending_Investment`.
+
+`On_Paper_Ending_Value` looks for a price in three places, in order, and stops at the first that
+has one:
+
+1. the **latest price inside the financial year**;
+2. failing that, the **last price before** the year started;
+3. failing that, the **first price after** the year ended.
+
+A ticker never priced at all contributes nothing rather than being guessed at. The fallback matters
+because a holding bought late, or one whose prices were only recorded later, would otherwise be
+valued at zero and drag the whole figure down.
+
+The rest are derived and re-derive as their inputs change: `On_Paper_Profit_Or_Loss` is
+`On_Paper_Ending_Value - Ending_Investment`, `Real_Profit_Or_Loss` is
+`Distribution + Real_Capital_Gains - Loan_Interest - Tax`, and the three percentages divide by
+`Ending_Investment`.
+
+> Every derived box stays editable, and a typed figure stands **until something it depends on
+> changes again** — editing Ending Investment then changing Investment replaces it, the same rule
+> the Distribution page uses for its total. The chain only ever runs one way, so nothing loops.
+>
+> A percentage whose `Ending_Investment` is not above zero reports `0` rather than being left
+> undefined, and the minus key is accepted here because a loss, a capital loss or a negative
+> percentage is a legitimate result.
 
 ### Dividend history
 

@@ -39,6 +39,7 @@
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnInquiry = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyInq = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearStat = new System.Windows.Forms.ToolStripMenuItem();
@@ -135,7 +136,8 @@
             this.MnETFStocksPrice,
             this.MnETFStocksInvestment,
             this.MnETFStocksTrans,
-            this.MnETFStocksDistribution});
+            this.MnETFStocksDistribution,
+            this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
@@ -167,6 +169,13 @@
             this.MnETFStocksPrice.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksPrice.Text = "ETF/Stock &Price";
             this.MnETFStocksPrice.Click += new System.EventHandler(this.MnETFStocksPrice_Click);
+            //
+            // MnETFStocksFYRecon
+            //
+            this.MnETFStocksFYRecon.Name = "MnETFStocksFYRecon";
+            this.MnETFStocksFYRecon.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksFYRecon.Text = "ETF/Stock Financial &Year Reconciliation";
+            this.MnETFStocksFYRecon.Click += new System.EventHandler(this.MnETFStocksFYRecon_Click);
             // 
             // MnInquiry
             // 
@@ -803,6 +812,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnInquiry;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyInq;
         public System.Windows.Forms.ToolStripMenuItem MnYearStat;

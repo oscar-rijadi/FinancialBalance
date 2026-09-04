@@ -86,6 +86,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksFYRecon_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_FY_Reconciliation ETF_Stocks_FY_Reconciliation = new ETF_Stocks_FY_Reconciliation();
+            ETF_Stocks_FY_Reconciliation.Show();
+            this.Close();
+        }
+
         private void MnETFStocksInvestment_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Investment ETF_Stocks_Investment = new ETF_Stocks_Investment();

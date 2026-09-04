@@ -102,6 +102,12 @@
     <Compile Include="ETF_Stocks_Dividend_History.Designer.cs">
       <DependentUpon>ETF_Stocks_Dividend_History.cs</DependentUpon>
     </Compile>
+    <Compile Include="ETF_Stocks_FY_Reconciliation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ETF_Stocks_FY_Reconciliation.Designer.cs">
+      <DependentUpon>ETF_Stocks_FY_Reconciliation.cs</DependentUpon>
+    </Compile>
     <Compile Include="ETF_Stocks_Distribution.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -245,6 +251,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Dividend_History.resx">
       <DependentUpon>ETF_Stocks_Dividend_History.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ETF_Stocks_FY_Reconciliation.resx">
+      <DependentUpon>ETF_Stocks_FY_Reconciliation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Distribution.resx">
       <DependentUpon>ETF_Stocks_Distribution.cs</DependentUpon>

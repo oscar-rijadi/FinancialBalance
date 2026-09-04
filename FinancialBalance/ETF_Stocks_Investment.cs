@@ -91,6 +91,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksFYRecon_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_FY_Reconciliation ETF_Stocks_FY_Reconciliation = new ETF_Stocks_FY_Reconciliation();
+            ETF_Stocks_FY_Reconciliation.Show();
+            this.Close();
+        }
+
         //Fill_Curr defaults to IDR for the accounting pages; ETF money defaults to AUD
         private void Set_Default_Currency(ComboBox parCombo)
         {

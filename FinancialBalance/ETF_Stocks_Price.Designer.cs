@@ -36,6 +36,7 @@
             this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbFullTicker = new System.Windows.Forms.ComboBox();
@@ -95,7 +96,8 @@
             this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksInvestment,
             this.MnETFStocksTrans,
-            this.MnETFStocksDistribution});
+            this.MnETFStocksDistribution,
+            this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
@@ -120,6 +122,13 @@
             this.MnETFStocksInvestment.Size = new System.Drawing.Size(137, 20);
             this.MnETFStocksInvestment.Text = "ETF/Stock &Investment";
             this.MnETFStocksInvestment.Click += new System.EventHandler(this.MnETFStocksInvestment_Click);
+            //
+            // MnETFStocksFYRecon
+            //
+            this.MnETFStocksFYRecon.Name = "MnETFStocksFYRecon";
+            this.MnETFStocksFYRecon.Size = new System.Drawing.Size(137, 20);
+            this.MnETFStocksFYRecon.Text = "ETF/Stock Financial &Year Reconciliation";
+            this.MnETFStocksFYRecon.Click += new System.EventHandler(this.MnETFStocksFYRecon_Click);
             //
             // Label21
             //
@@ -468,6 +477,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbFullTicker;
