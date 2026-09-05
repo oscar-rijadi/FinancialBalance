@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction, ETF/Stock Distribution/Dividend, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
 
@@ -117,6 +117,7 @@ flowchart LR
     PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
     PORTG --> PDIV["ETF_Stocks_Portfolio_Diversification"]
     PORTG --> PDVH["ETF_Stocks_Dividend_History"]
+    PORTG --> PPCH["ETF_Stocks_Price_Chart"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -164,6 +165,7 @@ flowchart LR
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. |
+| `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -900,6 +902,71 @@ the identical sums narrowed to that ticker, and `Yield` is `Total Amount / Total
 A note line under the filters says how many rows are showing and which filters are narrowing them,
 so an empty table is explainable rather than mysterious.
 
+### Price chart
+
+`ETF_Stocks_Price_Chart`, shown as **ETF/Stock Price Chart** under `Inquiry` ▸ ETF/Stock, plots
+what `TblETFStocksPrice` holds for a single ticker. It reads and never writes.
+
+Two filters drive it, and changing either redraws immediately:
+
+| Filter | Comes from | Default |
+| --- | --- | --- |
+| Full Ticker | `TblETFStocks.Full_Ticker`, alphabetical | the first ticker |
+| Financial Year | `All`, then `TblFinancialYear.Name` newest closing year first | `All` |
+
+`All` charts every price on record for the ticker. Naming a year restricts the prices to
+`Price_Date` between that year's `Start_Date` and `End_Date` inclusive — so the earliest and
+latest points become the first and last prices *within the year*, not overall.
+
+#### Choosing which prices to plot
+
+At most **eight** points are drawn, which is as many as the axis can label before the dates run
+together. When the ticker has eight prices or fewer in range, all of them are plotted. Above
+that, the points are chosen by walking evenly across the ordered list:
+
+```
+index = round( i × (count - 1) / 7 )   for i = 0 .. 7
+```
+
+Because `i / 7` runs exactly 0 to 1, the first and last prices are always kept — they are the
+ends of the range being shown — and the six in between land at even intervals. Twenty prices,
+for instance, plot as positions 0, 3, 5, 8, 11, 14, 16, 19.
+
+Spreading them this way rather than taking any eight matters for real data: a ticker priced
+daily for one week and then not again for a year would otherwise chart as a single flat week.
+
+> **The points are chosen evenly, not at random.** The request asked for "random price in
+> between ... with as big as spread as possible". Even spacing is what produces the largest
+> possible spread, and it also means the same ticker draws the same chart every time it is
+> opened — a genuinely random pick would move the line about on each viewing and make two
+> readings of the same data disagree. If randomness is actually wanted, `Spread` in
+> `ETF_Stocks_Price_Chart.cs` is the single method to change.
+
+#### What is displayed
+
+- The **currency label** shows the `Currency` of the *first* price in range — the earliest one —
+  and the Y axis title repeats it. A ticker whose prices are not all in one currency is not
+  detected here; see [Multi-currency handling](#multi-currency-handling).
+- The **X axis** carries the full date, formatted `dd-MMM-yyyy` in `en-AU` — the same format the
+  rest of the app uses for a date. Labels are the plotted dates themselves, so every point is
+  distinct even when several prices fall in one month. The axis is a series of points in date
+  order, not a calendar: the gap between two labels is one price to the next, not elapsed time,
+  so an eight-point line spanning two years and one spanning a week look alike. The note line
+  under the filters gives the real range.
+- The **Y axis** is the price, with each point labelled `#,##0.00` and carrying a tooltip of its
+  date and amount. It is **not anchored at zero** (`IsStartedFromZero = false`): a share
+  moving $24 to $38 is the whole point of the chart, and a zero baseline squeezes that into
+  the top third. This is the usual way a price series is drawn, but it does mean the
+  vertical scale exaggerates movement compared with a zero-based chart — read the axis, not
+  the slope.
+- A **note line** under the filters reports how many of how many prices were plotted and the
+  range they span, e.g. `8 of 20 price(s) plotted, 15-Jan-2025 to 15-Aug-2026 - spread evenly across
+  the range`.
+- A ticker with no price in range draws nothing and says so in the note rather than showing an
+  empty grid.
+
+---
+
 ### Portfolio summary
 
 `ETF_Stocks_Portfolio_Summary` aggregates `TblETFStocksPurchase` into one row per `Full_Ticker`.
@@ -1116,16 +1183,30 @@ C#.Net/
 │   ├── Setup_Curr.*
 │   ├── Setup_Curr_Rate.*
 │   ├── Setup_Activa_Passiva.*
+│   ├── Setup_Financial_Year.*
 │   ├── Setup_ETF_Stocks_Suffix.*
 │   ├── Setup_ETF_Stocks.*
-│   ├── Setup_ETF_Stocks_Flag.*
-│   ├── ETF_Stocks_Transaction.*     # buy / sell entry
-│   ├── ETF_Stocks_Price.*           # prices + Yahoo sync
+│   ├── Setup_ETF_Stocks_Flag.*       # portfolio codes
+│   ├── Setup_ETF_Stocks_Div_Type.*
+│   ├── Setup_ETF_Stocks_Div.*
+│   ├── Setup_ETF_Stocks_Div_Alloc.*
+│   ├── ETF_Stocks_Transaction.*      # buy / sell entry
+│   ├── ETF_Stocks_Price.*            # prices + Yahoo sync
+│   ├── ETF_Stocks_Investment.*       # cash in / out of a portfolio
+│   ├── ETF_Stocks_Distribution.*     # distributions and dividends
+│   ├── ETF_Stocks_FY_Reconciliation.*
+│   ├── ETF_Stocks_Portfolio_Summary.*
+│   ├── ETF_Stocks_Portfolio_Diversification.*
+│   ├── ETF_Stocks_Dividend_History.*
+│   ├── ETF_Stocks_Price_Chart.*      # price line chart
 │   ├── images/Project1.ico
 │   └── bin/{Debug,Release}/         # build output + a copy of the .mdb
 ├── Sample Database/
-│   └── Financial Balance.mdb        # reference data, no transactions
-└── Publish/                         # ClickOnce output
+│   └── Financial Balance.mdb         # reference data, no transactions
+├── Current Database/
+│   ├── Financial Balance.mdb         # the live data
+│   └── FinancialBalance.exe          # the copy actually run day to day
+└── Publish/                          # ClickOnce output
 ```
 
 `Mdl1` is a static class holding the single shared `OleDbConnection` plus roughly two dozen

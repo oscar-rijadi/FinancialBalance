@@ -48,6 +48,7 @@
             this.MnETFStocksPortfolioSummary = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPortfolioDiv = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDividendHistory = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksPriceChart = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -214,7 +215,8 @@
             this.MnETFStockPortfolioGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksPortfolioSummary,
             this.MnETFStocksPortfolioDiv,
-            this.MnETFStocksDividendHistory});
+            this.MnETFStocksDividendHistory,
+            this.MnETFStocksPriceChart});
             this.MnETFStockPortfolioGroup.Name = "MnETFStockPortfolioGroup";
             this.MnETFStockPortfolioGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockPortfolioGroup.Text = "&ETF/Stock";
@@ -239,6 +241,13 @@
             this.MnETFStocksDividendHistory.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksDividendHistory.Text = "ETF/Stock &Dividend History";
             this.MnETFStocksDividendHistory.Click += new System.EventHandler(this.MnETFStocksDividendHistory_Click);
+            //
+            // MnETFStocksPriceChart
+            //
+            this.MnETFStocksPriceChart.Name = "MnETFStocksPriceChart";
+            this.MnETFStocksPriceChart.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksPriceChart.Text = "ETF/Stock Price &Chart";
+            this.MnETFStocksPriceChart.Click += new System.EventHandler(this.MnETFStocksPriceChart_Click);
             // 
             // MnAdmin
             // 
@@ -821,6 +830,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioSummary;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioDiv;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDividendHistory;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksPriceChart;
         public System.Windows.Forms.ToolStripMenuItem MnAdmin;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnAcctRefSetup;
