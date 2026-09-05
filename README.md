@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction, ETF/Stock Distribution/Dividend, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
 
@@ -118,6 +118,7 @@ flowchart LR
     PORTG --> PDIV["ETF_Stocks_Portfolio_Diversification"]
     PORTG --> PDVH["ETF_Stocks_Dividend_History"]
     PORTG --> PPCH["ETF_Stocks_Price_Chart"]
+    PORTG --> PFYH["ETF_Stocks_FY_Historical"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -166,6 +167,7 @@ flowchart LR
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
+| `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -808,6 +810,82 @@ The rest are derived and re-derive as their inputs change: `On_Paper_Profit_Or_L
 > undefined, and the minus key is accepted here because a loss, a capital loss or a negative
 > percentage is a legitimate result.
 
+### Financial year historical
+
+`ETF_Stocks_FY_Historical`, shown as **ETF/Stock Financial Year Historical** under `Inquiry` ▸
+ETF/Stock, is the read-only companion to
+[ETF/Stock Financial Year Reconciliation](#financial-year-reconciliation). It shows what is
+already stored in `TblETFStocksFinancialYear` and never writes: no entry section, no defaults,
+no recalculation chain.
+
+| Filter | Comes from | Default |
+| --- | --- | --- |
+| Financial Year | `TblFinancialYear.Name`, newest closing year first | the most recently closed year |
+| Portfolio | `All`, then `TblETFStocksPortfolioCode.Description` | `All` |
+| Main Only | tick box | unticked |
+
+There is deliberately **no "All" on Financial Year**. A row is one portfolio's result for one
+year, so stacking several years into one table would list the same portfolio more than once and
+the totals underneath would double-count it.
+
+`Main Only` narrows the Portfolio list itself, so a non-main portfolio cannot be left selected
+while it is ticked — otherwise the page would show an empty table with nothing to explain it.
+On `All`, `Main Only` still applies, and a row carrying no portfolio code belongs to no main
+portfolio, so it drops out with the rest.
+
+#### The table
+
+The same sixteen columns as the reconciliation page, in the same order, with the same
+formatting and the same red/green rules — negative red, positive green, zero left alone on
+On Paper Profit/Loss, Percentage On Paper Profit/Loss, Capital Gains On Paper, Real Capital
+Gains, Real Profit/Loss and Percentage Real Profit/Loss. Rows are ordered by portfolio code.
+
+#### The totals
+
+Twelve figures sit under the table, in two columns of six. **They appear only while Portfolio is
+`All`** — choosing one portfolio puts them away rather than repeating that portfolio's own row
+back at the reader.
+
+| Label | How it is worked out | Coloured |
+| --- | --- | --- |
+| Total Ending Investment | sum of `Ending Investment` | no |
+| Total On Paper Ending Value | sum of `On Paper Ending Value` | no |
+| Total On Paper Profit/Loss | sum of `On Paper Profit/Loss` | yes |
+| Percentage Total On Paper Profit/Loss | `Total On Paper Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 when the investment is not above zero | yes |
+| Total Distribution/Dividend | sum of `Distribution/Dividend` | no |
+| Total Distribution/Dividend Yield | `Total Distribution/Dividend` ÷ `Total Ending Investment` × 100, or 0 | no |
+| Total Distribution/Dividend Reinvested | sum of `Distribution/Dividend Reinvested` | no |
+| Total Distribution/Dividend Not Reinvested | sum of `Distribution/Dividend Not Reinvested` | no |
+| Total Capital Gains On Paper | sum of `Capital Gains On Paper` | no |
+| Total Real Capital Gains | sum of `Real Capital Gains` | no |
+| Total Real Profit/Loss | sum of `Real Profit/Loss` | yes |
+| Percentage Real Profit/Loss | `Total Real Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 | yes |
+
+Every percentage divides by **Total Ending Investment**, including the two that measure real
+rather than on-paper results, and each guards its own divide-by-zero.
+
+Amounts carry a dollar sign under the same rule as the rest of the app: only when the rows that
+fed the total all share one dollar currency (AUD or USD). A selection spanning AUD and USD
+totals to a number that is in neither, so it is shown bare rather than labelled with a currency
+it is not in — and a selection with no rows at all has no currency to name, so its zeros are
+bare too, matching [Dividend history](#dividend-history).
+
+#### Generate Excel
+
+Writes what is on screen to a `.xlsx` — the filters, the note, the twelve totals (only when they
+are showing), then the table. The file is named:
+
+```
+yyyyMMddHHmmss _ <Financial Year> _ <Portfolio> _ <Yes|No for Main Only> .xlsx
+```
+
+for example `20260905143012_2025-2026_All_No.xlsx`. Every cell is written as text for the reason
+given under [Portfolio summary](#portfolio-summary): left to itself Excel re-reads the values and
+throws away the formatting on screen, so `-$489.75` comes back as a red `($489.75)` and
+`4.10 %` turns into a fraction.
+
+---
+
 ### Dividend history
 
 `ETF_Stocks_Dividend_History` reads `TblETFStocksDistributionDividend` back out. It shares the
@@ -1127,6 +1205,13 @@ broken.
 - **Combo boxes render as `"CODE - Name"`** and the code is recovered with `.Substring(0, 5)` for
   accounts or `.Substring(0, 1)` for types. Renaming the separator format would break every lookup.
 - **`Current_Asset`** splits type-1 accounts into current and non-current for the balance sheet.
+- **Every page answers Escape, via `Form.CancelButton = this.CmdBack`.** It is set in the
+  designer, not by a key handler, and it is what makes Escape behave as a click on **Back**.
+  A new page that omits it looks and works correctly until someone presses Escape and nothing
+  happens. Every form except `Main_Form` — the launcher, which has no Back button — sets it.
+  New pages should also carry the shared form background, `Color.FromArgb(255, 247, 238)`;
+  the named `Color.OldLace` is a near-miss at `(253, 245, 230)` and shows as a subtly
+  different shade beside the other pages.
 - **`Main_Form` hides, every other form closes.** `Program.Main` runs `Application.Run(new
   Main_Form())`, so Main_Form *is* the message loop — a menu handler there must call `this.Hide()`.
   Every other form navigates with `this.Show()` on the target followed by `this.Close()` on itself.
@@ -1195,6 +1280,7 @@ C#.Net/
 │   ├── ETF_Stocks_Investment.*       # cash in / out of a portfolio
 │   ├── ETF_Stocks_Distribution.*     # distributions and dividends
 │   ├── ETF_Stocks_FY_Reconciliation.*
+│   ├── ETF_Stocks_FY_Historical.*     # read-only view of the above
 │   ├── ETF_Stocks_Portfolio_Summary.*
 │   ├── ETF_Stocks_Portfolio_Diversification.*
 │   ├── ETF_Stocks_Dividend_History.*

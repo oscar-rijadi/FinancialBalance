@@ -102,6 +102,12 @@
     <Compile Include="ETF_Stocks_Price_Chart.Designer.cs">
       <DependentUpon>ETF_Stocks_Price_Chart.cs</DependentUpon>
     </Compile>
+    <Compile Include="ETF_Stocks_FY_Historical.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ETF_Stocks_FY_Historical.Designer.cs">
+      <DependentUpon>ETF_Stocks_FY_Historical.cs</DependentUpon>
+    </Compile>
     <Compile Include="ETF_Stocks_Dividend_History.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -257,6 +263,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Price_Chart.resx">
       <DependentUpon>ETF_Stocks_Price_Chart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ETF_Stocks_FY_Historical.resx">
+      <DependentUpon>ETF_Stocks_FY_Historical.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Dividend_History.resx">
       <DependentUpon>ETF_Stocks_Dividend_History.cs</DependentUpon>
