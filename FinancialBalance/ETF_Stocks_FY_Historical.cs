@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -575,7 +575,11 @@ namespace FinancialBalance
                 return;
             }
 
-            string TmpName = DateTime.Now.ToString("yyyyMMddHHmmss")
+            //The form's own Name leads the file name, so an export says which page it
+            //came from before anything else.  Taken from this.Name rather than typed out,
+            //so it cannot drift from the form it belongs to.
+            string TmpName = Safe_Name(this.Name)
+                           + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
                            + "_" + Safe_Name(CmbFinYear.Text)
                            + "_" + Safe_Name(CmbPortfolio.Text)
                            + "_" + (chkMainOnly.Checked ? "Yes" : "No") + ".xlsx";

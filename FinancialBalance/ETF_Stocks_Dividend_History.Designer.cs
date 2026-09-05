@@ -50,6 +50,7 @@
             this.LblAgg4 = new System.Windows.Forms.Label();
             this.LblAgg5Cap = new System.Windows.Forms.Label();
             this.LblAgg5 = new System.Windows.Forms.Label();
+            this.CmdExcel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvSummary)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvDetail)).BeginInit();
@@ -295,6 +296,17 @@
             this.LblAgg5.TabIndex = 20;
             this.LblAgg5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
+            // CmdExcel
+            //
+            this.CmdExcel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdExcel.Location = new System.Drawing.Point(714, 600);
+            this.CmdExcel.Name = "CmdExcel";
+            this.CmdExcel.Size = new System.Drawing.Size(110, 27);
+            this.CmdExcel.TabIndex = 21;
+            this.CmdExcel.Text = "Generate Excel";
+            this.CmdExcel.UseVisualStyleBackColor = true;
+            this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
+            //
             // CmdBack
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
@@ -317,6 +329,7 @@
             this.ClientSize = new System.Drawing.Size(940, 640);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
+            this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.LblAgg1);
             this.Controls.Add(this.LblAgg1Cap);
             this.Controls.Add(this.LblAgg2);
@@ -374,6 +387,7 @@
         public System.Windows.Forms.Label LblAgg4;
         public System.Windows.Forms.Label LblAgg5Cap;
         public System.Windows.Forms.Label LblAgg5;
+        public System.Windows.Forms.Button CmdExcel;
         public System.Windows.Forms.Button CmdBack;
     }
 }

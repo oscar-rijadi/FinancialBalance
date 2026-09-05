@@ -8,6 +8,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data.OleDb;
 using System.Globalization;
+using System.IO;
+using System.Runtime.InteropServices;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace FinancialBalance
 {
@@ -661,6 +664,281 @@ namespace FinancialBalance
                 TmpText = TmpText + "   -   " + String.Join(", ", Parts.ToArray());
             }
             LblNote.Text = TmpText;
+        }
+
+        //---- Excel ---------------------------------------------------------------
+
+        [DllImport("user32.dll")]
+        private static extern int GetWindowThreadProcessId(IntPtr parHwnd, out int parProcessId);
+
+        //Whichever of the two tables is on screen.  The page swaps them rather than reusing one,
+        //so the export has to ask which is showing instead of assuming.
+        private DataGridView Active_Grid()
+        {
+            return (gvSummary.Visible ? gvSummary : gvDetail);
+        }
+
+        //The aggregate slots as they stand, skipping any that are put away.  The summary and
+        //payment views fill different numbers of slots, so the count is not fixed.
+        private void Active_Totals(out List<string> parCaps, out List<string> parVals)
+        {
+            parCaps = new List<string>();
+            parVals = new List<string>();
+
+            Label[] Caps = new Label[] { LblAgg1Cap, LblAgg2Cap, LblAgg3Cap, LblAgg4Cap, LblAgg5Cap };
+            Label[] Vals = new Label[] { LblAgg1, LblAgg2, LblAgg3, LblAgg4, LblAgg5 };
+            for (int i = 0; i < Caps.Length; i++)
+            {
+                if (!Caps[i].Visible)
+                {
+                    continue;
+                }
+                parCaps.Add(Caps[i].Text);
+                parVals.Add(Vals[i].Text);
+            }
+        }
+
+        private string Safe_Name(string parText)
+        {
+            string s = (parText == null ? "" : parText.Trim());
+            if (s == "")
+            {
+                s = "none";
+            }
+            char[] bad = Path.GetInvalidFileNameChars();
+            for (int i = 0; i < bad.Length; i++)
+            {
+                s = s.Replace(bad[i].ToString(), "");
+            }
+            return s;
+        }
+
+        private string[] Line(int parCols, string parA, string parB)
+        {
+            string[] r = new string[parCols];
+            for (int i = 0; i < parCols; i++)
+            {
+                r[i] = "";
+            }
+            r[0] = parA;
+            if (parCols > 1)
+            {
+                r[1] = parB;
+            }
+            return r;
+        }
+
+        private string[] Line(int parCols, string parA)
+        {
+            return Line(parCols, parA, "");
+        }
+
+        private string[] Line(int parCols)
+        {
+            return Line(parCols, "", "");
+        }
+
+        private void CmdExcel_Click(object sender, EventArgs e)
+        {
+            DataGridView grid = Active_Grid();
+            if (grid.Rows.Count == 0)
+            {
+                MessageBox.Show("There is nothing on screen to export.", "Error Message");
+                return;
+            }
+
+            //The form's own Name leads the file name, so an export says which page it
+            //came from before anything else.  Taken from this.Name rather than typed out,
+            //so it cannot drift from the form it belongs to.
+            string TmpName = Safe_Name(this.Name)
+                           + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
+                           + "_" + Safe_Name(CmbPortfolio.Text)
+                           + "_" + (chkMainOnly.Checked ? "Yes" : "No")
+                           + "_" + Safe_Name(CmbTicker.Text)
+                           + "_" + Safe_Name(CmbFinYear.Text) + ".xlsx";
+
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Title = "Generate Excel";
+            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+            dlg.FileName = TmpName;
+            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            //lay the whole sheet out first, so Excel is only asked to do one write
+            List<string> Caps;
+            List<string> Vals;
+            Active_Totals(out Caps, out Vals);
+
+            int Cols = grid.Columns.Count;
+            if (Cols < 2)
+            {
+                Cols = 2;
+            }
+
+            List<string[]> Sheet = new List<string[]>();
+            Sheet.Add(Line(Cols, "ETF/Stock Dividend History"));
+            Sheet.Add(Line(Cols));
+            Sheet.Add(Line(Cols, "Portfolio", CmbPortfolio.Text.Trim()));
+            Sheet.Add(Line(Cols, "Main Only", (chkMainOnly.Checked ? "Yes" : "No")));
+            Sheet.Add(Line(Cols, "Full Ticker", CmbTicker.Text.Trim()));
+            Sheet.Add(Line(Cols, "Financial Year", CmbFinYear.Text.Trim()));
+            Sheet.Add(Line(Cols, "Generated", DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss")));
+            if (LblNote.Text.Trim() != "")
+            {
+                Sheet.Add(Line(Cols, "Note", LblNote.Text.Trim()));
+            }
+            Sheet.Add(Line(Cols));
+
+            //the aggregates sit above the table
+            int TotalsFrom = Sheet.Count + 1;
+            for (int i = 0; i < Caps.Count; i++)
+            {
+                Sheet.Add(Line(Cols, Caps[i], Vals[i]));
+            }
+            int TotalsTo = Sheet.Count;
+            if (Caps.Count > 0)
+            {
+                Sheet.Add(Line(Cols));
+            }
+
+            int HeadRow = Sheet.Count + 1;
+            string[] head = new string[Cols];
+            for (int c = 0; c < grid.Columns.Count; c++)
+            {
+                head[c] = grid.Columns[c].Name;
+            }
+            Sheet.Add(head);
+
+            for (int r = 0; r < grid.Rows.Count; r++)
+            {
+                string[] line = new string[Cols];
+                for (int c = 0; c < grid.Columns.Count; c++)
+                {
+                    object v = grid.Rows[r].Cells[c].Value;
+                    line[c] = (v == null ? "" : v.ToString());
+                }
+                Sheet.Add(line);
+            }
+
+            object[,] Data = new object[Sheet.Count, Cols];
+            for (int r = 0; r < Sheet.Count; r++)
+            {
+                for (int c = 0; c < Cols; c++)
+                {
+                    Data[r, c] = Sheet[r][c];
+                }
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            CmdExcel.Enabled = false;
+
+            Excel.Application app = null;
+            Excel.Workbooks books = null;
+            Excel.Workbook wb = null;
+            Excel.Sheets sheets = null;
+            Excel.Worksheet ws = null;
+            Excel.Range all = null;
+            Excel.Range one = null;
+            Excel.Range cols = null;
+            int ExcelPid = 0;
+
+            try
+            {
+                app = new Excel.Application();
+                app.Visible = false;
+                app.DisplayAlerts = false;
+                GetWindowThreadProcessId(new IntPtr(app.Hwnd), out ExcelPid);
+
+                books = app.Workbooks;
+                wb = books.Add();
+                sheets = wb.Worksheets;
+                ws = (Excel.Worksheet)sheets[1];
+                ws.Name = "Dividend History";
+
+                all = ws.Range[ws.Cells[1, 1], ws.Cells[Sheet.Count, Cols]];
+                //Written as text on purpose.  Left to itself Excel re-reads every value and
+                //throws away the formatting the screen is showing : "-$76.05" comes back as
+                //red "($76.05)", "4.10 %" turns into a fraction, and what is recognised as a
+                //number at all depends on the machine's locale.  The export is meant to be
+                //what the user is looking at, so the cells are kept exactly as displayed.
+                all.NumberFormat = "@";
+                all.Value2 = Data;
+
+                one = ws.Range[ws.Cells[1, 1], ws.Cells[1, 1]];
+                one.Font.Bold = true;
+                one.Font.Size = 14;
+                Marshal.ReleaseComObject(one);
+                one = null;
+
+                if (TotalsTo >= TotalsFrom)
+                {
+                    one = ws.Range[ws.Cells[TotalsFrom, 1], ws.Cells[TotalsTo, 2]];
+                    one.Font.Bold = true;
+                    Marshal.ReleaseComObject(one);
+                    one = null;
+                }
+
+                one = ws.Range[ws.Cells[HeadRow, 1], ws.Cells[HeadRow, Cols]];
+                one.Font.Bold = true;
+                one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
+                Marshal.ReleaseComObject(one);
+                one = null;
+
+                cols = ws.Columns;
+                cols.AutoFit();
+
+                wb.SaveAs(dlg.FileName, Excel.XlFileFormat.xlOpenXMLWorkbook);
+                wb.Close(false);
+                app.Quit();
+
+                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                if (one != null) { Marshal.ReleaseComObject(one); }
+                if (cols != null) { Marshal.ReleaseComObject(cols); }
+                if (all != null) { Marshal.ReleaseComObject(all); }
+                if (ws != null) { Marshal.ReleaseComObject(ws); }
+                if (sheets != null) { Marshal.ReleaseComObject(sheets); }
+                if (wb != null) { Marshal.ReleaseComObject(wb); }
+                if (books != null) { Marshal.ReleaseComObject(books); }
+                if (app != null) { Marshal.ReleaseComObject(app); }
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Kill_Excel(ExcelPid);
+                Cursor.Current = Cursors.Default;
+                CmdExcel.Enabled = true;
+            }
+        }
+
+        //Quit does not always end the process; this is the backstop so exports cannot
+        //pile up invisible copies of Excel.
+        private void Kill_Excel(int parPid)
+        {
+            if (parPid <= 0)
+            {
+                return;
+            }
+            try
+            {
+                System.Diagnostics.Process proc = System.Diagnostics.Process.GetProcessById(parPid);
+                if (!proc.HasExited)
+                {
+                    proc.Kill();
+                }
+                proc.Dispose();
+            }
+            catch (Exception)
+            {
+                //already gone, which is the outcome we wanted anyway
+            }
         }
 
         private void CmdBack_Click(object sender, EventArgs e)

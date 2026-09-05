@@ -165,7 +165,7 @@ flowchart LR
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
-| `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. |
+| `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
@@ -822,11 +822,16 @@ no recalculation chain.
 | --- | --- | --- |
 | Financial Year | `TblFinancialYear.Name`, newest closing year first | the most recently closed year |
 | Portfolio | `All`, then `TblETFStocksPortfolioCode.Description` | `All` |
-| Main Only | tick box | unticked |
+| Main Only | tick box | **ticked** |
 
 There is deliberately **no "All" on Financial Year**. A row is one portfolio's result for one
 year, so stacking several years into one table would list the same portfolio more than once and
 the totals underneath would double-count it.
+
+The page **opens with Main Only ticked**, as does every other page carrying that box — Portfolio
+Summary, Portfolio Diversification, Dividend History and Financial Year Reconciliation. So the
+first table drawn already covers main portfolios only, and the Portfolio dropdown already omits
+the non-main ones.
 
 `Main Only` narrows the Portfolio list itself, so a non-main portfolio cannot be left selected
 while it is ticked — otherwise the page would show an empty table with nothing to explain it.
@@ -876,10 +881,10 @@ Writes what is on screen to a `.xlsx` — the filters, the note, the twelve tota
 are showing), then the table. The file is named:
 
 ```
-yyyyMMddHHmmss _ <Financial Year> _ <Portfolio> _ <Yes|No for Main Only> .xlsx
+ETF_Stocks_FY_Historical _ yyyyMMddHHmmss _ <Financial Year> _ <Portfolio> _ <Yes|No for Main Only> .xlsx
 ```
 
-for example `20260905143012_2025-2026_All_No.xlsx`. Every cell is written as text for the reason
+for example `ETF_Stocks_FY_Historical_20260905143012_2025-2026_All_No.xlsx`. Every cell is written as text for the reason
 given under [Portfolio summary](#portfolio-summary): left to itself Excel re-reads the values and
 throws away the formatting on screen, so `-$489.75` comes back as a red `($489.75)` and
 `4.10 %` turns into a fraction.
@@ -979,6 +984,31 @@ the identical sums narrowed to that ticker, and `Yield` is `Total Amount / Total
 
 A note line under the filters says how many rows are showing and which filters are narrowing them,
 so an empty table is explainable rather than mysterious.
+
+#### Generate Excel
+
+Writes what is on screen to a `.xlsx` — the four filters, the note, the aggregate labels, then the
+table. **Whichever of the two tables is showing is the one exported**, with its own headings: the
+eight-column summary on `All`, the six-column payment list for a single ticker. The aggregate rows
+follow the same view, so the sheet always matches the screen it was taken from.
+
+The file is named:
+
+```
+ETF_Stocks_Dividend_History _ yyyyMMddHHmmss _ <Portfolio> _ <Yes|No for Main Only> _ <Full Ticker> _ <Financial Year> .xlsx
+```
+
+for example `ETF_Stocks_Dividend_History_20260905175507_All_No_All_All.xlsx`. Because the Portfolio dropdown shows
+*descriptions*, a name like `Oz Betashares Direct` puts spaces in the filename — legal, and the same
+as [Portfolio summary](#portfolio-summary) already does.
+
+Every cell is written as text, for the reason given under Portfolio summary: left to itself Excel
+re-reads the values and throws away the formatting on screen, so `-$76.05` comes back as a red
+`($76.05)` and `4.10 %` turns into a fraction. Excel is driven with a single bulk write, every COM
+object is released explicitly, and the Excel process is killed as a backstop so exports cannot pile
+up invisible copies.
+
+The button refuses an empty table rather than producing a sheet with nothing under the headings.
 
 ### Price chart
 
@@ -1128,6 +1158,28 @@ A DRIP purchase is where the two cost-base totals separate: it has a `Total_Cost
 divides by the smaller real figure. If the ticker has no price at all, the profit column and
 both profit totals read `-`, while the unit and cost-base totals still compute.
 
+#### Generate Excel
+
+Writes what is on screen to a `.xlsx` — the filters, the aggregates, then the table, with the
+single-ticker view exporting its own columns rather than the summary's. The file is named:
+
+```
+ETF_Stocks_Portfolio_Summary _ yyyyMMddHHmmss _ <Portfolio> _ <Full Ticker> .xlsx
+```
+
+for example `ETF_Stocks_Portfolio_Summary_20260905182154_All_All.xlsx`.
+
+**Every cell is written as text**, and this is deliberate. Left to itself Excel re-reads every
+value and throws away the formatting on screen: units lose their four decimals, `-$76.05` comes
+back as a red `($76.05)`, `4.10 %` turns into a fraction, and what counts as a number at all
+depends on the machine's locale. The export is meant to be what the reader is looking at, so the
+cells are kept exactly as displayed. The trade-off is that the figures arrive as text, so a
+spreadsheet formula over them needs converting first.
+
+Excel is driven with one bulk write rather than cell by cell, every COM object is released
+explicitly, and the Excel process is killed as a backstop — `Quit` does not always end it, and
+without that an export could leave an invisible copy running.
+
 #### Money formatting
 
 `Total_Cost_Base` and friends are stored as bare numbers, and the currency lives on the purchase.
@@ -1146,6 +1198,24 @@ connection while the first is still live.
 The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — 8 accounts,
 11 tickers with their latest prices, and a single portfolio code `OB` ("Oz Betashares Direct")
 which is the default the transaction page selects.
+
+---
+
+### Excel exports
+
+Three pages export: [Portfolio summary](#portfolio-summary),
+[Dividend history](#dividend-history) and
+[Financial year historical](#financial-year-historical). They share these rules.
+
+- **The form's name leads the file name**, so an export says which page produced it before
+  anything else — `ETF_Stocks_Portfolio_Summary_...`, `ETF_Stocks_Dividend_History_...`,
+  `ETF_Stocks_FY_Historical_...`. It is taken from the form's own `Name` property rather than
+  typed out, so it cannot drift from the form it belongs to. The timestamp follows the prefix,
+  then that page's own filters.
+- **Every cell is written as text**, for the reason set out under Portfolio summary.
+- **An empty table is refused** rather than exported as headings with nothing under them.
+- The name is only what the Save dialog is *pre-filled* with; the reader can change it, and the
+  dialog opens in Documents but remembers wherever it was last pointed.
 
 ---
 
@@ -1377,8 +1447,8 @@ Things worth knowing before changing this code.
 - **`Setup_Activa_Passiva` is displayed as "Asset Liability Setup".** The class, file and the
   `Mdl1.*ActivaPassiva*` posting routines keep the older Indonesian naming, so searching the
   code for the on-screen label will not find them.
-- `Microsoft.Office.Interop.Excel` and `adodb` are referenced in the project file but **not used by
-  any code** — both references can be dropped.
+- `adodb` is referenced in the project file but **not used by any code** — the reference can be
+  dropped. `Microsoft.Office.Interop.Excel` *is* used, by the three pages that export to Excel.
 
 ### Removed features
 

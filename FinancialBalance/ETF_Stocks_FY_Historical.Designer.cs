@@ -70,7 +70,7 @@
             //
             this.Label21.BackColor = System.Drawing.Color.Transparent;
             this.Label21.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label21.ForeColor = System.Drawing.Color.Blue;
+            this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.Label21.Location = new System.Drawing.Point(180, 30);
             this.Label21.Name = "Label21";
             this.Label21.Size = new System.Drawing.Size(980, 38);
@@ -126,6 +126,8 @@
             //
             this.chkMainOnly.AutoSize = false;
             this.chkMainOnly.BackColor = System.Drawing.Color.Transparent;
+            this.chkMainOnly.Checked = true;
+            this.chkMainOnly.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkMainOnly.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkMainOnly.Location = new System.Drawing.Point(715, 80);
             this.chkMainOnly.Name = "chkMainOnly";
@@ -151,7 +153,6 @@
             this.gvHist.AllowUserToDeleteRows = false;
             this.gvHist.AllowUserToResizeRows = false;
             this.gvHist.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.gvHist.BackgroundColor = System.Drawing.Color.White;
             this.gvHist.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.gvHist.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gvHist.Location = new System.Drawing.Point(19, 136);

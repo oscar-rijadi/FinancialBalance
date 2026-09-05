@@ -686,8 +686,12 @@ namespace FinancialBalance
                 return;
             }
 
-            string TmpName = DateTime.Now.ToString("yyyyMMddHHmmss")
-                           + "_portfoliosummary_" + Safe_Name(CmbPortfolio.Text)
+            //The form's own Name leads the file name, so an export says which page it
+            //came from before anything else.  Taken from this.Name rather than typed out,
+            //so it cannot drift from the form it belongs to.
+            string TmpName = Safe_Name(this.Name)
+                           + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
+                           + "_" + Safe_Name(CmbPortfolio.Text)
                            + "_" + Safe_Name(CmbTicker.Text) + ".xlsx";
 
             SaveFileDialog dlg = new SaveFileDialog();
