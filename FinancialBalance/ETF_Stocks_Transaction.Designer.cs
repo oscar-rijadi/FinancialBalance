@@ -424,11 +424,14 @@
             // txtOriginalCostBase
             //
             this.txtOriginalCostBase.BackColor = System.Drawing.SystemColors.Window;
-            this.txtOriginalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOriginalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOriginalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
             this.txtOriginalCostBase.Location = new System.Drawing.Point(625, 340);
+            this.txtOriginalCostBase.MaxLength = 20;
             this.txtOriginalCostBase.Name = "txtOriginalCostBase";
+            this.txtOriginalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtOriginalCostBase.Size = new System.Drawing.Size(140, 20);
-            this.txtOriginalCostBase.TabIndex = 71;
+            this.txtOriginalCostBase.TabIndex = 22;
             this.txtOriginalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtOriginalCostBase.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtOriginalCostBase_KeyPress);
             this.txtOriginalCostBase.TextChanged += new System.EventHandler(this.Amount_TextChanged);
@@ -447,12 +450,15 @@
             // txtOriginalTotalCostBase
             //
             this.txtOriginalTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
-            this.txtOriginalTotalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOriginalTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOriginalTotalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
             this.txtOriginalTotalCostBase.Location = new System.Drawing.Point(625, 424);
             this.txtOriginalTotalCostBase.Name = "txtOriginalTotalCostBase";
             this.txtOriginalTotalCostBase.ReadOnly = true;
+            this.txtOriginalTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtOriginalTotalCostBase.Size = new System.Drawing.Size(140, 20);
-            this.txtOriginalTotalCostBase.TabIndex = 73;
+            this.txtOriginalTotalCostBase.TabIndex = 26;
+            this.txtOriginalTotalCostBase.TabStop = false;
             this.txtOriginalTotalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             //
             // txtCostBase
@@ -465,7 +471,7 @@
             this.txtCostBase.Name = "txtCostBase";
             this.txtCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtCostBase.Size = new System.Drawing.Size(140, 20);
-            this.txtCostBase.TabIndex = 22;
+            this.txtCostBase.TabIndex = 24;
             this.txtCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtCostBase.TextChanged += new System.EventHandler(this.Amount_TextChanged);
             this.txtCostBase.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtCostBase_KeyPress);
@@ -480,7 +486,7 @@
             this.txtFee.Name = "txtFee";
             this.txtFee.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtFee.Size = new System.Drawing.Size(140, 20);
-            this.txtFee.TabIndex = 23;
+            this.txtFee.TabIndex = 25;
             this.txtFee.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtFee.TextChanged += new System.EventHandler(this.Amount_TextChanged);
             this.txtFee.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFee_KeyPress);
@@ -495,7 +501,7 @@
             this.txtTotalCostBase.ReadOnly = true;
             this.txtTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtTotalCostBase.Size = new System.Drawing.Size(140, 20);
-            this.txtTotalCostBase.TabIndex = 24;
+            this.txtTotalCostBase.TabIndex = 27;
             this.txtTotalCostBase.TabStop = false;
             this.txtTotalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             //
@@ -509,7 +515,7 @@
             this.txtRealTotalCostBase.ReadOnly = true;
             this.txtRealTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtRealTotalCostBase.Size = new System.Drawing.Size(140, 20);
-            this.txtRealTotalCostBase.TabIndex = 25;
+            this.txtRealTotalCostBase.TabIndex = 28;
             this.txtRealTotalCostBase.TabStop = false;
             this.txtRealTotalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             //
@@ -521,7 +527,7 @@
             this.Label9.Location = new System.Drawing.Point(460, 340);
             this.Label9.Name = "Label9";
             this.Label9.Size = new System.Drawing.Size(160, 22);
-            this.Label9.TabIndex = 32;
+            this.Label9.TabIndex = 35;
             this.Label9.Text = "Selling Price/Unit";
             //
             // Label10
@@ -532,7 +538,7 @@
             this.Label10.Location = new System.Drawing.Point(460, 368);
             this.Label10.Name = "Label10";
             this.Label10.Size = new System.Drawing.Size(160, 22);
-            this.Label10.TabIndex = 33;
+            this.Label10.TabIndex = 36;
             this.Label10.Text = "Selling Total Amount";
             //
             // txtSellingPricePerUnit
@@ -545,7 +551,7 @@
             this.txtSellingPricePerUnit.Name = "txtSellingPricePerUnit";
             this.txtSellingPricePerUnit.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtSellingPricePerUnit.Size = new System.Drawing.Size(140, 20);
-            this.txtSellingPricePerUnit.TabIndex = 34;
+            this.txtSellingPricePerUnit.TabIndex = 37;
             this.txtSellingPricePerUnit.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtSellingPricePerUnit.TextChanged += new System.EventHandler(this.Amount_TextChanged);
             this.txtSellingPricePerUnit.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSellingPricePerUnit_KeyPress);
@@ -560,7 +566,7 @@
             this.txtSellingTotalAmount.ReadOnly = true;
             this.txtSellingTotalAmount.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtSellingTotalAmount.Size = new System.Drawing.Size(140, 20);
-            this.txtSellingTotalAmount.TabIndex = 35;
+            this.txtSellingTotalAmount.TabIndex = 38;
             this.txtSellingTotalAmount.TabStop = false;
             this.txtSellingTotalAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             //
@@ -572,7 +578,7 @@
             this.Label11.Location = new System.Drawing.Point(460, 508);
             this.Label11.Name = "Label11";
             this.Label11.Size = new System.Drawing.Size(160, 22);
-            this.Label11.TabIndex = 36;
+            this.Label11.TabIndex = 39;
             this.Label11.Text = "Portfolio";
             //
             // CmbFlagCode
@@ -583,7 +589,7 @@
             this.CmbFlagCode.Location = new System.Drawing.Point(625, 506);
             this.CmbFlagCode.Name = "CmbFlagCode";
             this.CmbFlagCode.Size = new System.Drawing.Size(140, 22);
-            this.CmbFlagCode.TabIndex = 37;
+            this.CmbFlagCode.TabIndex = 40;
             this.CmbFlagCode.SelectedIndexChanged += new System.EventHandler(this.CmbFlagCode_SelectedIndexChanged);
             //
             // LblPortfolioDesc
@@ -636,7 +642,7 @@
             this.Label12.Location = new System.Drawing.Point(19, 480);
             this.Label12.Name = "Label12";
             this.Label12.Size = new System.Drawing.Size(125, 22);
-            this.Label12.TabIndex = 38;
+            this.Label12.TabIndex = 41;
             this.Label12.Text = "Sold Date";
             //
             // CmbSoldDD
@@ -648,7 +654,7 @@
             this.CmbSoldDD.Location = new System.Drawing.Point(150, 478);
             this.CmbSoldDD.Name = "CmbSoldDD";
             this.CmbSoldDD.Size = new System.Drawing.Size(41, 22);
-            this.CmbSoldDD.TabIndex = 39;
+            this.CmbSoldDD.TabIndex = 42;
             //
             // CmbSoldMM
             //
@@ -659,7 +665,7 @@
             this.CmbSoldMM.Location = new System.Drawing.Point(200, 478);
             this.CmbSoldMM.Name = "CmbSoldMM";
             this.CmbSoldMM.Size = new System.Drawing.Size(41, 22);
-            this.CmbSoldMM.TabIndex = 40;
+            this.CmbSoldMM.TabIndex = 43;
             //
             // CmbSoldYear
             //
@@ -670,7 +676,7 @@
             this.CmbSoldYear.Location = new System.Drawing.Point(250, 478);
             this.CmbSoldYear.Name = "CmbSoldYear";
             this.CmbSoldYear.Size = new System.Drawing.Size(57, 22);
-            this.CmbSoldYear.TabIndex = 41;
+            this.CmbSoldYear.TabIndex = 44;
             //
             // CmdSoldCal
             //
@@ -680,7 +686,7 @@
             this.CmdSoldCal.Location = new System.Drawing.Point(314, 478);
             this.CmdSoldCal.Name = "CmdSoldCal";
             this.CmdSoldCal.Size = new System.Drawing.Size(25, 19);
-            this.CmdSoldCal.TabIndex = 42;
+            this.CmdSoldCal.TabIndex = 45;
             this.CmdSoldCal.Text = "..";
             this.CmdSoldCal.UseVisualStyleBackColor = false;
             this.CmdSoldCal.Click += new System.EventHandler(this.CmdSoldCal_Click);
@@ -692,7 +698,7 @@
             this.chkDRIP.Location = new System.Drawing.Point(150, 452);
             this.chkDRIP.Name = "chkDRIP";
             this.chkDRIP.Size = new System.Drawing.Size(120, 24);
-            this.chkDRIP.TabIndex = 26;
+            this.chkDRIP.TabIndex = 29;
             this.chkDRIP.Text = "Reinvestment";
             this.chkDRIP.UseVisualStyleBackColor = false;
             this.chkDRIP.CheckedChanged += new System.EventHandler(this.chkDRIP_CheckedChanged);
@@ -704,7 +710,7 @@
             this.chkSold.Location = new System.Drawing.Point(285, 452);
             this.chkSold.Name = "chkSold";
             this.chkSold.Size = new System.Drawing.Size(80, 24);
-            this.chkSold.TabIndex = 27;
+            this.chkSold.TabIndex = 30;
             this.chkSold.Text = "Sold";
             this.chkSold.UseVisualStyleBackColor = false;
             this.chkSold.CheckedChanged += new System.EventHandler(this.chkSold_CheckedChanged);
@@ -717,7 +723,7 @@
             this.CmdCreate.Location = new System.Drawing.Point(305, 610);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(85, 27);
-            this.CmdCreate.TabIndex = 28;
+            this.CmdCreate.TabIndex = 31;
             this.CmdCreate.Text = "&Add";
             this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
@@ -730,7 +736,7 @@
             this.CmdUpdate.Location = new System.Drawing.Point(400, 610);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(85, 27);
-            this.CmdUpdate.TabIndex = 29;
+            this.CmdUpdate.TabIndex = 32;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -743,7 +749,7 @@
             this.CmdDel.Location = new System.Drawing.Point(495, 610);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 27);
-            this.CmdDel.TabIndex = 30;
+            this.CmdDel.TabIndex = 33;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -757,7 +763,7 @@
             this.CmdBack.Location = new System.Drawing.Point(590, 610);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
-            this.CmdBack.TabIndex = 31;
+            this.CmdBack.TabIndex = 34;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -770,7 +776,7 @@
             this.LblLots.Location = new System.Drawing.Point(19, 442);
             this.LblLots.Name = "LblLots";
             this.LblLots.Size = new System.Drawing.Size(600, 20);
-            this.LblLots.TabIndex = 43;
+            this.LblLots.TabIndex = 46;
             this.LblLots.Text = "Unsold purchases - enter how many units of each are being sold";
             this.LblLots.Visible = false;
             //
@@ -785,7 +791,7 @@
             this.gvLots.Name = "gvLots";
             this.gvLots.RowHeadersVisible = false;
             this.gvLots.Size = new System.Drawing.Size(960, 130);
-            this.gvLots.TabIndex = 44;
+            this.gvLots.TabIndex = 47;
             this.gvLots.Visible = false;
             this.gvLots.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvLots_CellEndEdit);
             this.gvLots.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.gvLots_EditingControlShowing);
