@@ -61,6 +61,10 @@
             this.CmbCurrency = new System.Windows.Forms.ComboBox();
             this.txtUnit = new System.Windows.Forms.TextBox();
             this.txtCostBase = new System.Windows.Forms.TextBox();
+            this.txtOriginalCostBase = new System.Windows.Forms.TextBox();
+            this.txtOriginalTotalCostBase = new System.Windows.Forms.TextBox();
+            this.Lbl_txtOriginalCostBase = new System.Windows.Forms.Label();
+            this.Lbl_txtOriginalTotalCostBase = new System.Windows.Forms.Label();
             this.txtFee = new System.Windows.Forms.TextBox();
             this.txtTotalCostBase = new System.Windows.Forms.TextBox();
             this.txtRealTotalCostBase = new System.Windows.Forms.TextBox();
@@ -320,7 +324,7 @@
             this.Label5.BackColor = System.Drawing.Color.Transparent;
             this.Label5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label5.ForeColor = System.Drawing.Color.Black;
-            this.Label5.Location = new System.Drawing.Point(460, 340);
+            this.Label5.Location = new System.Drawing.Point(460, 368);
             this.Label5.Name = "Label5";
             this.Label5.Size = new System.Drawing.Size(160, 22);
             this.Label5.TabIndex = 14;
@@ -331,7 +335,7 @@
             this.Label6.BackColor = System.Drawing.Color.Transparent;
             this.Label6.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label6.ForeColor = System.Drawing.Color.Black;
-            this.Label6.Location = new System.Drawing.Point(460, 368);
+            this.Label6.Location = new System.Drawing.Point(460, 396);
             this.Label6.Name = "Label6";
             this.Label6.Size = new System.Drawing.Size(160, 22);
             this.Label6.TabIndex = 15;
@@ -342,7 +346,7 @@
             this.Label7.BackColor = System.Drawing.Color.Transparent;
             this.Label7.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label7.ForeColor = System.Drawing.Color.Black;
-            this.Label7.Location = new System.Drawing.Point(460, 396);
+            this.Label7.Location = new System.Drawing.Point(460, 452);
             this.Label7.Name = "Label7";
             this.Label7.Size = new System.Drawing.Size(160, 22);
             this.Label7.TabIndex = 16;
@@ -353,7 +357,7 @@
             this.Label8.BackColor = System.Drawing.Color.Transparent;
             this.Label8.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label8.ForeColor = System.Drawing.Color.Black;
-            this.Label8.Location = new System.Drawing.Point(460, 424);
+            this.Label8.Location = new System.Drawing.Point(460, 480);
             this.Label8.Name = "Label8";
             this.Label8.Size = new System.Drawing.Size(160, 22);
             this.Label8.TabIndex = 17;
@@ -406,12 +410,57 @@
             this.txtUnit.TextChanged += new System.EventHandler(this.Amount_TextChanged);
             this.txtUnit.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtUnit_KeyPress);
             //
+            // Lbl_txtOriginalCostBase
+            //
+            this.Lbl_txtOriginalCostBase.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_txtOriginalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_txtOriginalCostBase.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_txtOriginalCostBase.Location = new System.Drawing.Point(460, 340);
+            this.Lbl_txtOriginalCostBase.Name = "Lbl_txtOriginalCostBase";
+            this.Lbl_txtOriginalCostBase.Size = new System.Drawing.Size(160, 22);
+            this.Lbl_txtOriginalCostBase.TabIndex = 70;
+            this.Lbl_txtOriginalCostBase.Text = "Original Cost Base";
+            //
+            // txtOriginalCostBase
+            //
+            this.txtOriginalCostBase.BackColor = System.Drawing.SystemColors.Window;
+            this.txtOriginalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOriginalCostBase.Location = new System.Drawing.Point(625, 340);
+            this.txtOriginalCostBase.Name = "txtOriginalCostBase";
+            this.txtOriginalCostBase.Size = new System.Drawing.Size(140, 20);
+            this.txtOriginalCostBase.TabIndex = 71;
+            this.txtOriginalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtOriginalCostBase.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtOriginalCostBase_KeyPress);
+            this.txtOriginalCostBase.TextChanged += new System.EventHandler(this.Amount_TextChanged);
+            //
+            // Lbl_txtOriginalTotalCostBase
+            //
+            this.Lbl_txtOriginalTotalCostBase.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_txtOriginalTotalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_txtOriginalTotalCostBase.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_txtOriginalTotalCostBase.Location = new System.Drawing.Point(460, 424);
+            this.Lbl_txtOriginalTotalCostBase.Name = "Lbl_txtOriginalTotalCostBase";
+            this.Lbl_txtOriginalTotalCostBase.Size = new System.Drawing.Size(160, 22);
+            this.Lbl_txtOriginalTotalCostBase.TabIndex = 72;
+            this.Lbl_txtOriginalTotalCostBase.Text = "Original Total Cost Base";
+            //
+            // txtOriginalTotalCostBase
+            //
+            this.txtOriginalTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
+            this.txtOriginalTotalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtOriginalTotalCostBase.Location = new System.Drawing.Point(625, 424);
+            this.txtOriginalTotalCostBase.Name = "txtOriginalTotalCostBase";
+            this.txtOriginalTotalCostBase.ReadOnly = true;
+            this.txtOriginalTotalCostBase.Size = new System.Drawing.Size(140, 20);
+            this.txtOriginalTotalCostBase.TabIndex = 73;
+            this.txtOriginalTotalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            //
             // txtCostBase
             //
             this.txtCostBase.BackColor = System.Drawing.SystemColors.Window;
             this.txtCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtCostBase.Location = new System.Drawing.Point(625, 340);
+            this.txtCostBase.Location = new System.Drawing.Point(625, 368);
             this.txtCostBase.MaxLength = 20;
             this.txtCostBase.Name = "txtCostBase";
             this.txtCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -426,7 +475,7 @@
             this.txtFee.BackColor = System.Drawing.SystemColors.Window;
             this.txtFee.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtFee.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtFee.Location = new System.Drawing.Point(625, 368);
+            this.txtFee.Location = new System.Drawing.Point(625, 396);
             this.txtFee.MaxLength = 20;
             this.txtFee.Name = "txtFee";
             this.txtFee.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -441,7 +490,7 @@
             this.txtTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
             this.txtTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTotalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtTotalCostBase.Location = new System.Drawing.Point(625, 396);
+            this.txtTotalCostBase.Location = new System.Drawing.Point(625, 452);
             this.txtTotalCostBase.Name = "txtTotalCostBase";
             this.txtTotalCostBase.ReadOnly = true;
             this.txtTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -455,7 +504,7 @@
             this.txtRealTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
             this.txtRealTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRealTotalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtRealTotalCostBase.Location = new System.Drawing.Point(625, 424);
+            this.txtRealTotalCostBase.Location = new System.Drawing.Point(625, 480);
             this.txtRealTotalCostBase.Name = "txtRealTotalCostBase";
             this.txtRealTotalCostBase.ReadOnly = true;
             this.txtRealTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -520,7 +569,7 @@
             this.Label11.BackColor = System.Drawing.Color.Transparent;
             this.Label11.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label11.ForeColor = System.Drawing.Color.Black;
-            this.Label11.Location = new System.Drawing.Point(460, 452);
+            this.Label11.Location = new System.Drawing.Point(460, 508);
             this.Label11.Name = "Label11";
             this.Label11.Size = new System.Drawing.Size(160, 22);
             this.Label11.TabIndex = 36;
@@ -531,7 +580,7 @@
             this.CmbFlagCode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbFlagCode.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbFlagCode.FormattingEnabled = true;
-            this.CmbFlagCode.Location = new System.Drawing.Point(625, 450);
+            this.CmbFlagCode.Location = new System.Drawing.Point(625, 506);
             this.CmbFlagCode.Name = "CmbFlagCode";
             this.CmbFlagCode.Size = new System.Drawing.Size(140, 22);
             this.CmbFlagCode.TabIndex = 37;
@@ -542,7 +591,7 @@
             this.LblPortfolioDesc.BackColor = System.Drawing.Color.Transparent;
             this.LblPortfolioDesc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPortfolioDesc.ForeColor = System.Drawing.Color.Black;
-            this.LblPortfolioDesc.Location = new System.Drawing.Point(775, 452);
+            this.LblPortfolioDesc.Location = new System.Drawing.Point(775, 508);
             this.LblPortfolioDesc.Name = "LblPortfolioDesc";
             this.LblPortfolioDesc.Size = new System.Drawing.Size(210, 22);
             this.LblPortfolioDesc.TabIndex = 60;
@@ -773,6 +822,10 @@
             this.Controls.Add(this.txtRealTotalCostBase);
             this.Controls.Add(this.txtTotalCostBase);
             this.Controls.Add(this.txtFee);
+            this.Controls.Add(this.txtOriginalCostBase);
+            this.Controls.Add(this.Lbl_txtOriginalCostBase);
+            this.Controls.Add(this.txtOriginalTotalCostBase);
+            this.Controls.Add(this.Lbl_txtOriginalTotalCostBase);
             this.Controls.Add(this.txtCostBase);
             this.Controls.Add(this.txtUnit);
             this.Controls.Add(this.CmbCurrency);
@@ -849,6 +902,10 @@
         public System.Windows.Forms.ComboBox CmbCurrency;
         public System.Windows.Forms.TextBox txtUnit;
         public System.Windows.Forms.TextBox txtCostBase;
+        public System.Windows.Forms.TextBox txtOriginalCostBase;
+        public System.Windows.Forms.TextBox txtOriginalTotalCostBase;
+        public System.Windows.Forms.Label Lbl_txtOriginalCostBase;
+        public System.Windows.Forms.Label Lbl_txtOriginalTotalCostBase;
         public System.Windows.Forms.TextBox txtFee;
         public System.Windows.Forms.TextBox txtTotalCostBase;
         public System.Windows.Forms.TextBox txtRealTotalCostBase;

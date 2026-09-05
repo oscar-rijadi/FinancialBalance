@@ -29,6 +29,8 @@ namespace FinancialBalance
         string OrgFullTicker;
         string OrgCurrency;
         string OrgUnit;
+        string OrgOriginalCostBase;
+        string OrgOriginalTotalCostBase;
         string OrgCostBase;
         string OrgFee;
         string OrgTotalCostBase;
@@ -140,10 +142,14 @@ namespace FinancialBalance
             bool Sell = Is_Sell();
 
             //Buy-only inputs
+            Lbl_txtOriginalCostBase.Visible = !Sell;
+            txtOriginalCostBase.Visible = !Sell;
             Label5.Visible = !Sell;
             txtCostBase.Visible = !Sell;
             Label6.Visible = !Sell;
             txtFee.Visible = !Sell;
+            Lbl_txtOriginalTotalCostBase.Visible = !Sell;
+            txtOriginalTotalCostBase.Visible = !Sell;
             Label7.Visible = !Sell;
             txtTotalCostBase.Visible = !Sell;
             Label8.Visible = !Sell;
@@ -186,6 +192,8 @@ namespace FinancialBalance
                 chkDRIP.Checked = false;
                 chkSold.Checked = false;
                 Reset_Sold_Date();
+                txtOriginalCostBase.Text = "0.00";
+                txtOriginalCostBase.Text = "0.00";
                 txtCostBase.Text = "0.00";
                 txtFee.Text = "0.00";
             }
@@ -483,14 +491,14 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvTrans.Columns.Clear();
-            gvTrans.ColumnCount = 13;
-            string[] names = new string[] { "Type", "Full Ticker", "Currency", "Unit", "Cost Base", "Fee", "Total Cost Base", "Real Total Cost Base", "DRIP", "Sold", "Portfolio Code", "Selling Price/Unit", "Selling Total Amount" };
-            int[] weights = new int[] { 5, 9, 6, 8, 8, 5, 9, 10, 5, 5, 5, 9, 11 };
-            for (int i = 0; i < 13; i++)
+            gvTrans.ColumnCount = 15;
+            string[] names = new string[] { "Type", "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "DRIP", "Sold", "Portfolio Code", "Selling Price/Unit", "Selling Total Amount" };
+            int[] weights = new int[] { 5, 9, 6, 8, 10, 8, 5, 11, 9, 10, 5, 5, 5, 9, 11 };
+            for (int i = 0; i < 15; i++)
             {
                 gvTrans.Columns[i].Name = names[i];
                 gvTrans.Columns[i].FillWeight = weights[i];
-                if ((i >= 3 && i <= 7) || i >= 11)
+                if ((i >= 3 && i <= 9) || i >= 13)
                 {
                     gvTrans.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
                     gvTrans.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -505,7 +513,7 @@ namespace FinancialBalance
 
         private string Select_Purchases()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date] from TblETFStocksPurchase"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date] from TblETFStocksPurchase"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -539,8 +547,10 @@ namespace FinancialBalance
                     reader["Full_Ticker"].ToString().Trim(),
                     reader["Currency"].ToString().Trim(),
                     Format_Unit(reader["Unit"]),
+                    Mdl1.FormatAmt(Read_Double(reader["Original_Cost_Base"])),
                     Mdl1.FormatAmt(Read_Double(reader["Cost_Base"])),
                     Mdl1.FormatAmt(Read_Double(reader["Fee"])),
+                    Mdl1.FormatAmt(Read_Double(reader["Original_Total_Cost_Base"])),
                     Mdl1.FormatAmt(Read_Double(reader["Total_Cost_Base"])),
                     Mdl1.FormatAmt(TmpRealTotal),
                     (TmpRealTotal == 0 ? "Y" : "N"),
@@ -567,6 +577,8 @@ namespace FinancialBalance
                     reader["Full_Ticker"].ToString().Trim(),
                     reader["Currency"].ToString().Trim(),
                     Format_Unit(reader["Unit"]),
+                    "-",
+                    "-",
                     "-",
                     "-",
                     "-",
@@ -619,6 +631,7 @@ namespace FinancialBalance
                 CmbFullTicker.Text = CmbFullTicker.Items[0].ToString();
             }
             txtUnit.Text = "0.0000";
+            txtOriginalCostBase.Text = "0.00";
             txtCostBase.Text = "0.00";
             txtFee.Text = "0.00";
             txtSellingPricePerUnit.Text = "0.00";
@@ -638,13 +651,20 @@ namespace FinancialBalance
         {
             double TmpUnit;
             double TmpCostBase;
+            double TmpOriginalCostBase;
             double TmpFee;
             double TmpSellingPrice;
 
             double.TryParse(txtUnit.Text.Trim(), out TmpUnit);
             double.TryParse(txtCostBase.Text.Trim(), out TmpCostBase);
+            double.TryParse(txtOriginalCostBase.Text.Trim(), out TmpOriginalCostBase);
             double.TryParse(txtFee.Text.Trim(), out TmpFee);
             double.TryParse(txtSellingPricePerUnit.Text.Trim(), out TmpSellingPrice);
+
+            //Original Total Cost Base mirrors Total Cost Base exactly, the Fee included -
+            //the only difference between them is which cost base they are worked out from.
+            txtOriginalTotalCostBase.Text = Mdl1.FormatAmt(
+                Math.Round(Math.Round(TmpUnit * TmpOriginalCostBase, 2) + TmpFee, 2));
 
             double TmpTotal = Math.Round(Math.Round(TmpUnit * TmpCostBase, 2) + TmpFee, 2);
             txtTotalCostBase.Text = Mdl1.FormatAmt(TmpTotal);
@@ -699,6 +719,12 @@ namespace FinancialBalance
             CheckKeyPress(e);
         }
 
+        //the same guard as Cost Base, as asked
+        private void txtOriginalCostBase_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            CheckKeyPress(e);
+        }
+
         private void txtFee_KeyPress(object sender, KeyPressEventArgs e)
         {
             CheckKeyPress(e);
@@ -746,6 +772,8 @@ namespace FinancialBalance
                     OrgUnit = Sql_Num(reader["Unit"], 4);
                     if (Src == "P")
                     {
+                        OrgOriginalCostBase = Sql_Num(reader["Original_Cost_Base"], 2);
+                        OrgOriginalTotalCostBase = Sql_Num(reader["Original_Total_Cost_Base"], 2);
                         OrgCostBase = Sql_Num(reader["Cost_Base"], 2);
                         OrgFee = Sql_Num(reader["Fee"], 2);
                         OrgTotalCostBase = Sql_Num(reader["Total_Cost_Base"], 2);
@@ -787,6 +815,7 @@ namespace FinancialBalance
             txtUnit.Text = (OrgUnit == null ? "0.0000" : OrgUnit);
             if (Src == "P")
             {
+                txtOriginalCostBase.Text = (OrgOriginalCostBase == null ? "0.00" : OrgOriginalCostBase);
                 txtCostBase.Text = (OrgCostBase == null ? "0.00" : OrgCostBase);
                 txtFee.Text = (OrgFee == null ? "0.00" : OrgFee);
                 txtSellingPricePerUnit.Text = "0.00";
@@ -805,6 +834,7 @@ namespace FinancialBalance
             }
             else
             {
+                txtOriginalCostBase.Text = "0.00";
                 txtCostBase.Text = "0.00";
                 txtFee.Text = "0.00";
                 txtSellingPricePerUnit.Text = (OrgSellingPricePerUnit == null ? "0.00" : OrgSellingPricePerUnit);
@@ -878,7 +908,8 @@ namespace FinancialBalance
                     //units can only be sold out of the portfolio that holds them
                     string TmpPortfolio = CmbSellPortfolio.Text.Trim();
                     Mdl1.Ssql = "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee,"
-                              + " Total_Cost_Base, Real_Total_Cost_Base, [Portfolio_Code]"
+                              + " Total_Cost_Base, Real_Total_Cost_Base, [Portfolio_Code],"
+                              + " [Original_Cost_Base]"
                               + " from TblETFStocksPurchase where Is_Sold = False and Full_Ticker = '"
                               + TmpTicker + "'"
                               + (TmpPortfolio == "" ? "" : " and [Portfolio_Code] = '" + TmpPortfolio + "'")
@@ -897,7 +928,8 @@ namespace FinancialBalance
                             Sql_Num(reader["Fee"], 2),
                             Sql_Num(reader["Total_Cost_Base"], 2),
                             Sql_Num(reader["Real_Total_Cost_Base"], 2),
-                            (reader["Portfolio_Code"] == DBNull.Value ? null : reader["Portfolio_Code"].ToString().Trim())
+                            (reader["Portfolio_Code"] == DBNull.Value ? null : reader["Portfolio_Code"].ToString().Trim()),
+                            Sql_Num(reader["Original_Cost_Base"], 2)
                         });
                     }
                     reader.Close();
@@ -1110,6 +1142,7 @@ namespace FinancialBalance
                 string OrgTotal = o[6];
                 string OrgReal = o[7];
                 string OrgCode = o[8];
+                string OrgOrigCost = o[9];
 
                 string Where = " where Trans_Date = '" + OrgDate + "'"
                              + " and Full_Ticker = '" + OrgTicker + "'"
@@ -1155,13 +1188,20 @@ namespace FinancialBalance
                 double RestUnit = Math.Round(TmpLotUnit - TmpSold, 4);
                 double RestTotal = Math.Round(RestUnit * TmpCost, 2);
                 double RestReal = (RealWasZero ? 0 : RestTotal);
+                //What the units originally cost travels with them, so a lot split by a part
+                //sale does not lose its original figures.  The per-unit original is carried
+                //across unchanged and the total is restated for the units that remain.
+                double RestOrigCost = Read_Double(OrgOrigCost);
+                double RestOrigTotal = Math.Round(RestUnit * RestOrigCost, 2);
 
-                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee,"
-                          + " Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
+                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee,"
+                          + " [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
                           + "'" + OrgDate + "', '" + OrgTicker + "', '" + OrgCurr + "', "
                           + RestUnit.ToString("0.0000", CultureInfo.InvariantCulture) + ", "
+                          + RestOrigCost.ToString("0.00", CultureInfo.InvariantCulture) + ", "
                           + TmpCost.ToString("0.00", CultureInfo.InvariantCulture) + ", "
                           + "0.00, "
+                          + RestOrigTotal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
                           + RestTotal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
                           + RestReal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
                           + "False, "
@@ -1222,9 +1262,12 @@ namespace FinancialBalance
         //Only the fields on show for the current type are captured
         private bool Validate_Entry(out decimal parUnit, out decimal parCostBase, out decimal parFee,
                                     out decimal parTotal, out decimal parRealTotal,
-                                    out decimal parSellingPrice, out decimal parSellingTotal)
+                                    out decimal parSellingPrice, out decimal parSellingTotal,
+                                    out decimal parOriginalCostBase, out decimal parOriginalTotal)
         {
             parUnit = 0;
+            parOriginalCostBase = 0;
+            parOriginalTotal = 0;
             parCostBase = 0;
             parFee = 0;
             parTotal = 0;
@@ -1262,6 +1305,10 @@ namespace FinancialBalance
             }
             else
             {
+                if (!Valid_Amount(txtOriginalCostBase.Text, 2, "Original Cost Base", out parOriginalCostBase))
+                {
+                    return false;
+                }
                 if (!Valid_Amount(txtCostBase.Text, 2, "Cost Base", out parCostBase))
                 {
                     return false;
@@ -1270,6 +1317,8 @@ namespace FinancialBalance
                 {
                     return false;
                 }
+                //same shape as parTotal below, worked out from the original cost base
+                parOriginalTotal = Math.Round(Math.Round(parUnit * parOriginalCostBase, 2) + parFee, 2);
                 parTotal = Math.Round(Math.Round(parUnit * parCostBase, 2) + parFee, 2);
                 parRealTotal = (chkDRIP.Checked ? 0 : parTotal);
             }
@@ -1311,8 +1360,10 @@ namespace FinancialBalance
 
             if (OrgSource == "P")
             {
-                Where += Where_Col("Cost_Base", OrgCostBase)
+                Where += Where_Col("[Original_Cost_Base]", OrgOriginalCostBase)
+                       + Where_Col("Cost_Base", OrgCostBase)
                        + Where_Col("Fee", OrgFee)
+                       + Where_Col("[Original_Total_Cost_Base]", OrgOriginalTotalCostBase)
                        + Where_Col("Total_Cost_Base", OrgTotalCostBase)
                        + Where_Col("Real_Total_Cost_Base", OrgRealTotalCostBase)
                        + " and Is_Sold = " + OrgIsSold
@@ -1360,7 +1411,8 @@ namespace FinancialBalance
         //Insert the entry area into whichever table matches the current type
         private void Insert_Current(decimal parUnit, decimal parCostBase, decimal parFee,
                                     decimal parTotal, decimal parRealTotal,
-                                    decimal parSellingPrice, decimal parSellingTotal)
+                                    decimal parSellingPrice, decimal parSellingTotal,
+                                    decimal parOriginalCostBase, decimal parOriginalTotal)
         {
             if (Is_Sell())
             {
@@ -1387,13 +1439,15 @@ namespace FinancialBalance
             }
             else
             {
-                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
+                Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
                     + "'" + Get_Trans_Date() + "', "
                     + "'" + CmbFullTicker.Text.Trim() + "', "
                     + "'" + CmbCurrency.Text.Trim() + "', "
                     + Num(parUnit, 4) + ", "
+                    + Num(parOriginalCostBase, 2) + ", "
                     + Num(parCostBase, 2) + ", "
                     + Num(parFee, 2) + ", "
+                    + Num(parOriginalTotal, 2) + ", "
                     + Num(parTotal, 2) + ", "
                     + Num(parRealTotal, 2) + ", "
                     + (chkSold.Checked ? "True" : "False") + ", "
@@ -1410,18 +1464,20 @@ namespace FinancialBalance
             {
                 decimal TmpUnit;
                 decimal TmpCostBase;
+                decimal TmpOriginalCostBase;
+                decimal TmpOriginalTotal;
                 decimal TmpFee;
                 decimal TmpTotal;
                 decimal TmpRealTotal;
                 decimal TmpSellingPrice;
                 decimal TmpSellingTotal;
 
-                if (!Validate_Entry(out TmpUnit, out TmpCostBase, out TmpFee, out TmpTotal, out TmpRealTotal, out TmpSellingPrice, out TmpSellingTotal))
+                if (!Validate_Entry(out TmpUnit, out TmpCostBase, out TmpFee, out TmpTotal, out TmpRealTotal, out TmpSellingPrice, out TmpSellingTotal, out TmpOriginalCostBase, out TmpOriginalTotal))
                 {
                     return;
                 }
 
-                Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpSellingPrice, TmpSellingTotal);
+                Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpSellingPrice, TmpSellingTotal, TmpOriginalCostBase, TmpOriginalTotal);
 
                 //a Sell also has to take those units out of the purchases they came from
                 if (Is_Sell())
@@ -1447,6 +1503,8 @@ namespace FinancialBalance
             {
                 decimal TmpUnit;
                 decimal TmpCostBase;
+                decimal TmpOriginalCostBase;
+                decimal TmpOriginalTotal;
                 decimal TmpFee;
                 decimal TmpTotal;
                 decimal TmpRealTotal;
@@ -1458,7 +1516,7 @@ namespace FinancialBalance
                     MessageBox.Show("Please select a transaction from the list first !", "Error Message");
                     return;
                 }
-                if (!Validate_Entry(out TmpUnit, out TmpCostBase, out TmpFee, out TmpTotal, out TmpRealTotal, out TmpSellingPrice, out TmpSellingTotal))
+                if (!Validate_Entry(out TmpUnit, out TmpCostBase, out TmpFee, out TmpTotal, out TmpRealTotal, out TmpSellingPrice, out TmpSellingTotal, out TmpOriginalCostBase, out TmpOriginalTotal))
                 {
                     return;
                 }
@@ -1477,7 +1535,7 @@ namespace FinancialBalance
                     cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                     cmd.ExecuteNonQuery();
 
-                    Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpSellingPrice, TmpSellingTotal);
+                    Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpSellingPrice, TmpSellingTotal, TmpOriginalCostBase, TmpOriginalTotal);
                 }
                 else if (Is_Sell())
                 {
@@ -1498,8 +1556,10 @@ namespace FinancialBalance
                         + "Full_Ticker = '" + CmbFullTicker.Text.Trim() + "', "
                         + "[Currency] = '" + CmbCurrency.Text.Trim() + "', "
                         + "Unit = " + Num(TmpUnit, 4) + ", "
+                        + "[Original_Cost_Base] = " + Num(TmpOriginalCostBase, 2) + ", "
                         + "Cost_Base = " + Num(TmpCostBase, 2) + ", "
                         + "Fee = " + Num(TmpFee, 2) + ", "
+                        + "[Original_Total_Cost_Base] = " + Num(TmpOriginalTotal, 2) + ", "
                         + "Total_Cost_Base = " + Num(TmpTotal, 2) + ", "
                         + "Real_Total_Cost_Base = " + Num(TmpRealTotal, 2) + ", "
                         + "Is_Sold = " + (chkSold.Checked ? "True" : "False") + ", "

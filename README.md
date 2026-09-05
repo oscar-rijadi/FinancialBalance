@@ -275,8 +275,10 @@ erDiagram
         text    Full_Ticker "joins TblETFStocks"
         text    Currency "3 chars"
         decimal Unit "4 dp"
+        decimal Original_Cost_Base "2 dp, as first bought"
         decimal Cost_Base "2 dp"
         decimal Fee "2 dp"
+        decimal Original_Total_Cost_Base "2 dp, as first bought"
         decimal Total_Cost_Base "2 dp"
         decimal Real_Total_Cost_Base "2 dp"
         bool    Is_Sold
@@ -425,6 +427,8 @@ The page shows both for a chosen date, purchases first.
 | `Cost_Base`, `Fee` | Buy only. Numeric, not negative, at most 2 decimal places. |
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
 | `Real_Total_Cost_Base` | Buy only. `0` when the **Reinvestment** box is ticked, otherwise `Total_Cost_Base`. |
+| `Original_Cost_Base` | Buy only. Typed, with the same guard as `Cost_Base` — digits and a decimal point, no minus. Holds what the lot originally cost, alongside the `Cost_Base` that later processing may change. |
+| `Original_Total_Cost_Base` | Buy only, derived: `round(Unit x Original_Cost_Base, 2) + Fee`. Not editable. The same shape as `Total_Cost_Base`, the Fee included — the only difference between the two is which cost base they are worked out from. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
 | `Sold_Date` | Buy only. Shown only while Sold is ticked; stored `yyyyMMdd`, otherwise `Null`. |
 | `Portfolio_Code` | **Both types**, from a dropdown labelled **Portfolio** filled from `TblETFStocksPortfolioCode` and defaulting to `OB`. Each type has its own dropdown, and the chosen code's `Description` is shown beside it (`-` when blank). On a Sell it also **filters the lots on offer** — see below. Appears as **Portfolio Code** in the grid. |
@@ -433,7 +437,17 @@ The page shows both for a chosen date, purchases first.
 | `Profit_Or_Loss_On_Paper` | Sell only, derived on **Add** from the lots being sold — see below. Not shown on screen. |
 | `Real_Profit_Or_Loss` | Sell only, derived on **Add**, ignoring what the DRIP lots cost — see below. Not shown on screen. |
 
-The entry area swaps with the type: a Buy shows Cost Base, Fee, the two totals, Reinvestment, Sold
+> **The two totals differ only by their cost bases.** Both are
+> `round(Unit x <cost base>, 2) + Fee`, so the Fee lands in each of them once. With 4 units, an
+> original cost of `11.11`, a cost base of `13.50` and a `2.00` fee they read `46.44` and
+> `56.00` — `9.56` apart, which is exactly `round(4 x 13.50, 2) - round(4 x 11.11, 2)`.
+>
+> The one place the Fee is absent from both is the remainder row left by a part sale: that row
+> is written with `Fee = 0.00`, because the fee belonged to the original purchase and has
+> already been accounted for.
+
+The entry area swaps with the type: a Buy shows Original Cost Base, Cost Base, Fee, the three
+totals, Reinvestment, Sold
 and Portfolio; a Sell shows Selling Price/Unit, Selling Total Amount, its own Portfolio and the lot
 grid below. Hidden fields are reset rather than carried over, and validation only covers what is
 on screen. Each Portfolio dropdown carries its own description label, and both are refreshed
@@ -460,6 +474,11 @@ The **Unit** box becomes read-only and holds the sum of every `Sold Unit`, so `S
 follows the lots automatically. Adding a Sell with nothing allocated is refused.
 
 **Add** writes the `TblETFStocksSale` row and then settles each lot it drew from:
+
+When a **part sale splits a lot**, the remainder row keeps the original figures rather than
+starting blank: `Original_Cost_Base` is carried across unchanged (it is a per-unit figure) and
+`Original_Total_Cost_Base` is restated for the units that remain. Without that, selling part of
+a holding would silently leave rows with no original cost recorded.
 
 | Case | Effect on `TblETFStocksPurchase` |
 | --- | --- |
