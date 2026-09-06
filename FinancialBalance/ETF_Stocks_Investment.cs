@@ -70,10 +70,17 @@ namespace FinancialBalance
             this.Close();
         }
 
-        private void MnETFStocksTrans_Click(object sender, EventArgs e)
+        private void MnETFStocksPurchase_Click(object sender, EventArgs e)
         {
-            ETF_Stocks_Transaction ETF_Stocks_Transaction = new ETF_Stocks_Transaction();
-            ETF_Stocks_Transaction.Show();
+            ETF_Stocks_Purchase ETF_Stocks_Purchase = new ETF_Stocks_Purchase();
+            ETF_Stocks_Purchase.Show();
+            this.Close();
+        }
+
+        private void MnETFStocksSale_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Sale ETF_Stocks_Sale = new ETF_Stocks_Sale();
+            ETF_Stocks_Sale.Show();
             this.Close();
         }
 

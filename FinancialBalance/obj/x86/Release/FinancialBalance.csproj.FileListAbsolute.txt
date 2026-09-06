@@ -26,7 +26,6 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialB
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Yearly_Statistic.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_ETF_Stocks_Suffix.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_ETF_Stocks.resources
-C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Transaction.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Price.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_ETF_Stocks_Flag.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Portfolio_Summary.resources
@@ -41,3 +40,5 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialB
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_FY_Reconciliation.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Price_Chart.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_FY_Historical.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Purchase.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Sale.resources

@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Transaction, ETF/Stock Distribution/Dividend, ETF/Stock Financial Year Reconciliation |
+| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Financial Year Reconciliation |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
@@ -107,7 +107,8 @@ flowchart LR
     MAIN --> PETFG{{"ETF/Stock"}}
     PETFG --> ETP["ETF_Stocks_Price"]
     PETFG --> ETI["ETF_Stocks_Investment"]
-    PETFG --> ETX["ETF_Stocks_Transaction"]
+    PETFG --> ETB["ETF_Stocks_Purchase"]
+    PETFG --> ETS["ETF_Stocks_Sale"]
     PETFG --> ETD["ETF_Stocks_Distribution"]
     PETFG --> ETR["ETF_Stocks_FY_Reconciliation"]
     MAIN --> MI["Monthly_Inquiry"]
@@ -137,8 +138,9 @@ flowchart LR
     ETFG --> SDA["Setup_ETF_Stocks_Div_Alloc"]
 
     DI <--> MC
-    MC <--> ETX
-    ETX <--> ETP
+    MC <--> ETB
+    ETB <--> ETS
+    ETS <--> ETP
     ETP <--> ETI
 
     SATR <--> SAR
@@ -155,7 +157,8 @@ flowchart LR
 | `Main_Form` | Splash screen with an animated marquee, clock, version label. Enables the transaction menus only once `TblAcctRef` has at least one row. |
 | `Daily_Input` | Enter, amend or delete a dated voucher. Up to 5 debit and 5 credit lines; refuses to save unless the two sides balance. |
 | `Monthly_Closing` | Snapshots `TblAsset` and `TblLiability` into `TblMonthlyTrans` for a chosen month. Defaults to the month after the last close. |
-| `ETF_Stocks_Transaction` | Add / update / delete ETF and stock trades for one date. A Sell is built against the purchase lots it draws from, which it then settles. |
+| `ETF_Stocks_Purchase` | Add / update / delete ETF and stock **buys** for one date. |
+| `ETF_Stocks_Sale` | Add / update / delete ETF and stock **sells** for one date. A sale is built against the purchase lots it draws from, which it then settles. |
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
@@ -284,9 +287,11 @@ erDiagram
         bool    Is_Sold
         text    Portfolio_Code "from the portfolio code list"
         text    Sold_Date "yyyyMMdd, null unless sold"
+        text    Sale_Id "50 chars, the sale that closed this lot"
     }
     TblETFStocksSale {
         text    Trans_Date "yyyyMMdd"
+        text    Sale_Id "50 chars, stamped on the sale and its lots"
         text    Full_Ticker "joins TblETFStocks"
         text    Currency "3 chars"
         decimal Unit "4 dp"
@@ -414,11 +419,20 @@ distribution totals, capital gains, loan interest and tax. **No screen reads or 
 yet** beyond Financial Year Setup maintaining the years themselves — both stand ready for whatever
 is built on them.
 
-### ETF/stock transaction rules
+### ETF/stock purchase and sale rules
 
-`ETF_Stocks_Transaction` writes **two tables**: a Buy goes to `TblETFStocksPurchase`, a Sell to
-`TblETFStocksSale`. There is no stored transaction type — the table a row lives in *is* its type.
-The page shows both for a chosen date, purchases first.
+Buying and selling are **two pages**, each owning one table: **ETF/Stock Purchase** writes
+`TblETFStocksPurchase`, **ETF/Stock Sale** writes `TblETFStocksSale`. There is no stored
+transaction type — the table a row lives in *is* its type. Each page shows its own rows for a
+chosen date and nothing else, so neither grid carries a column that is always blank.
+
+> These were one page, `ETF_Stocks_Transaction`, with a Buy/Sell dropdown that swapped the entry
+> area. Splitting it removed one capability: **a saved row can no longer change type.** On the
+> combined page, updating a row with the dropdown flipped deleted it from one table and inserted
+> it into the other. To do that now, delete it on the page that owns it and add it on the other.
+>
+> The rules below apply to whichever page owns the field, and the two pages cross-link through
+> the `Process` ▸ ETF/Stock menu.
 
 | Field | Rule |
 | --- | --- |
@@ -431,6 +445,7 @@ The page shows both for a chosen date, purchases first.
 | `Original_Total_Cost_Base` | Buy only, derived: `round(Unit x Original_Cost_Base, 2) + Fee`. Not editable. The same shape as `Total_Cost_Base`, the Fee included — the only difference between the two is which cost base they are worked out from. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
 | `Sold_Date` | Buy only. Shown only while Sold is ticked; stored `yyyyMMdd`, otherwise `Null`. |
+| `Sale_Id` | **Not typed anywhere.** Generated by **ETF/Stock Sale** when a sale is added, and written to the sale row *and* to every purchase lot that sale closes. A purchase that has never been sold has none. |
 | `Portfolio_Code` | **Both types**, from a dropdown labelled **Portfolio** filled from `TblETFStocksPortfolioCode` and defaulting to `OB`. Each type has its own dropdown, and the chosen code's `Description` is shown beside it (`-` when blank). On a Sell it also **filters the lots on offer** — see below. Appears as **Portfolio Code** in the grid. |
 | `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
@@ -446,19 +461,43 @@ The page shows both for a chosen date, purchases first.
 > is written with `Fee = 0.00`, because the fee belonged to the original purchase and has
 > already been accounted for.
 
-The entry area swaps with the type: a Buy shows Original Cost Base, Cost Base, Fee, the three
-totals, Reinvestment, Sold
-and Portfolio; a Sell shows Selling Price/Unit, Selling Total Amount, its own Portfolio and the lot
-grid below. Hidden fields are reset rather than carried over, and validation only covers what is
-on screen. Each Portfolio dropdown carries its own description label, and both are refreshed
-whenever the halves swap — the dropdowns are filled while events are suppressed, so a dropdown
-that has never been touched would otherwise sit beside an empty description.
+**ETF/Stock Purchase** shows Full Ticker, Currency, Unit, Original Cost Base, Cost Base, Fee, the
+three totals, Reinvestment, Sold with its date, and Portfolio. **ETF/Stock Sale** shows Full
+Ticker, Currency, a read-only Unit, Selling Price/Unit, Selling Total Amount, its own Portfolio,
+and the lot grid beneath. Each page validates only its own fields, and each Portfolio dropdown
+carries a description label beside it.
+
+#### The Sale Id
+
+Every sale is stamped with an identifier built when the sale is added:
+
+```
+<Trans_Date> _ <Full_Ticker> _ <Portfolio_Code> _ <HHmmss>
+```
+
+for example `20260906_ZZSID.AX_OB_154511`. The same value goes onto the sale row and onto every
+purchase lot the sale closes, so the two sides can be tied back together — one sale that settles
+three lots leaves the same id on all four rows. **ETF/Stock Purchase** shows it in a `Sale Id`
+column, beside a `Sold Date` column showing `Sold_Date` as `dd-MMM-yyyy`; **ETF/Stock Sale** shows
+it as the first column of its own table.
+
+The **remainder row left by a part sale is deliberately not stamped** — those units were not sold,
+so they carry no sale id and no sold date, and they stay available to a later sale.
+
+> **The id can be too long for its column, and the page checks before writing.** `Sale_Id` holds
+> 50 characters. The parts add up to 8 + 1 + `Full_Ticker` + 1 + `Portfolio_Code` + 1 + 6, and
+> `Full_Ticker` alone can be 31 with `Portfolio_Code` 5 — **53 at worst**. Real tickers are far
+> shorter (`ZZSID.AX_OB` gives 27), but rather than let Access reject the insert with an opaque
+> error, **ETF/Stock Sale** measures the id first and refuses with a message naming the length.
+> Nothing is written when that happens. Widening the column to 60 would remove the limit
+> entirely.
 
 #### Selling against lots
 
-A Sell is not entered as a bare quantity. Choosing **Sell** lists the ticker's unsold purchases
-**held in the chosen Portfolio**, and the units come from the lots they are actually being taken
-out of. Changing either the ticker or the Portfolio redraws the list, because units can only be
+A sale is not entered as a bare quantity. **ETF/Stock Sale** always lists the ticker's unsold
+purchases **held in the chosen Portfolio** — the grid is part of the page rather than something
+a type dropdown reveals — and the units come from the lots they are actually being taken out of.
+Unit itself is read-only and shows the sum of the Sold Unit column. Changing either the ticker or the Portfolio redraws the list, because units can only be
 sold out of the portfolio holding them — selling from one portfolio leaves another's lots alone.
 The code chosen here is stored on the sale as its `Portfolio_Code`:
 
@@ -1364,7 +1403,8 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Div_Type.*
 │   ├── Setup_ETF_Stocks_Div.*
 │   ├── Setup_ETF_Stocks_Div_Alloc.*
-│   ├── ETF_Stocks_Transaction.*      # buy / sell entry
+│   ├── ETF_Stocks_Purchase.*         # buy entry
+│   ├── ETF_Stocks_Sale.*             # sell entry, settles the lots
 │   ├── ETF_Stocks_Price.*            # prices + Yahoo sync
 │   ├── ETF_Stocks_Investment.*       # cash in / out of a portfolio
 │   ├── ETF_Stocks_Distribution.*     # distributions and dividends
@@ -1458,7 +1498,7 @@ Things worth knowing before changing this code.
   scales with how many you track. Yahoo's endpoint is undocumented and can change without notice.
 - **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
   `Setup_ETF_Stocks_Flag` is displayed as **ETF/Stock Portfolio Code Setup**, and on
-  `ETF_Stocks_Transaction` the dropdown is labelled **Portfolio** and its grid column
+  `ETF_Stocks_Purchase` and `ETF_Stocks_Sale` the dropdown is labelled **Portfolio** and the grid column
   **Portfolio Code**. Both edit `TblETFStocksPortfolioCode.Portfolio_Code`. The form class, its
   file and the identifiers `CmbFlagCode`, `OrgFlagCode`, `Set_Default_Flag` and
   `MnETFStocksFlagSetup` were left as they were — searching the code for the on-screen name will

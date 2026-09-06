@@ -36,7 +36,8 @@
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnETFStocksTrans = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksPurchase = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksSale = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.LblFilterCaption = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
@@ -106,7 +107,8 @@
             this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksPrice,
             this.MnETFStocksInvestment,
-            this.MnETFStocksTrans,
+            this.MnETFStocksPurchase,
+            this.MnETFStocksSale,
             this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
@@ -133,12 +135,20 @@
             this.MnETFStocksInvestment.Text = "ETF/Stock &Investment";
             this.MnETFStocksInvestment.Click += new System.EventHandler(this.MnETFStocksInvestment_Click);
             //
-            // MnETFStocksTrans
+            // MnETFStocksPurchase
             //
-            this.MnETFStocksTrans.Name = "MnETFStocksTrans";
-            this.MnETFStocksTrans.Size = new System.Drawing.Size(216, 22);
-            this.MnETFStocksTrans.Text = "ETF/Stock &Transaction";
-            this.MnETFStocksTrans.Click += new System.EventHandler(this.MnETFStocksTrans_Click);
+            this.MnETFStocksPurchase.Name = "MnETFStocksPurchase";
+            this.MnETFStocksPurchase.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksPurchase.Text = "ETF/Stock &Purchase";
+            this.MnETFStocksPurchase.Click += new System.EventHandler(this.MnETFStocksPurchase_Click);
+
+            //
+            // MnETFStocksSale
+            //
+            this.MnETFStocksSale.Name = "MnETFStocksSale";
+            this.MnETFStocksSale.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksSale.Text = "ETF/Stock &Sale";
+            this.MnETFStocksSale.Click += new System.EventHandler(this.MnETFStocksSale_Click);
             //
             // Label21
             //
@@ -613,7 +623,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
-        public System.Windows.Forms.ToolStripMenuItem MnETFStocksTrans;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksPurchase;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksSale;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label LblFilterCaption;
         public System.Windows.Forms.Label Label1;

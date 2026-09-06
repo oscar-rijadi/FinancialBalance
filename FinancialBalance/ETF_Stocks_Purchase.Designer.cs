@@ -1,6 +1,6 @@
 ﻿namespace FinancialBalance
 {
-    partial class ETF_Stocks_Transaction
+    partial class ETF_Stocks_Purchase
     {
         /// <summary>
         /// Required designer variable.
@@ -28,12 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ETF_Stocks_Transaction));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ETF_Stocks_Purchase));
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksSale = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,10 +46,7 @@
             this.CmdCal = new System.Windows.Forms.Button();
             this.LblDay = new System.Windows.Forms.Label();
             this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
-            this.gvTrans = new System.Windows.Forms.DataGridView();
-            this.LblLots = new System.Windows.Forms.Label();
-            this.gvLots = new System.Windows.Forms.DataGridView();
-            this.Label1 = new System.Windows.Forms.Label();
+            this.gvPurchase = new System.Windows.Forms.DataGridView();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
             this.Label4 = new System.Windows.Forms.Label();
@@ -56,7 +54,6 @@
             this.Label6 = new System.Windows.Forms.Label();
             this.Label7 = new System.Windows.Forms.Label();
             this.Label8 = new System.Windows.Forms.Label();
-            this.CmbTransType = new System.Windows.Forms.ComboBox();
             this.CmbFullTicker = new System.Windows.Forms.ComboBox();
             this.CmbCurrency = new System.Windows.Forms.ComboBox();
             this.txtUnit = new System.Windows.Forms.TextBox();
@@ -68,16 +65,9 @@
             this.txtFee = new System.Windows.Forms.TextBox();
             this.txtTotalCostBase = new System.Windows.Forms.TextBox();
             this.txtRealTotalCostBase = new System.Windows.Forms.TextBox();
-            this.Label9 = new System.Windows.Forms.Label();
-            this.Label10 = new System.Windows.Forms.Label();
-            this.txtSellingPricePerUnit = new System.Windows.Forms.TextBox();
-            this.txtSellingTotalAmount = new System.Windows.Forms.TextBox();
             this.Label11 = new System.Windows.Forms.Label();
             this.CmbFlagCode = new System.Windows.Forms.ComboBox();
             this.LblPortfolioDesc = new System.Windows.Forms.Label();
-            this.Label13 = new System.Windows.Forms.Label();
-            this.CmbSellPortfolio = new System.Windows.Forms.ComboBox();
-            this.LblSellPortfolioDesc = new System.Windows.Forms.Label();
             this.Label12 = new System.Windows.Forms.Label();
             this.CmbSoldDD = new System.Windows.Forms.ComboBox();
             this.CmbSoldMM = new System.Windows.Forms.ComboBox();
@@ -90,8 +80,7 @@
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             this.MainMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvTrans)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.gvLots)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvPurchase)).BeginInit();
             this.SuspendLayout();
             //
             // MainMenu1
@@ -118,20 +107,28 @@
             this.MnMonthlyClosing.Size = new System.Drawing.Size(107, 20);
             this.MnMonthlyClosing.Text = "&Monthly Closing";
             this.MnMonthlyClosing.Click += new System.EventHandler(this.MnMonthlyClosing_Click);
-            // 
+            //
             // MnETFStockProcessGroup
-            // 
+            //
             this.MnETFStockProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksPrice,
             this.MnETFStocksInvestment,
+            this.MnETFStocksSale,
             this.MnETFStocksDistribution,
             this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
-            // 
+            //
+            // MnETFStocksSale
+            //
+            this.MnETFStocksSale.Name = "MnETFStocksSale";
+            this.MnETFStocksSale.Size = new System.Drawing.Size(104, 20);
+            this.MnETFStocksSale.Text = "ETF/Stock &Sale";
+            this.MnETFStocksSale.Click += new System.EventHandler(this.MnETFStocksSale_Click);
+            //
             // MnETFStocksPrice
-            // 
+            //
             this.MnETFStocksPrice.Name = "MnETFStocksPrice";
             this.MnETFStocksPrice.Size = new System.Drawing.Size(104, 20);
             this.MnETFStocksPrice.Text = "ETF/Stock &Price";
@@ -169,7 +166,7 @@
             this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label21.Size = new System.Drawing.Size(460, 41);
             this.Label21.TabIndex = 1;
-            this.Label21.Text = "ETF/STOCK TRANSACTION";
+            this.Label21.Text = "ETF/STOCK PURCHASE";
             //
             // LblDateCaption
             //
@@ -260,38 +257,27 @@
             this.monthCalendar1.TabIndex = 8;
             this.monthCalendar1.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.monthCalendar1_DateSelected);
             //
-            // gvTrans
+            // gvPurchase
             //
-            this.gvTrans.AllowUserToAddRows = false;
-            this.gvTrans.AllowUserToDeleteRows = false;
-            this.gvTrans.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.gvTrans.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvTrans.Location = new System.Drawing.Point(19, 115);
-            this.gvTrans.MultiSelect = false;
-            this.gvTrans.Name = "gvTrans";
-            this.gvTrans.ReadOnly = true;
-            this.gvTrans.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvTrans.Size = new System.Drawing.Size(960, 210);
-            this.gvTrans.TabIndex = 9;
-            this.gvTrans.SelectionChanged += new System.EventHandler(this.gvTrans_SelectionChanged);
-            //
-            // Label1
-            //
-            this.Label1.BackColor = System.Drawing.Color.Transparent;
-            this.Label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label1.ForeColor = System.Drawing.Color.Black;
-            this.Label1.Location = new System.Drawing.Point(19, 340);
-            this.Label1.Name = "Label1";
-            this.Label1.Size = new System.Drawing.Size(125, 22);
-            this.Label1.TabIndex = 10;
-            this.Label1.Text = "Transaction Type";
+            this.gvPurchase.AllowUserToAddRows = false;
+            this.gvPurchase.AllowUserToDeleteRows = false;
+            this.gvPurchase.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvPurchase.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvPurchase.Location = new System.Drawing.Point(19, 115);
+            this.gvPurchase.MultiSelect = false;
+            this.gvPurchase.Name = "gvPurchase";
+            this.gvPurchase.ReadOnly = true;
+            this.gvPurchase.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvPurchase.Size = new System.Drawing.Size(960, 260);
+            this.gvPurchase.TabIndex = 9;
+            this.gvPurchase.SelectionChanged += new System.EventHandler(this.gvPurchase_SelectionChanged);
             //
             // Label2
             //
             this.Label2.BackColor = System.Drawing.Color.Transparent;
             this.Label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label2.ForeColor = System.Drawing.Color.Black;
-            this.Label2.Location = new System.Drawing.Point(19, 368);
+            this.Label2.Location = new System.Drawing.Point(19, 392);
             this.Label2.Name = "Label2";
             this.Label2.Size = new System.Drawing.Size(125, 22);
             this.Label2.TabIndex = 11;
@@ -302,7 +288,7 @@
             this.Label3.BackColor = System.Drawing.Color.Transparent;
             this.Label3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label3.ForeColor = System.Drawing.Color.Black;
-            this.Label3.Location = new System.Drawing.Point(19, 396);
+            this.Label3.Location = new System.Drawing.Point(19, 420);
             this.Label3.Name = "Label3";
             this.Label3.Size = new System.Drawing.Size(125, 22);
             this.Label3.TabIndex = 12;
@@ -313,7 +299,7 @@
             this.Label4.BackColor = System.Drawing.Color.Transparent;
             this.Label4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label4.ForeColor = System.Drawing.Color.Black;
-            this.Label4.Location = new System.Drawing.Point(19, 424);
+            this.Label4.Location = new System.Drawing.Point(19, 448);
             this.Label4.Name = "Label4";
             this.Label4.Size = new System.Drawing.Size(125, 22);
             this.Label4.TabIndex = 13;
@@ -324,7 +310,7 @@
             this.Label5.BackColor = System.Drawing.Color.Transparent;
             this.Label5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label5.ForeColor = System.Drawing.Color.Black;
-            this.Label5.Location = new System.Drawing.Point(460, 368);
+            this.Label5.Location = new System.Drawing.Point(460, 420);
             this.Label5.Name = "Label5";
             this.Label5.Size = new System.Drawing.Size(160, 22);
             this.Label5.TabIndex = 14;
@@ -335,7 +321,7 @@
             this.Label6.BackColor = System.Drawing.Color.Transparent;
             this.Label6.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label6.ForeColor = System.Drawing.Color.Black;
-            this.Label6.Location = new System.Drawing.Point(460, 396);
+            this.Label6.Location = new System.Drawing.Point(460, 448);
             this.Label6.Name = "Label6";
             this.Label6.Size = new System.Drawing.Size(160, 22);
             this.Label6.TabIndex = 15;
@@ -346,7 +332,7 @@
             this.Label7.BackColor = System.Drawing.Color.Transparent;
             this.Label7.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label7.ForeColor = System.Drawing.Color.Black;
-            this.Label7.Location = new System.Drawing.Point(460, 452);
+            this.Label7.Location = new System.Drawing.Point(460, 504);
             this.Label7.Name = "Label7";
             this.Label7.Size = new System.Drawing.Size(160, 22);
             this.Label7.TabIndex = 16;
@@ -357,40 +343,28 @@
             this.Label8.BackColor = System.Drawing.Color.Transparent;
             this.Label8.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label8.ForeColor = System.Drawing.Color.Black;
-            this.Label8.Location = new System.Drawing.Point(460, 480);
+            this.Label8.Location = new System.Drawing.Point(460, 532);
             this.Label8.Name = "Label8";
             this.Label8.Size = new System.Drawing.Size(160, 22);
             this.Label8.TabIndex = 17;
             this.Label8.Text = "Real Total Cost Base";
-            //
-            // CmbTransType
-            //
-            this.CmbTransType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbTransType.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbTransType.FormattingEnabled = true;
-            this.CmbTransType.Location = new System.Drawing.Point(150, 340);
-            this.CmbTransType.Name = "CmbTransType";
-            this.CmbTransType.Size = new System.Drawing.Size(140, 22);
-            this.CmbTransType.TabIndex = 18;
-            this.CmbTransType.SelectedIndexChanged += new System.EventHandler(this.CmbTransType_SelectedIndexChanged);
             //
             // CmbFullTicker
             //
             this.CmbFullTicker.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbFullTicker.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbFullTicker.FormattingEnabled = true;
-            this.CmbFullTicker.Location = new System.Drawing.Point(150, 368);
+            this.CmbFullTicker.Location = new System.Drawing.Point(150, 392);
             this.CmbFullTicker.Name = "CmbFullTicker";
             this.CmbFullTicker.Size = new System.Drawing.Size(140, 22);
             this.CmbFullTicker.TabIndex = 19;
-            this.CmbFullTicker.SelectedIndexChanged += new System.EventHandler(this.CmbFullTicker_SelectedIndexChanged);
             //
             // CmbCurrency
             //
             this.CmbCurrency.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbCurrency.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbCurrency.FormattingEnabled = true;
-            this.CmbCurrency.Location = new System.Drawing.Point(150, 396);
+            this.CmbCurrency.Location = new System.Drawing.Point(150, 420);
             this.CmbCurrency.Name = "CmbCurrency";
             this.CmbCurrency.Size = new System.Drawing.Size(140, 22);
             this.CmbCurrency.TabIndex = 20;
@@ -400,7 +374,7 @@
             this.txtUnit.BackColor = System.Drawing.SystemColors.Window;
             this.txtUnit.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtUnit.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtUnit.Location = new System.Drawing.Point(150, 424);
+            this.txtUnit.Location = new System.Drawing.Point(150, 448);
             this.txtUnit.MaxLength = 20;
             this.txtUnit.Name = "txtUnit";
             this.txtUnit.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -415,7 +389,7 @@
             this.Lbl_txtOriginalCostBase.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtOriginalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtOriginalCostBase.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtOriginalCostBase.Location = new System.Drawing.Point(460, 340);
+            this.Lbl_txtOriginalCostBase.Location = new System.Drawing.Point(460, 392);
             this.Lbl_txtOriginalCostBase.Name = "Lbl_txtOriginalCostBase";
             this.Lbl_txtOriginalCostBase.Size = new System.Drawing.Size(160, 22);
             this.Lbl_txtOriginalCostBase.TabIndex = 70;
@@ -426,7 +400,7 @@
             this.txtOriginalCostBase.BackColor = System.Drawing.SystemColors.Window;
             this.txtOriginalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtOriginalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtOriginalCostBase.Location = new System.Drawing.Point(625, 340);
+            this.txtOriginalCostBase.Location = new System.Drawing.Point(625, 392);
             this.txtOriginalCostBase.MaxLength = 20;
             this.txtOriginalCostBase.Name = "txtOriginalCostBase";
             this.txtOriginalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -441,7 +415,7 @@
             this.Lbl_txtOriginalTotalCostBase.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtOriginalTotalCostBase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtOriginalTotalCostBase.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtOriginalTotalCostBase.Location = new System.Drawing.Point(460, 424);
+            this.Lbl_txtOriginalTotalCostBase.Location = new System.Drawing.Point(460, 476);
             this.Lbl_txtOriginalTotalCostBase.Name = "Lbl_txtOriginalTotalCostBase";
             this.Lbl_txtOriginalTotalCostBase.Size = new System.Drawing.Size(160, 22);
             this.Lbl_txtOriginalTotalCostBase.TabIndex = 72;
@@ -452,7 +426,7 @@
             this.txtOriginalTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
             this.txtOriginalTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtOriginalTotalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtOriginalTotalCostBase.Location = new System.Drawing.Point(625, 424);
+            this.txtOriginalTotalCostBase.Location = new System.Drawing.Point(625, 476);
             this.txtOriginalTotalCostBase.Name = "txtOriginalTotalCostBase";
             this.txtOriginalTotalCostBase.ReadOnly = true;
             this.txtOriginalTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -466,7 +440,7 @@
             this.txtCostBase.BackColor = System.Drawing.SystemColors.Window;
             this.txtCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtCostBase.Location = new System.Drawing.Point(625, 368);
+            this.txtCostBase.Location = new System.Drawing.Point(625, 420);
             this.txtCostBase.MaxLength = 20;
             this.txtCostBase.Name = "txtCostBase";
             this.txtCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -481,7 +455,7 @@
             this.txtFee.BackColor = System.Drawing.SystemColors.Window;
             this.txtFee.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtFee.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtFee.Location = new System.Drawing.Point(625, 396);
+            this.txtFee.Location = new System.Drawing.Point(625, 448);
             this.txtFee.MaxLength = 20;
             this.txtFee.Name = "txtFee";
             this.txtFee.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -496,7 +470,7 @@
             this.txtTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
             this.txtTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTotalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtTotalCostBase.Location = new System.Drawing.Point(625, 452);
+            this.txtTotalCostBase.Location = new System.Drawing.Point(625, 504);
             this.txtTotalCostBase.Name = "txtTotalCostBase";
             this.txtTotalCostBase.ReadOnly = true;
             this.txtTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -510,7 +484,7 @@
             this.txtRealTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
             this.txtRealTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRealTotalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtRealTotalCostBase.Location = new System.Drawing.Point(625, 480);
+            this.txtRealTotalCostBase.Location = new System.Drawing.Point(625, 532);
             this.txtRealTotalCostBase.Name = "txtRealTotalCostBase";
             this.txtRealTotalCostBase.ReadOnly = true;
             this.txtRealTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -519,63 +493,12 @@
             this.txtRealTotalCostBase.TabStop = false;
             this.txtRealTotalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             //
-            // Label9
-            //
-            this.Label9.BackColor = System.Drawing.Color.Transparent;
-            this.Label9.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label9.ForeColor = System.Drawing.Color.Black;
-            this.Label9.Location = new System.Drawing.Point(460, 340);
-            this.Label9.Name = "Label9";
-            this.Label9.Size = new System.Drawing.Size(160, 22);
-            this.Label9.TabIndex = 35;
-            this.Label9.Text = "Selling Price/Unit";
-            //
-            // Label10
-            //
-            this.Label10.BackColor = System.Drawing.Color.Transparent;
-            this.Label10.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label10.ForeColor = System.Drawing.Color.Black;
-            this.Label10.Location = new System.Drawing.Point(460, 368);
-            this.Label10.Name = "Label10";
-            this.Label10.Size = new System.Drawing.Size(160, 22);
-            this.Label10.TabIndex = 36;
-            this.Label10.Text = "Selling Total Amount";
-            //
-            // txtSellingPricePerUnit
-            //
-            this.txtSellingPricePerUnit.BackColor = System.Drawing.SystemColors.Window;
-            this.txtSellingPricePerUnit.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtSellingPricePerUnit.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtSellingPricePerUnit.Location = new System.Drawing.Point(625, 340);
-            this.txtSellingPricePerUnit.MaxLength = 20;
-            this.txtSellingPricePerUnit.Name = "txtSellingPricePerUnit";
-            this.txtSellingPricePerUnit.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtSellingPricePerUnit.Size = new System.Drawing.Size(140, 20);
-            this.txtSellingPricePerUnit.TabIndex = 37;
-            this.txtSellingPricePerUnit.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtSellingPricePerUnit.TextChanged += new System.EventHandler(this.Amount_TextChanged);
-            this.txtSellingPricePerUnit.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSellingPricePerUnit_KeyPress);
-            //
-            // txtSellingTotalAmount
-            //
-            this.txtSellingTotalAmount.BackColor = System.Drawing.SystemColors.Control;
-            this.txtSellingTotalAmount.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtSellingTotalAmount.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtSellingTotalAmount.Location = new System.Drawing.Point(625, 368);
-            this.txtSellingTotalAmount.Name = "txtSellingTotalAmount";
-            this.txtSellingTotalAmount.ReadOnly = true;
-            this.txtSellingTotalAmount.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtSellingTotalAmount.Size = new System.Drawing.Size(140, 20);
-            this.txtSellingTotalAmount.TabIndex = 38;
-            this.txtSellingTotalAmount.TabStop = false;
-            this.txtSellingTotalAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            //
             // Label11
             //
             this.Label11.BackColor = System.Drawing.Color.Transparent;
             this.Label11.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label11.ForeColor = System.Drawing.Color.Black;
-            this.Label11.Location = new System.Drawing.Point(460, 508);
+            this.Label11.Location = new System.Drawing.Point(460, 560);
             this.Label11.Name = "Label11";
             this.Label11.Size = new System.Drawing.Size(160, 22);
             this.Label11.TabIndex = 39;
@@ -586,7 +509,7 @@
             this.CmbFlagCode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbFlagCode.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbFlagCode.FormattingEnabled = true;
-            this.CmbFlagCode.Location = new System.Drawing.Point(625, 506);
+            this.CmbFlagCode.Location = new System.Drawing.Point(625, 558);
             this.CmbFlagCode.Name = "CmbFlagCode";
             this.CmbFlagCode.Size = new System.Drawing.Size(140, 22);
             this.CmbFlagCode.TabIndex = 40;
@@ -597,49 +520,17 @@
             this.LblPortfolioDesc.BackColor = System.Drawing.Color.Transparent;
             this.LblPortfolioDesc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPortfolioDesc.ForeColor = System.Drawing.Color.Black;
-            this.LblPortfolioDesc.Location = new System.Drawing.Point(775, 508);
+            this.LblPortfolioDesc.Location = new System.Drawing.Point(775, 560);
             this.LblPortfolioDesc.Name = "LblPortfolioDesc";
             this.LblPortfolioDesc.Size = new System.Drawing.Size(210, 22);
             this.LblPortfolioDesc.TabIndex = 60;
-            //
-            // Label13
-            //
-            this.Label13.BackColor = System.Drawing.Color.Transparent;
-            this.Label13.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label13.ForeColor = System.Drawing.Color.Black;
-            this.Label13.Location = new System.Drawing.Point(460, 398);
-            this.Label13.Name = "Label13";
-            this.Label13.Size = new System.Drawing.Size(160, 22);
-            this.Label13.TabIndex = 61;
-            this.Label13.Text = "Portfolio";
-            //
-            // CmbSellPortfolio
-            //
-            this.CmbSellPortfolio.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbSellPortfolio.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbSellPortfolio.FormattingEnabled = true;
-            this.CmbSellPortfolio.Location = new System.Drawing.Point(625, 396);
-            this.CmbSellPortfolio.Name = "CmbSellPortfolio";
-            this.CmbSellPortfolio.Size = new System.Drawing.Size(140, 22);
-            this.CmbSellPortfolio.TabIndex = 62;
-            this.CmbSellPortfolio.SelectedIndexChanged += new System.EventHandler(this.CmbSellPortfolio_SelectedIndexChanged);
-            //
-            // LblSellPortfolioDesc
-            //
-            this.LblSellPortfolioDesc.BackColor = System.Drawing.Color.Transparent;
-            this.LblSellPortfolioDesc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblSellPortfolioDesc.ForeColor = System.Drawing.Color.Black;
-            this.LblSellPortfolioDesc.Location = new System.Drawing.Point(775, 398);
-            this.LblSellPortfolioDesc.Name = "LblSellPortfolioDesc";
-            this.LblSellPortfolioDesc.Size = new System.Drawing.Size(210, 22);
-            this.LblSellPortfolioDesc.TabIndex = 63;
             //
             // Label12
             //
             this.Label12.BackColor = System.Drawing.Color.Transparent;
             this.Label12.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label12.ForeColor = System.Drawing.Color.Black;
-            this.Label12.Location = new System.Drawing.Point(19, 480);
+            this.Label12.Location = new System.Drawing.Point(19, 504);
             this.Label12.Name = "Label12";
             this.Label12.Size = new System.Drawing.Size(125, 22);
             this.Label12.TabIndex = 41;
@@ -651,7 +542,7 @@
             this.CmbSoldDD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbSoldDD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbSoldDD.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.CmbSoldDD.Location = new System.Drawing.Point(150, 478);
+            this.CmbSoldDD.Location = new System.Drawing.Point(150, 502);
             this.CmbSoldDD.Name = "CmbSoldDD";
             this.CmbSoldDD.Size = new System.Drawing.Size(41, 22);
             this.CmbSoldDD.TabIndex = 42;
@@ -662,7 +553,7 @@
             this.CmbSoldMM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbSoldMM.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbSoldMM.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.CmbSoldMM.Location = new System.Drawing.Point(200, 478);
+            this.CmbSoldMM.Location = new System.Drawing.Point(200, 502);
             this.CmbSoldMM.Name = "CmbSoldMM";
             this.CmbSoldMM.Size = new System.Drawing.Size(41, 22);
             this.CmbSoldMM.TabIndex = 43;
@@ -673,7 +564,7 @@
             this.CmbSoldYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbSoldYear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbSoldYear.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.CmbSoldYear.Location = new System.Drawing.Point(250, 478);
+            this.CmbSoldYear.Location = new System.Drawing.Point(250, 502);
             this.CmbSoldYear.Name = "CmbSoldYear";
             this.CmbSoldYear.Size = new System.Drawing.Size(57, 22);
             this.CmbSoldYear.TabIndex = 44;
@@ -683,7 +574,7 @@
             this.CmdSoldCal.BackColor = System.Drawing.SystemColors.Control;
             this.CmdSoldCal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSoldCal.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSoldCal.Location = new System.Drawing.Point(314, 478);
+            this.CmdSoldCal.Location = new System.Drawing.Point(314, 502);
             this.CmdSoldCal.Name = "CmdSoldCal";
             this.CmdSoldCal.Size = new System.Drawing.Size(25, 19);
             this.CmdSoldCal.TabIndex = 45;
@@ -695,7 +586,7 @@
             //
             this.chkDRIP.BackColor = System.Drawing.Color.Transparent;
             this.chkDRIP.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkDRIP.Location = new System.Drawing.Point(150, 452);
+            this.chkDRIP.Location = new System.Drawing.Point(150, 476);
             this.chkDRIP.Name = "chkDRIP";
             this.chkDRIP.Size = new System.Drawing.Size(120, 24);
             this.chkDRIP.TabIndex = 29;
@@ -707,7 +598,7 @@
             //
             this.chkSold.BackColor = System.Drawing.Color.Transparent;
             this.chkSold.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkSold.Location = new System.Drawing.Point(285, 452);
+            this.chkSold.Location = new System.Drawing.Point(285, 476);
             this.chkSold.Name = "chkSold";
             this.chkSold.Size = new System.Drawing.Size(80, 24);
             this.chkSold.TabIndex = 30;
@@ -720,7 +611,7 @@
             this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCreate.Location = new System.Drawing.Point(305, 610);
+            this.CmdCreate.Location = new System.Drawing.Point(305, 600);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(85, 27);
             this.CmdCreate.TabIndex = 31;
@@ -733,7 +624,7 @@
             this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdUpdate.Location = new System.Drawing.Point(400, 610);
+            this.CmdUpdate.Location = new System.Drawing.Point(400, 600);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(85, 27);
             this.CmdUpdate.TabIndex = 32;
@@ -746,7 +637,7 @@
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(495, 610);
+            this.CmdDel.Location = new System.Drawing.Point(495, 600);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 27);
             this.CmdDel.TabIndex = 33;
@@ -760,7 +651,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(590, 610);
+            this.CmdBack.Location = new System.Drawing.Point(590, 600);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
             this.CmdBack.TabIndex = 34;
@@ -768,35 +659,7 @@
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
-            // LblLots
-            //
-            this.LblLots.BackColor = System.Drawing.Color.Transparent;
-            this.LblLots.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblLots.ForeColor = System.Drawing.Color.Black;
-            this.LblLots.Location = new System.Drawing.Point(19, 442);
-            this.LblLots.Name = "LblLots";
-            this.LblLots.Size = new System.Drawing.Size(600, 20);
-            this.LblLots.TabIndex = 46;
-            this.LblLots.Text = "Unsold purchases - enter how many units of each are being sold";
-            this.LblLots.Visible = false;
-            //
-            // gvLots
-            //
-            this.gvLots.AllowUserToAddRows = false;
-            this.gvLots.AllowUserToDeleteRows = false;
-            this.gvLots.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.gvLots.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvLots.Location = new System.Drawing.Point(19, 464);
-            this.gvLots.MultiSelect = false;
-            this.gvLots.Name = "gvLots";
-            this.gvLots.RowHeadersVisible = false;
-            this.gvLots.Size = new System.Drawing.Size(960, 130);
-            this.gvLots.TabIndex = 47;
-            this.gvLots.Visible = false;
-            this.gvLots.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvLots_CellEndEdit);
-            this.gvLots.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.gvLots_EditingControlShowing);
-            //
-            // ETF_Stocks_Transaction
+            // ETF_Stocks_Purchase
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -816,15 +679,8 @@
             this.Controls.Add(this.CmbSoldDD);
             this.Controls.Add(this.Label12);
             this.Controls.Add(this.CmbFlagCode);
-            this.Controls.Add(this.LblSellPortfolioDesc);
-            this.Controls.Add(this.CmbSellPortfolio);
-            this.Controls.Add(this.Label13);
             this.Controls.Add(this.LblPortfolioDesc);
             this.Controls.Add(this.Label11);
-            this.Controls.Add(this.txtSellingTotalAmount);
-            this.Controls.Add(this.txtSellingPricePerUnit);
-            this.Controls.Add(this.Label10);
-            this.Controls.Add(this.Label9);
             this.Controls.Add(this.txtRealTotalCostBase);
             this.Controls.Add(this.txtTotalCostBase);
             this.Controls.Add(this.txtFee);
@@ -836,7 +692,6 @@
             this.Controls.Add(this.txtUnit);
             this.Controls.Add(this.CmbCurrency);
             this.Controls.Add(this.CmbFullTicker);
-            this.Controls.Add(this.CmbTransType);
             this.Controls.Add(this.Label8);
             this.Controls.Add(this.Label7);
             this.Controls.Add(this.Label6);
@@ -844,11 +699,8 @@
             this.Controls.Add(this.Label4);
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.Label2);
-            this.Controls.Add(this.Label1);
             this.Controls.Add(this.monthCalendar1);
-            this.Controls.Add(this.gvLots);
-            this.Controls.Add(this.LblLots);
-            this.Controls.Add(this.gvTrans);
+            this.Controls.Add(this.gvPurchase);
             this.Controls.Add(this.LblDay);
             this.Controls.Add(this.CmdCal);
             this.Controls.Add(this.CmbYear);
@@ -861,14 +713,13 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = new System.Drawing.Point(4, 43);
             this.MainMenuStrip = this.MainMenu1;
-            this.Name = "ETF_Stocks_Transaction";
+            this.Name = "ETF_Stocks_Purchase";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "ETF/Stock Transaction";
-            this.Load += new System.EventHandler(this.ETF_Stocks_Transaction_Load);
+            this.Text = "ETF/Stock Purchase";
+            this.Load += new System.EventHandler(this.ETF_Stocks_Purchase_Load);
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvTrans)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.gvLots)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvPurchase)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -881,6 +732,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksSale;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
@@ -892,10 +744,7 @@
         public System.Windows.Forms.Button CmdCal;
         public System.Windows.Forms.Label LblDay;
         public System.Windows.Forms.MonthCalendar monthCalendar1;
-        private System.Windows.Forms.DataGridView gvTrans;
-        public System.Windows.Forms.Label LblLots;
-        private System.Windows.Forms.DataGridView gvLots;
-        public System.Windows.Forms.Label Label1;
+        private System.Windows.Forms.DataGridView gvPurchase;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;
         public System.Windows.Forms.Label Label4;
@@ -903,7 +752,6 @@
         public System.Windows.Forms.Label Label6;
         public System.Windows.Forms.Label Label7;
         public System.Windows.Forms.Label Label8;
-        public System.Windows.Forms.ComboBox CmbTransType;
         public System.Windows.Forms.ComboBox CmbFullTicker;
         public System.Windows.Forms.ComboBox CmbCurrency;
         public System.Windows.Forms.TextBox txtUnit;
@@ -915,15 +763,8 @@
         public System.Windows.Forms.TextBox txtFee;
         public System.Windows.Forms.TextBox txtTotalCostBase;
         public System.Windows.Forms.TextBox txtRealTotalCostBase;
-        public System.Windows.Forms.Label Label9;
-        public System.Windows.Forms.Label Label10;
-        public System.Windows.Forms.TextBox txtSellingPricePerUnit;
-        public System.Windows.Forms.TextBox txtSellingTotalAmount;
         public System.Windows.Forms.Label Label11;
         public System.Windows.Forms.Label LblPortfolioDesc;
-        public System.Windows.Forms.Label Label13;
-        public System.Windows.Forms.ComboBox CmbSellPortfolio;
-        public System.Windows.Forms.Label LblSellPortfolioDesc;
         public System.Windows.Forms.ComboBox CmbFlagCode;
         public System.Windows.Forms.Label Label12;
         public System.Windows.Forms.ComboBox CmbSoldDD;

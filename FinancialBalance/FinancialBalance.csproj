@@ -138,11 +138,17 @@
     <Compile Include="ETF_Stocks_Price.Designer.cs">
       <DependentUpon>ETF_Stocks_Price.cs</DependentUpon>
     </Compile>
-    <Compile Include="ETF_Stocks_Transaction.cs">
+    <Compile Include="ETF_Stocks_Purchase.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ETF_Stocks_Transaction.Designer.cs">
-      <DependentUpon>ETF_Stocks_Transaction.cs</DependentUpon>
+    <Compile Include="ETF_Stocks_Purchase.Designer.cs">
+      <DependentUpon>ETF_Stocks_Purchase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ETF_Stocks_Sale.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ETF_Stocks_Sale.Designer.cs">
+      <DependentUpon>ETF_Stocks_Sale.cs</DependentUpon>
     </Compile>
     <Compile Include="Daily_Input.cs">
       <SubType>Form</SubType>
@@ -282,8 +288,11 @@
     <EmbeddedResource Include="ETF_Stocks_Price.resx">
       <DependentUpon>ETF_Stocks_Price.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ETF_Stocks_Transaction.resx">
-      <DependentUpon>ETF_Stocks_Transaction.cs</DependentUpon>
+    <EmbeddedResource Include="ETF_Stocks_Purchase.resx">
+      <DependentUpon>ETF_Stocks_Purchase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ETF_Stocks_Sale.resx">
+      <DependentUpon>ETF_Stocks_Sale.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Daily_Input.resx">
       <DependentUpon>Daily_Input.cs</DependentUpon>
