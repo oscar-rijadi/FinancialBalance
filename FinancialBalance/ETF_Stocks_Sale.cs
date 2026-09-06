@@ -842,9 +842,17 @@ namespace FinancialBalance
             gvLots.Visible = !parSelected;
             LblSoldLots.Visible = parSelected;
             gvSoldLots.Visible = parSelected;
+            LblTotPurchaseCap.Visible = parSelected;
+            LblTotPurchase.Visible = parSelected;
+            LblTotRealPurchaseCap.Visible = parSelected;
+            LblTotRealPurchase.Visible = parSelected;
 
             CmdCreate.Visible = !parSelected;
         }
+
+        //The currencies the closed lots were bought in.  A total only carries a dollar sign
+        //when they all share one dollar currency - adding AUD to USD gives an amount in neither.
+        List<string> SoldLotCurrencies = new List<string>();
 
         private void Clear_Sold_Lots_Grid()
         {
@@ -869,6 +877,8 @@ namespace FinancialBalance
         private void Load_Sold_Lots(string parSaleId)
         {
             Clear_Sold_Lots_Grid();
+            SoldLotCurrencies.Clear();
+            Show_Sold_Lot_Totals();
             if (parSaleId == null || parSaleId.Trim() == "")
             {
                 return;
@@ -882,6 +892,10 @@ namespace FinancialBalance
             while (reader.Read())
             {
                 string TmpCurr = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
+                if (TmpCurr != "" && !SoldLotCurrencies.Contains(TmpCurr))
+                {
+                    SoldLotCurrencies.Add(TmpCurr);
+                }
                 gvSoldLots.Rows.Add(new string[] {
                     Format_Purchase_Date(reader["Trans_Date"].ToString().Trim()),
                     Format_Unit(reader["Unit"]),
@@ -891,6 +905,19 @@ namespace FinancialBalance
             }
             reader.Close();
             gvSoldLots.ClearSelection();
+            Show_Sold_Lot_Totals();
+        }
+
+        //What the closed lots came to, under the table that lists them
+        private void Show_Sold_Lot_Totals()
+        {
+            double TmpPurchaseAmount;
+            double TmpRealAmount;
+            Sold_Lot_Costs(out TmpPurchaseAmount, out TmpRealAmount);
+
+            string TmpCurr = (SoldLotCurrencies.Count == 1 ? SoldLotCurrencies[0] : "");
+            LblTotPurchase.Text = Money(TmpPurchaseAmount, TmpCurr);
+            LblTotRealPurchase.Text = Money(TmpRealAmount, TmpCurr);
         }
 
         //The two costs the profit figures are worked out from, read back off the grid so they

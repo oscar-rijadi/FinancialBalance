@@ -53,6 +53,10 @@
             this.LblSoldLots = new System.Windows.Forms.Label();
             this.LblSaleIdCap = new System.Windows.Forms.Label();
             this.LblSaleId = new System.Windows.Forms.Label();
+            this.LblTotPurchaseCap = new System.Windows.Forms.Label();
+            this.LblTotPurchase = new System.Windows.Forms.Label();
+            this.LblTotRealPurchaseCap = new System.Windows.Forms.Label();
+            this.LblTotRealPurchase = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
             this.Label4 = new System.Windows.Forms.Label();
@@ -481,6 +485,50 @@
             this.LblLots.TabIndex = 46;
             this.LblLots.Text = "Unsold purchases - enter how many units of each are being sold";
             //
+            // LblTotPurchaseCap
+            //
+            this.LblTotPurchaseCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotPurchaseCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotPurchaseCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotPurchaseCap.Location = new System.Drawing.Point(19, 580);
+            this.LblTotPurchaseCap.Name = "LblTotPurchaseCap";
+            this.LblTotPurchaseCap.Size = new System.Drawing.Size(200, 20);
+            this.LblTotPurchaseCap.TabIndex = 49;
+            this.LblTotPurchaseCap.Text = "Total Purchase Amount";
+            //
+            // LblTotPurchase
+            //
+            this.LblTotPurchase.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotPurchase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotPurchase.ForeColor = System.Drawing.Color.Black;
+            this.LblTotPurchase.Location = new System.Drawing.Point(225, 580);
+            this.LblTotPurchase.Name = "LblTotPurchase";
+            this.LblTotPurchase.Size = new System.Drawing.Size(150, 20);
+            this.LblTotPurchase.TabIndex = 50;
+            this.LblTotPurchase.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotRealPurchaseCap
+            //
+            this.LblTotRealPurchaseCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotRealPurchaseCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotRealPurchaseCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotRealPurchaseCap.Location = new System.Drawing.Point(400, 580);
+            this.LblTotRealPurchaseCap.Name = "LblTotRealPurchaseCap";
+            this.LblTotRealPurchaseCap.Size = new System.Drawing.Size(240, 20);
+            this.LblTotRealPurchaseCap.TabIndex = 51;
+            this.LblTotRealPurchaseCap.Text = "Total Real Purchase Amount";
+            //
+            // LblTotRealPurchase
+            //
+            this.LblTotRealPurchase.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotRealPurchase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotRealPurchase.ForeColor = System.Drawing.Color.Black;
+            this.LblTotRealPurchase.Location = new System.Drawing.Point(645, 580);
+            this.LblTotRealPurchase.Name = "LblTotRealPurchase";
+            this.LblTotRealPurchase.Size = new System.Drawing.Size(150, 20);
+            this.LblTotRealPurchase.TabIndex = 52;
+            this.LblTotRealPurchase.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
             // gvSoldLots
             //
             this.gvSoldLots.AllowUserToAddRows = false;
@@ -495,7 +543,7 @@
             this.gvSoldLots.ReadOnly = true;
             this.gvSoldLots.RowHeadersVisible = false;
             this.gvSoldLots.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvSoldLots.Size = new System.Drawing.Size(960, 120);
+            this.gvSoldLots.Size = new System.Drawing.Size(960, 100);
             this.gvSoldLots.TabIndex = 48;
             this.gvSoldLots.TabStop = false;
             //
@@ -572,6 +620,10 @@
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.monthCalendar1);
+            this.Controls.Add(this.LblTotPurchaseCap);
+            this.Controls.Add(this.LblTotPurchase);
+            this.Controls.Add(this.LblTotRealPurchaseCap);
+            this.Controls.Add(this.LblTotRealPurchase);
             this.Controls.Add(this.gvSoldLots);
             this.Controls.Add(this.LblSoldLots);
             this.Controls.Add(this.LblSaleIdCap);
@@ -631,6 +683,10 @@
         public System.Windows.Forms.Label LblSoldLots;
         public System.Windows.Forms.Label LblSaleIdCap;
         public System.Windows.Forms.Label LblSaleId;
+        public System.Windows.Forms.Label LblTotPurchaseCap;
+        public System.Windows.Forms.Label LblTotPurchase;
+        public System.Windows.Forms.Label LblTotRealPurchaseCap;
+        public System.Windows.Forms.Label LblTotRealPurchase;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;
         public System.Windows.Forms.Label Label4;
