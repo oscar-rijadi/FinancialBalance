@@ -293,14 +293,14 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvSale.Columns.Clear();
-            gvSale.ColumnCount = 7;
-            string[] names = new string[] { "Sale Id", "Full Ticker", "Currency", "Unit", "Selling Price/Unit", "Selling Total Amount", "Portfolio Code" };
-            int[] weights = new int[] { 26, 15, 9, 12, 15, 18, 13 };
-            for (int i = 0; i < 7; i++)
+            gvSale.ColumnCount = 9;
+            string[] names = new string[] { "Sale Id", "Full Ticker", "Currency", "Unit", "Selling Price/Unit", "Selling Total Amount", "Portfolio Code", "Profit/Loss On Paper", "Real Profit/Loss" };
+            int[] weights = new int[] { 21, 12, 7, 10, 12, 14, 9, 15, 13 };
+            for (int i = 0; i < 9; i++)
             {
                 gvSale.Columns[i].Name = names[i];
                 gvSale.Columns[i].FillWeight = weights[i];
-                if (i >= 3 && i <= 5)
+                if ((i >= 3 && i <= 5) || i >= 7)
                 {
                     gvSale.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
                     gvSale.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -315,7 +315,7 @@ namespace FinancialBalance
 
         private string Select_Sales()
         {
-            return "select Trans_Date, [Sale_Id], Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount], [Portfolio_Code] from TblETFStocksSale"
+            return "select Trans_Date, [Sale_Id], Full_Ticker, [Currency], Unit, [Selling_Price_Per_Unit], [Selling_Total_Amount], [Portfolio_Code], [Profit_Or_Loss_On_Paper], [Real_Profit_Or_Loss] from TblETFStocksSale"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -331,15 +331,25 @@ namespace FinancialBalance
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
+                string TmpCurr = reader["Currency"].ToString().Trim();
+                double TmpPaper = Read_Double(reader["Profit_Or_Loss_On_Paper"]);
+                double TmpReal = Read_Double(reader["Real_Profit_Or_Loss"]);
+
                 gvSale.Rows.Add(new string[] {
                     (reader["Sale_Id"] == DBNull.Value ? "" : reader["Sale_Id"].ToString().Trim()),
                     reader["Full_Ticker"].ToString().Trim(),
-                    reader["Currency"].ToString().Trim(),
+                    TmpCurr,
                     Format_Unit(reader["Unit"]),
                     Mdl1.FormatAmt(Read_Double(reader["Selling_Price_Per_Unit"])),
                     Mdl1.FormatAmt(Read_Double(reader["Selling_Total_Amount"])),
-                    (reader["Portfolio_Code"] == DBNull.Value ? "-" : reader["Portfolio_Code"].ToString().Trim())
+                    (reader["Portfolio_Code"] == DBNull.Value ? "-" : reader["Portfolio_Code"].ToString().Trim()),
+                    Money(TmpPaper, TmpCurr),
+                    Money(TmpReal, TmpCurr)
                 });
+
+                DataGridViewRow Row = gvSale.Rows[gvSale.Rows.Count - 1];
+                Colour_Cell(Row.Cells[7], TmpPaper);
+                Colour_Cell(Row.Cells[8], TmpReal);
             }
             reader.Close();
 
@@ -366,6 +376,46 @@ namespace FinancialBalance
             return Read_Double(parValue).ToString("#,##0.0000");
         }
 
+        //AUD and USD carry a dollar sign; any other currency stays bare, and a negative
+        //reads -$12.34 rather than $-12.34.
+        private bool Is_Dollar(string parCurr)
+        {
+            if (parCurr == null)
+            {
+                return false;
+            }
+            string TmpCurr = parCurr.Trim().ToUpper();
+            return (TmpCurr == "AUD" || TmpCurr == "USD");
+        }
+
+        //Losses in red, gains in green; zero is left alone
+        private void Colour_Cell(DataGridViewCell parCell, double parValue)
+        {
+            if (parValue < 0)
+            {
+                parCell.Style.ForeColor = System.Drawing.Color.Red;
+                parCell.Style.SelectionForeColor = System.Drawing.Color.Red;
+            }
+            else if (parValue > 0)
+            {
+                parCell.Style.ForeColor = System.Drawing.Color.Green;
+                parCell.Style.SelectionForeColor = System.Drawing.Color.Green;
+            }
+        }
+
+        private string Money(double parValue, string parCurr)
+        {
+            if (!Is_Dollar(parCurr))
+            {
+                return Mdl1.FormatAmt(parValue);
+            }
+            if (parValue < 0)
+            {
+                return "-$" + Mdl1.FormatAmt(Math.Abs(parValue));
+            }
+            return "$" + Mdl1.FormatAmt(parValue);
+        }
+
         //---- the entry area -------------------------------------------------------
 
         private void Clear_Entry()
@@ -381,6 +431,9 @@ namespace FinancialBalance
             txtSellingPricePerUnit.Text = "0.00";
             Set_Default_Sell_Portfolio();
             Filling = false;
+            LblSaleId.Text = "";
+            Clear_Sold_Lots_Grid();
+            Show_Mode(false);
             Load_Lots();
             Calculate_Totals();
         }
@@ -775,6 +828,103 @@ namespace FinancialBalance
             }
         }
 
+        //---- the two modes --------------------------------------------------------
+
+        //The page is either entering a new sale - unsold lots on offer, Add available - or
+        //reading back a stored one, where the lots on screen are the ones that sale closed and
+        //there is nothing to add.
+        private void Show_Mode(bool parSelected)
+        {
+            LblSaleIdCap.Visible = parSelected;
+            LblSaleId.Visible = parSelected;
+
+            LblLots.Visible = !parSelected;
+            gvLots.Visible = !parSelected;
+            LblSoldLots.Visible = parSelected;
+            gvSoldLots.Visible = parSelected;
+
+            CmdCreate.Visible = !parSelected;
+        }
+
+        private void Clear_Sold_Lots_Grid()
+        {
+            gvSoldLots.Rows.Clear();
+            gvSoldLots.Columns.Clear();
+            gvSoldLots.ColumnCount = 5;
+            string[] names = new string[] { "Purchase Date", "Unit", "Purchase Price / Unit",
+                                            "Purchase Amount", "Real Purchase Amount" };
+            int[] weights = new int[] { 20, 16, 22, 20, 22 };
+            for (int i = 0; i < 5; i++)
+            {
+                gvSoldLots.Columns[i].Name = names[i];
+                gvSoldLots.Columns[i].FillWeight = weights[i];
+                DataGridViewContentAlignment TmpAlign =
+                    (i == 0 ? DataGridViewContentAlignment.MiddleLeft : DataGridViewContentAlignment.MiddleRight);
+                gvSoldLots.Columns[i].HeaderCell.Style.Alignment = TmpAlign;
+                gvSoldLots.Columns[i].DefaultCellStyle.Alignment = TmpAlign;
+            }
+        }
+
+        //Every purchase row this sale closed, found by the id the sale stamped on them
+        private void Load_Sold_Lots(string parSaleId)
+        {
+            Clear_Sold_Lots_Grid();
+            if (parSaleId == null || parSaleId.Trim() == "")
+            {
+                return;
+            }
+
+            Mdl1.Ssql = "select Trans_Date, [Currency], Unit, Cost_Base, Total_Cost_Base, Real_Total_Cost_Base"
+                      + " from TblETFStocksPurchase where [Sale_Id] = '" + parSaleId.Trim() + "'"
+                      + " order by Trans_Date";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string TmpCurr = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
+                gvSoldLots.Rows.Add(new string[] {
+                    Format_Purchase_Date(reader["Trans_Date"].ToString().Trim()),
+                    Format_Unit(reader["Unit"]),
+                    Money(Read_Double(reader["Cost_Base"]), TmpCurr),
+                    Money(Read_Double(reader["Total_Cost_Base"]), TmpCurr),
+                    Money(Read_Double(reader["Real_Total_Cost_Base"]), TmpCurr) });
+            }
+            reader.Close();
+            gvSoldLots.ClearSelection();
+        }
+
+        //The two costs the profit figures are worked out from, read back off the grid so they
+        //are exactly the amounts on screen.
+        private void Sold_Lot_Costs(out double parPurchaseAmount, out double parRealAmount)
+        {
+            parPurchaseAmount = 0;
+            parRealAmount = 0;
+            for (int i = 0; i < gvSoldLots.Rows.Count; i++)
+            {
+                parPurchaseAmount += Money_Value(gvSoldLots.Rows[i].Cells[3].Value);
+                parRealAmount += Money_Value(gvSoldLots.Rows[i].Cells[4].Value);
+            }
+            parPurchaseAmount = Math.Round(parPurchaseAmount, 2);
+            parRealAmount = Math.Round(parRealAmount, 2);
+        }
+
+        //undoes the display formatting - the dollar sign, the thousands separators and the
+        //leading minus that Money puts in front of the sign
+        private double Money_Value(object parValue)
+        {
+            if (parValue == null)
+            {
+                return 0;
+            }
+            string TmpText = parValue.ToString().Trim().Replace("$", "").Replace(",", "");
+            double TmpValue;
+            if (double.TryParse(TmpText, NumberStyles.Number, CultureInfo.CurrentCulture, out TmpValue))
+            {
+                return TmpValue;
+            }
+            return 0;
+        }
+
         //---- picking a row --------------------------------------------------------
 
         private void gvSale_SelectionChanged(object sender, EventArgs e)
@@ -859,10 +1009,18 @@ namespace FinancialBalance
             }
             Filling = false;
 
-            //the lot list belongs to the ticker and portfolio just loaded
-            Load_Lots();
+            //reading back a stored sale: the lots on offer are replaced by the ones this
+            //sale closed, and its own figures are shown rather than recomputed
+            LblSaleId.Text = (OrgSaleId == null ? "-" : OrgSaleId);
+            Load_Sold_Lots(OrgSaleId);
+            Show_Mode(true);
+
+            Filling = true;
+            txtUnit.Text = (OrgUnit == null ? "0.0000" : OrgUnit);
+            txtSellingTotalAmount.Text = Mdl1.FormatAmt(Read_Double(OrgSellingTotalAmount));
+            Filling = false;
+
             RowSelected = true;
-            Calculate_Totals();
         }
 
         //---- validation and SQL helpers -------------------------------------------
@@ -1108,12 +1266,32 @@ namespace FinancialBalance
                     return;
                 }
 
+                //restated against the lots this sale actually closed, which are the rows on
+                //screen.  On paper counts every lot; the real figure ignores what the reinvested
+                //ones cost, because those units cost no money of their own.
+                //A sale with no Sale_Id cannot say which lots it closed, so the table above it is
+                //empty and the costs would come out as zero - restating the profits from that would
+                //quietly rewrite them as the whole proceeds.  Those two columns are left alone
+                //instead, and only a sale that knows its lots has them recomputed.
+                string TmpProfitSet = "";
+                if (OrgSaleId != null && OrgSaleId.Trim() != "")
+                {
+                    double TmpPurchaseAmount;
+                    double TmpRealAmount;
+                    Sold_Lot_Costs(out TmpPurchaseAmount, out TmpRealAmount);
+                    double TmpPaperProfit = Math.Round((double)TmpSellingTotal - TmpPurchaseAmount, 2);
+                    double TmpRealProfit = Math.Round((double)TmpSellingTotal - TmpRealAmount, 2);
+                    TmpProfitSet = "[Profit_Or_Loss_On_Paper] = " + TmpPaperProfit.ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                                 + "[Real_Profit_Or_Loss] = " + TmpRealProfit.ToString("0.00", CultureInfo.InvariantCulture) + ", ";
+                }
+
                 Mdl1.Ssql = "Update TblETFStocksSale set "
                     + "Full_Ticker = '" + CmbFullTicker.Text.Trim() + "', "
                     + "[Currency] = '" + CmbCurrency.Text.Trim() + "', "
                     + "Unit = " + Num(TmpUnit, 4) + ", "
                     + "[Selling_Price_Per_Unit] = " + Num(TmpSellingPrice, 2) + ", "
                     + "[Selling_Total_Amount] = " + Num(TmpSellingTotal, 2) + ", "
+                    + TmpProfitSet
                     + "[Portfolio_Code] = '" + CmbSellPortfolio.Text.Trim() + "'"
                     + Where_Original();
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
@@ -1142,6 +1320,15 @@ namespace FinancialBalance
                 if (!Confirm_Affected("Delete"))
                 {
                     return;
+                }
+
+                //the lots this sale closed go back to being held, before the sale itself goes
+                if (OrgSaleId != null && OrgSaleId.Trim() != "")
+                {
+                    Mdl1.Ssql = "Update TblETFStocksPurchase set Is_Sold = False, [Sold_Date] = Null, [Sale_Id] = Null"
+                              + " where [Sale_Id] = '" + OrgSaleId.Trim() + "'";
+                    OleDbCommand release = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                    release.ExecuteNonQuery();
                 }
 
                 Mdl1.Ssql = "Delete from TblETFStocksSale" + Where_Original();

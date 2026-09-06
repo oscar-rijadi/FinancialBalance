@@ -492,6 +492,66 @@ so they carry no sale id and no sold date, and they stay available to a later sa
 > Nothing is written when that happens. Widening the column to 60 would remove the limit
 > entirely.
 
+#### The sale table
+
+**ETF/Stock Sale** lists its own rows for the chosen date:
+
+| Column | Source |
+| --- | --- |
+| `Sale Id` | `Sale_Id` — blank on a sale recorded before the column existed |
+| `Full Ticker`, `Currency`, `Unit` | as stored |
+| `Selling Price/Unit`, `Selling Total Amount` | as stored |
+| `Portfolio Code` | `Portfolio_Code`, `-` when none |
+| `Profit/Loss On Paper` | `Profit_Or_Loss_On_Paper`, with a dollar sign |
+| `Real Profit/Loss` | `Real_Profit_Or_Loss`, with a dollar sign |
+
+The two profit columns are **coloured by sign** — red below zero, green above it, and left alone
+at exactly zero, the same rule the reconciliation pages use. A loss reads `-$56.78`, with the
+minus outside the dollar sign rather than Excel's bracketed form.
+
+#### Reading a stored sale back
+
+Picking a row in the sale table turns the page from *entering* a sale into *reading one back*:
+
+- A **Sale Id** line appears under Unit, showing that sale's `Sale_Id`.
+- **Unit** and **Selling Total Amount** are filled from the stored row rather than recomputed.
+- **Add is hidden** — there is nothing to add while a stored sale is on screen.
+- The unsold-lot list is replaced by **Purchases closed by this sale**, every
+  `TblETFStocksPurchase` row carrying that `Sale_Id`:
+
+| Column | Source |
+| --- | --- |
+| `Purchase Date` | `Trans_Date`, shown `dd-MMM-yyyy` |
+| `Unit` | `Unit` |
+| `Purchase Price / Unit` | `Cost_Base`, with a dollar sign |
+| `Purchase Amount` | `Total_Cost_Base`, with a dollar sign |
+| `Real Purchase Amount` | `Real_Total_Cost_Base`, with a dollar sign — `0` for a reinvested lot |
+
+Clearing the entry area, or finishing an Add, Update or Delete, puts the page back into entry
+mode: Add returns and the unsold lots come back.
+
+**Update** restates both profit figures from that table rather than trusting what was stored:
+
+```
+Profit_Or_Loss_On_Paper = Selling_Total_Amount - SUM(Purchase Amount)
+Real_Profit_Or_Loss     = Selling_Total_Amount - SUM(Real Purchase Amount)
+```
+
+so a reinvested lot, whose real amount is `0`, leaves all of its proceeds as real profit.
+
+> A sale with **no `Sale_Id`** cannot say which lots it closed, so that table is empty and the
+> sums would be zero. Restating from that would silently rewrite the profits as the whole
+> proceeds, so Update **leaves those two columns alone** for such a sale and changes only the
+> fields on screen.
+
+**Delete** releases the holding before removing the sale: every purchase row carrying that
+`Sale_Id` has `Is_Sold` set back to false and its `Sold_Date` and `Sale_Id` cleared, so the units
+are available to sell again.
+
+> Releasing does not re-merge a lot that the sale split. A part sale leaves a closed row and a
+> remainder row; deleting the sale makes both available again, but as **two lots rather than the
+> one** they were before. The units and the money are unchanged — only the grouping differs.
+
 #### Selling against lots
 
 A sale is not entered as a bare quantity. **ETF/Stock Sale** always lists the ticker's unsold

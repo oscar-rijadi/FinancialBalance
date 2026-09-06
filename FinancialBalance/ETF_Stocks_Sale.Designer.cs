@@ -49,6 +49,10 @@
             this.gvSale = new System.Windows.Forms.DataGridView();
             this.LblLots = new System.Windows.Forms.Label();
             this.gvLots = new System.Windows.Forms.DataGridView();
+            this.gvSoldLots = new System.Windows.Forms.DataGridView();
+            this.LblSoldLots = new System.Windows.Forms.Label();
+            this.LblSaleIdCap = new System.Windows.Forms.Label();
+            this.LblSaleId = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
             this.Label4 = new System.Windows.Forms.Label();
@@ -69,6 +73,7 @@
             this.MainMenu1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvSale)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvLots)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvSoldLots)).BeginInit();
             this.SuspendLayout();
             //
             // MainMenu1
@@ -470,11 +475,61 @@
             this.LblLots.BackColor = System.Drawing.Color.Transparent;
             this.LblLots.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblLots.ForeColor = System.Drawing.Color.Black;
-            this.LblLots.Location = new System.Drawing.Point(19, 442);
+            this.LblLots.Location = new System.Drawing.Point(19, 452);
             this.LblLots.Name = "LblLots";
             this.LblLots.Size = new System.Drawing.Size(600, 20);
             this.LblLots.TabIndex = 46;
             this.LblLots.Text = "Unsold purchases - enter how many units of each are being sold";
+            //
+            // gvSoldLots
+            //
+            this.gvSoldLots.AllowUserToAddRows = false;
+            this.gvSoldLots.AllowUserToDeleteRows = false;
+            this.gvSoldLots.AllowUserToResizeRows = false;
+            this.gvSoldLots.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvSoldLots.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvSoldLots.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gvSoldLots.Location = new System.Drawing.Point(19, 474);
+            this.gvSoldLots.MultiSelect = false;
+            this.gvSoldLots.Name = "gvSoldLots";
+            this.gvSoldLots.ReadOnly = true;
+            this.gvSoldLots.RowHeadersVisible = false;
+            this.gvSoldLots.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvSoldLots.Size = new System.Drawing.Size(960, 120);
+            this.gvSoldLots.TabIndex = 48;
+            this.gvSoldLots.TabStop = false;
+            //
+            // LblSoldLots
+            //
+            this.LblSoldLots.BackColor = System.Drawing.Color.Transparent;
+            this.LblSoldLots.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblSoldLots.ForeColor = System.Drawing.Color.Black;
+            this.LblSoldLots.Location = new System.Drawing.Point(19, 452);
+            this.LblSoldLots.Name = "LblSoldLots";
+            this.LblSoldLots.Size = new System.Drawing.Size(600, 20);
+            this.LblSoldLots.TabIndex = 47;
+            this.LblSoldLots.Text = "Purchases closed by this sale";
+            //
+            // LblSaleIdCap
+            //
+            this.LblSaleIdCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblSaleIdCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblSaleIdCap.ForeColor = System.Drawing.Color.Black;
+            this.LblSaleIdCap.Location = new System.Drawing.Point(19, 424);
+            this.LblSaleIdCap.Name = "LblSaleIdCap";
+            this.LblSaleIdCap.Size = new System.Drawing.Size(120, 22);
+            this.LblSaleIdCap.TabIndex = 45;
+            this.LblSaleIdCap.Text = "Sale Id";
+            //
+            // LblSaleId
+            //
+            this.LblSaleId.BackColor = System.Drawing.Color.Transparent;
+            this.LblSaleId.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblSaleId.ForeColor = System.Drawing.Color.Black;
+            this.LblSaleId.Location = new System.Drawing.Point(150, 424);
+            this.LblSaleId.Name = "LblSaleId";
+            this.LblSaleId.Size = new System.Drawing.Size(420, 22);
+            this.LblSaleId.TabIndex = 46;
             //
             // gvLots
             //
@@ -482,11 +537,11 @@
             this.gvLots.AllowUserToDeleteRows = false;
             this.gvLots.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.gvLots.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvLots.Location = new System.Drawing.Point(19, 464);
+            this.gvLots.Location = new System.Drawing.Point(19, 474);
             this.gvLots.MultiSelect = false;
             this.gvLots.Name = "gvLots";
             this.gvLots.RowHeadersVisible = false;
-            this.gvLots.Size = new System.Drawing.Size(960, 130);
+            this.gvLots.Size = new System.Drawing.Size(960, 120);
             this.gvLots.TabIndex = 47;
             this.gvLots.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.gvLots_CellEndEdit);
             this.gvLots.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.gvLots_EditingControlShowing);
@@ -517,6 +572,10 @@
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.monthCalendar1);
+            this.Controls.Add(this.gvSoldLots);
+            this.Controls.Add(this.LblSoldLots);
+            this.Controls.Add(this.LblSaleIdCap);
+            this.Controls.Add(this.LblSaleId);
             this.Controls.Add(this.gvLots);
             this.Controls.Add(this.LblLots);
             this.Controls.Add(this.gvSale);
@@ -540,6 +599,7 @@
             this.MainMenu1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvSale)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvLots)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvSoldLots)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -567,6 +627,10 @@
         private System.Windows.Forms.DataGridView gvSale;
         public System.Windows.Forms.Label LblLots;
         private System.Windows.Forms.DataGridView gvLots;
+        private System.Windows.Forms.DataGridView gvSoldLots;
+        public System.Windows.Forms.Label LblSoldLots;
+        public System.Windows.Forms.Label LblSaleIdCap;
+        public System.Windows.Forms.Label LblSaleId;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;
         public System.Windows.Forms.Label Label4;
