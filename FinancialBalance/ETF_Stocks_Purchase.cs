@@ -368,13 +368,13 @@ namespace FinancialBalance
         {
             gvPurchase.Columns.Clear();
             gvPurchase.ColumnCount = 14;
-            string[] names = new string[] { "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "DRIP", "Sold", "Portfolio Code", "Sold Date", "Sale Id" };
-            int[] weights = new int[] { 9, 6, 8, 10, 8, 5, 11, 9, 10, 4, 4, 6, 8, 18 };
+            string[] names = new string[] { "Portfolio Code", "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "Reinvestment", "Sold", "Sold Date", "Sale Id" };
+            int[] weights = new int[] { 7, 9, 6, 8, 10, 8, 5, 11, 9, 10, 8, 4, 8, 17 };
             for (int i = 0; i < 14; i++)
             {
                 gvPurchase.Columns[i].Name = names[i];
                 gvPurchase.Columns[i].FillWeight = weights[i];
-                if (i >= 2 && i <= 8)
+                if (i >= 3 && i <= 9)
                 {
                     gvPurchase.Columns[i].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
                     gvPurchase.Columns[i].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -407,6 +407,7 @@ namespace FinancialBalance
             {
                 double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
                 gvPurchase.Rows.Add(new string[] {
+                    reader["Portfolio_Code"].ToString().Trim(),
                     reader["Full_Ticker"].ToString().Trim(),
                     reader["Currency"].ToString().Trim(),
                     Format_Unit(reader["Unit"]),
@@ -418,7 +419,6 @@ namespace FinancialBalance
                     Mdl1.FormatAmt(TmpRealTotal),
                     (TmpRealTotal == 0 ? "Y" : "N"),
                     (reader["Is_Sold"].ToString().Trim() == "True" ? "Y" : "N"),
-                    reader["Portfolio_Code"].ToString().Trim(),
                     Format_Sold_Date(reader["Sold_Date"]),
                     (reader["Sale_Id"] == DBNull.Value ? "" : reader["Sale_Id"].ToString().Trim())
                 });

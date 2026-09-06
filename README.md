@@ -492,6 +492,21 @@ so they carry no sale id and no sold date, and they stay available to a later sa
 > Nothing is written when that happens. Widening the column to 60 would remove the limit
 > entirely.
 
+#### The purchase table
+
+**ETF/Stock Purchase** lists its own rows for the chosen date, portfolio first:
+
+```
+Portfolio Code | Full Ticker | Currency | Unit |
+Original Cost Base | Cost Base | Fee |
+Original Total Cost Base | Total Cost Base | Real Total Cost Base |
+Reinvestment | Sold | Sold Date | Sale Id
+```
+
+`Reinvestment` and `Sold` read `Y` or `N` — the first derived from `Real_Total_Cost_Base == 0`
+rather than stored, the second from `Is_Sold`. `Sold Date` shows `Sold_Date` as `dd-MMM-yyyy` and
+`Sale Id` the sale that closed the lot; both are blank while the lot is still held.
+
 #### The sale table
 
 **ETF/Stock Sale** lists its own rows for the chosen date:
@@ -632,9 +647,9 @@ picking a transaction date reloads the day's grid, picking a sold date deliberat
 
 The **Reinvestment** checkbox is **not stored**. The form re-derives it on selection as
 `Real_Total_Cost_Base == 0` — a lot bought with no real money is one that was reinvested. It was
-labelled *DRIP* until it was renamed; the identifier `chkDRIP` and the grid heading `DRIP` on the
-same page still carry the older word, so searching the code for the on-screen label will not find
-it.
+labelled *DRIP* until it was renamed, and the grid column now reads **Reinvestment** too; only the
+identifier `chkDRIP` still carries the older word, so searching the code for the on-screen label
+will not find it.
 
 > **Access stores Yes/No `True` as `-1`.** A `WHERE Is_Sold = 1` matches nothing and fails
 > silently. Compare against `True`/`False` instead — the same applies to `In_YahooFinance` and
