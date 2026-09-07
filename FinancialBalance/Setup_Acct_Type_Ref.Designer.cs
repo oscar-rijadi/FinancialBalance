@@ -41,6 +41,9 @@
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnFinancialYearSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -122,7 +125,8 @@
             this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
             this.MnFinancialYearSetup,
-            this.MnETFStockGroup});
+            this.MnETFStockGroup,
+            this.MnSuperGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(576, 24);
@@ -171,6 +175,29 @@
             this.MnFinancialYearSetup.Size = new System.Drawing.Size(119, 20);
             this.MnFinancialYearSetup.Text = "&Financial Year Setup";
             this.MnFinancialYearSetup.Click += new System.EventHandler(this.MnFinancialYearSetup_Click);
+            //
+            // MnSuperGroup
+            //
+            this.MnSuperGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnSuperFundSetup,
+            this.MnSuperSetup});
+            this.MnSuperGroup.Name = "MnSuperGroup";
+            this.MnSuperGroup.Size = new System.Drawing.Size(150, 20);
+            this.MnSuperGroup.Text = "&Super";
+            //
+            // MnSuperFundSetup
+            //
+            this.MnSuperFundSetup.Name = "MnSuperFundSetup";
+            this.MnSuperFundSetup.Size = new System.Drawing.Size(260, 22);
+            this.MnSuperFundSetup.Text = "Super &Fund Setup";
+            this.MnSuperFundSetup.Click += new System.EventHandler(this.MnSuperFundSetup_Click);
+            //
+            // MnSuperSetup
+            //
+            this.MnSuperSetup.Name = "MnSuperSetup";
+            this.MnSuperSetup.Size = new System.Drawing.Size(260, 22);
+            this.MnSuperSetup.Text = "Super Set&up";
+            this.MnSuperSetup.Click += new System.EventHandler(this.MnSuperSetup_Click);
             // 
             // MnETFStockGroup
             // 
@@ -342,6 +369,9 @@
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnFinancialYearSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;

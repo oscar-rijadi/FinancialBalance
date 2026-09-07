@@ -1,4 +1,4 @@
-namespace FinancialBalance
+﻿namespace FinancialBalance
 {
     partial class Setup_Financial_Year
     {
@@ -31,6 +31,9 @@ namespace FinancialBalance
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_Financial_Year));
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrencyGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,7 +76,8 @@ namespace FinancialBalance
             this.MnAcctRefSetup,
             this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
-            this.MnETFStockGroup});
+            this.MnETFStockGroup,
+            this.MnSuperGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(700, 24);
@@ -122,6 +126,29 @@ namespace FinancialBalance
             this.MnActivaPassivaSetup.Size = new System.Drawing.Size(120, 20);
             this.MnActivaPassivaSetup.Text = "Asset &Liability Setup";
             this.MnActivaPassivaSetup.Click += new System.EventHandler(this.MnActivaPassivaSetup_Click);
+            //
+            // MnSuperGroup
+            //
+            this.MnSuperGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnSuperFundSetup,
+            this.MnSuperSetup});
+            this.MnSuperGroup.Name = "MnSuperGroup";
+            this.MnSuperGroup.Size = new System.Drawing.Size(150, 20);
+            this.MnSuperGroup.Text = "&Super";
+            //
+            // MnSuperFundSetup
+            //
+            this.MnSuperFundSetup.Name = "MnSuperFundSetup";
+            this.MnSuperFundSetup.Size = new System.Drawing.Size(260, 22);
+            this.MnSuperFundSetup.Text = "Super &Fund Setup";
+            this.MnSuperFundSetup.Click += new System.EventHandler(this.MnSuperFundSetup_Click);
+            //
+            // MnSuperSetup
+            //
+            this.MnSuperSetup.Name = "MnSuperSetup";
+            this.MnSuperSetup.Size = new System.Drawing.Size(260, 22);
+            this.MnSuperSetup.Text = "Super Set&up";
+            this.MnSuperSetup.Click += new System.EventHandler(this.MnSuperSetup_Click);
             //
             // MnETFStockGroup
             //
@@ -445,6 +472,9 @@ namespace FinancialBalance
 
         public System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperSetup;
         public System.Windows.Forms.ToolStripMenuItem MnAcctRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrencyGroup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrSetup;

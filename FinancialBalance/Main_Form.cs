@@ -112,6 +112,20 @@ namespace FinancialBalance
             AnimationTimer.Enabled = true;
         }
 
+        private void MnSuperFundSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Super_Fund Setup_Super_Fund = new Setup_Super_Fund();
+            Setup_Super_Fund.Show();
+            this.Hide();
+        }
+
+        private void MnSuperSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Super Setup_Super = new Setup_Super();
+            Setup_Super.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksCostBase_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Cost_Base_Adjustment ETF_Stocks_Cost_Base_Adjustment = new ETF_Stocks_Cost_Base_Adjustment();

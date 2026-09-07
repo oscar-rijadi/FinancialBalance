@@ -92,6 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
+| `Administration` | **Super** | Super Fund Setup, Super Setup |
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -137,6 +138,9 @@ flowchart LR
     ETFG --> SDT["Setup_ETF_Stocks_Div_Type"]
     ETFG --> SDV["Setup_ETF_Stocks_Div"]
     ETFG --> SDA["Setup_ETF_Stocks_Div_Alloc"]
+    ADMIN --> SUPG{{"Super"}}
+    SUPG --> SSF["Setup_Super_Fund"]
+    SUPG --> SSU["Setup_Super"]
 
     DI <--> MC
     MC <--> ETB
@@ -185,12 +189,14 @@ flowchart LR
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
+| `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
+| `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
 
 ---
 
 ## Data model
 
-Twenty-three tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty-five tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -313,6 +319,14 @@ erDiagram
         text Portfolio_Code PK "5 chars"
         text Description "50 chars"
         bool Is_Main
+    }
+    TblSuperFund {
+        text    Name "100 chars, the fund's name"
+    }
+    TblSuper {
+        text    Super_Code "5 chars"
+        text    Name "100 chars"
+        text    Super_Fund_Name "100 chars, names TblSuperFund.Name"
     }
     TblETFStocksCostBaseAdjustment {
         text    Financial_Year "9 chars, joins TblFinancialYear"
@@ -1601,6 +1615,8 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Div_Type.*
 │   ├── Setup_ETF_Stocks_Div.*
 │   ├── Setup_ETF_Stocks_Div_Alloc.*
+│   ├── Setup_Super_Fund.*            # the list of super funds
+│   ├── Setup_Super.*                 # super accounts
 │   ├── ETF_Stocks_Purchase.*         # buy entry
 │   ├── ETF_Stocks_Sale.*             # sell entry, settles the lots
 │   ├── ETF_Stocks_Price.*            # prices + Yahoo sync
@@ -1707,6 +1723,38 @@ Things worth knowing before changing this code.
   code for the on-screen label will not find them.
 - `adodb` is referenced in the project file but **not used by any code** — the reference can be
   dropped. `Microsoft.Office.Interop.Excel` *is* used, by the three pages that export to Excel.
+
+### Super
+
+Two setup pages under `Administration` ▸ Super, holding superannuation accounts separately from
+the ETF and stock side of the app. Nothing else reads these tables yet — they are reference data
+waiting to be used.
+
+`TblSuperFund` is a single column, `Name`, and ships with **AustralianSuper** and **UniSuper**.
+`Setup_Super_Fund` maintains it: one grid, one box, and Add / Update / Delete.
+
+`TblSuper` holds one row per super account — `Super_Code`, `Name` and `Super_Fund_Name`.
+`Setup_Super` shows all three as columns and takes them from a Super Code box, a Name box and a
+**Super Fund Name dropdown filled from `TblSuperFund`**, so a super account can only name a fund
+that exists.
+
+#### How the two are kept in step
+
+The fund is stored on each super row as **text, not a reference** — there are no foreign keys
+anywhere in this database — so the two pages guard the join themselves:
+
+- **Renaming a fund carries its super accounts with it.** `Setup_Super_Fund` counts the rows in
+  `TblSuper` naming that fund, asks before going ahead, then updates both tables. Without that,
+  renaming would leave those accounts pointing at a fund that no longer exists.
+- **A fund still in use cannot be deleted.** The page says how many super accounts name it and
+  points at Super Setup. Deleting would leave the same orphans by another route.
+- **Duplicate names are refused** on both pages — a fund name in `TblSuperFund`, a `Super_Code`
+  in `TblSuper` — since each is what the other side identifies a row by.
+
+Neither table has a key, so `Setup_Super`'s update and delete match on all three of a row's
+original values, as the rest of the app does.
+
+---
 
 ### Removed features
 

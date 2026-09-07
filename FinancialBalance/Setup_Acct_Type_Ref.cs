@@ -22,6 +22,20 @@ namespace FinancialBalance
             Get_Data();
         }
 
+        private void MnSuperFundSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Super_Fund Setup_Super_Fund = new Setup_Super_Fund();
+            Setup_Super_Fund.Show();
+            this.Close();
+        }
+
+        private void MnSuperSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Super Setup_Super = new Setup_Super();
+            Setup_Super.Show();
+            this.Close();
+        }
+
         private void MnAcctRefSetup_Click(object sender, EventArgs e)
         {
             Setup_Acct_Ref Setup_Acct_Ref = new Setup_Acct_Ref();

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -42,6 +42,20 @@ namespace FinancialBalance
             Get_Data();
 
             monthCalendar1.Hide();
+        }
+
+        private void MnSuperFundSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Super_Fund Setup_Super_Fund = new Setup_Super_Fund();
+            Setup_Super_Fund.Show();
+            this.Close();
+        }
+
+        private void MnSuperSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Super Setup_Super = new Setup_Super();
+            Setup_Super.Show();
+            this.Close();
         }
 
         private void MnAcctTypeRefSetup_Click(object sender, EventArgs e)
