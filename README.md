@@ -95,7 +95,8 @@ Related pages are collected into submenus rather than sitting flat:
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
-one page rather than a group.
+one page rather than a group. `Inquiry` likewise carries **Super Balance & Historical Data**
+after its own ETF/Stock submenu.
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -126,6 +127,7 @@ flowchart LR
     PORTG --> PDVH["ETF_Stocks_Dividend_History"]
     PORTG --> PPCH["ETF_Stocks_Price_Chart"]
     PORTG --> PFYH["ETF_Stocks_FY_Historical"]
+    MAIN --> SBH["Super_Balance_Historical"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -174,6 +176,7 @@ flowchart LR
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
 | `ETF_Stocks_FY_Reconciliation` | Shown as **ETF/Stock Financial Year Reconciliation**. One financial year's result per portfolio, with an entry section that defaults every figure from the rest of the database. |
 | `Super_Financial_Year` | Shown as **Super**. One financial year's result per super account — what went in, what the fund returned, what it cost, and what came out at the end. |
+| `Super_Balance_Historical` | Shown as **Super Balance & Historical Data**. Read-only, in two parts: where every super account stands, then one account's full year-by-year history. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
@@ -1655,6 +1658,7 @@ C#.Net/
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
+│   ├── Super_Balance_Historical.*     # latest year per account, read-only
 │   ├── ETF_Stocks_Purchase.*         # buy entry
 │   ├── ETF_Stocks_Sale.*             # sell entry, settles the lots
 │   ├── ETF_Stocks_Price.*            # prices + Yahoo sync
@@ -1895,6 +1899,80 @@ months ago — an account opened mid-year, say — is not quietly replaced by to
 Amounts are typed through the shared numeric filter, so a minus sign cannot be entered: a loss is
 expressed by the fees exceeding the returns, not by typing a negative. More than two decimal places
 is refused on save.
+
+---
+
+#### The Super Balance & Historical Data page
+
+`Inquiry` ▸ Super Balance & Historical Data is read-only and comes in **two stacked parts**,
+both drawn from `TblSuperFinancialYear`:
+
+1. **Where each account stands** — one row per super account, no filters.
+2. **One account's history** — two filters and every year that account has a record for.
+
+The two tables are deliberately different widths: three columns stretched across 1300px would be
+mostly empty, so the summary sits in 700px and the history takes the full width. Both start at
+the same left edge, so the page still reads as one column of content.
+
+##### Part one: where each account stands
+
+Three columns: **Super** (the `Name - Super_Fund_Name` caption), **Financial Year**, and
+**Balance** (`Ending_Balance`). Nothing is colour-coded here; there is no profit column to
+colour.
+
+##### Which row is "latest"
+
+Each account contributes **the row from the most recent financial year it has a record for**.
+That is decided by **`End_Date` in `TblFinancialYear`**, not by the year's name and not by
+insertion order: `Financial_Year` is text, and nothing forces those names to sort
+chronologically, so ranking them as strings would be wrong the moment a name did not follow the
+`yyyy-yyyy` pattern.
+
+Two consequences worth knowing:
+
+- **An account with only an old record still appears**, showing that old year. The page never
+  hides an account because its data has not been kept up to date.
+- **Accounts can be showing different years**, and the **Financial Year** column is what makes
+  that visible — without it, two balances from different years would sit side by side looking
+  comparable. The note above the table only counts the accounts.
+
+A `Super_Code` recorded against a financial year but missing from `TblSuper` has no caption to
+build, so **the bare code is shown** rather than an empty cell: the figures are real either way,
+and a blank line would hide the inconsistency instead of showing it. An account with no financial
+year records at all does not appear, since this table's source is `TblSuperFinancialYear`.
+
+##### Part two: one account's history
+
+Two filters sit below the summary table:
+
+- **Financial Year** — **All** plus every `TblFinancialYear.Name`, defaulting to All.
+- **Super** — **All** plus the `Name - Super_Fund_Name` caption for each account, defaulting to
+  All.
+
+Eleven columns: **Super**, **Financial Year**, Opening Balance, Contribution, Transfer In,
+Investment Returns, Percentage Investment Returns, Investment Profit/Loss, Percentage Investment
+Profit/Loss, Transfer Out, Ending Balance. The two profit columns are **red below zero and green
+above**. `Admin_Fee`, `Insurance_Premium`, the two `Goverment_Tax` fields and the surplus columns
+are stored but not shown — they are visible on the `Process` ▸ Super page where they are typed.
+
+Rows come back **`Super_Code` ascending, then financial year descending**, with the year order
+taken from **`End_Date`** rather than the year's name, for the same reason part one uses it. A
+year missing from `TblFinancialYear` sorts to the bottom of its account rather than to an
+arbitrary place in the middle. **With Super on All that ordering groups the accounts in code
+order and runs each one's years newest first**, which is the only arrangement in which it is
+visible — with a single account selected, the `Super_Code` half of it has nothing to do.
+
+One detail worth knowing: **a `Financial Year` column is included** even though the ten data
+columns alone were specified. With either filter on **All** a single account shows several rows
+at once, and without the year they would differ only in their amounts, with nothing to say which
+year each belonged to.
+
+##### The ampersand in the name
+
+The page's name contains an `&`, which is the one thing a WinForms caption cannot take literally.
+The menu entry doubles it (`"&Super Balance && Historical Data"`) and the heading label sets
+**`UseMnemonic = false`** — the only label in the app that does. Left alone, a single `&` is read
+as the accelerator marker: it disappears and underlines the `H` after it.
 
 ---
 

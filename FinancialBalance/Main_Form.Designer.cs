@@ -48,6 +48,7 @@
             this.MnYearStat = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearSumm = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockPortfolioGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperBalance = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPortfolioSummary = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPortfolioDiv = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDividendHistory = new System.Windows.Forms.ToolStripMenuItem();
@@ -216,7 +217,8 @@
             this.MnMonthlyInq,
             this.MnYearStat,
             this.MnYearSumm,
-            this.MnETFStockPortfolioGroup});
+            this.MnETFStockPortfolioGroup,
+            this.MnSuperBalance});
             this.MnInquiry.Name = "MnInquiry";
             this.MnInquiry.Size = new System.Drawing.Size(53, 20);
             this.MnInquiry.Text = "&Inquiry";
@@ -253,6 +255,13 @@
             this.MnETFStockPortfolioGroup.Name = "MnETFStockPortfolioGroup";
             this.MnETFStockPortfolioGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockPortfolioGroup.Text = "&ETF/Stock";
+            // 
+            // MnSuperBalance
+            // 
+            this.MnSuperBalance.Name = "MnSuperBalance";
+            this.MnSuperBalance.Size = new System.Drawing.Size(162, 22);
+            this.MnSuperBalance.Text = "&Super Balance && Historical Data";
+            this.MnSuperBalance.Click += new System.EventHandler(this.MnSuperBalance_Click);
             // 
             // MnETFStocksPortfolioSummary
             // 
@@ -894,6 +903,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnYearStat;
         public System.Windows.Forms.ToolStripMenuItem MnYearSumm;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockPortfolioGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperBalance;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioSummary;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioDiv;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDividendHistory;
