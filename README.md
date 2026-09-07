@@ -94,6 +94,9 @@ Related pages are collected into submenus rather than sitting flat:
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
+`Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
+one page rather than a group.
+
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
 submenu offers only Currency Rate Setup, and it disappears to a single child rather than being
@@ -113,6 +116,7 @@ flowchart LR
     PETFG --> ETD["ETF_Stocks_Distribution"]
     PETFG --> ECB["ETF_Stocks_Cost_Base_Adjustment"]
     PETFG --> ETR["ETF_Stocks_FY_Reconciliation"]
+    MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
     MAIN --> YS["Yearly_Summary"]
@@ -169,6 +173,7 @@ flowchart LR
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
 | `ETF_Stocks_FY_Reconciliation` | Shown as **ETF/Stock Financial Year Reconciliation**. One financial year's result per portfolio, with an entry section that defaults every figure from the rest of the database. |
+| `Super_Financial_Year` | Shown as **Super**. One financial year's result per super account — what went in, what the fund returned, what it cost, and what came out at the end. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
@@ -196,7 +201,7 @@ flowchart LR
 
 ## Data model
 
-Twenty-five tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty-six tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -227,6 +232,10 @@ erDiagram
     TblCurrCode     ||--o{ TblETFStocksPortfolio : "denominates"
     TblETFStocksDiversificationType ||--o{ TblETFStocksDiversification : "groups"
     TblETFStocksDiversification ||--o{ TblETFStocksDiversificationAllocation : "allocated by"
+    TblSuperFund    ||--o{ TblSuper : "holds"
+    TblSuper        ||--o{ TblSuperFinancialYear : "reported by"
+    TblFinancialYear ||--o{ TblSuperFinancialYear : "covers"
+    TblCurrCode     ||--o{ TblSuperFinancialYear : "denominates"
     TblETFStocks ||--o{ TblETFStocksDiversificationAllocation : "split across"
 
     TblAcctTypeRef {
@@ -327,6 +336,26 @@ erDiagram
         text    Super_Code "5 chars"
         text    Name "100 chars"
         text    Super_Fund_Name "100 chars, names TblSuperFund.Name"
+    }
+    TblSuperFinancialYear {
+        text    Financial_Year "9 chars, joins TblFinancialYear"
+        text    Super_Code "5 chars, joins TblSuper"
+        text    Currency "3 chars"
+        decimal Opening_Balance "2 dp"
+        decimal Contribution "2 dp"
+        decimal Transfer_In "2 dp"
+        decimal Investment_Returns "2 dp"
+        decimal Percentage_Investment_Returns "2 dp"
+        decimal Admin_Fee "2 dp"
+        decimal Insurance_Premium "2 dp"
+        decimal Goverment_Tax "2 dp, spelt as the app spells it"
+        decimal Goverment_Tax_Benefit "2 dp"
+        decimal Investment_Profit_Or_Loss "2 dp"
+        decimal Percentage_Investment_Profit_Or_Loss "2 dp"
+        decimal Total_Surplus_Or_Minus "2 dp"
+        decimal Percentage_Total_Surplus_Or_Minus "2 dp"
+        decimal Transfer_Out "2 dp"
+        decimal Ending_Balance "2 dp"
     }
     TblETFStocksCostBaseAdjustment {
         text    Financial_Year "9 chars, joins TblFinancialYear"
@@ -1557,6 +1586,14 @@ broken.
   Every other form navigates with `this.Show()` on the target followed by `this.Close()` on itself.
   Calling `Close()` from a Main_Form handler quits the application instead of opening the page,
   with no error to explain it.
+- **Every form sets `ControlBox = false`, and it follows from the rule above.** Because
+  Main_Form only hides, closing a page any way *other* than through **Back** never brings it
+  back: the page closes, Main_Form stays hidden, and the message loop keeps running with nothing
+  on screen — the app appears to vanish while the process is still alive. Removing the title-bar
+  buttons makes Back the only way out, which is why all thirty-three forms do it.
+- **Buttons are Arial 8 on `SystemColors.Control`**, with `UseVisualStyleBackColor = false`.
+  Left unset, a button inherits the form's cream background and renders visibly lighter and
+  larger than every other button in the app.
 
 ---
 
@@ -1617,6 +1654,7 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Div_Alloc.*
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
+│   ├── Super_Financial_Year.*         # one year per super account
 │   ├── ETF_Stocks_Purchase.*         # buy entry
 │   ├── ETF_Stocks_Sale.*             # sell entry, settles the lots
 │   ├── ETF_Stocks_Price.*            # prices + Yahoo sync
@@ -1726,9 +1764,9 @@ Things worth knowing before changing this code.
 
 ### Super
 
-Two setup pages under `Administration` ▸ Super, holding superannuation accounts separately from
-the ETF and stock side of the app. Nothing else reads these tables yet — they are reference data
-waiting to be used.
+Superannuation is kept separately from the ETF and stock side of the app: two setup pages under
+`Administration` ▸ Super holding the accounts, and one page under `Process` recording a year's
+result for each of them.
 
 `TblSuperFund` is a single column, `Name`, and ships with **AustralianSuper** and **UniSuper**.
 `Setup_Super_Fund` maintains it: one grid, one box, and Add / Update / Delete.
@@ -1753,6 +1791,110 @@ anywhere in this database — so the two pages guard the join themselves:
 
 Neither table has a key, so `Setup_Super`'s update and delete match on all three of a row's
 original values, as the rest of the app does.
+
+---
+
+#### The Super page
+
+`Process` ▸ Super keeps one row of `TblSuperFinancialYear` per super account per financial year.
+Two dropdowns narrow the table — **Financial Year** and **Super**, each with an **All** entry
+— and the entry area below adds, updates and deletes.
+
+The **Super** filter reads `Name - Super_Fund_Name`, because that is how an account is recognised;
+the `Super_Code` behind the chosen entry is what the query actually filters on. The entry area
+takes the opposite approach: a **Super Code** dropdown with the name and fund shown beside it as a
+label, so what is being typed against is unambiguous.
+
+The table shows fourteen columns. **`Admin_Fee`, `Insurance_Premium`, `Goverment_Tax` and
+`Goverment_Tax_Benefit` are stored but not shown there** — they are the workings behind
+Investment Profit/Loss rather than results in their own right, and they stay visible in the entry
+area where they are typed.
+
+##### What is worked out, and what is typed
+
+Every percentage on the page measures against the same base — **what went into the year**:
+
+```
+base = Opening Balance + Contribution + Transfer In
+```
+
+A percentage is 0 when that base is not positive, rather than a division by zero.
+
+**Transfer Out is deliberately not part of that base**, and no percentage moves when it
+changes: the base is what the fund had to work with over the year, and money transferred out
+is not that. It comes off the ending balance and nothing else.
+
+| Field | Where it comes from |
+| --- | --- |
+| Opening Balance | defaults to the **previous year's Ending Balance for the same account**, and can be typed over — see below |
+| Percentage Investment Returns | `Investment Returns / base × 100` — **a label**, never typed |
+| Investment Profit/Loss | defaults to `Investment Returns − Admin Fee − Insurance Premium − Goverment Tax + Goverment Tax Benefit`, and can be typed over |
+| Percentage Investment Profit/Loss | `Investment Profit/Loss / base × 100` — **a label**, red below zero, green above |
+| Total Surplus/Minus | defaults to `Contribution + Investment Profit/Loss`, and can be typed over |
+| Percentage Total Surplus/Minus | `Total Surplus/Minus / base × 100` — **a label**, red below zero, green above |
+| Ending Balance | defaults to `Opening Balance + Contribution + Transfer In + Investment Profit/Loss − Transfer Out`, and can be typed over |
+
+The three defaults form a chain: correcting the opening balance re-derives the profit, which
+re-derives the surplus and the ending balance. **A figure typed by hand stands, but what depends
+on it still follows** — override the profit and the surplus and ending balance move with it,
+while the profit itself is left as typed. A `Calculating` guard stops the chain firing while a
+stored row is being loaded, so **selecting a row shows the figures as they were saved rather than
+recomputing them** — an override entered months ago is not silently undone by opening the page.
+
+The percentages are always recomputed from the boxes when a row is written, so a stored percentage
+can never disagree with the amounts it was derived from.
+
+##### Money in and money out
+
+Two separate columns record movements of the balance itself, apart from what the fund earned:
+
+- **Transfer In** (`Transfer_In`) — money moved into the account, counted alongside Contribution
+  as part of what the year had to work with.
+- **Transfer Out** (`Transfer_Out`) — money moved out. It sits immediately before Ending Balance
+  in both the table and the entry area, and **subtracts** from the ending balance.
+
+`Transfer_In` was originally called `Transfer`; it was renamed in place, so the rows entered
+before the split kept their values and `Transfer_Out` starts at 0 on them.
+
+##### The opening balance carries forward
+
+A super account opens a year on whatever it closed the previous one at, so **Opening Balance is
+filled in from the previous year's `Ending_Balance` for the same `Super_Code`** rather than typed
+again. It stays editable — the carried figure is a default, not a lock.
+
+The preceding year is **the one whose `End_Date` falls latest before the selected year's
+`Start_Date`**, which is the same rule `ETF_Stocks_FY_Reconciliation` uses to carry a portfolio's
+opening investment. That year having no row of its own gives **0**, and the lookup deliberately
+does *not* then reach further back: a missing year means the balance in between is unknown, not
+that it was zero, and a figure silently carried across a two-year gap would be wrong in a way
+nothing on the page would show.
+
+**Changing either the entry `Financial Year` or the entry `Super Code` dropdown re-reads it** —
+those two dropdowns are what say which row is being entered, so a figure left over from the
+previous selection would belong to a different row. That does overwrite anything already typed
+into the box. Changing `Currency` does not touch it. The two **filter** dropdowns at the top of
+the page do not either; they choose what the table shows, not what is being entered.
+
+Because the opening balance is the base every percentage measures against, re-reading it restates
+the rest of the entry area through the same chain.
+
+Selecting a stored row is the one case where the lookup does not run: `Filling` is set while the
+row is being loaded, so **a saved opening balance is shown as saved**. A figure entered by hand
+months ago — an account opened mid-year, say — is not quietly replaced by today's lookup.
+
+##### One row per account per year
+
+`Financial_Year` and `Super_Code` together identify a row — there is no key on the table — so:
+
+- **Add refuses a second row** for a year and account that already has one, and says to select and
+  update the existing one instead.
+- **Update matches on the pair the row was loaded with**, and refuses to move a row onto a year and
+  account that is already taken, which would otherwise leave two rows the page could not tell apart.
+- **Update and Delete both refuse when nothing is selected** rather than guessing which row was meant.
+
+Amounts are typed through the shared numeric filter, so a minus sign cannot be entered: a loss is
+expressed by the fees exceeding the returns, not by typing a negative. More than two decimal places
+is refused on save.
 
 ---
 

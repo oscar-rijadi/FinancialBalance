@@ -379,6 +379,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(576, 546);
+            this.ControlBox = false;
             this.Controls.Add(this.gvActivaPassiva);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.CmbAcctType);

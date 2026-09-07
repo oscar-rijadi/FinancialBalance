@@ -65,6 +65,13 @@ namespace FinancialBalance
             monthCalendar1.Hide();
         }
 
+        private void MnSuperProcess_Click(object sender, EventArgs e)
+        {
+            Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();
+            Super_Financial_Year.Show();
+            this.Close();
+        }
+
         private void MnDaily_Click(object sender, EventArgs e)
         {
             Daily_Input Daily_Input = new Daily_Input();

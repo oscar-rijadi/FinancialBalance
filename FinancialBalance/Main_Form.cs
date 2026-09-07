@@ -112,6 +112,13 @@ namespace FinancialBalance
             AnimationTimer.Enabled = true;
         }
 
+        private void MnSuperProcess_Click(object sender, EventArgs e)
+        {
+            Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();
+            Super_Financial_Year.Show();
+            this.Hide();
+        }
+
         private void MnSuperFundSetup_Click(object sender, EventArgs e)
         {
             Setup_Super_Fund Setup_Super_Fund = new Setup_Super_Fund();

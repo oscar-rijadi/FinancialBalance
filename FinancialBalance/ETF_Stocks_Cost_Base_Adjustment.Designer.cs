@@ -22,6 +22,7 @@
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPurchase = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,7 +75,8 @@
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnDaily,
             this.MnMonthlyClosing,
-            this.MnETFStockProcessGroup});
+            this.MnETFStockProcessGroup,
+            this.MnSuperProcess});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(1340, 24);
@@ -106,6 +108,13 @@
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
+            //
+            // MnSuperProcess
+            //
+            this.MnSuperProcess.Name = "MnSuperProcess";
+            this.MnSuperProcess.Size = new System.Drawing.Size(75, 20);
+            this.MnSuperProcess.Text = "&Super";
+            this.MnSuperProcess.Click += new System.EventHandler(this.MnSuperProcess_Click);
             //
             // MnETFStocksPrice
             //
@@ -403,35 +412,38 @@
             //
             // CmdCreate
             //
-            this.CmdCreate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.Location = new System.Drawing.Point(175, 304);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(100, 28);
             this.CmdCreate.TabIndex = 23;
             this.CmdCreate.Text = "&Add";
-            this.CmdCreate.UseVisualStyleBackColor = true;
+            this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
             //
             // CmdUpdate
             //
-            this.CmdUpdate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.Location = new System.Drawing.Point(285, 304);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(100, 28);
             this.CmdUpdate.TabIndex = 24;
             this.CmdUpdate.Text = "&Update";
-            this.CmdUpdate.UseVisualStyleBackColor = true;
+            this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
             //
             // CmdDel
             //
-            this.CmdDel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.Location = new System.Drawing.Point(395, 304);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(100, 28);
             this.CmdDel.TabIndex = 25;
             this.CmdDel.Text = "&Delete";
-            this.CmdDel.UseVisualStyleBackColor = true;
+            this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
             //
             // LblLots
@@ -512,13 +524,14 @@
             //
             // CmdRecalc
             //
-            this.CmdRecalc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdRecalc.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdRecalc.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdRecalc.Location = new System.Drawing.Point(19, 514);
             this.CmdRecalc.Name = "CmdRecalc";
             this.CmdRecalc.Size = new System.Drawing.Size(220, 30);
             this.CmdRecalc.TabIndex = 32;
             this.CmdRecalc.Text = "&Recalculate Cost Base";
-            this.CmdRecalc.UseVisualStyleBackColor = true;
+            this.CmdRecalc.UseVisualStyleBackColor = false;
             this.CmdRecalc.Click += new System.EventHandler(this.CmdRecalc_Click);
             //
             // LblResult
@@ -552,13 +565,14 @@
             //
             // CmdBack
             //
-            this.CmdBack.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.Location = new System.Drawing.Point(1210, 678);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 30);
             this.CmdBack.TabIndex = 35;
             this.CmdBack.Text = "&Back";
-            this.CmdBack.UseVisualStyleBackColor = true;
+            this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
             // ETF_Stocks_Cost_Base_Adjustment
@@ -568,6 +582,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(1340, 720);
+            this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.gvResult);
             this.Controls.Add(this.LblResult);
@@ -628,6 +643,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPurchase;

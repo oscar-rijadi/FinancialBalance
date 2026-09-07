@@ -261,6 +261,12 @@
     <Compile Include="Setup_Super.Designer.cs">
       <DependentUpon>Setup_Super.cs</DependentUpon>
     </Compile>
+    <Compile Include="Super_Financial_Year.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Super_Financial_Year.Designer.cs">
+      <DependentUpon>Super_Financial_Year.cs</DependentUpon>
+    </Compile>
     <Compile Include="Setup_ETF_Stocks_Suffix.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -374,6 +380,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_Super.resx">
       <DependentUpon>Setup_Super.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Super_Financial_Year.resx">
+      <DependentUpon>Super_Financial_Year.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_ETF_Stocks_Suffix.resx">
       <DependentUpon>Setup_ETF_Stocks_Suffix.cs</DependentUpon>

@@ -418,24 +418,26 @@
             //
             // CmdExcel
             //
-            this.CmdExcel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdExcel.Location = new System.Drawing.Point(1090, 552);
             this.CmdExcel.Name = "CmdExcel";
             this.CmdExcel.Size = new System.Drawing.Size(110, 30);
             this.CmdExcel.TabIndex = 40;
             this.CmdExcel.Text = "Generate Excel";
-            this.CmdExcel.UseVisualStyleBackColor = true;
+            this.CmdExcel.UseVisualStyleBackColor = false;
             this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
             //
             // CmdBack
             //
-            this.CmdBack.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.Location = new System.Drawing.Point(1210, 552);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 30);
             this.CmdBack.TabIndex = 41;
             this.CmdBack.Text = "Back";
-            this.CmdBack.UseVisualStyleBackColor = true;
+            this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
             // ETF_Stocks_FY_Historical
@@ -445,6 +447,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(1340, 620);
+            this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.LblAgg12);

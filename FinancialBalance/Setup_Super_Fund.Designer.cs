@@ -238,46 +238,50 @@
             //
             // CmdCreate
             //
-            this.CmdCreate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.Location = new System.Drawing.Point(240, 378);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
             this.CmdCreate.TabIndex = 5;
             this.CmdCreate.Text = "&Add";
-            this.CmdCreate.UseVisualStyleBackColor = true;
+            this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
             //
             // CmdUpdate
             //
-            this.CmdUpdate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.Location = new System.Drawing.Point(335, 378);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
             this.CmdUpdate.TabIndex = 6;
             this.CmdUpdate.Text = "&Update";
-            this.CmdUpdate.UseVisualStyleBackColor = true;
+            this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
             //
             // CmdDel
             //
-            this.CmdDel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.Location = new System.Drawing.Point(430, 378);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
             this.CmdDel.TabIndex = 7;
             this.CmdDel.Text = "&Delete";
-            this.CmdDel.UseVisualStyleBackColor = true;
+            this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
             //
             // CmdBack
             //
-            this.CmdBack.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.Location = new System.Drawing.Point(525, 378);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
             this.CmdBack.TabIndex = 8;
             this.CmdBack.Text = "&Back";
-            this.CmdBack.UseVisualStyleBackColor = true;
+            this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
             // Setup_Super_Fund
@@ -287,6 +291,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(640, 420);
+            this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.CmdUpdate);

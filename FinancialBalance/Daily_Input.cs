@@ -34,6 +34,13 @@ namespace FinancialBalance
             monthCalendar1.Hide();
         }
 
+        private void MnSuperProcess_Click(object sender, EventArgs e)
+        {
+            Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();
+            Super_Financial_Year.Show();
+            this.Close();
+        }
+
         private void MnMonthlyClosing_Click(object sender, EventArgs e)
         {
             Monthly_Closing Monthly_Closing = new Monthly_Closing();

@@ -298,13 +298,14 @@
             //
             // CmdExcel
             //
-            this.CmdExcel.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdExcel.Location = new System.Drawing.Point(714, 600);
             this.CmdExcel.Name = "CmdExcel";
             this.CmdExcel.Size = new System.Drawing.Size(110, 27);
             this.CmdExcel.TabIndex = 21;
             this.CmdExcel.Text = "Generate Excel";
-            this.CmdExcel.UseVisualStyleBackColor = true;
+            this.CmdExcel.UseVisualStyleBackColor = false;
             this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
             //
             // CmdBack

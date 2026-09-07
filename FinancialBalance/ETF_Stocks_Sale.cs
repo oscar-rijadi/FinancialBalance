@@ -58,6 +58,13 @@ namespace FinancialBalance
 
         //---- the menu -------------------------------------------------------------
 
+        private void MnSuperProcess_Click(object sender, EventArgs e)
+        {
+            Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();
+            Super_Financial_Year.Show();
+            this.Close();
+        }
+
         private void MnETFStocksCostBase_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Cost_Base_Adjustment ETF_Stocks_Cost_Base_Adjustment = new ETF_Stocks_Cost_Base_Adjustment();
