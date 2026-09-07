@@ -33,6 +33,7 @@
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksCostBase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPurchase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSale = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
@@ -91,6 +92,13 @@
             this.MnMonthlyClosing.Size = new System.Drawing.Size(107, 20);
             this.MnMonthlyClosing.Text = "&Monthly Closing";
             this.MnMonthlyClosing.Click += new System.EventHandler(this.MnMonthlyClosing_Click);
+            //
+            // MnETFStocksCostBase
+            //
+            this.MnETFStocksCostBase.Name = "MnETFStocksCostBase";
+            this.MnETFStocksCostBase.Size = new System.Drawing.Size(137, 20);
+            this.MnETFStocksCostBase.Text = "ETF/Stock &Cost Base Adjustment";
+            this.MnETFStocksCostBase.Click += new System.EventHandler(this.MnETFStocksCostBase_Click);
             // 
             // MnETFStockProcessGroup
             // 
@@ -99,6 +107,7 @@
             this.MnETFStocksPurchase,
             this.MnETFStocksSale,
             this.MnETFStocksDistribution,
+            this.MnETFStocksCostBase,
             this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
@@ -484,6 +493,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksCostBase;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPurchase;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSale;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;

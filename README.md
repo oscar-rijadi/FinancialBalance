@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Financial Year Reconciliation |
+| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Financial Year Reconciliation |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
@@ -110,6 +110,7 @@ flowchart LR
     PETFG --> ETB["ETF_Stocks_Purchase"]
     PETFG --> ETS["ETF_Stocks_Sale"]
     PETFG --> ETD["ETF_Stocks_Distribution"]
+    PETFG --> ECB["ETF_Stocks_Cost_Base_Adjustment"]
     PETFG --> ETR["ETF_Stocks_FY_Reconciliation"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -162,6 +163,7 @@ flowchart LR
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
+| `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
 | `ETF_Stocks_FY_Reconciliation` | Shown as **ETF/Stock Financial Year Reconciliation**. One financial year's result per portfolio, with an entry section that defaults every figure from the rest of the database. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
@@ -188,7 +190,7 @@ flowchart LR
 
 ## Data model
 
-Twenty-two tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty-three tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -311,6 +313,14 @@ erDiagram
         text Portfolio_Code PK "5 chars"
         text Description "50 chars"
         bool Is_Main
+    }
+    TblETFStocksCostBaseAdjustment {
+        text    Financial_Year "9 chars, joins TblFinancialYear"
+        text    Portfolio_Code "5 chars"
+        text    Full_Ticker "joins TblETFStocks"
+        text    Currency "3 chars"
+        text    Adjustment_Type "+ or -"
+        decimal Adjustment "2 dp, always positive"
     }
     TblETFStocksFinancialYear {
         text    Financial_Year "joins TblFinancialYear"
@@ -890,6 +900,100 @@ Like the transaction tables, this one has **no primary key** — the same ticker
 date — so update and delete match on **all eight of the row's original column values**, re-read from
 the table rather than taken from the display, and the form warns before touching more than one
 identical row.
+
+### Cost base adjustment
+
+`ETF_Stocks_Cost_Base_Adjustment`, shown as **ETF/Stock Cost Base Adjustment** under `Process` ▸
+ETF/Stock, records an adjustment to what a holding is treated as having cost in a given financial
+year — the kind of thing a fund's annual tax statement hands you — and can then spread that
+amount across the purchase lots the year rests on.
+
+The page has two halves. The top one keeps records in `TblETFStocksCostBaseAdjustment`; the
+bottom one applies an adjustment to `TblETFStocksPurchase`.
+
+#### The stored adjustments
+
+Three filters — Financial Year, Portfolio and Full Ticker, each with an `All` entry — narrow the
+table above the entry area. The Portfolio filter lists **descriptions** but matches on the code
+behind them. Below it, six inputs add, update and delete a record: Financial Year, Portfolio Code
+(with its description beside it), Full Ticker, Currency, Adjustment Type (`+` or `-`) and
+Adjustment.
+
+`Adjustment` is stored **positive**; the direction lives in `Adjustment_Type`, so a negative
+figure is refused with a message pointing at the type instead. The table has no key, so update
+and delete match on all six columns — identical rows are indistinguishable and would be changed
+together.
+
+#### The lots an adjustment applies to
+
+Choosing a **Financial Year**, **Portfolio Code** or **Full Ticker** in the entry area redraws a
+second table listing the purchase lots that year's cost base rests on:
+
+```
+Trans_Date  <= the year's End_Date
+Full_Ticker  = the chosen ticker
+Portfolio_Code = the chosen portfolio
+AND ( Is_Sold = False
+      OR (Is_Sold = True AND Sold_Date BETWEEN the year's Start_Date AND End_Date) )
+```
+
+so it holds everything still held at the year's end plus anything sold **during** that year, and
+excludes a lot bought after the year closed, one sold after it closed, and anything in another
+portfolio.
+
+> **The portfolio condition was not in the original specification.** Without it an adjustment
+> entered against one portfolio would rewrite the cost base of the same ticker's lots in every
+> other portfolio. Since the Portfolio Code dropdown is one of the three that redraw this table,
+> scoping to it is what makes that dropdown mean anything.
+
+| Column | Source |
+| --- | --- |
+| `Purchase Date` | `Trans_Date`, shown `dd-MMM-yyyy` |
+| `Unit` | `Unit` |
+| `Cost Base/Unit` | `Cost_Base`, with a dollar sign |
+| `Total Cost Base` | `Total_Cost_Base`, with a dollar sign |
+| `Real Total Cost Base` | `Real_Total_Cost_Base`, with a dollar sign |
+| `Sold Date` | `Sold_Date`, `dd-MMM-yyyy`, blank while held |
+| `Sale Id` | `Sale_Id`, blank while held |
+
+**Total Unit** under the table adds up the `Unit` column, and **Calculated Cost Base/Unit** is
+`Adjustment / Total Unit` to two decimal places. It is editable, so an awkward division can be
+overridden. With no lots in range it reads `0` rather than dividing by zero.
+
+#### Recalculate Cost Base
+
+The button walks the listed lots and rewrites each one:
+
+```
+Cost_Base            = Cost_Base +/- Calculated Cost Base/Unit    (per Adjustment Type)
+Total_Cost_Base      = round(Unit x new Cost_Base, 2) + Fee
+Real_Total_Cost_Base = new Total_Cost_Base, unless it was already 0
+```
+
+The lot keeps its own `Fee` in the restated total, which is the same shape the total is given
+everywhere else it is worked out — on entry, and when a part sale splits a lot. Ten units at
+`5.00` with a `2.50` fee total `52.50`; add `2.50` a unit and they total `77.50`, not `75.00`.
+
+A reinvested lot has a real cost of `0`, and **zero stays zero** — spreading an adjustment over it
+would invent money that was never paid.
+
+**The table above the button is deliberately left as it was.** Only the third table is re-read, so
+the figures the adjustment started from stay on screen next to the figures it produced, and the two
+can be compared line by line. Re-choosing the Financial Year, Portfolio Code or Full Ticker reloads
+the middle table from the database and clears the result.
+
+> **This rewrites stored purchases and cannot be undone.** The button says what it is about to do
+> — the amount per unit, the direction, how many rows and which ticker and portfolio — and asks
+> before doing it.
+>
+> **Pressing it a second time is refused.** Once an adjustment has been spread, the rows listed
+> above are the before picture and no longer match what is stored, so applying them again would
+> match nothing and quietly report no work done. The page says so instead, and points at the three
+> dropdowns as the way to read the current figures. That guard is per-selection, not per-record:
+> nothing marks a stored adjustment as having been applied, so re-selecting and pressing again
+> **will** apply it a second time.
+
+---
 
 ### Financial year reconciliation
 
@@ -1502,6 +1606,7 @@ C#.Net/
 │   ├── ETF_Stocks_Price.*            # prices + Yahoo sync
 │   ├── ETF_Stocks_Investment.*       # cash in / out of a portfolio
 │   ├── ETF_Stocks_Distribution.*     # distributions and dividends
+│   ├── ETF_Stocks_Cost_Base_Adjustment.*
 │   ├── ETF_Stocks_FY_Reconciliation.*
 │   ├── ETF_Stocks_FY_Historical.*     # read-only view of the above
 │   ├── ETF_Stocks_Portfolio_Summary.*

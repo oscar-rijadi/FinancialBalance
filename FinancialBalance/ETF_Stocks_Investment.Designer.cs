@@ -37,6 +37,7 @@
             this.MnETFStocksSale = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksCostBase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.LblGridCaption = new System.Windows.Forms.Label();
@@ -105,6 +106,7 @@
             this.MnETFStocksPurchase,
             this.MnETFStocksSale,
             this.MnETFStocksDistribution,
+            this.MnETFStocksCostBase,
             this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
@@ -131,6 +133,13 @@
             this.MnETFStocksDistribution.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksDistribution.Text = "ETF/Stock &Distribution/Dividend";
             this.MnETFStocksDistribution.Click += new System.EventHandler(this.MnETFStocksDistribution_Click);
+            //
+            // MnETFStocksCostBase
+            //
+            this.MnETFStocksCostBase.Name = "MnETFStocksCostBase";
+            this.MnETFStocksCostBase.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksCostBase.Text = "ETF/Stock &Cost Base Adjustment";
+            this.MnETFStocksCostBase.Click += new System.EventHandler(this.MnETFStocksCostBase_Click);
             //
             // MnETFStocksPrice
             //
@@ -567,6 +576,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSale;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksCostBase;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label LblGridCaption;

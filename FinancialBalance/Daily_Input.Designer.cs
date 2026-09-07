@@ -38,6 +38,7 @@
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksCostBase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbDD = new System.Windows.Forms.ComboBox();
@@ -162,6 +163,7 @@
             this.MnETFStocksPurchase,
             this.MnETFStocksSale,
             this.MnETFStocksDistribution,
+            this.MnETFStocksCostBase,
             this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
@@ -195,6 +197,13 @@
             this.MnETFStocksInvestment.Size = new System.Drawing.Size(137, 20);
             this.MnETFStocksInvestment.Text = "ETF/Stock &Investment";
             this.MnETFStocksInvestment.Click += new System.EventHandler(this.MnETFStocksInvestment_Click);
+            //
+            // MnETFStocksCostBase
+            //
+            this.MnETFStocksCostBase.Name = "MnETFStocksCostBase";
+            this.MnETFStocksCostBase.Size = new System.Drawing.Size(104, 20);
+            this.MnETFStocksCostBase.Text = "ETF/Stock &Cost Base Adjustment";
+            this.MnETFStocksCostBase.Click += new System.EventHandler(this.MnETFStocksCostBase_Click);
             // 
             // MnETFStocksPrice
             // 
@@ -1591,6 +1600,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksCostBase;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbDD;

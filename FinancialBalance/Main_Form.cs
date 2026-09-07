@@ -112,6 +112,13 @@ namespace FinancialBalance
             AnimationTimer.Enabled = true;
         }
 
+        private void MnETFStocksCostBase_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Cost_Base_Adjustment ETF_Stocks_Cost_Base_Adjustment = new ETF_Stocks_Cost_Base_Adjustment();
+            ETF_Stocks_Cost_Base_Adjustment.Show();
+            this.Hide();
+        }
+
         private void MnDailyInput_Click(object sender, EventArgs e)
         {
             Daily_Input Daily_Input = new Daily_Input();

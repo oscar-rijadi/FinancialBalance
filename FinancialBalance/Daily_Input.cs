@@ -69,6 +69,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnETFStocksCostBase_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Cost_Base_Adjustment ETF_Stocks_Cost_Base_Adjustment = new ETF_Stocks_Cost_Base_Adjustment();
+            ETF_Stocks_Cost_Base_Adjustment.Show();
+            this.Close();
+        }
+
         private void MnETFStocksPrice_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Price ETF_Stocks_Price = new ETF_Stocks_Price();
