@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -29,6 +29,13 @@ namespace FinancialBalance
         }
 
         //---- the menu -------------------------------------------------------------
+
+        private void MnETFStocksInvPlanSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Investment_Plan Setup_ETF_Stocks_Investment_Plan = new Setup_ETF_Stocks_Investment_Plan();
+            Setup_ETF_Stocks_Investment_Plan.Show();
+            this.Close();
+        }
 
         private void MnAcctTypeRefSetup_Click(object sender, EventArgs e)
         {

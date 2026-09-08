@@ -225,6 +225,12 @@
     <Compile Include="Setup_ETF_Stocks_Div_Alloc.Designer.cs">
       <DependentUpon>Setup_ETF_Stocks_Div_Alloc.cs</DependentUpon>
     </Compile>
+    <Compile Include="Setup_ETF_Stocks_Investment_Plan.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Setup_ETF_Stocks_Investment_Plan.Designer.cs">
+      <DependentUpon>Setup_ETF_Stocks_Investment_Plan.cs</DependentUpon>
+    </Compile>
     <Compile Include="Setup_ETF_Stocks_Div_Type.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -368,6 +374,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_ETF_Stocks_Div_Alloc.resx">
       <DependentUpon>Setup_ETF_Stocks_Div_Alloc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Setup_ETF_Stocks_Investment_Plan.resx">
+      <DependentUpon>Setup_ETF_Stocks_Investment_Plan.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_ETF_Stocks_Div_Type.resx">
       <DependentUpon>Setup_ETF_Stocks_Div_Type.cs</DependentUpon>

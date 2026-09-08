@@ -42,6 +42,7 @@
             this.MnCurrSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksInvPlanSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -189,10 +190,18 @@
             this.MnETFStocksFlagSetup,
             this.MnETFStocksDivTypeSetup,
             this.MnETFStocksDivSetup,
-            this.MnETFStocksDivAllocSetup});
+            this.MnETFStocksDivAllocSetup,
+            this.MnETFStocksInvPlanSetup});
             this.MnETFStockGroup.Name = "MnETFStockGroup";
             this.MnETFStockGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockGroup.Text = "&ETF/Stock";
+            // 
+            // MnETFStocksInvPlanSetup
+            // 
+            this.MnETFStocksInvPlanSetup.Name = "MnETFStocksInvPlanSetup";
+            this.MnETFStocksInvPlanSetup.Size = new System.Drawing.Size(140, 20);
+            this.MnETFStocksInvPlanSetup.Text = "ETF/Stock &Investment Plan Setup";
+            this.MnETFStocksInvPlanSetup.Click += new System.EventHandler(this.MnETFStocksInvPlanSetup_Click);
             // 
             // MnETFStocksSuffixSetup
             // 
@@ -425,6 +434,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnCurrSetup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;

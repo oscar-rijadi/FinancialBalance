@@ -47,3 +47,4 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialB
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Super.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Super_Financial_Year.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Super_Balance_Historical.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_ETF_Stocks_Investment_Plan.resources

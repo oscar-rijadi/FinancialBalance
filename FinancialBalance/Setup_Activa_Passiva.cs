@@ -23,6 +23,13 @@ namespace FinancialBalance
 		    Get_Data();
         }
 
+        private void MnETFStocksInvPlanSetup_Click(object sender, EventArgs e)
+        {
+            Setup_ETF_Stocks_Investment_Plan Setup_ETF_Stocks_Investment_Plan = new Setup_ETF_Stocks_Investment_Plan();
+            Setup_ETF_Stocks_Investment_Plan.Show();
+            this.Close();
+        }
+
         private void MnSuperFundSetup_Click(object sender, EventArgs e)
         {
             Setup_Super_Fund Setup_Super_Fund = new Setup_Super_Fund();

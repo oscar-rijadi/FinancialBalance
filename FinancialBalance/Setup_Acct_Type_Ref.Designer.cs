@@ -41,6 +41,7 @@
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnFinancialYearSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksInvPlanSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -207,10 +208,18 @@
             this.MnETFStocksFlagSetup,
             this.MnETFStocksDivTypeSetup,
             this.MnETFStocksDivSetup,
-            this.MnETFStocksDivAllocSetup});
+            this.MnETFStocksDivAllocSetup,
+            this.MnETFStocksInvPlanSetup});
             this.MnETFStockGroup.Name = "MnETFStockGroup";
             this.MnETFStockGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockGroup.Text = "&ETF/Stock";
+            // 
+            // MnETFStocksInvPlanSetup
+            // 
+            this.MnETFStocksInvPlanSetup.Name = "MnETFStocksInvPlanSetup";
+            this.MnETFStocksInvPlanSetup.Size = new System.Drawing.Size(140, 20);
+            this.MnETFStocksInvPlanSetup.Text = "ETF/Stock &Investment Plan Setup";
+            this.MnETFStocksInvPlanSetup.Click += new System.EventHandler(this.MnETFStocksInvPlanSetup_Click);
             // 
             // MnETFStocksSuffixSetup
             // 
@@ -369,6 +378,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnFinancialYearSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperSetup;

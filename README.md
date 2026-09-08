@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Financial Year Reconciliation |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
-| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation |
+| `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
@@ -144,6 +144,7 @@ flowchart LR
     ETFG --> SDT["Setup_ETF_Stocks_Div_Type"]
     ETFG --> SDV["Setup_ETF_Stocks_Div"]
     ETFG --> SDA["Setup_ETF_Stocks_Div_Alloc"]
+    ETFG --> SIP["Setup_ETF_Stocks_Investment_Plan"]
     ADMIN --> SUPG{{"Super"}}
     SUPG --> SSF["Setup_Super_Fund"]
     SUPG --> SSU["Setup_Super"]
@@ -197,6 +198,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
+| `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, and the percentage of each that a ticker is meant to take. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
 | `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
 
@@ -204,7 +206,7 @@ flowchart LR
 
 ## Data model
 
-Twenty-six tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty-eight tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -235,6 +237,8 @@ erDiagram
     TblCurrCode     ||--o{ TblETFStocksPortfolio : "denominates"
     TblETFStocksDiversificationType ||--o{ TblETFStocksDiversification : "groups"
     TblETFStocksDiversification ||--o{ TblETFStocksDiversificationAllocation : "allocated by"
+    TblETFStocksInvestmentPlan ||--o{ TblETFStocksInvestmentPlanAllocation : "allocates"
+    TblETFStocks    ||--o{ TblETFStocksInvestmentPlanAllocation : "targeted by"
     TblSuperFund    ||--o{ TblSuper : "holds"
     TblSuper        ||--o{ TblSuperFinancialYear : "reported by"
     TblFinancialYear ||--o{ TblSuperFinancialYear : "covers"
@@ -331,6 +335,14 @@ erDiagram
         text Portfolio_Code PK "5 chars"
         text Description "50 chars"
         bool Is_Main
+    }
+    TblETFStocksInvestmentPlan {
+        text    Name "50 chars, the plan's name"
+    }
+    TblETFStocksInvestmentPlanAllocation {
+        text    Investment_Plan_Name "50 chars, names TblETFStocksInvestmentPlan.Name"
+        text    Full_Ticker "31 chars, joins TblETFStocks"
+        decimal Allocation "2 dp, a percentage"
     }
     TblSuperFund {
         text    Name "100 chars, the fund's name"
@@ -1655,6 +1667,7 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Div_Type.*
 │   ├── Setup_ETF_Stocks_Div.*
 │   ├── Setup_ETF_Stocks_Div_Alloc.*
+│   ├── Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -1973,6 +1986,56 @@ The page's name contains an `&`, which is the one thing a WinForms caption canno
 The menu entry doubles it (`"&Super Balance && Historical Data"`) and the heading label sets
 **`UseMnemonic = false`** — the only label in the app that does. Left alone, a single `&` is read
 as the accelerator marker: it disappears and underlines the `H` after it.
+
+---
+
+### Investment plans
+
+`Administration` ▸ ETF/Stock ▸ Investment Plan Setup holds **target allocations**: a named plan,
+and the percentage of it each ticker is meant to take. Nothing else reads these two tables yet —
+they are reference data, recording an intention rather than anything that has happened.
+
+The page is two sections stacked, each a grid over its own Add / Update / Delete row:
+
+1. **The plans** — `TblETFStocksInvestmentPlan` is a single column, `Name`.
+2. **One plan's allocations** — an **Investment Plan** dropdown chooses which plan the table below
+   shows, drawn from `TblETFStocksInvestmentPlanAllocation`. Its three columns are Investment
+   Plan, Full Ticker and Allocation, the last **written with a per-cent sign** since the stored
+   figure is a percentage. The entry row below takes a plan, a `Full_Ticker` from `TblETFStocks`,
+   and an allocation through the shared two-decimal numeric filter.
+
+#### Total Percentage
+
+Under the allocation table, **Total Percentage** sums the allocations shown and is **green at
+exactly 100, red at anything else** — including at 0, where nothing has been allocated yet. A
+plan only means anything once its allocations account for the whole of it.
+
+**Nothing is refused for failing to total 100.** The label is the feedback, not a gate: a plan
+part-way through being entered is a normal state, and blocking a save would make it impossible to
+build one up a row at a time. (`Setup_ETF_Stocks_Div_Alloc` does refuse, because a diversification
+split that does not total 100 would silently distort the pie charts that read it. Nothing reads
+these allocations yet.)
+
+#### How the two tables are kept in step
+
+An allocation names its plan as **text, not a reference** — there are no foreign keys anywhere in
+this database — so the page guards the join itself, the same way `Setup_Super_Fund` does for
+super funds:
+
+- **Renaming a plan carries its allocations with it.** The page counts them, asks before going
+  ahead, then updates both tables. Without that, renaming would leave them naming a plan that no
+  longer exists.
+- **A plan that still has allocations cannot be deleted.** The page says how many and points at
+  the section below. Deleting would leave the same orphans by another route.
+- **Duplicate plan names are refused**, and so is **the same ticker twice in one plan** — a
+  repeated ticker would make the total meaningless.
+
+Neither table has a key. A plan is identified by its `Name`; an allocation by its plan and ticker
+together, and its update and delete match on all three of a row's original values.
+
+The entry section's plan dropdown **follows the one above the table**, so an allocation is added
+to the plan being looked at rather than to whichever was last left selected. It can still be
+changed by hand to file a row against a different plan.
 
 ---
 
