@@ -60,6 +60,8 @@
             this.CmdAllocUpdate = new System.Windows.Forms.Button();
             this.CmdAllocDel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
+            this.pnlChart = new System.Windows.Forms.FlowLayoutPanel();
+            this.LblChartNote = new System.Windows.Forms.Label();
             this.MainMenu1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvPlan)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvAlloc)).BeginInit();
@@ -77,7 +79,7 @@
             this.MnSuperGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
-            this.MainMenu1.Size = new System.Drawing.Size(700, 24);
+            this.MainMenu1.Size = new System.Drawing.Size(1160, 24);
             this.MainMenu1.TabIndex = 0;
             //
             // MnAcctTypeRefSetup
@@ -216,7 +218,7 @@
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.Label21.Location = new System.Drawing.Point(20, 30);
             this.Label21.Name = "Label21";
-            this.Label21.Size = new System.Drawing.Size(660, 32);
+            this.Label21.Size = new System.Drawing.Size(1120, 32);
             this.Label21.TabIndex = 1;
             this.Label21.Text = "ETF/STOCK INVESTMENT PLAN SETUP";
             this.Label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -487,7 +489,7 @@
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(549, 618);
+            this.CmdBack.Location = new System.Drawing.Point(1009, 618);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 28);
             this.CmdBack.TabIndex = 24;
@@ -495,14 +497,38 @@
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
+            // pnlChart
+            //
+            this.pnlChart.BackColor = System.Drawing.Color.Transparent;
+            this.pnlChart.AutoScroll = true;
+            this.pnlChart.Location = new System.Drawing.Point(680, 76);
+            this.pnlChart.Name = "pnlChart";
+            this.pnlChart.Size = new System.Drawing.Size(460, 532);
+            this.pnlChart.TabIndex = 25;
+            //
+            // LblChartNote
+            //
+            this.LblChartNote.BackColor = System.Drawing.Color.Transparent;
+            this.LblChartNote.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblChartNote.ForeColor = System.Drawing.Color.Black;
+            this.LblChartNote.Location = new System.Drawing.Point(680, 320);
+            this.LblChartNote.Name = "LblChartNote";
+            this.LblChartNote.Size = new System.Drawing.Size(460, 40);
+            this.LblChartNote.TabIndex = 26;
+            this.LblChartNote.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.LblChartNote.ForeColor = System.Drawing.Color.DimGray;
+            this.LblChartNote.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            //
             // Setup_ETF_Stocks_Investment_Plan
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(700, 680);
+            this.ClientSize = new System.Drawing.Size(1160, 680);
             this.ControlBox = false;
+            this.Controls.Add(this.LblChartNote);
+            this.Controls.Add(this.pnlChart);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdAllocDel);
             this.Controls.Add(this.CmdAllocUpdate);
@@ -589,5 +615,7 @@
         public System.Windows.Forms.Button CmdAllocUpdate;
         public System.Windows.Forms.Button CmdAllocDel;
         public System.Windows.Forms.Button CmdBack;
+        public System.Windows.Forms.FlowLayoutPanel pnlChart;
+        public System.Windows.Forms.Label LblChartNote;
     }
 }

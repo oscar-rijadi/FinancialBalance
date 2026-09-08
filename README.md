@@ -198,7 +198,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
-| `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, and the percentage of each that a ticker is meant to take. |
+| `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
 | `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
 
@@ -2015,6 +2015,51 @@ part-way through being entered is a normal state, and blocking a save would make
 build one up a row at a time. (`Setup_ETF_Stocks_Div_Alloc` does refuse, because a diversification
 split that does not total 100 would silently distort the pie charts that read it. Nothing reads
 these allocations yet.)
+
+#### The diversification charts
+
+Down the right-hand side, **three pie charts** show **what the plan would hold if it were
+followed**, one per diversification type, in this order:
+
+| Chart | `Diversification_Type` |
+| --- | --- |
+| Asset Class | `Asset Class` |
+| Geographic | `Geographic` |
+| Investment Style | `Investment Style` |
+
+All three appear together, and only when the selected plan **has allocations and they total
+exactly 100** — below that the picture would be of a plan that is not finished, and the shares
+would not be out of a whole. When they are not shown, a line in their place says what is missing.
+
+They share one calculation. Each ticker's share of the plan is split across that type's values in
+the proportions recorded against the ticker on **ETF/Stock Diversification Allocation**:
+
+```
+contribution = (Percentage / 100) * Allocation
+```
+
+and the contributions are summed per `Diversification_Name`. A ticker allocated 40 % of the plan
+and recorded as 70 % equities contributes 28 points to Equities; a second ticker's equities share
+adds to the same slice rather than replacing it.
+
+**A ticker with no rows of a given type leaves part of the plan unaccounted for**, and so does one
+whose own percentages do not reach 100. That remainder is shown as a grey **`(unallocated)`**
+slice rather than being dropped — the same thing `ETF_Stocks_Portfolio_Diversification` does, and
+for the same reason: a pie quietly totalling less than 100 would look complete when it is not.
+The three charts routinely have **different remainders**, since a ticker classified by asset class
+need not be classified geographically. A type with nothing recorded against it at all shows a
+single `(unallocated)` slice — which is the honest answer, and says the classification is missing
+rather than hiding the chart.
+
+The whole of `TblETFStocksDiversificationAllocation` is read in **one query** and combined in
+memory, rather than one query per type or per ticker: OleDb cannot hold two readers open on the
+same connection, and the table is a few dozen rows. A row of some other diversification type is
+read past rather than charted.
+
+The three stack in a **scrolling** column, as `ETF_Stocks_Portfolio_Diversification`'s three do —
+three pies do not fit a column of any sensible height. Each is drawn a little narrower than that
+page's (410 rather than 440) so they clear the panel's vertical scrollbar instead of provoking a
+horizontal one as well.
 
 #### How the two tables are kept in step
 

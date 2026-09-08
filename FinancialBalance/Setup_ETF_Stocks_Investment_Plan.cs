@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,12 +8,16 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data.OleDb;
 using System.Globalization;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace FinancialBalance
 {
     public partial class Setup_ETF_Stocks_Investment_Plan : Form
     {
         bool Filling;
+
+        //One pie per diversification type, drawn in this order
+        static readonly string[] ChartTypes = new string[] { "Asset Class", "Geographic", "Investment Style" };
 
         //Neither table has a key. A plan is identified by its Name, and an allocation by the
         //plan and ticker together, so those are what an update or delete matches on.
@@ -595,6 +599,7 @@ namespace FinancialBalance
 
                 TmpTotal = Math.Round(TmpTotal, 2);
                 Show_Total(TmpTotal);
+                Show_Chart(TmpTotal);
                 if (CmbPlan.Items.Count == 0)
                 {
                     LblNote2.Text = "No investment plans yet - add one above first.";
@@ -813,6 +818,215 @@ namespace FinancialBalance
             {
                 MessageBox.Show(ex.Message, "Error Message");
             }
+        }
+
+        //---- the Asset Class chart -------------------------------------------------
+        //
+        //What the plan would hold by asset class if it were followed. Each ticker's share of the
+        //plan is split across its asset classes in the proportions recorded against it:
+        //
+        //    contribution = (Percentage / 100) * Allocation
+        //
+        //and the contributions are then summed per asset class. A ticker allocated 40 % of the
+        //plan and recorded as 70 % equities contributes 28 points to Equities.
+
+        //Every charted row, keyed by type and then by ticker. Read in one pass rather than one
+        //query per type or per ticker: OleDb cannot hold two readers open on the same connection,
+        //and the whole table is a few dozen rows.
+        private Dictionary<string, Dictionary<string, List<KeyValuePair<string, double>>>> Read_Diversification()
+        {
+            Dictionary<string, Dictionary<string, List<KeyValuePair<string, double>>>> ByType =
+                new Dictionary<string, Dictionary<string, List<KeyValuePair<string, double>>>>();
+            foreach (string TmpType in ChartTypes)
+            {
+                ByType.Add(TmpType, new Dictionary<string, List<KeyValuePair<string, double>>>());
+            }
+
+            Mdl1.Ssql = "select [Full_Ticker], [Diversification_Type], [Diversification_Name], [Percentage]"
+                      + " from TblETFStocksDiversificationAllocation"
+                      + " order by [Full_Ticker], [Diversification_Name]";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string TmpTicker = Read_Text(reader["Full_Ticker"]);
+                string TmpType = Read_Text(reader["Diversification_Type"]);
+                //a type nothing is charted for is read past rather than kept
+                if (TmpTicker == "" || !ByType.ContainsKey(TmpType))
+                {
+                    continue;
+                }
+                Dictionary<string, List<KeyValuePair<string, double>>> ByTicker = ByType[TmpType];
+                if (!ByTicker.ContainsKey(TmpTicker))
+                {
+                    ByTicker.Add(TmpTicker, new List<KeyValuePair<string, double>>());
+                }
+                ByTicker[TmpTicker].Add(new KeyValuePair<string, double>(
+                    Read_Text(reader["Diversification_Name"]), Read_Double(reader["Percentage"])));
+            }
+            reader.Close();
+            return ByType;
+        }
+
+        //The plan's allocations, as they were read for the table above
+        private List<KeyValuePair<string, double>> Read_Plan_Allocations(string parPlan)
+        {
+            List<KeyValuePair<string, double>> Rows = new List<KeyValuePair<string, double>>();
+            Mdl1.Ssql = "select [Full_Ticker], [Allocation] from TblETFStocksInvestmentPlanAllocation"
+                      + " where [Investment_Plan_Name] = '" + Quote(parPlan) + "'"
+                      + " order by [Full_Ticker]";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                Rows.Add(new KeyValuePair<string, double>(
+                    Read_Text(reader["Full_Ticker"]), Read_Double(reader["Allocation"])));
+            }
+            reader.Close();
+            return Rows;
+        }
+
+        //Names come back in the order they were first met, so the slices keep a stable order
+        //rather than jumping about between refreshes.
+        private void Slices_For(Dictionary<string, List<KeyValuePair<string, double>>> parByTicker,
+                                List<KeyValuePair<string, double>> parAllocations,
+                                out List<string> parNames, out List<double> parValues)
+        {
+            parNames = new List<string>();
+            parValues = new List<double>();
+
+            Dictionary<string, List<KeyValuePair<string, double>>> ByTicker = parByTicker;
+            List<string> Order = new List<string>();
+            Dictionary<string, double> Totals = new Dictionary<string, double>();
+            double Covered = 0;
+
+            foreach (KeyValuePair<string, double> Alloc in parAllocations)
+            {
+                if (!ByTicker.ContainsKey(Alloc.Key))
+                {
+                    continue;
+                }
+                foreach (KeyValuePair<string, double> Div in ByTicker[Alloc.Key])
+                {
+                    double Share = Div.Value / 100 * Alloc.Value;
+                    if (!Totals.ContainsKey(Div.Key))
+                    {
+                        Totals.Add(Div.Key, 0);
+                        Order.Add(Div.Key);
+                    }
+                    Totals[Div.Key] = Totals[Div.Key] + Share;
+                    Covered = Covered + Share;
+                }
+            }
+
+            foreach (string Name in Order)
+            {
+                parNames.Add(Name);
+                parValues.Add(Math.Round(Totals[Name], 2));
+            }
+
+            //A ticker with no rows of this type, or one whose own percentages do not reach 100,
+            //leaves part of the plan unaccounted for. Showing that as a slice is the same thing
+            //ETF/Stock Portfolio Diversification does - a pie quietly totalling less than 100
+            //would look complete when it is not.
+            double Rest = Math.Round(100 - Covered, 2);
+            if (Rest > 0)
+            {
+                parNames.Add("(unallocated)");
+                parValues.Add(Rest);
+            }
+        }
+
+        //Only drawn for a plan that has allocations and whose allocations total exactly 100 -
+        //below that the picture would be of a plan that is not finished, and the shares would
+        //not be out of a whole.
+        private void Show_Chart(double parTotal)
+        {
+            pnlChart.Controls.Clear();
+            string TmpPlan = CmbPlan.Text.Trim();
+            bool Wanted = (TmpPlan != "" && gvAlloc.Rows.Count > 0 && parTotal == 100);
+
+            pnlChart.Visible = Wanted;
+            LblChartNote.Visible = !Wanted;
+            if (!Wanted)
+            {
+                LblChartNote.Text = "The charts appear once this plan's allocations total 100 %.";
+                return;
+            }
+
+            //both tables are read once and then reused for all three charts
+            Dictionary<string, Dictionary<string, List<KeyValuePair<string, double>>>> ByType =
+                Read_Diversification();
+            List<KeyValuePair<string, double>> Allocations = Read_Plan_Allocations(TmpPlan);
+
+            foreach (string TmpType in ChartTypes)
+            {
+                List<string> Names;
+                List<double> Values;
+                Slices_For(ByType[TmpType], Allocations, out Names, out Values);
+                pnlChart.Controls.Add(Build_Chart(TmpType, Names, Values));
+            }
+        }
+
+        //Built the same way as the pies on ETF/Stock Portfolio Diversification
+        private Chart Build_Chart(string parTitle, List<string> parNames, List<double> parValues)
+        {
+            Chart ch = new Chart();
+            //narrower than the 440 the Portfolio Diversification pies use: three of these stack
+            //in a 460-wide column, so they have to clear its vertical scrollbar or the panel
+            //grows a horizontal one as well
+            ch.Width = 410;
+            ch.Height = 300;
+            ch.Margin = new Padding(8);
+            ch.BackColor = System.Drawing.Color.Transparent;
+
+            ChartArea ca = new ChartArea("ChartArea1");
+            ca.BackColor = System.Drawing.Color.Transparent;
+            ch.ChartAreas.Add(ca);
+
+            Title ti = new Title(parTitle);
+            ti.Font = new System.Drawing.Font("Arial", 11F, System.Drawing.FontStyle.Bold);
+            ti.ForeColor = System.Drawing.Color.FromArgb(0, 0, 192);
+            ch.Titles.Add(ti);
+
+            Legend le = new Legend("Legend1");
+            le.Docking = Docking.Bottom;
+            le.Font = new System.Drawing.Font("Arial", 8F);
+            ch.Legends.Add(le);
+
+            Series se = new Series("Allocation");
+            se.ChartType = SeriesChartType.Pie;
+            se.Legend = "Legend1";
+            se.Font = new System.Drawing.Font("Arial", 8F);
+            ch.Series.Add(se);
+
+            for (int i = 0; i < parNames.Count; i++)
+            {
+                if (parValues[i] <= 0)
+                {
+                    continue;
+                }
+                int idx = se.Points.AddXY(parNames[i], Math.Round(parValues[i], 2));
+                DataPoint pt = se.Points[idx];
+                pt.LegendText = parNames[i] + "  " + parValues[i].ToString("#,##0.00") + " %";
+                pt.Label = parValues[i].ToString("#,##0.0") + " %";
+                pt.ToolTip = parNames[i] + " : " + parValues[i].ToString("#,##0.00") + " % of the plan";
+                if (parNames[i] == "(unallocated)")
+                {
+                    pt.Color = System.Drawing.Color.Gainsboro;
+                }
+            }
+
+            if (se.Points.Count == 0)
+            {
+                Title none = new Title("nothing allocated");
+                none.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Italic);
+                none.ForeColor = System.Drawing.Color.DimGray;
+                none.Docking = Docking.Bottom;
+                ch.Titles.Add(none);
+            }
+
+            return ch;
         }
 
         //---- refreshing ------------------------------------------------------------
