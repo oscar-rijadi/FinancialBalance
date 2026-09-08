@@ -48,6 +48,7 @@
             this.MnYearStat = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearSumm = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockPortfolioGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksInvPlan = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperBalance = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPortfolioSummary = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPortfolioDiv = new System.Windows.Forms.ToolStripMenuItem();
@@ -252,10 +253,18 @@
             this.MnETFStocksPortfolioDiv,
             this.MnETFStocksDividendHistory,
             this.MnETFStocksPriceChart,
-            this.MnETFStocksFYHistorical});
+            this.MnETFStocksFYHistorical,
+            this.MnETFStocksInvPlan});
             this.MnETFStockPortfolioGroup.Name = "MnETFStockPortfolioGroup";
             this.MnETFStockPortfolioGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockPortfolioGroup.Text = "&ETF/Stock";
+            // 
+            // MnETFStocksInvPlan
+            // 
+            this.MnETFStocksInvPlan.Name = "MnETFStocksInvPlan";
+            this.MnETFStocksInvPlan.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksInvPlan.Text = "ETF/Stock In&vestment Plan";
+            this.MnETFStocksInvPlan.Click += new System.EventHandler(this.MnETFStocksInvPlan_Click);
             // 
             // MnSuperBalance
             // 
@@ -912,6 +921,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnYearStat;
         public System.Windows.Forms.ToolStripMenuItem MnYearSumm;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockPortfolioGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlan;
         public System.Windows.Forms.ToolStripMenuItem MnSuperBalance;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioSummary;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioDiv;

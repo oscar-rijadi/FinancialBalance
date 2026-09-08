@@ -112,6 +112,13 @@ namespace FinancialBalance
             AnimationTimer.Enabled = true;
         }
 
+        private void MnETFStocksInvPlan_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Investment_Plan ETF_Stocks_Investment_Plan = new ETF_Stocks_Investment_Plan();
+            ETF_Stocks_Investment_Plan.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksInvPlanSetup_Click(object sender, EventArgs e)
         {
             Setup_ETF_Stocks_Investment_Plan Setup_ETF_Stocks_Investment_Plan = new Setup_ETF_Stocks_Investment_Plan();

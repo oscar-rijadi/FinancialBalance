@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
@@ -127,6 +127,7 @@ flowchart LR
     PORTG --> PDVH["ETF_Stocks_Dividend_History"]
     PORTG --> PPCH["ETF_Stocks_Price_Chart"]
     PORTG --> PFYH["ETF_Stocks_FY_Historical"]
+    PORTG --> PIVP["ETF_Stocks_Investment_Plan"]
     MAIN --> SBH["Super_Balance_Historical"]
 
     MAIN --> ADMIN{{"Administration"}}
@@ -186,6 +187,7 @@ flowchart LR
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
+| `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -1668,6 +1670,7 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Div.*
 │   ├── Setup_ETF_Stocks_Div_Alloc.*
 │   ├── Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
+│   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -2081,6 +2084,51 @@ together, and its update and delete match on all three of a row's original value
 The entry section's plan dropdown **follows the one above the table**, so an allocation is added
 to the plan being looked at rather than to whichever was last left selected. It can still be
 changed by hand to file a row against a different plan.
+
+---
+
+### Applying an investment plan
+
+`Inquiry` ▸ ETF/Stock ▸ Investment Plan takes a plan from
+[Investment plans](#investment-plans) and works out **what putting a given amount of money in
+would come to**. It is read-only — nothing on it writes anywhere.
+
+Choosing a plan fills the first table, **Full Ticker** and **Allocation**, and the note above it
+says how many allocations there are and what they total. Below that, **Investment Amount** takes a
+figure through the shared two-decimal numeric filter, and the second table shows the same tickers
+with an **Amount**:
+
+```
+Amount = (Allocation * Investment Amount) / 100
+```
+
+each rounded to the cent. **Total Investment Amount** is **the Amount column added up**, not the
+figure typed in: rounding each row to the cent can leave the two a cent or so apart, and what sits
+under a column should be that column's total. They agree exactly whenever the allocations total
+100.
+
+The **same three diversification pies** the setup page draws appear down the right-hand side, from
+the same rows and by the same calculation — including the same rule that they appear only once the
+plan's allocations total exactly 100. **The two tables and the amounts do not wait for that**: a
+plan part-way through being built still shows its allocations and what they would come to, and
+only the charts hold back, since their shares would not be out of a whole.
+
+Typing in the amount recalculates the second table alone. The allocations and the charts depend on
+the plan, not the amount, so they are left as they are.
+
+#### The Excel export
+
+**Generate to Excel** writes one sheet holding both tables and the total, named:
+
+```
+<form name>_yyyyMMdd_HHmmss_<investment plan>_<investment amount>.xlsx
+```
+
+The form's own `Name` leads, as on every other export — taken from `this.Name` rather than typed
+out, so it cannot drift from the form it belongs to. The date and time are separated by an
+underscore here, unlike the other exports' unbroken `yyyyMMddHHmmss`. An export with nothing on
+screen is refused rather than writing an empty workbook, and every cell is written as **text** for
+the reason given under [Excel exports](#excel-exports).
 
 ---
 
