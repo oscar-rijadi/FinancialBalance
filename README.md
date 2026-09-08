@@ -510,7 +510,7 @@ chosen date and nothing else, so neither grid carries a column that is always bl
 | `Unit` | Buy: typed, numeric, not negative, at most 4 decimal places. **Sell: derived** — see below. |
 | `Cost_Base`, `Fee` | Buy only. Numeric, not negative, at most 2 decimal places. |
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
-| `Real_Total_Cost_Base` | Buy only. `0` when the **Reinvestment** box is ticked, otherwise `Total_Cost_Base`. |
+| `Real_Total_Cost_Base` | Buy only. `0` when the **Reinvestment** box is ticked, otherwise `Total_Cost_Base`. **Add, Update and Delete all move the portfolio's running balance** by it — see below. |
 | `Original_Cost_Base` | Buy only. Typed, with the same guard as `Cost_Base` — digits and a decimal point, no minus. Holds what the lot originally cost, alongside the `Cost_Base` that later processing may change. |
 | `Original_Total_Cost_Base` | Buy only, derived: `round(Unit x Original_Cost_Base, 2) + Fee`. Not editable. The same shape as `Total_Cost_Base`, the Fee included — the only difference between the two is which cost base they are worked out from. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
@@ -536,6 +536,83 @@ three totals, Reinvestment, Sold with its date, and Portfolio. **ETF/Stock Sale*
 Ticker, Currency, a read-only Unit, Selling Price/Unit, Selling Total Amount, its own Portfolio,
 and the lot grid beneath. Each page validates only its own fields, and each Portfolio dropdown
 carries a description label beside it.
+
+#### Both pages move the portfolio's balance
+
+`TblETFStocksPortfolio` holds one running row per portfolio code — its `Cash` and the
+`Investment_Amount` bought out of that cash. **Buying and selling both move it**, and between them
+they keep `Investment_Amount` meaning one thing throughout: **the real money currently invested**.
+
+**ETF/Stock Purchase.** `Real_Total_Cost_Base` is what a purchase actually cost, so it shifts that
+figure out of the cash and into the invested amount:
+
+```
+Cash              = Cash - <shift>
+Investment_Amount = Investment_Amount + <shift>
+```
+
+| Button | `<shift>` |
+| --- | --- |
+| **Add** | `+ Real_Total_Cost_Base` |
+| **Update** | `new Real_Total_Cost_Base - stored Real_Total_Cost_Base` — the difference, so only what changed moves |
+| **Delete** | `- stored Real_Total_Cost_Base`, giving the whole cost back |
+
+**ETF/Stock Sale.** The proceeds come into the cash, and the real cost of the lots the sale closed
+leaves the invested amount — releasing exactly what the purchase put there:
+
+```
+Cash              = Cash + Selling_Total_Amount
+Investment_Amount = Investment_Amount - <real cost of the lots closed>
+```
+
+| Button | Movement |
+| --- | --- |
+| **Add** | cash `+ Selling_Total_Amount`, invested `-` the closed lots' `Real_Total_Cost_Base` |
+| **Update** | cash by the **difference in proceeds** only. Which lots a sale closed is fixed by its `Sale_Id` and an update does not re-settle them, so the released cost is the same before and after |
+| **Delete** | the whole sale undone: cash `- stored Selling_Total_Amount`, invested `+` the closed lots' cost, which are held again |
+
+The gap between the two sale figures is the sale's **real profit**, so net worth moves by exactly
+that. Sell 4 units for `36.00` out of lots that cost `25.00` real and the cash rises `36.00` while
+the invested amount falls `25.00` — `11.00` better off, which is what `Real_Profit_Or_Loss` records.
+
+A **reinvested** lot has a `Real_Total_Cost_Base` of `0`, so it moves nothing on either page: buying
+one costs no cash, and selling one releases nothing. The row is still recorded either way. An
+**Update** that changes neither the cost nor the proceeds likewise moves nothing.
+
+**The two pages round-trip.** Buy a lot for `800.00` and the invested amount rises by `800.00`;
+sell it and the same `800.00` comes back out, whatever it sold for. Delete the sale and it goes
+back in, with the lot held again.
+
+##### The details that are easy to get wrong
+
+- **Update and Delete use the *stored* figures, not what the boxes are showing.** Both act on the
+  row as it stands in the database, and the entry fields — including the derived
+  `Real Total Cost Base` and `Selling Total Amount` — may have been edited since the row was
+  selected. Reading the box would give back the wrong amount: select a `1,205.00` purchase, change
+  the Unit on screen, press Delete, and the box may read `11,993.00` while what actually left the
+  portfolio was `1,205.00`. A sale's released cost is likewise read from **the lots stamped with
+  its `Sale_Id`**, before Delete releases them.
+- **Changing the Portfolio as part of an Update moves the whole thing between balances.** On a
+  purchase the stored cost goes back to the old portfolio in full and the new cost is taken from
+  the new one in full; on a sale the proceeds and the released cost move together the same way —
+  not the difference, which would leave the old portfolio still carrying figures that are no
+  longer its own. Both portfolios are named in the success message.
+- **The movement happens once per row touched.** Identical rows are indistinguishable without a
+  key, so one Update or Delete can affect several — the page already warns how many. The balance
+  moves by that many multiples, or it would drift by every row but the first.
+- **A portfolio code with no running row yet gets one written.** The codes live in
+  `TblETFStocksPortfolioCode` and the balances in `TblETFStocksPortfolio`, so a purchase can name a
+  code that has never had a balance. Updating nothing would lose the movement silently; this is
+  what `ETF_Stocks_Investment` does with a movement against a new portfolio.
+- **A purchase or sale in a currency the portfolio is not held in is refused**, on both Add and
+  Update, before anything is written. `Cash` and `Investment_Amount` are single figures and amounts
+  in different currencies cannot be added together — the same rule `ETF_Stocks_Investment`
+  applies. Change the currency, or edit the portfolio first.
+- **The success message says where the portfolio now stands**, so the movement is visible without
+  going to another page.
+
+> **A sale with no `Sale_Id`** — only rows predating that field — cannot say which lots it
+> closed, so it releases nothing from the invested amount. Its proceeds still move the cash.
 
 #### The Sale Id
 

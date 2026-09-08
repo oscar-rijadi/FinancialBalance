@@ -1173,9 +1173,11 @@ namespace FinancialBalance
         }
 
         //Without a key, identical rows are indistinguishable - warn before touching them all
-        private bool Confirm_Affected(string parAction)
+        //parCount is how many rows will be touched: the portfolio balance moves once per row.
+        private bool Confirm_Affected(string parAction, out int parCount)
         {
             int TmpCount = 0;
+            parCount = 0;
             Mdl1.Ssql = "select count(*) as N from TblETFStocksSale" + Where_Original();
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
@@ -1185,6 +1187,7 @@ namespace FinancialBalance
             }
             reader.Close();
 
+            parCount = TmpCount;
             if (TmpCount == 0)
             {
                 MessageBox.Show("The selected sale could no longer be found.", "Error Message");
@@ -1227,6 +1230,158 @@ namespace FinancialBalance
         }
 
 
+        //---- the portfolio's running balance ---------------------------------------
+        //
+        //TblETFStocksPortfolio holds one running row per portfolio code - its cash and the amount
+        //invested out of that cash. A sale moves both: the proceeds come into the cash, and the
+        //real cost of the lots it closed leaves the invested amount, which is the same figure
+        //ETF/Stock Purchase put there when those lots were bought.
+        //
+        //    Cash              = Cash + Selling_Total_Amount
+        //    Investment_Amount = Investment_Amount - <real cost of the lots closed>
+        //
+        //The difference between the two is the sale's real profit, so net worth moves by exactly
+        //that. A reinvested lot cost nothing real, so it releases nothing.
+
+        private bool Portfolio_Exists(string parCode, out string parCurrency,
+                                      out decimal parCash, out decimal parInvAmt)
+        {
+            parCurrency = "";
+            parCash = 0;
+            parInvAmt = 0;
+            bool Found = false;
+
+            Mdl1.Ssql = "select [Currency], [Cash], Investment_Amount from TblETFStocksPortfolio"
+                      + " where Portfolio_Code = '" + parCode + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                parCurrency = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
+                parCash = Read_Decimal(reader["Cash"]);
+                parInvAmt = Read_Decimal(reader["Investment_Amount"]);
+                Found = true;
+            }
+            reader.Close();
+            return Found;
+        }
+
+        private decimal Read_Decimal(object parValue)
+        {
+            decimal TmpValue;
+            if (parValue == null || parValue == DBNull.Value)
+            {
+                return 0;
+            }
+            if (decimal.TryParse(parValue.ToString(), out TmpValue))
+            {
+                return TmpValue;
+            }
+            return 0;
+        }
+
+        //Moves the two figures by their own amounts, so a sale can raise the cash and release the
+        //invested cost in one write. A portfolio code with no running row yet gets one, rather
+        //than the update matching nothing and the movement being silently lost.
+        private bool Move_Portfolio(string parCode, string parCurrency, decimal parCash,
+                                    decimal parInvested, out decimal parNewCash,
+                                    out decimal parNewInvAmt)
+        {
+            parNewCash = 0;
+            parNewInvAmt = 0;
+            if (parCode == "" || (parCash == 0 && parInvested == 0))
+            {
+                return false;
+            }
+
+            string TmpHeldIn;
+            decimal TmpCash;
+            decimal TmpInvAmt;
+            bool TmpExists = Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpInvAmt);
+
+            parNewCash = TmpCash + parCash;
+            parNewInvAmt = TmpInvAmt + parInvested;
+
+            if (TmpExists)
+            {
+                Mdl1.Ssql = "Update TblETFStocksPortfolio set"
+                          + " [Cash] = " + Db_Money(parNewCash) + ","
+                          + " Investment_Amount = " + Db_Money(parNewInvAmt)
+                          + " where Portfolio_Code = '" + parCode + "'";
+            }
+            else
+            {
+                Mdl1.Ssql = "Insert into TblETFStocksPortfolio (Portfolio_Code, [Currency], [Cash],"
+                          + " Investment_Amount) values ('" + parCode + "', '" + parCurrency + "', "
+                          + Db_Money(parNewCash) + ", " + Db_Money(parNewInvAmt) + ")";
+            }
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            cmd.ExecuteNonQuery();
+            return true;
+        }
+
+        private string Db_Money(decimal parValue)
+        {
+            return Math.Round(parValue, 2).ToString("0.00", CultureInfo.InvariantCulture);
+        }
+
+        //Cash and Investment_Amount are single figures, so an amount in another currency cannot
+        //be added to them. Checked before anything is written - the same rule the Purchase page
+        //and ETF_Stocks_Investment apply.
+        private bool Currency_Fits(string parCode, string parCurrency, decimal parAmount)
+        {
+            if (parAmount <= 0 || parCode == "")
+            {
+                return true;
+            }
+            string TmpHeldIn;
+            decimal TmpCash;
+            decimal TmpInvAmt;
+            if (!Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpInvAmt))
+            {
+                return true;
+            }
+            if (TmpHeldIn == "" || TmpHeldIn == parCurrency)
+            {
+                return true;
+            }
+            MessageBox.Show("Portfolio " + parCode + " is held in " + TmpHeldIn
+                + " but this sale is in " + parCurrency + "."
+                + Environment.NewLine + Environment.NewLine
+                + "Amounts in different currencies cannot be added together. Change the currency,"
+                + " or edit the portfolio first.", "Error Message");
+            return false;
+        }
+
+        private string Portfolio_Note(string parCode, decimal parCash, decimal parInvAmt)
+        {
+            return Environment.NewLine + "Portfolio " + parCode + " : cash "
+                 + Mdl1.FormatAmt((double)parCash) + ", invested "
+                 + Mdl1.FormatAmt((double)parInvAmt) + ".";
+        }
+
+        //What a stored sale released from the invested amount: the real cost of the lots stamped
+        //with its Sale_Id. Read from the database rather than the grid, so it is right whether or
+        //not the read-back table happens to be on screen.
+        private decimal Stored_Real_Cost(string parSaleId)
+        {
+            if (parSaleId == null || parSaleId.Trim() == "")
+            {
+                return 0;
+            }
+            decimal Result = 0;
+            Mdl1.Ssql = "select Sum([Real_Total_Cost_Base]) as N from TblETFStocksPurchase"
+                      + " where [Sale_Id] = '" + parSaleId.Trim() + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                Result = Read_Decimal(reader["N"]);
+            }
+            reader.Close();
+            return Result;
+        }
+
         private void CmdCreate_Click(object sender, EventArgs e)
         {
             try
@@ -1242,6 +1397,10 @@ namespace FinancialBalance
 
                 string TmpSaleId;
                 if (!New_Sale_Id(out TmpSaleId))
+                {
+                    return;
+                }
+                if (!Currency_Fits(CmbSellPortfolio.Text.Trim(), CmbCurrency.Text.Trim(), TmpSellingTotal))
                 {
                     return;
                 }
@@ -1273,7 +1432,18 @@ namespace FinancialBalance
                 //the sale also has to take those units out of the purchases they came from
                 Apply_Sale_To_Lots(Get_Trans_Date(), TmpSaleId);
 
-                MessageBox.Show("Create successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()), "Success");
+                //the proceeds come in, the lots' real cost is released
+                string TmpExtra = "";
+                decimal TmpNewCash;
+                decimal TmpNewInv;
+                if (Move_Portfolio(CmbSellPortfolio.Text.Trim(), CmbCurrency.Text.Trim(),
+                                   TmpSellingTotal, -(decimal)TmpRealCost,
+                                   out TmpNewCash, out TmpNewInv))
+                {
+                    TmpExtra = Portfolio_Note(CmbSellPortfolio.Text.Trim(), TmpNewCash, TmpNewInv);
+                }
+
+                MessageBox.Show("Create successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
 
                 Get_Data();
                 Clear_Entry();
@@ -1302,7 +1472,22 @@ namespace FinancialBalance
                 {
                     return;
                 }
-                if (!Confirm_Affected("Update"))
+                int TmpRows;
+                if (!Confirm_Affected("Update", out TmpRows))
+                {
+                    return;
+                }
+
+                //Which lots a sale closed is fixed by its Sale_Id and an update does not
+                //re-settle them, so the released cost is the same before and after: only the
+                //proceeds can have changed, and only the cash moves with them.
+                string TmpCode = CmbSellPortfolio.Text.Trim();
+                string TmpCurrency = CmbCurrency.Text.Trim();
+                string TmpWasCode = (OrgSellPortfolioCode == null ? "" : OrgSellPortfolioCode.Trim());
+                decimal TmpWasTotal = Read_Decimal(OrgSellingTotalAmount);
+                decimal TmpLotCost = Stored_Real_Cost(OrgSaleId);
+
+                if (!Currency_Fits(TmpCode, TmpCurrency, TmpSellingTotal))
                 {
                     return;
                 }
@@ -1338,7 +1523,36 @@ namespace FinancialBalance
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Update successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()), "Success");
+                string TmpExtra = "";
+                decimal TmpNewCash;
+                decimal TmpNewInv;
+                if (TmpCode == TmpWasCode)
+                {
+                    //the usual case: the cash moves by the difference in proceeds
+                    if (Move_Portfolio(TmpCode, TmpCurrency,
+                                       (TmpSellingTotal - TmpWasTotal) * TmpRows, 0,
+                                       out TmpNewCash, out TmpNewInv))
+                    {
+                        TmpExtra = Portfolio_Note(TmpCode, TmpNewCash, TmpNewInv);
+                    }
+                }
+                else
+                {
+                    //The portfolio was changed as well, so the whole sale leaves one balance and
+                    //lands on the other - proceeds and released cost together.
+                    if (Move_Portfolio(TmpWasCode, TmpCurrency, -TmpWasTotal * TmpRows,
+                                       TmpLotCost * TmpRows, out TmpNewCash, out TmpNewInv))
+                    {
+                        TmpExtra = Portfolio_Note(TmpWasCode, TmpNewCash, TmpNewInv);
+                    }
+                    if (Move_Portfolio(TmpCode, TmpCurrency, TmpSellingTotal * TmpRows,
+                                       -TmpLotCost * TmpRows, out TmpNewCash, out TmpNewInv))
+                    {
+                        TmpExtra = TmpExtra + Portfolio_Note(TmpCode, TmpNewCash, TmpNewInv);
+                    }
+                }
+
+                MessageBox.Show("Update successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
 
                 Get_Data();
                 Clear_Entry();
@@ -1358,10 +1572,16 @@ namespace FinancialBalance
                     MessageBox.Show("Please select a sale from the list first !", "Error Message");
                     return;
                 }
-                if (!Confirm_Affected("Delete"))
+                int TmpRows;
+                if (!Confirm_Affected("Delete", out TmpRows))
                 {
                     return;
                 }
+
+                //read before the lots are released, while they still carry this Sale_Id
+                string TmpWasCode = (OrgSellPortfolioCode == null ? "" : OrgSellPortfolioCode.Trim());
+                decimal TmpWasTotal = Read_Decimal(OrgSellingTotalAmount);
+                decimal TmpLotCost = Stored_Real_Cost(OrgSaleId);
 
                 //the lots this sale closed go back to being held, before the sale itself goes
                 if (OrgSaleId != null && OrgSaleId.Trim() != "")
@@ -1376,7 +1596,18 @@ namespace FinancialBalance
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for " + OrgFullTicker + " on " + Mdl1.toLongDate(Get_Trans_Date()), "Success");
+                //the sale is undone, so the proceeds leave the cash and the lots' cost goes back
+                //into the invested amount - the lots themselves are held again
+                string TmpExtra = "";
+                decimal TmpNewCash;
+                decimal TmpNewInv;
+                if (Move_Portfolio(TmpWasCode, OrgCurrency, -TmpWasTotal * TmpRows,
+                                   TmpLotCost * TmpRows, out TmpNewCash, out TmpNewInv))
+                {
+                    TmpExtra = Portfolio_Note(TmpWasCode, TmpNewCash, TmpNewInv);
+                }
+
+                MessageBox.Show("Delete successfully for " + OrgFullTicker + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
 
                 Get_Data();
                 Clear_Entry();
