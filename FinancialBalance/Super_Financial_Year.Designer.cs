@@ -89,7 +89,7 @@
             this.MnETFStockProcessGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
-            this.MainMenu1.Size = new System.Drawing.Size(1340, 24);
+            this.MainMenu1.Size = new System.Drawing.Size(1264, 24);
             this.MainMenu1.TabIndex = 0;
             //
             // MnDaily
@@ -174,7 +174,7 @@
             this.Label21.BackColor = System.Drawing.Color.Transparent;
             this.Label21.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(180, 30);
+            this.Label21.Location = new System.Drawing.Point(142, 30);
             this.Label21.Name = "Label21";
             this.Label21.Size = new System.Drawing.Size(980, 38);
             this.Label21.TabIndex = 1;
@@ -232,7 +232,7 @@
             this.LblNote.ForeColor = System.Drawing.Color.Black;
             this.LblNote.Location = new System.Drawing.Point(19, 108);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(1300, 20);
+            this.LblNote.Size = new System.Drawing.Size(1224, 20);
             this.LblNote.TabIndex = 6;
             //
             // gvSFY
@@ -249,7 +249,7 @@
             this.gvSFY.ReadOnly = true;
             this.gvSFY.RowHeadersVisible = false;
             this.gvSFY.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvSFY.Size = new System.Drawing.Size(1300, 160);
+            this.gvSFY.Size = new System.Drawing.Size(1224, 160);
             this.gvSFY.TabIndex = 7;
             this.gvSFY.SelectionChanged += new System.EventHandler(this.gvSFY_SelectionChanged);
             //
@@ -704,7 +704,7 @@
             this.LblSuperDesc.ForeColor = System.Drawing.Color.Black;
             this.LblSuperDesc.Location = new System.Drawing.Point(790, 306);
             this.LblSuperDesc.Name = "LblSuperDesc";
-            this.LblSuperDesc.Size = new System.Drawing.Size(530, 20);
+            this.LblSuperDesc.Size = new System.Drawing.Size(454, 20);
             this.LblSuperDesc.TabIndex = 44;
             //
             // CmdCreate
@@ -747,7 +747,7 @@
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(1210, 508);
+            this.CmdBack.Location = new System.Drawing.Point(1134, 508);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 28);
             this.CmdBack.TabIndex = 48;
@@ -761,7 +761,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1340, 560);
+            this.ClientSize = new System.Drawing.Size(1264, 560);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);

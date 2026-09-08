@@ -1163,7 +1163,7 @@ database, all of them still editable afterwards:
 | Field | Default |
 | --- | --- |
 | `Previous_Investment` | The preceding year's `Ending_Investment` for the same code — the year whose `End_Date` falls latest before this one starts. `0` when there is none. |
-| `Investment` | Money **in less money out** from `TblETFStocksPortfolioInvestment` inside the year: `SUM(Amount)` where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`. |
+| `Investment` | Money **in less money out less what is still cash**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash` — see below. |
 | `Sold_Amount` | `SUM(Real_Total_Cost_Base)` from sold purchases inside the year. |
 | `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
 | `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below. |
@@ -1171,8 +1171,29 @@ database, all of them still editable afterwards:
 | `Capital_Gains_On_Paper`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
 | `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
 
-A note beside the box reads *"Please minus any amount in cash"*, since money paid in but left
-uninvested is not part of the year's investment.
+**The portfolio's `Cash` is subtracted.** Money paid in is not all of it invested: whatever is
+still sitting as cash has not bought anything, and this figure is meant to be what actually went
+into holdings.
+
+```
+Investment = money in - money out - Cash
+```
+
+Two things follow from where `Cash` lives:
+
+- **It is a running figure, not a per-year one.** `TblETFStocksPortfolio` keeps one row per
+  portfolio code with no date on it, so what is subtracted is the cash **as things stand**,
+  whichever financial year is selected. Reconciling a closed year today uses today's cash balance,
+  not the cash as it was when that year ended.
+- **A portfolio with no row there loses nothing**, since there is no cash figure to take off.
+
+The result is **not clamped at zero**: more cash than was paid in during the year gives a negative
+default, the same way a year of withdrawals alone does. Like every figure in this section it stays
+editable, so it can be typed over.
+
+> The page used to carry a note beside the box reading *"Please minus any amount in cash"*. The
+> subtraction is done for you now, so that note is gone — leaving it would have asked for the
+> deduction to be made twice.
 
 > `Amount` on a portfolio movement is **always stored positive**, with the direction held in
 > `Investment_Type`, so the two signs must be summed apart and subtracted. Adding the column
@@ -1688,6 +1709,13 @@ broken.
 - **Buttons are Arial 8 on `SystemColors.Control`**, with `UseVisualStyleBackColor = false`.
   Left unset, a button inherits the form's cream background and renders visibly lighter and
   larger than every other button in the app.
+- **No page is designed wider than 1264.** Windows clamps a window to the screen's working area
+  on first show, and **anything past that clamp is clipped rather than scrolled** — there is no
+  horizontal scrolling on these forms. The five widest pages were designed at 1340, which on a
+  1280-wide screen came up with a 1284 client area: the **Back** button lost a third of itself and
+  each wide grid lost 35px of its last column, silently, since nothing errors. 1264 leaves 20px of
+  headroom under the clamp on such a screen rather than sitting on it. Heights are less
+  constrained — several pages are taller than the working area and simply extend past the bottom.
 
 ---
 
@@ -1778,6 +1806,26 @@ C#.Net/
 helpers: combo-box population (`Fill_Acct_Code`, `Fill_Curr`, `Fill_Month`, …), input validation
 (`k_Numeric`, `k_Date`, `NumericKeyPress`), formatting (`FormatAmt`, `toLongDate`, `toLongMonth`),
 and the two posting routines.
+
+---
+
+### A note on page sizes
+
+The widest pages are **1264×620 to 1264×720**: ETF/Stock Financial Year Reconciliation, ETF/Stock
+Cost Base Adjustment, ETF/Stock Financial Year Historical, Super, and Super Balance & Historical
+Data. Everything else is narrower, down to 361×226 for Monthly Closing. Each page is sized to its
+content, and the ones with a wide grid or several columns of entry boxes sit at the 1264 ceiling
+described under [Conventions](#conventions).
+
+Two things about that ceiling are worth knowing before adding a page:
+
+- **1264 is a hard limit, not a preference.** Past the working-area clamp, controls are cut off
+  with no error and no scrollbar.
+- **`AutoScaleMode.Font` makes the runtime height differ from the designed one.** Every form
+  declares `AutoScaleDimensions` of `(6, 13)`, which does not match Arial 8's real metrics, so a
+  form designed 680 tall comes up around 703. The width is not affected. A layout check that
+  asserts an exact height will therefore fail; check a range, or set `ClientSize` explicitly
+  before measuring.
 
 ---
 

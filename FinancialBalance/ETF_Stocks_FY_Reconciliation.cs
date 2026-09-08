@@ -843,6 +843,27 @@ namespace FinancialBalance
             return Math.Round(Total, 2);
         }
 
+        //What the portfolio is holding as cash rather than as investments. A running figure,
+        //not a per-year one - TblETFStocksPortfolio keeps one row per portfolio code with no date
+        //on it - so it is the cash as things stand, whichever year is selected.
+        private double Portfolio_Cash(string parCode)
+        {
+            if (parCode == "")
+            {
+                return 0;
+            }
+            double Result = 0;
+            Mdl1.Ssql = "select [Cash] from TblETFStocksPortfolio where Portfolio_Code = '" + parCode + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                Result = Read_Double(reader["Cash"]);
+            }
+            reader.Close();
+            return Result;
+        }
+
         //Fills the entry area with what the rest of the database already knows about this year
         //and portfolio.  Every one of these stays editable afterwards.
         private void Apply_Defaults()
@@ -868,11 +889,17 @@ namespace FinancialBalance
                     //Amount is always stored positive, with the direction in Investment_Type,
                     //so the two signs have to be summed apart and subtracted - adding the
                     //column outright would count a withdrawal as money going in.
+                    //
+                    //The portfolio's Cash is then taken off. What was paid in is not all of it
+                    //invested: whatever is still sitting as cash has not bought anything, and
+                    //this figure is meant to be what actually went into holdings. The page used
+                    //to carry a label asking for that subtraction to be done by hand.
                     Set_Box(txtInvestment,
                         Sum_Between("TblETFStocksPortfolioInvestment", "[Amount]", "Investment_Date",
                                     TmpCode, TmpStart, TmpEnd, " and [Investment_Type] = '+'")
                       - Sum_Between("TblETFStocksPortfolioInvestment", "[Amount]", "Investment_Date",
-                                    TmpCode, TmpStart, TmpEnd, " and [Investment_Type] = '-'"));
+                                    TmpCode, TmpStart, TmpEnd, " and [Investment_Type] = '-'")
+                      - Portfolio_Cash(TmpCode));
                     Set_Box(txtSold, Sum_Between("TblETFStocksPurchase", "[Real_Total_Cost_Base]",
                                                  "Trans_Date", TmpCode, TmpStart, TmpEnd, " and Is_Sold = True"));
                     Set_Box(txtOnPaperVal, On_Paper_Value(TmpCode, TmpStart, TmpEnd));

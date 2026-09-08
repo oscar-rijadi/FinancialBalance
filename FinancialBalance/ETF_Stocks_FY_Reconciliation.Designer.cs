@@ -90,7 +90,6 @@
             this.Lbl_txtRealPct = new System.Windows.Forms.Label();
             this.txtRealPct = new System.Windows.Forms.TextBox();
             this.LblEntryDesc = new System.Windows.Forms.Label();
-            this.LblInvestmentHint = new System.Windows.Forms.Label();
             this.CmdAdd = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
@@ -109,7 +108,7 @@
             this.MnSuperProcess});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
-            this.MainMenu1.Size = new System.Drawing.Size(1340, 24);
+            this.MainMenu1.Size = new System.Drawing.Size(1264, 24);
             this.MainMenu1.TabIndex = 0;
             //
             // MnDaily
@@ -195,7 +194,7 @@
             this.Label21.Cursor = System.Windows.Forms.Cursors.Default;
             this.Label21.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(180, 30);
+            this.Label21.Location = new System.Drawing.Point(142, 30);
             this.Label21.Name = "Label21";
             this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label21.Size = new System.Drawing.Size(980, 38);
@@ -268,7 +267,7 @@
             this.LblNote.ForeColor = System.Drawing.Color.Black;
             this.LblNote.Location = new System.Drawing.Point(19, 110);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(1300, 20);
+            this.LblNote.Size = new System.Drawing.Size(1224, 20);
             this.LblNote.TabIndex = 7;
             //
             // gvRecon
@@ -283,7 +282,7 @@
             this.gvRecon.ReadOnly = true;
             this.gvRecon.RowHeadersVisible = false;
             this.gvRecon.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvRecon.Size = new System.Drawing.Size(1300, 204);
+            this.gvRecon.Size = new System.Drawing.Size(1224, 204);
             this.gvRecon.TabIndex = 8;
             this.gvRecon.SelectionChanged += new System.EventHandler(this.gvRecon_SelectionChanged);
             //
@@ -654,7 +653,7 @@
             this.txtCapGainPaper.Location = new System.Drawing.Point(1135, 377);
             this.txtCapGainPaper.MaxLength = 20;
             this.txtCapGainPaper.Name = "txtCapGainPaper";
-            this.txtCapGainPaper.Size = new System.Drawing.Size(150, 20);
+            this.txtCapGainPaper.Size = new System.Drawing.Size(120, 20);
             this.txtCapGainPaper.TabIndex = 40;
             this.txtCapGainPaper.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtCapGainPaper.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -678,7 +677,7 @@
             this.txtCapGainReal.Location = new System.Drawing.Point(1135, 405);
             this.txtCapGainReal.MaxLength = 20;
             this.txtCapGainReal.Name = "txtCapGainReal";
-            this.txtCapGainReal.Size = new System.Drawing.Size(150, 20);
+            this.txtCapGainReal.Size = new System.Drawing.Size(120, 20);
             this.txtCapGainReal.TabIndex = 42;
             this.txtCapGainReal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtCapGainReal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -703,7 +702,7 @@
             this.txtLoanInterest.Location = new System.Drawing.Point(1135, 433);
             this.txtLoanInterest.MaxLength = 20;
             this.txtLoanInterest.Name = "txtLoanInterest";
-            this.txtLoanInterest.Size = new System.Drawing.Size(150, 20);
+            this.txtLoanInterest.Size = new System.Drawing.Size(120, 20);
             this.txtLoanInterest.TabIndex = 44;
             this.txtLoanInterest.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtLoanInterest.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -728,7 +727,7 @@
             this.txtTax.Location = new System.Drawing.Point(1135, 461);
             this.txtTax.MaxLength = 20;
             this.txtTax.Name = "txtTax";
-            this.txtTax.Size = new System.Drawing.Size(150, 20);
+            this.txtTax.Size = new System.Drawing.Size(120, 20);
             this.txtTax.TabIndex = 46;
             this.txtTax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtTax.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -753,7 +752,7 @@
             this.txtRealPL.Location = new System.Drawing.Point(1135, 489);
             this.txtRealPL.MaxLength = 20;
             this.txtRealPL.Name = "txtRealPL";
-            this.txtRealPL.Size = new System.Drawing.Size(150, 20);
+            this.txtRealPL.Size = new System.Drawing.Size(120, 20);
             this.txtRealPL.TabIndex = 48;
             this.txtRealPL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtRealPL.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -778,7 +777,7 @@
             this.txtRealPct.Location = new System.Drawing.Point(1135, 517);
             this.txtRealPct.MaxLength = 20;
             this.txtRealPct.Name = "txtRealPct";
-            this.txtRealPct.Size = new System.Drawing.Size(150, 20);
+            this.txtRealPct.Size = new System.Drawing.Size(120, 20);
             this.txtRealPct.TabIndex = 50;
             this.txtRealPct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtRealPct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -792,17 +791,6 @@
             this.LblEntryDesc.Name = "LblEntryDesc";
             this.LblEntryDesc.Size = new System.Drawing.Size(210, 22);
             this.LblEntryDesc.TabIndex = 51;
-            //
-            // LblInvestmentHint
-            //
-            this.LblInvestmentHint.BackColor = System.Drawing.Color.Transparent;
-            this.LblInvestmentHint.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblInvestmentHint.ForeColor = System.Drawing.Color.Black;
-            this.LblInvestmentHint.Location = new System.Drawing.Point(331, 490);
-            this.LblInvestmentHint.Name = "LblInvestmentHint";
-            this.LblInvestmentHint.Size = new System.Drawing.Size(210, 22);
-            this.LblInvestmentHint.TabIndex = 60;
-            this.LblInvestmentHint.Text = "Please minus any amount in cash";
             //
             // CmdAdd
             //
@@ -861,7 +849,7 @@
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(1234, 580);
+            this.CmdBack.Location = new System.Drawing.Point(1158, 580);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
             this.CmdBack.TabIndex = 9;
@@ -875,7 +863,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1340, 640);
+            this.ClientSize = new System.Drawing.Size(1264, 640);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.LblEntryCaption);
@@ -920,7 +908,6 @@
             this.Controls.Add(this.Lbl_txtRealPct);
             this.Controls.Add(this.txtRealPct);
             this.Controls.Add(this.LblEntryDesc);
-            this.Controls.Add(this.LblInvestmentHint);
             this.Controls.Add(this.CmdAdd);
             this.Controls.Add(this.CmdUpdate);
             this.Controls.Add(this.CmdDel);
@@ -1013,7 +1000,6 @@
         public System.Windows.Forms.Label Lbl_txtRealPct;
         public System.Windows.Forms.TextBox txtRealPct;
         public System.Windows.Forms.Label LblEntryDesc;
-        public System.Windows.Forms.Label LblInvestmentHint;
         public System.Windows.Forms.Button CmdAdd;
         public System.Windows.Forms.Button CmdUpdate;
         public System.Windows.Forms.Button CmdDel;

@@ -71,7 +71,7 @@
             this.Label21.BackColor = System.Drawing.Color.Transparent;
             this.Label21.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(180, 30);
+            this.Label21.Location = new System.Drawing.Point(142, 30);
             this.Label21.Name = "Label21";
             this.Label21.Size = new System.Drawing.Size(980, 38);
             this.Label21.TabIndex = 0;
@@ -144,7 +144,7 @@
             this.LblNote.ForeColor = System.Drawing.Color.Black;
             this.LblNote.Location = new System.Drawing.Point(19, 110);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(1300, 20);
+            this.LblNote.Size = new System.Drawing.Size(1224, 20);
             this.LblNote.TabIndex = 6;
             //
             // gvHist
@@ -161,7 +161,7 @@
             this.gvHist.ReadOnly = true;
             this.gvHist.RowHeadersVisible = false;
             this.gvHist.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvHist.Size = new System.Drawing.Size(1300, 240);
+            this.gvHist.Size = new System.Drawing.Size(1224, 240);
             this.gvHist.TabIndex = 7;
             //
             // LblAgg1Cap
@@ -420,7 +420,7 @@
             //
             this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdExcel.Location = new System.Drawing.Point(1090, 552);
+            this.CmdExcel.Location = new System.Drawing.Point(1014, 552);
             this.CmdExcel.Name = "CmdExcel";
             this.CmdExcel.Size = new System.Drawing.Size(110, 30);
             this.CmdExcel.TabIndex = 40;
@@ -432,7 +432,7 @@
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(1210, 552);
+            this.CmdBack.Location = new System.Drawing.Point(1134, 552);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 30);
             this.CmdBack.TabIndex = 41;
@@ -446,7 +446,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1340, 620);
+            this.ClientSize = new System.Drawing.Size(1264, 620);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdExcel);

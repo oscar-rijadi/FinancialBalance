@@ -79,7 +79,7 @@
             this.MnSuperProcess});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
-            this.MainMenu1.Size = new System.Drawing.Size(1340, 24);
+            this.MainMenu1.Size = new System.Drawing.Size(1264, 24);
             this.MainMenu1.TabIndex = 0;
             //
             // MnDaily
@@ -163,7 +163,7 @@
             this.Label21.BackColor = System.Drawing.Color.Transparent;
             this.Label21.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.Blue;
-            this.Label21.Location = new System.Drawing.Point(180, 30);
+            this.Label21.Location = new System.Drawing.Point(142, 30);
             this.Label21.Name = "Label21";
             this.Label21.Size = new System.Drawing.Size(980, 38);
             this.Label21.TabIndex = 1;
@@ -243,7 +243,7 @@
             this.LblNote.ForeColor = System.Drawing.Color.Black;
             this.LblNote.Location = new System.Drawing.Point(19, 106);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(1300, 20);
+            this.LblNote.Size = new System.Drawing.Size(1224, 20);
             this.LblNote.TabIndex = 8;
             //
             // gvAdj
@@ -260,7 +260,7 @@
             this.gvAdj.ReadOnly = true;
             this.gvAdj.RowHeadersVisible = false;
             this.gvAdj.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvAdj.Size = new System.Drawing.Size(1300, 80);
+            this.gvAdj.Size = new System.Drawing.Size(1224, 80);
             this.gvAdj.TabIndex = 9;
             this.gvAdj.SelectionChanged += new System.EventHandler(this.gvAdj_SelectionChanged);
             //
@@ -471,7 +471,7 @@
             this.gvLots.ReadOnly = true;
             this.gvLots.RowHeadersVisible = false;
             this.gvLots.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvLots.Size = new System.Drawing.Size(1300, 110);
+            this.gvLots.Size = new System.Drawing.Size(1224, 110);
             this.gvLots.TabIndex = 27;
             this.gvLots.TabStop = false;
             //
@@ -559,7 +559,7 @@
             this.gvResult.ReadOnly = true;
             this.gvResult.RowHeadersVisible = false;
             this.gvResult.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvResult.Size = new System.Drawing.Size(1300, 95);
+            this.gvResult.Size = new System.Drawing.Size(1224, 95);
             this.gvResult.TabIndex = 34;
             this.gvResult.TabStop = false;
             //
@@ -567,7 +567,7 @@
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(1210, 678);
+            this.CmdBack.Location = new System.Drawing.Point(1134, 678);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 30);
             this.CmdBack.TabIndex = 35;
@@ -581,7 +581,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1340, 720);
+            this.ClientSize = new System.Drawing.Size(1264, 720);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.gvResult);
