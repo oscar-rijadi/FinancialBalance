@@ -30,6 +30,13 @@ namespace FinancialBalance
 
         //---- the menu -------------------------------------------------------------
 
+        private void MnStateSetup_Click(object sender, EventArgs e)
+        {
+            Setup_State Setup_State = new Setup_State();
+            Setup_State.Show();
+            this.Close();
+        }
+
         private void MnETFStocksInvPlanSetup_Click(object sender, EventArgs e)
         {
             Setup_ETF_Stocks_Investment_Plan Setup_ETF_Stocks_Investment_Plan = new Setup_ETF_Stocks_Investment_Plan();

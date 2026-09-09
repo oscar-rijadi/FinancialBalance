@@ -42,6 +42,8 @@
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnFinancialYearSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnStateSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFlagSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -83,6 +85,7 @@
             this.MnActivaPassivaSetup,
             this.MnFinancialYearSetup,
             this.MnETFStockGroup,
+            this.MnPropertyGroup,
             this.MnSuperGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
@@ -175,6 +178,21 @@
             this.MnETFStockGroup.Name = "MnETFStockGroup";
             this.MnETFStockGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockGroup.Text = "&ETF/Stock";
+            // 
+            // MnPropertyGroup
+            // 
+            this.MnPropertyGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnStateSetup});
+            this.MnPropertyGroup.Name = "MnPropertyGroup";
+            this.MnPropertyGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnPropertyGroup.Text = "&Property";
+            // 
+            // MnStateSetup
+            // 
+            this.MnStateSetup.Name = "MnStateSetup";
+            this.MnStateSetup.Size = new System.Drawing.Size(130, 20);
+            this.MnStateSetup.Text = "&State Setup";
+            this.MnStateSetup.Click += new System.EventHandler(this.MnStateSetup_Click);
             // 
             // MnETFStocksInvPlanSetup
             // 
@@ -349,6 +367,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnFinancialYearSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnStateSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFlagSetup;

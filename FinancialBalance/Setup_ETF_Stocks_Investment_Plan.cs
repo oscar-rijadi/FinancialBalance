@@ -49,6 +49,13 @@ namespace FinancialBalance
 
         //---- the menu -------------------------------------------------------------
 
+        private void MnStateSetup_Click(object sender, EventArgs e)
+        {
+            Setup_State Setup_State = new Setup_State();
+            Setup_State.Show();
+            this.Close();
+        }
+
         private void MnAcctTypeRefSetup_Click(object sender, EventArgs e)
         {
             Setup_Acct_Type_Ref Setup_Acct_Type_Ref = new Setup_Acct_Type_Ref();

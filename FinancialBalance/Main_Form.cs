@@ -112,6 +112,13 @@ namespace FinancialBalance
             AnimationTimer.Enabled = true;
         }
 
+        private void MnStateSetup_Click(object sender, EventArgs e)
+        {
+            Setup_State Setup_State = new Setup_State();
+            Setup_State.Show();
+            this.Hide();
+        }
+
         private void MnCompoundInterest_Click(object sender, EventArgs e)
         {
             Compound_Interest_Calculator Compound_Interest_Calculator = new Compound_Interest_Calculator();

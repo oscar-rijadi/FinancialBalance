@@ -92,6 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
+| `Administration` | **Property** | State Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
@@ -149,6 +150,8 @@ flowchart LR
     ETFG --> SDV["Setup_ETF_Stocks_Div"]
     ETFG --> SDA["Setup_ETF_Stocks_Div_Alloc"]
     ETFG --> SIP["Setup_ETF_Stocks_Investment_Plan"]
+    ADMIN --> PROPG{{"Property"}}
+    PROPG --> SST["Setup_State"]
     ADMIN --> SUPG{{"Super"}}
     SUPG --> SSF["Setup_Super_Fund"]
     SUPG --> SSU["Setup_Super"]
@@ -206,6 +209,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
+| `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories — a three-character code and its full name. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
 | `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
 
@@ -213,7 +217,7 @@ flowchart LR
 
 ## Data model
 
-Twenty-eight tables. **No foreign keys or relationships are defined in the database** — the links below are
+Twenty-nine tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -413,6 +417,10 @@ erDiagram
         text Name PK "9 chars"
         text Start_Date "yyyyMMdd"
         text End_Date "yyyyMMdd"
+    }
+    TblState {
+        text Name PK "3 chars, the state code"
+        text Long_Name "50 chars"
     }
     TblETFStocksDistributionDividend {
         text    Pay_Date "yyyyMMdd"
@@ -1783,6 +1791,7 @@ C#.Net/
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
+│   ├── Setup_State.*                 # the Australian states and territories
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -2409,6 +2418,89 @@ Dividend Income is the one input that may be left blank.**
 As on the compound interest calculator, the page **recalculates on every keystroke**, so a refused
 input is reported **in the note above the table, in red** rather than in a message box, and the
 table and all five figures are cleared so nothing stale is left looking like an answer.
+
+---
+
+### State Setup
+
+`Administration` ▸ Property ▸ State Setup maintains `TblState`: a state code and the full name it
+stands for.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Name` | Short Text(3) | the state code, e.g. `NSW` |
+| `Long_Name` | Short Text(50) | the full name, e.g. `New South Wales` |
+
+`Name` is a reserved word in Access, so it is bracketed as `[Name]` in every statement that
+touches it — the same treatment `TblSuper` and `TblFinancialYear` need for their own `Name`.
+
+The table ships with the six states and two mainland territories:
+
+| Code | Name | | Code | Name |
+| --- | --- | --- | --- | --- |
+| `ACT` | Australian Capital Territory | | `SA` | South Australia |
+| `NSW` | New South Wales | | `TAS` | Tasmania |
+| `NT` | Northern Territory | | `VIC` | Victoria |
+| `QLD` | Queensland | | `WA` | Western Australia |
+
+These are the official Australia Post abbreviations, which is what a state code means here. **Three
+characters is the widest of them, not a fixed width** — `NT`, `SA` and `WA` are two, and they are
+stored as they are actually written rather than padded out to fill the field.
+
+The page itself is the standard setup shape, laid out on `Setup_Curr`'s geometry to the pixel: the
+rows in a read-only grid in code order, a box for each field, and **Add** / **Update** / **Delete** /
+**Back** across the bottom on `Setup_Super_Fund`'s measurements — 85x28 at a 95px pitch.
+
+**Clicking a row copies it into the boxes**, ready to change or delete — the selection-fills-the-
+entry-area behaviour that `Setup_Super_Fund`, `Setup_Financial_Year` and the other newer setup
+pages have. Without it the page could only ever insert, since there would be no way to bring an
+existing row back without retyping its code exactly. `Get_Data` guards itself with a `Filling`
+flag while it refills the grid: adding rows moves the current row, and the handler would otherwise
+type the first state over whatever the boxes held. (`Setup_Curr`, `Setup_Curr_Rate` and the three
+oldest account pages still lack the handler entirely.)
+
+#### Add against Update
+
+The two buttons are what `Setup_Super_Fund` has, and they divide the work the same way — one
+insists the code is **new**, the other insists a row has been **picked**:
+
+| | Add | Update |
+| --- | --- | --- |
+| Needs a row picked from the grid | no | **yes** — otherwise *Please select a state from the list first* |
+| Code already in the table | refused, *State Code already exists* | allowed only if it is the picked row's own code |
+| Changing the code | n/a | **renames that row**, carrying the name with it |
+| Empty code | refused | refused |
+| Nothing actually changed | n/a | refused, *Nothing has been changed* |
+
+The page remembers the code the row was picked under in `OrgCode`, and Update writes
+`where [Name] = OrgCode`. That is what lets a code be *changed*: without it a retyped code would be
+indistinguishable from a new one, which is exactly the ambiguity the single Setup button had — it
+inserted or updated depending on whether the typed code happened to exist, so a typo silently
+created a row instead of being refused. `OrgCode` is cleared whenever the grid is refilled, so
+Update always refuses until a row has been picked afresh.
+
+Nothing joins to `TblState` yet, so neither button has dependent rows to carry along or guard
+— unlike `Setup_Super_Fund`, where a rename has to be pushed into `TblSuper` and a delete is
+blocked while any super record still names the fund.
+
+**The page carries no Property entry of its own.** State Setup is the only page in the group, and a
+page never lists itself, so the group would be an empty dead end — the entry appears on every
+*other* Administration page's menu, and on `Main_Form`. Adding a second Property page means giving
+this one the group back, with that page in it.
+
+#### A menu bar that was already too narrow
+
+Worth knowing before adding more Administration pages: on the narrower Setup pages the menu bar
+**silently clips** the entries that do not fit. A 616px bar holds four of them, and a Form's main
+`MenuStrip` does not overflow — setting `CanOverflow` changes nothing, the surplus entries simply
+land nowhere and are unreachable. Ten pages were already in that state before Property existed
+(`Super` and `ETF/Stock` among the casualties); Property makes it one entry worse on each of them,
+and `Setup_State` inherits it by matching its siblings' width.
+
+`Main_Form` is unaffected — its Administration list is a dropdown under one bar entry, so
+`Administration` ▸ `Property` ▸ `State Setup` is always reachable there. Fixing the peer pages
+means either widening them or nesting their entries under one `Administration` heading the way
+`Main_Form` does, across fifteen forms.
 
 ---
 
