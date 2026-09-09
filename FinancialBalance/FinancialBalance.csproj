@@ -114,6 +114,12 @@
     <Compile Include="Compound_Interest_Calculator.Designer.cs">
       <DependentUpon>Compound_Interest_Calculator.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dividend_Snowball_Calculator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dividend_Snowball_Calculator.Designer.cs">
+      <DependentUpon>Dividend_Snowball_Calculator.cs</DependentUpon>
+    </Compile>
     <Compile Include="ETF_Stocks_Investment_Plan.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -323,6 +329,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Compound_Interest_Calculator.resx">
       <DependentUpon>Compound_Interest_Calculator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dividend_Snowball_Calculator.resx">
+      <DependentUpon>Dividend_Snowball_Calculator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Investment_Plan.resx">
       <DependentUpon>ETF_Stocks_Investment_Plan.cs</DependentUpon>

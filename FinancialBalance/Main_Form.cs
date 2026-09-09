@@ -119,6 +119,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnDividendSnowball_Click(object sender, EventArgs e)
+        {
+            Dividend_Snowball_Calculator Dividend_Snowball_Calculator = new Dividend_Snowball_Calculator();
+            Dividend_Snowball_Calculator.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksInvPlan_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Investment_Plan ETF_Stocks_Investment_Plan = new ETF_Stocks_Investment_Plan();

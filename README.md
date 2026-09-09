@@ -96,8 +96,8 @@ Related pages are collected into submenus rather than sitting flat:
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
 one page rather than a group. `Inquiry` likewise carries **Super Balance & Historical Data**
-after its own ETF/Stock submenu, and `Calculator` holds its one page, **Compound Interest
-Calculator**, directly.
+after its own ETF/Stock submenu. `Calculator` holds both its pages — **Compound Interest
+Calculator** and **Dividend Snowball Calculator** — directly, with no submenu between.
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -131,6 +131,7 @@ flowchart LR
     PORTG --> PIVP["ETF_Stocks_Investment_Plan"]
     MAIN --> SBH["Super_Balance_Historical"]
     MAIN --> CIC["Compound_Interest_Calculator"]
+    MAIN --> DSC["Dividend_Snowball_Calculator"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -191,6 +192,7 @@ flowchart LR
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
+| `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -1780,6 +1782,7 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
+│   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -2263,9 +2266,10 @@ the reason given under [Excel exports](#excel-exports).
 
 ### The compound interest calculator
 
-`Calculator` ▸ Compound Interest Calculator is **the one page that touches no
-data at all** — it reads nothing, writes nothing, and works only on what is typed into it. It is
-modelled on the [MoneySmart compound interest calculator](https://moneysmart.gov.au/budgeting/compound-interest-calculator).
+`Calculator` ▸ Compound Interest Calculator is one of **the two pages that touch no data at
+all** — it reads nothing, writes nothing, and works only on what is typed into it. (The other is
+[the dividend snowball calculator](#the-dividend-snowball-calculator).) It is modelled on the
+[MoneySmart compound interest calculator](https://moneysmart.gov.au/budgeting/compound-interest-calculator).
 
 Six inputs: **Initial Deposit**, **Regular Deposit**, **Deposit Frequency** (Daily, Weekly,
 Fortnightly, Monthly, Annually), **Compound Frequency** (Monthly, Annually), **Number of Years**
@@ -2328,6 +2332,83 @@ The page **recalculates on every keystroke**, so a rejected input is reported **
 the totals, in red** rather than in a message box — a dialog per character would be unusable. When
 an input is refused the totals are cleared and no chart is drawn, so nothing stale is left on
 screen looking like an answer.
+
+---
+
+### The dividend snowball calculator
+
+`Calculator` ▸ Dividend Snowball Calculator is the other page that **touches no data at all**. It
+projects what a dividend income grows to when the portfolio is contributed to, the yield itself
+grows, and the dividends are either ploughed back in or taken out.
+
+Ten inputs. Down the left: **Starting Portfolio Value**, **Contribution Amount**, **Contribution
+Frequency** (Daily, Weekly, Fortnightly, Monthly, Annually) and, as percentages, **Annual Increase
+in Contribution** and **Starting Dividend Yield**. Down the right: **Annual Dividend Growth Rate**,
+**Portfolio Growth Rate**, **Dividend Reinvested** (Yes or No), **Time Horizon** in whole years and
+**Target Annual Dividend Income**.
+
+Below them, **a row per year up to the time horizon**:
+
+| Column | What it holds |
+| --- | --- |
+| `Year` | 1 upwards |
+| `Starting Balance` | last year's `Ending Balance`; for year 1, the Starting Portfolio Value |
+| `Yearly Contribution` | the contribution amount at its frequency, stepped up each year by the annual increase |
+| `Total Investment` | `Starting Balance` + `Yearly Contribution` |
+| `Yearly Dividend Yield` | the starting yield, stepped up each year by the dividend growth rate |
+| `Gross Dividend` | `Total Investment` x `Yearly Dividend Yield` |
+| `Reinvested` | the gross dividend when reinvesting, otherwise nothing |
+| `Taken as Cash` | the gross dividend when not reinvesting, otherwise nothing |
+| `Ending Balance` | see below |
+
+`Reinvested` and `Taken as Cash` are the same figure sent one way or the other, never both — the
+dropdown decides which column it lands in, and only the reinvested one feeds back into the
+portfolio. That feedback is the snowball.
+
+Beneath the table, five figures: **Total Contribution** (every `Yearly Contribution` added up),
+**Portfolio Value** (the last year's `Ending Balance`), **Annual Gross Dividend** (the last year's
+`Gross Dividend`), **Monthly Gross Dividend** (a twelfth of it) and **Years to reach Target Annual
+Dividend Income**.
+
+#### How it works it out
+
+A year at a time, each year starting where the last one ended:
+
+```
+Yearly Contribution   = Contribution Amount x times a year x (1 + increase) ^ (year - 1)
+Total Investment      = Starting Balance + Yearly Contribution
+Yearly Dividend Yield = Starting Dividend Yield x (1 + dividend growth) ^ (year - 1)
+Gross Dividend        = Total Investment x Yearly Dividend Yield
+Ending Balance        = Starting Balance x (1 + growth)
+                      + (Yearly Contribution + Reinvested) x (1 + growth / 2)
+```
+
+with a year of 365 days, 52 weeks or 26 fortnights, as on the compound interest calculator.
+
+The two halves of `Ending Balance` carry **different rates on purpose**. The balance held all year
+earns the portfolio growth rate in full; the contributions and any reinvested dividend arrive
+spread through the year, so they earn half of it. That is the usual half-year convention, and the
+page states the formula in the note above the table so the figures can be checked against it.
+
+**Years to reach Target Annual Dividend Income** is the first year whose `Gross Dividend` covers
+the target. The table stops at the horizon, but the question asked is how long it takes, so the
+same model is stepped on past it and the answer is marked `(beyond the horizon)` when it lands
+there. Leave the target blank and the figure reads `-`. A target the projection never covers reads
+`Not reached within N years`, where N is how far it got: a reinvested dividend on a yield that is
+itself growing outruns what a `decimal` can hold well inside a century, and the search stops there
+rather than taking the page down with it.
+
+#### The limits, and how they are said
+
+**Time Horizon is 1 to 50 years**, matching the compound interest calculator, and its box takes
+**digits only** — a year count has no decimal point, so it uses its own keypress filter rather than
+the shared numeric one. The four percentages are **0 to 100 %**. Every other box takes digits and a
+decimal point through the shared filter, which already refuses a minus sign. **Target Annual
+Dividend Income is the one input that may be left blank.**
+
+As on the compound interest calculator, the page **recalculates on every keystroke**, so a refused
+input is reported **in the note above the table, in red** rather than in a message box, and the
+table and all five figures are cleared so nothing stale is left looking like an answer.
 
 ---
 
