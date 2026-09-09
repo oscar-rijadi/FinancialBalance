@@ -96,7 +96,8 @@ Related pages are collected into submenus rather than sitting flat:
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
 one page rather than a group. `Inquiry` likewise carries **Super Balance & Historical Data**
-after its own ETF/Stock submenu.
+after its own ETF/Stock submenu, and `Calculator` holds its one page, **Compound Interest
+Calculator**, directly.
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -129,6 +130,7 @@ flowchart LR
     PORTG --> PFYH["ETF_Stocks_FY_Historical"]
     PORTG --> PIVP["ETF_Stocks_Investment_Plan"]
     MAIN --> SBH["Super_Balance_Historical"]
+    MAIN --> CIC["Compound_Interest_Calculator"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -188,6 +190,7 @@ flowchart LR
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
+| `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -1776,6 +1779,7 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Div_Alloc.*
 │   ├── Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
+│   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -2254,6 +2258,76 @@ out, so it cannot drift from the form it belongs to. The date and time are separ
 underscore here, unlike the other exports' unbroken `yyyyMMddHHmmss`. An export with nothing on
 screen is refused rather than writing an empty workbook, and every cell is written as **text** for
 the reason given under [Excel exports](#excel-exports).
+
+---
+
+### The compound interest calculator
+
+`Calculator` ▸ Compound Interest Calculator is **the one page that touches no
+data at all** — it reads nothing, writes nothing, and works only on what is typed into it. It is
+modelled on the [MoneySmart compound interest calculator](https://moneysmart.gov.au/budgeting/compound-interest-calculator).
+
+Six inputs: **Initial Deposit**, **Regular Deposit**, **Deposit Frequency** (Daily, Weekly,
+Fortnightly, Monthly, Annually), **Compound Frequency** (Monthly, Annually), **Number of Years**
+and **Annual Interest Rate**. Below them, four figures — Initial Deposit, Regular Deposits, Total
+Interest and Total Savings — and beside them a **stacked column per year** showing the three
+parts of the balance as it grows.
+
+Across the bottom, the same run again as a **table, a row per year**:
+
+| Column | What it holds |
+| --- | --- |
+| `Year` | 1 upwards |
+| `Regular Deposits` | everything deposited **up to and including** that year |
+| `Yearly Deposits` | that year's figure less the year before's — for year 1, measured from nothing |
+| `Total Interest` | all the interest earned up to that year |
+| `Yearly Interest` | the same step, year on year |
+| `Total` | what the balance stands at that year's end |
+
+The two running columns are what the chart's bands are drawn from, so the table and the chart are
+always the same run read two ways, and the last row's figures are the four totals on the left.
+Every row's `Total` is the initial deposit plus both running columns.
+
+Deposits go in at a flat rate, so `Yearly Deposits` is the same every year; interest compounds, so
+`Yearly Interest` grows.
+
+#### How it works it out
+
+Interest is added at the compound frequency; deposits go in at their own frequency, counted into
+whichever compounding period they fall in:
+
+```
+periods            = years x compounds per year
+rate per period    = annual rate / compounds per year
+deposit per period = regular deposit x deposits per year / compounds per year
+
+each period:  balance = balance x (1 + rate per period) + deposit per period
+```
+
+with a year of 365 days, 52 weeks or 26 fortnights. Two conventions are worth stating, because a
+calculator that picks the other one gives different figures for the same inputs:
+
+- **A deposit arrives at the end of its period** and earns nothing in the period it lands in —
+  the ordinary-annuity convention. Assuming deposits arrive at the start would show more interest.
+- **Deposits finer than the compounding are pooled**, not compounded separately. Weekly deposits
+  with annual compounding go in as one yearly sum, since interest is only worked out once a year.
+
+So the figures track MoneySmart's closely but need not agree to the cent, depending on the
+conventions that site uses.
+
+`Total Interest` is what is left once the deposits are accounted for — `balance - initial -
+contributed` — so the four figures always add up, and the chart's three bands always sum to the
+balance at that year's end.
+
+#### The limits, and how they are said
+
+**Number of Years is 1 to 50 and must be whole**; **Annual Interest Rate is 0 to 20 %**. Amounts
+cannot be negative, which the shared numeric filter already prevents by refusing a minus sign.
+
+The page **recalculates on every keystroke**, so a rejected input is reported **in the note above
+the totals, in red** rather than in a message box — a dialog per character would be unusable. When
+an input is refused the totals are cleared and no chart is drawn, so nothing stale is left on
+screen looking like an answer.
 
 ---
 

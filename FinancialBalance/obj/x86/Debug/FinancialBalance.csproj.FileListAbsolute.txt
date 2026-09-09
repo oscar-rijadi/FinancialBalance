@@ -49,3 +49,4 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBal
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Super_Balance_Historical.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Setup_ETF_Stocks_Investment_Plan.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.ETF_Stocks_Investment_Plan.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Compound_Interest_Calculator.resources

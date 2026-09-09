@@ -42,14 +42,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="FinancialBalance.exe" size="729088">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="FinancialBalance.exe" size="744960">
       <assemblyIdentity name="FinancialBalance" version="1.0.0.7" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>QDT9oapf2qfCf0QgzhI8tpkBFrVbk8e9uFooLCb+8mI=</dsig:DigestValue>
+        <dsig:DigestValue>6/p3NyGwMscDJ7f2bIPv1m8kFMMIkR+2zbATHLvPMAA=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

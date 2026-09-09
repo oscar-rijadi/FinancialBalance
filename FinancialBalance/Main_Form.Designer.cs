@@ -56,6 +56,8 @@
             this.MnETFStocksPriceChart = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFYHistorical = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnCompoundInterest = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnCalculator = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -110,6 +112,7 @@
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnProcess,
             this.MnInquiry,
+            this.MnCalculator,
             this.MnAdmin,
             this.MnExit});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
@@ -307,6 +310,21 @@
             this.MnETFStocksFYHistorical.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksFYHistorical.Text = "ETF/Stock Financial Year &Historical";
             this.MnETFStocksFYHistorical.Click += new System.EventHandler(this.MnETFStocksFYHistorical_Click);
+            // 
+            // MnCalculator
+            // 
+            this.MnCalculator.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnCompoundInterest});
+            this.MnCalculator.Name = "MnCalculator";
+            this.MnCalculator.Size = new System.Drawing.Size(72, 20);
+            this.MnCalculator.Text = "&Calculator";
+            // 
+            // MnCompoundInterest
+            // 
+            this.MnCompoundInterest.Name = "MnCompoundInterest";
+            this.MnCompoundInterest.Size = new System.Drawing.Size(260, 22);
+            this.MnCompoundInterest.Text = "&Compound Interest Calculator";
+            this.MnCompoundInterest.Click += new System.EventHandler(this.MnCompoundInterest_Click);
             // 
             // MnAdmin
             // 
@@ -929,6 +947,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPriceChart;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYHistorical;
         public System.Windows.Forms.ToolStripMenuItem MnAdmin;
+        public System.Windows.Forms.ToolStripMenuItem MnCompoundInterest;
+        public System.Windows.Forms.ToolStripMenuItem MnCalculator;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;
