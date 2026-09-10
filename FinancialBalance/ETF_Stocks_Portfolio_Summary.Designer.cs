@@ -57,6 +57,7 @@
             this.LblDTotPct = new System.Windows.Forms.Label();
             this.LblDTotPctCap = new System.Windows.Forms.Label();
             this.CmdExcel = new System.Windows.Forms.Button();
+            this.CmdDrive = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvSummary)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvDetail)).BeginInit();
@@ -396,13 +397,26 @@
             this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdExcel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdExcel.Location = new System.Drawing.Point(330, 578);
+            this.CmdExcel.Location = new System.Drawing.Point(160, 578);
             this.CmdExcel.Name = "CmdExcel";
             this.CmdExcel.Size = new System.Drawing.Size(120, 27);
             this.CmdExcel.TabIndex = 25;
             this.CmdExcel.Text = "&Generate Excel";
             this.CmdExcel.UseVisualStyleBackColor = false;
             this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
+            //
+            // CmdDrive
+            //
+            this.CmdDrive.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdDrive.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdDrive.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdDrive.Location = new System.Drawing.Point(290, 578);
+            this.CmdDrive.Name = "CmdDrive";
+            this.CmdDrive.Size = new System.Drawing.Size(170, 27);
+            this.CmdDrive.TabIndex = 25;
+            this.CmdDrive.Text = "Generate to Google &Drive";
+            this.CmdDrive.UseVisualStyleBackColor = false;
+            this.CmdDrive.Click += new System.EventHandler(this.CmdDrive_Click);
             //
             // CmdBack
             //
@@ -411,7 +425,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(460, 578);
+            this.CmdBack.Location = new System.Drawing.Point(470, 578);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -450,6 +464,7 @@
             this.Controls.Add(this.chkMainOnly);
             this.Controls.Add(this.CmbTicker);
             this.Controls.Add(this.Label2);
+            this.Controls.Add(this.CmdDrive);
             this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.gvSummary);
@@ -500,6 +515,7 @@
         public System.Windows.Forms.Label LblDTotPct;
         public System.Windows.Forms.Label LblDTotPctCap;
         public System.Windows.Forms.Button CmdExcel;
+        public System.Windows.Forms.Button CmdDrive;
         public System.Windows.Forms.Button CmdBack;
     }
 }

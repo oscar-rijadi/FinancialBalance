@@ -677,34 +677,26 @@ namespace FinancialBalance
         //a single array assignment through one Range, and the few objects that are created
         //are released by hand.  The process id is captured up front so a stubborn instance
         //can still be shut down afterwards.
-        private void CmdExcel_Click(object sender, EventArgs e)
+        //The form's own Name leads the file name, so an export says which page it came from
+        //before anything else.  Taken from this.Name rather than typed out, so it cannot drift
+        //from the form it belongs to.  parExtension carries the dot.
+        private string Export_Name(string parExtension)
+        {
+            return Safe_Name(this.Name)
+                 + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
+                 + "_" + Safe_Name(CmbPortfolio.Text)
+                 + "_" + Safe_Name(CmbTicker.Text) + parExtension;
+        }
+
+        //The whole sheet as a rectangle of strings, laid out before anything is asked to write
+        //it.  Both exports go through here, so the workbook and the Google Sheet are the same
+        //sheet by construction rather than by two lots of layout code agreeing.
+        //parTicker is what the sheet says it is for. It is passed in rather than read off the
+        //dropdown so a per-ticker tab is headed with its own ticker, whatever the dropdown says.
+        private List<string[]> Build_Sheet(string parTicker, out int parCols, out int parTotalsFrom,
+                                           out int parTotalsTo, out int parHeadRow)
         {
             DataGridView grid = Active_Grid();
-            if (grid.Rows.Count == 0)
-            {
-                MessageBox.Show("There is nothing on screen to export.", "Error Message");
-                return;
-            }
-
-            //The form's own Name leads the file name, so an export says which page it
-            //came from before anything else.  Taken from this.Name rather than typed out,
-            //so it cannot drift from the form it belongs to.
-            string TmpName = Safe_Name(this.Name)
-                           + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
-                           + "_" + Safe_Name(CmbPortfolio.Text)
-                           + "_" + Safe_Name(CmbTicker.Text) + ".xlsx";
-
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Title = "Generate Excel";
-            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
-            dlg.FileName = TmpName;
-            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            if (dlg.ShowDialog() != DialogResult.OK)
-            {
-                return;
-            }
-
-            //lay the whole sheet out first, so Excel is only asked to do one write
             List<string> Caps;
             List<string> Vals;
             Active_Totals(out Caps, out Vals);
@@ -719,7 +711,7 @@ namespace FinancialBalance
             Sheet.Add(Line(Cols, "ETF/Stock Portfolio Summary"));
             Sheet.Add(Line(Cols));
             Sheet.Add(Line(Cols, "Portfolio", CmbPortfolio.Text.Trim()));
-            Sheet.Add(Line(Cols, "Full Ticker", CmbTicker.Text.Trim()));
+            Sheet.Add(Line(Cols, "Full Ticker", parTicker));
             Sheet.Add(Line(Cols, "Main Only", (chkMainOnly.Checked ? "Yes" : "No")));
             Sheet.Add(Line(Cols, "Generated", DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss")));
             if (LblNote.Text.Trim() != "")
@@ -729,15 +721,15 @@ namespace FinancialBalance
             Sheet.Add(Line(Cols));
 
             //the aggregates sit above the table
-            int TotalsFrom = Sheet.Count + 1;
+            parTotalsFrom = Sheet.Count + 1;
             for (int i = 0; i < Caps.Count; i++)
             {
                 Sheet.Add(Line(Cols, Caps[i], Vals[i]));
             }
-            int TotalsTo = Sheet.Count;
+            parTotalsTo = Sheet.Count;
             Sheet.Add(Line(Cols));
 
-            int HeadRow = Sheet.Count + 1;
+            parHeadRow = Sheet.Count + 1;
             string[] head = new string[Cols];
             for (int c = 0; c < grid.Columns.Count; c++)
             {
@@ -756,18 +748,112 @@ namespace FinancialBalance
                 Sheet.Add(line);
             }
 
-            object[,] Data = new object[Sheet.Count, Cols];
-            for (int r = 0; r < Sheet.Count; r++)
+            parCols = Cols;
+            return Sheet;
+        }
+
+        //Everything from here down is the Excel half, taking where to write as a parameter so
+        //the Drive button can send it to a temporary file instead of one the user chose.
+        //Throws rather than reporting: the callers differ in what they say afterwards.
+        //One laid-out sheet and the tab it belongs on.
+        private class Tab
+        {
+            public string Name;
+            public List<string[]> Rows;
+            public int Cols;
+            public int TotalsFrom;
+            public int TotalsTo;
+            public int HeadRow;
+        }
+
+        //Excel will not take a tab name longer than 31 characters, and refuses : \ / ? * [ ]
+        //outright.  Full_Ticker is 31 in the database, so it only just fits and only if nothing
+        //has to be escaped.  Names are made unique as well, since two that differ only in a
+        //rejected character would otherwise collide and Excel would refuse the workbook.
+        private string Tab_Name(string parWanted, List<string> parTaken)
+        {
+            string TmpName = (parWanted == null ? "" : parWanted.Trim());
+            foreach (char Bad in new char[] { ':', '\\', '/', '?', '*', '[', ']' })
             {
-                for (int c = 0; c < Cols; c++)
-                {
-                    Data[r, c] = Sheet[r][c];
-                }
+                TmpName = TmpName.Replace(Bad, '-');
+            }
+            if (TmpName.Length > 31)
+            {
+                TmpName = TmpName.Substring(0, 31);
+            }
+            if (TmpName == "")
+            {
+                TmpName = "Sheet";
             }
 
-            Cursor.Current = Cursors.WaitCursor;
-            CmdExcel.Enabled = false;
+            string TmpTry = TmpName;
+            int TmpNext = 2;
+            while (parTaken.Contains(TmpTry.ToUpper()))
+            {
+                string TmpSuffix = " (" + TmpNext.ToString() + ")";
+                int TmpRoom = 31 - TmpSuffix.Length;
+                TmpTry = (TmpName.Length > TmpRoom ? TmpName.Substring(0, TmpRoom) : TmpName) + TmpSuffix;
+                TmpNext = TmpNext + 1;
+            }
+            parTaken.Add(TmpTry.ToUpper());
+            return TmpTry;
+        }
 
+        //What goes into the workbook.  Whatever is on screen is always the first tab; when the
+        //ticker is All, every holding follows as a tab of its own.
+        //
+        //Each of those is produced by putting the page into that ticker's view and reading it
+        //back, rather than by a second query written for the purpose - so a tab shows exactly
+        //what the user would see having chosen that ticker, and there is no second copy of the
+        //logic to drift.  The page is put back as it was found before this returns.
+        private List<Tab> Build_Tabs(bool parPerTicker)
+        {
+            List<Tab> Tabs = new List<Tab>();
+            List<string> Taken = new List<string>();
+            Tabs.Add(One_Tab(Tab_Name("Portfolio Summary", Taken), CmbTicker.Text.Trim()));
+
+            if (!parPerTicker)
+            {
+                return Tabs;
+            }
+
+            //The detail view is driven directly rather than through the dropdown. Assigning to
+            //Text on a DropDownList does nothing at all when the value is not among its items,
+            //and it fails silently - which would leave a tab headed with one ticker sitting
+            //over another ticker's rows. Which grid is showing is what Active_Grid and
+            //Active_Totals read, so that is what gets set.
+            bool TmpWasSummary = gvSummary.Visible;
+            try
+            {
+                foreach (string Ticker in SummaryTickers)
+                {
+                    gvSummary.Visible = false;
+                    gvDetail.Visible = true;
+                    Get_Detail(Ticker);
+                    Tabs.Add(One_Tab(Tab_Name(Ticker, Taken), Ticker));
+                }
+            }
+            finally
+            {
+                gvSummary.Visible = TmpWasSummary;
+                gvDetail.Visible = !TmpWasSummary;
+                //puts the labels and the detail grid back to whatever the dropdown still says
+                Show_View();
+            }
+            return Tabs;
+        }
+
+        private Tab One_Tab(string parName, string parTicker)
+        {
+            Tab Made = new Tab();
+            Made.Name = parName;
+            Made.Rows = Build_Sheet(parTicker, out Made.Cols, out Made.TotalsFrom,
+                                    out Made.TotalsTo, out Made.HeadRow);
+            return Made;
+        }
+
+        private void Write_Workbook(List<Tab> parTabs, string parPath)
+        {
             Excel.Application app = null;
             Excel.Workbooks books = null;
             Excel.Workbook wb = null;
@@ -788,8 +874,36 @@ namespace FinancialBalance
                 books = app.Workbooks;
                 wb = books.Add();
                 sheets = wb.Worksheets;
-                ws = (Excel.Worksheet)sheets[1];
-                ws.Name = "Portfolio Summary";
+
+                for (int i = 0; i < parTabs.Count; i++)
+                {
+                Tab This = parTabs[i];
+                List<string[]> Sheet = This.Rows;
+                int Cols = This.Cols;
+                int TotalsFrom = This.TotalsFrom;
+                int TotalsTo = This.TotalsTo;
+                int HeadRow = This.HeadRow;
+
+                object[,] Data = new object[Sheet.Count, Cols];
+                for (int r = 0; r < Sheet.Count; r++)
+                {
+                    for (int c = 0; c < Cols; c++)
+                    {
+                        Data[r, c] = Sheet[r][c];
+                    }
+                }
+
+                //a new workbook opens with one sheet; the rest are added after it, in order
+                if (i == 0)
+                {
+                    ws = (Excel.Worksheet)sheets[1];
+                }
+                else
+                {
+                    ws = (Excel.Worksheet)sheets.Add(Type.Missing, sheets[sheets.Count],
+                                                     Type.Missing, Type.Missing);
+                }
+                ws.Name = This.Name;
 
                 all = ws.Range[ws.Cells[1, 1], ws.Cells[Sheet.Count, Cols]];
                 //Written as text on purpose.  Left to itself Excel re-reads every value and
@@ -818,15 +932,23 @@ namespace FinancialBalance
                 cols = ws.Columns;
                 cols.AutoFit();
 
-                wb.SaveAs(dlg.FileName, Excel.XlFileFormat.xlOpenXMLWorkbook);
+                //every tab creates its own COM objects, and one left behind keeps an invisible
+                //EXCEL.EXE alive - so they are released here rather than only at the end
+                Marshal.ReleaseComObject(cols);
+                cols = null;
+                Marshal.ReleaseComObject(all);
+                all = null;
+                Marshal.ReleaseComObject(ws);
+                ws = null;
+                }
+
+                //the first tab is the one showing when it opens
+                ws = (Excel.Worksheet)sheets[1];
+                ws.Activate();
+
+                wb.SaveAs(parPath, Excel.XlFileFormat.xlOpenXMLWorkbook);
                 wb.Close(false);
                 app.Quit();
-
-                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
             }
             finally
             {
@@ -841,8 +963,179 @@ namespace FinancialBalance
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 Kill_Excel(ExcelPid);
-                Cursor.Current = Cursors.Default;
-                CmdExcel.Enabled = true;
+            }
+        }
+
+        //---- the two export buttons -----------------------------------------------
+        //
+        //Both build the same sheet. Excel asks where to put it and stops there; Drive writes it
+        //to a temporary file and sends that on. Busy state is handled here rather than in
+        //Write_Workbook because the two buttons disable different things.
+
+        private void Busy(bool parBusy)
+        {
+            Cursor.Current = (parBusy ? Cursors.WaitCursor : Cursors.Default);
+            CmdExcel.Enabled = !parBusy;
+            CmdDrive.Enabled = !parBusy;
+            CmdBack.Enabled = !parBusy;
+        }
+
+        private bool Anything_To_Export()
+        {
+            if (Active_Grid().Rows.Count == 0)
+            {
+                MessageBox.Show("There is nothing on screen to export.", "Error Message");
+                return false;
+            }
+            return true;
+        }
+
+        private void CmdExcel_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Title = "Generate Excel";
+            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+            dlg.FileName = Export_Name(".xlsx");
+            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            //the workbook is what is on screen and nothing more - the per-ticker tabs are a
+            //Google Drive thing, since that file is meant to stand on its own
+            List<Tab> Tabs = Build_Tabs(false);
+            Busy(true);
+            try
+            {
+                Write_Workbook(Tabs, dlg.FileName);
+                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                Busy(false);
+            }
+        }
+
+        //Names the tabs in the success dialog, so it is obvious whether the per-ticker ones went
+        //in without having to open the Sheet to find out.
+        private string Tabs_Said(List<Tab> parTabs)
+        {
+            if (parTabs == null || parTabs.Count == 0)
+            {
+                return "";
+            }
+            if (parTabs.Count == 1)
+            {
+                return "One tab : " + parTabs[0].Name;
+            }
+            List<string> Names = new List<string>();
+            foreach (Tab One in parTabs)
+            {
+                Names.Add(One.Name);
+            }
+            return parTabs.Count.ToString() + " tabs : " + string.Join(", ", Names.ToArray());
+        }
+
+        //Builds the same workbook into a temporary file, signs in, uploads it as a Google Sheet
+        //and throws the temporary file away. The user is never asked where to put it - that is
+        //what the Excel button is for.
+        private void CmdDrive_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+            if (!Google_Drive.Configured)
+            {
+                MessageBox.Show("Google Drive is not set up yet." + Environment.NewLine
+                    + Environment.NewLine + Google_Drive.Setup_Hint(), "Error Message");
+                return;
+            }
+
+            //With All chosen the Sheet carries the summary and then every holding on a tab of
+            //its own; with one ticker chosen it is that ticker alone.
+            bool TmpPerTicker = (CmbTicker.Text.Trim() == "" || CmbTicker.Text.Trim() == "All");
+
+            //The same file every time, so the link keeps working and whoever it is shared with
+            //sees the latest figures rather than collecting a new file per export.
+            string TmpTitle = Google_Drive.Sheet_Name();
+            string TmpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                                                    Export_Name("") + ".xlsx");
+            string TmpOldNote = LblNote.Text;
+
+            List<Tab> Tabs = null;
+            Busy(true);
+            try
+            {
+                LblNote.Text = "Building the workbook ...";
+                LblNote.Refresh();
+                Tabs = Build_Tabs(TmpPerTicker);
+                Write_Workbook(Tabs, TmpPath);
+
+                LblNote.Text = "Waiting for you to sign in to Google in your browser ...";
+                LblNote.Refresh();
+                string TmpWhy;
+                string TmpToken = Google_Drive.Sign_In(out TmpWhy);
+                if (TmpToken == null)
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                LblNote.Text = "Uploading to Google Drive ...";
+                LblNote.Refresh();
+                string TmpLink;
+                bool TmpReplaced;
+                if (!Google_Drive.Upload(TmpToken, TmpPath, TmpTitle, out TmpLink, out TmpReplaced,
+                                         out TmpWhy))
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                DialogResult Response = MessageBox.Show(
+                    (TmpReplaced ? "Google Sheet updated :" : "Google Sheet created :")
+                    + Environment.NewLine + TmpTitle
+                    + Environment.NewLine + Environment.NewLine
+                    + Tabs_Said(Tabs)
+                    + Environment.NewLine + Environment.NewLine + TmpLink
+                    + Environment.NewLine + Environment.NewLine + "Open it now ?",
+                    "Success", MessageBoxButtons.YesNo);
+                if (Response == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(TmpLink);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate to Google Drive : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                //the workbook was only ever a carrier for the upload
+                try
+                {
+                    if (System.IO.File.Exists(TmpPath))
+                    {
+                        System.IO.File.Delete(TmpPath);
+                    }
+                }
+                catch
+                {
+                    //a temp file left behind is not worth a second error on top of the first
+                }
+                LblNote.Text = TmpOldNote;
+                Busy(false);
             }
         }
 

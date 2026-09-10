@@ -1644,6 +1644,134 @@ Three pages export: [Portfolio summary](#portfolio-summary),
 - The name is only what the Save dialog is *pre-filled* with; the reader can change it, and the
   dialog opens in Documents but remembers wherever it was last pointed.
 
+[Portfolio summary](#portfolio-summary) also exports
+[to Google Drive](#generate-to-google-drive), which builds the same workbook and uploads it as a
+Google Sheet instead of saving it locally.
+
+---
+
+### Generate to Google Drive
+
+[Portfolio summary](#portfolio-summary) has a third button beside **Generate Excel**. It builds
+**the same workbook**, uploads it to the signed-in user's Google Drive, and asks Drive to convert
+it into a Google Sheet on the way in. The workbook itself is written to the temporary directory
+and deleted afterwards — it is only a carrier. Nothing is saved locally; that is what the Excel
+button is for.
+
+Both buttons go through one `Build_Sheet`, so the workbook and the Sheet are the same sheet by
+construction rather than by two lots of layout code happening to agree. `Write_Workbook` takes
+the tabs and where to write them; only the caller differs.
+
+#### One file, reused
+
+Unlike the Excel export, this does **not** make a new file each time. It writes to **one Sheet,
+by name**, creating it the first time and replacing its contents after that — so the link keeps
+working and anyone it has been shared with sees the current figures rather than collecting a
+fresh file per export. The success dialog says whether it created or updated.
+
+The name comes from `GoogleSheetName` in `app.config`; empty or missing falls back to
+**Financial Balance ETFs or Stocks Investments**. It carries no timestamp, deliberately — a
+timestamp would make every run a different file, which is the behaviour this replaces.
+
+Finding it again is a search by name, and the `drive.file` scope is what makes that safe: the
+query can only ever see files **this application created**, so it cannot pick up something of the
+user's that happens to share the name. The flip side is that a Sheet the user deletes, renames,
+or that was made under a different OAuth client will not be found, and a new one is made — which
+is the right answer in each of those cases. If an earlier run somehow left two, the first is used
+and the other left alone rather than quietly deleted.
+
+Replacing the contents is a `PATCH` to the same file id rather than a delete and re-create, so
+the id, the link and any sharing survive.
+
+#### A tab per holding
+
+When **Full Ticker** is `All`, the Sheet gets the summary as its first tab and then **one tab per
+holding**, each carrying what the page would show had that ticker been chosen. With a single
+ticker chosen it is that ticker alone, one tab. The Excel button is unchanged — it exports what
+is on screen and nothing more, since that file is a snapshot rather than something shared.
+
+Each per-ticker tab is produced by putting the page into that ticker's view and reading it back,
+not by a second query written for the purpose — so a tab shows exactly what the user would see,
+and there is no second copy of the logic to drift. The page is put back as it was found.
+
+The detail view is driven by setting which grid is visible and calling `Get_Detail` directly,
+**not** by assigning to the dropdown's `Text`. `CmbTicker` is a `DropDownList`, and assigning a
+value that is not among its items does nothing at all — silently — which would leave a tab
+headed with one ticker sitting over another ticker's rows. `Build_Sheet` is told which ticker the
+sheet is for rather than reading the dropdown, for the same reason.
+
+Tab names are the ticker, put through Excel's rules: 31 characters at most, `: \ / ? * [ ]`
+replaced, and made unique with a `(2)` suffix if two would collide — Excel refuses a workbook
+with two tabs alike. `Full_Ticker` is 31 characters in the database, so it only just fits.
+
+#### No new dependencies
+
+This is written against the framework alone — `HttpWebRequest`, `TcpListener`,
+`RNGCryptoServiceProvider`, and `JavaScriptSerializer` from `System.Web.Extensions`. The
+alternative, Google's own `Google.Apis.*` packages, would have been less code but would have
+brought a dozen or so DLLs to a program that **ships as one exe, one config and one mdb**. Two
+framework references were added (`System.Web.Extensions`, `System.Configuration`); neither adds
+anything to deploy.
+
+#### Signing in
+
+The sign-in happens in the user's **default browser**, not in a window of ours. That is not a
+style choice: Google rejects OAuth requests made from embedded browser controls, so an in-app
+dialog is not available however well it would match the rest of the application.
+
+It is the OAuth 2.0 authorization code flow for installed applications, with PKCE:
+
+1. a random `code_verifier`, and its SHA-256 as the `code_challenge`
+2. a `TcpListener` on `127.0.0.1` on a port **the OS picks** — nothing to configure, and two
+   copies of the program cannot collide
+3. the browser is opened on Google's consent page
+4. Google redirects back to that port with a one-time code, which is read straight off the socket
+5. the code and the verifier are swapped for an access token
+
+**Every click signs in again.** No refresh token is requested (`access_type=online`) and nothing
+is written to disk, so there is no stored credential to leak and no session to go stale. The
+request also carries `prompt=select_account consent`, which makes Google ask rather than wave
+through an account it already knows. What it cannot do is force a password prompt — if the
+browser is still signed in to Google the user picks an account instead, and that is the browser's
+session, not something this program can clear.
+
+`state` is generated per request and checked on the way back; a reply that does not match it is
+refused. If nobody finishes in the browser within three minutes the listener gives up and says
+so.
+
+**Why `TcpListener` and not `HttpListener`:** `HttpListener` goes through HTTP.SYS, which wants
+the URL prefix reserved with `netsh` or the process running as administrator. This application
+has never needed either. A raw socket needs neither, and the redirect is a single GET that is
+simple enough to read by hand. One detail found the hard way: the socket has to be **half-closed**
+(`Shutdown(SocketShutdown.Send)`) before it is disposed, or the browser shows a connection reset
+instead of the "you can close this tab" page.
+
+#### The scope
+
+`drive.file` — only the files this application creates. It cannot see anything else in the
+Drive, which is the right level of access for something that only ever writes exports, and it
+stays clear of the scopes Google treats as restricted.
+
+#### The upload
+
+One `multipart/related` POST to the Drive upload endpoint: the metadata, then the workbook.
+Naming `application/vnd.google-apps.spreadsheet` as the target mime type is what makes Drive
+**convert** the upload into a real spreadsheet rather than storing the xlsx as a file. The reply
+is asked for `id,webViewLink`, and the link is offered in the success dialog with the option to
+open it.
+
+Google puts the reason for a refusal in the body of the failing response, which is far more use
+than *"The remote server returned an error: (400) Bad Request"* — so the body is read and its
+message shown instead.
+
+#### Setting it up
+
+The button does nothing until an OAuth client exists. It says so, and names what it needs, rather
+than failing at the browser. What has to be created on the Google side — the Cloud project, the
+Drive API, the consent screen, and a **Desktop app** client — is written up in
+`GOOGLE_DRIVE_EXPORT_PLAN.md`. The resulting client id and secret go in `app.config`; see
+[Configuration](#configuration).
+
 ---
 
 ## Posting rules
@@ -1768,6 +1896,7 @@ C#.Net/
 │   ├── FinancialBalance.csproj
 │   ├── app.config
 │   ├── Program.cs                   # entry point
+│   ├── Google_Drive.cs               # OAuth and Drive upload, framework only
 │   ├── Mdl1.cs                      # data access + shared helpers
 │   ├── Main_Form.*                  # splash / menu
 │   ├── Daily_Input.*                # voucher entry
@@ -1883,11 +2012,28 @@ currencies, rates and accounts first, then open Daily Input.
 ## Configuration
 
 The connection string is **hard-coded in `Mdl1.DB_Connect()`** (`Mdl1.cs:22`) and built from
-`Application.StartupPath`. The two entries in `app.config` are leftovers from the Visual Studio
-data-source designer and are **not read at runtime** — editing them changes nothing.
+`Application.StartupPath`. The two `connectionStrings` entries in `app.config` are leftovers from
+the Visual Studio data-source designer and are **not read at runtime** — editing them changes
+nothing.
+
+The `appSettings` entries, however, **are** read:
+
+| Key | Holds |
+| --- | --- |
+| `GoogleClientId` | OAuth client id for a Google Cloud *Desktop app* client |
+| `GoogleClientSecret` | its secret |
+| `GoogleSheetName` | what the Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Investments* |
+
+All three ship empty. Until the id and secret are filled in,
+[Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else;
+`GoogleSheetName` is optional and has a default.
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so
-treat the database as obfuscated rather than protected.
+treat the database as obfuscated rather than protected. **The same goes for the Google client
+secret.** For an installed application Google does not treat it as confidential — it cannot be
+kept secret in a program the user holds, and the flow's security comes from PKCE and the redirect
+check rather than from hiding it — but it is still a credential in a plain text file, sitting
+next to one this README already tells you not to rely on.
 
 ---
 
