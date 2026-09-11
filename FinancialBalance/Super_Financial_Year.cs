@@ -54,6 +54,13 @@ namespace FinancialBalance
 
         //---- the menu -------------------------------------------------------------
 
+        private void MnPropertySetup_Click(object sender, EventArgs e)
+        {
+            Setup_Property Setup_Property = new Setup_Property();
+            Setup_Property.Show();
+            this.Close();
+        }
+
         private void MnDaily_Click(object sender, EventArgs e)
         {
             Daily_Input Daily_Input = new Daily_Input();

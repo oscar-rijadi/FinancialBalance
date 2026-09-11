@@ -22,6 +22,8 @@
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertySetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPurchase = new System.Windows.Forms.ToolStripMenuItem();
@@ -86,7 +88,8 @@
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnDaily,
             this.MnMonthlyClosing,
-            this.MnETFStockProcessGroup});
+            this.MnETFStockProcessGroup,
+            this.MnPropertyProcessGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(1264, 24);
@@ -119,6 +122,21 @@
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
+            // 
+            // MnPropertyProcessGroup
+            // 
+            this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnPropertySetup});
+            this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
+            this.MnPropertyProcessGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnPropertyProcessGroup.Text = "P&roperty";
+            // 
+            // MnPropertySetup
+            // 
+            this.MnPropertySetup.Name = "MnPropertySetup";
+            this.MnPropertySetup.Size = new System.Drawing.Size(260, 22);
+            this.MnPropertySetup.Text = "P&roperty Setup";
+            this.MnPropertySetup.Click += new System.EventHandler(this.MnPropertySetup_Click);
             //
             // MnETFStocksPrice
             //
@@ -834,6 +852,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertySetup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPurchase;

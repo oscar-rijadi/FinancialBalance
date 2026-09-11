@@ -58,6 +58,13 @@ namespace FinancialBalance
 
         //---- the menu -------------------------------------------------------------
 
+        private void MnPropertySetup_Click(object sender, EventArgs e)
+        {
+            Setup_Property Setup_Property = new Setup_Property();
+            Setup_Property.Show();
+            this.Close();
+        }
+
         private void MnSuperProcess_Click(object sender, EventArgs e)
         {
             Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();

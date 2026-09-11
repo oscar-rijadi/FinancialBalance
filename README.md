@@ -92,6 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
+| `Process` | **Property** | Property Setup |
 | `Administration` | **Property** | State Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
@@ -119,6 +120,8 @@ flowchart LR
     PETFG --> ETD["ETF_Stocks_Distribution"]
     PETFG --> ECB["ETF_Stocks_Cost_Base_Adjustment"]
     PETFG --> ETR["ETF_Stocks_FY_Reconciliation"]
+    MAIN --> PPROPG{{"Property"}}
+    PPROPG --> SPROP["Setup_Property"]
     MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -209,6 +212,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
+| `Setup_Property` | Shown as **Property Setup**. Maintains the properties — name, address, purchase date, and whether and when it was sold. |
 | `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories — a three-character code and its full name. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
 | `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
@@ -217,7 +221,7 @@ flowchart LR
 
 ## Data model
 
-Twenty-nine tables. **No foreign keys or relationships are defined in the database** — the links below are
+Thirty tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -255,6 +259,7 @@ erDiagram
     TblFinancialYear ||--o{ TblSuperFinancialYear : "covers"
     TblCurrCode     ||--o{ TblSuperFinancialYear : "denominates"
     TblETFStocks ||--o{ TblETFStocksDiversificationAllocation : "split across"
+    TblState        ||--o{ TblProperty : "locates"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -421,6 +426,17 @@ erDiagram
     TblState {
         text Name PK "3 chars, the state code"
         text Long_Name "50 chars"
+    }
+    TblProperty {
+        long Property_Id PK "handed out by the page, not an AutoNumber"
+        text Name "50 chars"
+        text Address "150 chars"
+        text Suburb "50 chars"
+        text State "3 chars, a code from TblState"
+        text Post_Code "4 chars"
+        text Purchase_Date "yyyyMMdd"
+        bool Is_Sold
+        text Sold_Date "yyyyMMdd, blank unless sold"
     }
     TblETFStocksDistributionDividend {
         text    Pay_Date "yyyyMMdd"
@@ -1669,9 +1685,17 @@ by name**, creating it the first time and replacing its contents after that — 
 working and anyone it has been shared with sees the current figures rather than collecting a
 fresh file per export. The success dialog says whether it created or updated.
 
-The name comes from `GoogleSheetName` in `app.config`; empty or missing falls back to
-**Financial Balance ETFs or Stocks Investments**. It carries no timestamp, deliberately — a
-timestamp would make every run a different file, which is the behaviour this replaces.
+The name comes from `PortfolioGoogleSheetName` in `app.config`; empty or missing falls back to
+**Financial Balance ETFs or Stocks Portfolio Investments**. The setting is named for the page
+rather than for Drive, so a second page exporting this way later gets its own rather than quietly
+sharing this one. The name carries no timestamp, deliberately — a timestamp would make every run
+a different file, which is the behaviour this replaces.
+
+**Changing the name starts a new Sheet.** Both the search and the remembered id are keyed by
+name, so after a rename the next run finds nothing under the new name and creates a file, leaving
+the old Sheet in Drive untouched and no longer updated. To carry on with an existing Sheet,
+either rename it in Drive to match or set `PortfolioGoogleSheetName` to what it is already
+called.
 
 Every run **looks first**, and writes to the file it finds. Replacing the contents is a `PATCH`
 to the same file id rather than a delete and re-create, so the id, the link and any sharing all
@@ -1957,6 +1981,7 @@ C#.Net/
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
 │   ├── Setup_State.*                 # the Australian states and territories
+│   ├── Setup_Property.*              # properties, and whether they are sold
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -2058,11 +2083,11 @@ The `appSettings` entries, however, **are** read:
 | --- | --- |
 | `GoogleClientId` | OAuth client id for a Google Cloud *Desktop app* client |
 | `GoogleClientSecret` | its secret |
-| `GoogleSheetName` | what the Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Investments* |
+| `PortfolioGoogleSheetName` | what the Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Portfolio Investments* |
 
 All three ship empty. Until the id and secret are filled in,
 [Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else;
-`GoogleSheetName` is optional and has a default.
+`PortfolioGoogleSheetName` is optional and has a default.
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so
 treat the database as obfuscated rather than protected. **The same goes for the Google client
@@ -2600,6 +2625,89 @@ Dividend Income is the one input that may be left blank.**
 As on the compound interest calculator, the page **recalculates on every keystroke**, so a refused
 input is reported **in the note above the table, in red** rather than in a message box, and the
 table and all five figures are cleared so nothing stale is left looking like an answer.
+
+---
+
+### Property Setup
+
+`Process` ▸ Property ▸ Property Setup maintains `TblProperty`: one row per property.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Property_Id` | Number, **primary key** | handed out by the page — see below |
+| `Name` | Short Text(50) | what the property is called |
+| `Address` | Short Text(150) | street address |
+| `Suburb` | Short Text(50) | |
+| `State` | Short Text(3) | a code from [`TblState`](#state-setup) |
+| `Post_Code` | Short Text(4) | digits only |
+| `Purchase_Date` | Short Text(8) | `yyyyMMdd`, as every date in this database is stored |
+| `Is_Sold` | Yes/No | |
+| `Sold_Date` | Short Text(8) | `yyyyMMdd`, blank unless sold |
+
+`Name`, `Address` and `State` are all reserved words in Access, so **every** column is bracketed
+rather than only the ones that have to be.
+
+**`Property_Id` is a plain Number with a primary key on it, not an AutoNumber**, so the page hands
+out the next one itself: `Max([Property_Id]) + 1`, not a row count, which would hand out an id
+again after a deletion. The primary key is what makes a repeat impossible rather than merely
+unlikely.
+
+#### The list
+
+A row per property, in id order:
+
+| Column | What it holds |
+| --- | --- |
+| `Property Id` | `Property_Id` |
+| `Name` | `Name` |
+| `Full Address` | `Address`, `Suburb`, `State` and `Post_Code` run together with spaces |
+| `Purchase Date` | `Purchase_Date` read as `dd-MMM-yyyy` |
+| `Is_Sold` | Yes or No |
+| `Sold Date` | `Sold_Date` read as `dd-MMM-yyyy` |
+
+The two dates are **stored** as `yyyyMMdd` and only **shown** the long way round; anything that is
+not a real date shows blank rather than eight raw digits. Clicking a row loads it back into the
+entry area — read from the table rather than off the grid, since the address is one column there
+and the dates are the wrong way round to take apart again.
+
+#### The entry area
+
+**Property Id** appears only once a record has been picked: it is the table's own number, not
+something anyone types, so there is nothing to show until there is a record it belongs to.
+
+**State** is a dropdown filled from `TblState`, so the codes cannot drift from the list
+[State Setup](#state-setup) maintains.
+
+Both dates work the way the date on **Daily Input** does: three dropdowns — day,
+month, year — with a **`..`** button beside them that opens a `MonthCalendar`. Picking a day
+fills the three dropdowns and puts the calendar away. One calendar serves both dates, so which
+one opened it is remembered while it is up.
+
+Two differences from Daily Input's, both forced by this page rather than chosen:
+
+- **The year list runs back to 1950.** `Mdl1.Fill_Date` offers three years, which suits a
+  transaction entered as it happens but not a property bought decades ago. Day and month are
+  unchanged.
+- **The calendar is bounded to match.** `MinDate` is 1 January 1950 and `MaxDate` the end of this
+  year, so it cannot return a year the dropdown does not carry. This matters more than it looks:
+  assigning a value that is not in a `DropDownList` does **nothing at all, silently**, so an
+  unbounded calendar would appear to work while leaving the date unchanged.
+
+Daily Input parses its three boxes straight into a date when the calendar opens. That cannot be
+done here — a date not yet filled in is blank, and blank does not parse — so an unset date opens
+the calendar on today instead.
+
+**Sold Date is disabled until Is Sold is ticked**, and cleared when it is unticked — a sold date
+on a property that is not sold would be a contradiction the table could not express.
+
+Refused before anything is written: an empty name, a post code that is not digits, a missing
+purchase date, a date part-filled (day but no year), a date that does not exist (31 February), and
+a sold date **earlier than** the purchase date.
+
+**Add** hands out the next id and inserts. **Update** works on the row picked from the list and
+never changes the id, since that is the key it is found by; both refuse before a row has been
+picked. **Delete** asks first, naming the property. **Clear** empties the entry area and drops the
+selection, so Add starts from nothing.
 
 ---
 

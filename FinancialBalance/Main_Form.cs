@@ -112,6 +112,13 @@ namespace FinancialBalance
             AnimationTimer.Enabled = true;
         }
 
+        private void MnPropertySetup_Click(object sender, EventArgs e)
+        {
+            Setup_Property Setup_Property = new Setup_Property();
+            Setup_Property.Show();
+            this.Hide();
+        }
+
         private void MnStateSetup_Click(object sender, EventArgs e)
         {
             Setup_State Setup_State = new Setup_State();

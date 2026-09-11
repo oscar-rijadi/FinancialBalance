@@ -33,6 +33,8 @@
             this.MnDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertySetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksCostBase = new System.Windows.Forms.ToolStripMenuItem();
@@ -85,6 +87,7 @@
             this.MnDaily,
             this.MnMonthlyClosing,
             this.MnETFStockProcessGroup,
+            this.MnPropertyProcessGroup,
             this.MnSuperProcess});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
@@ -117,6 +120,21 @@
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
             this.MnETFStockProcessGroup.Text = "&ETF/Stock";
+            // 
+            // MnPropertyProcessGroup
+            // 
+            this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnPropertySetup});
+            this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
+            this.MnPropertyProcessGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnPropertyProcessGroup.Text = "P&roperty";
+            // 
+            // MnPropertySetup
+            // 
+            this.MnPropertySetup.Name = "MnPropertySetup";
+            this.MnPropertySetup.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertySetup.Text = "P&roperty Setup";
+            this.MnPropertySetup.Click += new System.EventHandler(this.MnPropertySetup_Click);
             //
             // MnSuperProcess
             //
@@ -638,6 +656,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnDaily;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyClosing;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertySetup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksCostBase;

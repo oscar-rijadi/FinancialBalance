@@ -45,11 +45,11 @@ namespace FinancialBalance
         //What the Sheet in Drive is called. One file, reused, so the link keeps working and
         //anyone it has been shared with sees the latest figures instead of collecting a new
         //file per export.
-        const string DefaultSheetName = "Financial Balance ETFs or Stocks Investments";
+        const string DefaultSheetName = "Financial Balance ETFs or Stocks Portfolio Investments";
 
         public static string Sheet_Name()
         {
-            string TmpName = (ConfigurationManager.AppSettings["GoogleSheetName"] ?? "").Trim();
+            string TmpName = (ConfigurationManager.AppSettings["PortfolioGoogleSheetName"] ?? "").Trim();
             return (TmpName == "" ? DefaultSheetName : TmpName);
         }
 
