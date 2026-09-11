@@ -37,6 +37,7 @@
             this.MnETFStockProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertySetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertySale = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyPurchase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksCostBase = new System.Windows.Forms.ToolStripMenuItem();
@@ -177,7 +178,8 @@
             // 
             this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnPropertySetup,
-            this.MnPropertyPurchase});
+            this.MnPropertyPurchase,
+            this.MnPropertySale});
             this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
             this.MnPropertyProcessGroup.Size = new System.Drawing.Size(216, 22);
             this.MnPropertyProcessGroup.Text = "P&roperty";
@@ -188,6 +190,13 @@
             this.MnPropertySetup.Size = new System.Drawing.Size(216, 22);
             this.MnPropertySetup.Text = "P&roperty Setup";
             this.MnPropertySetup.Click += new System.EventHandler(this.MnPropertySetup_Click);
+            // 
+            // MnPropertySale
+            // 
+            this.MnPropertySale.Name = "MnPropertySale";
+            this.MnPropertySale.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertySale.Text = "Property Sa&le";
+            this.MnPropertySale.Click += new System.EventHandler(this.MnPropertySale_Click);
             // 
             // MnPropertyPurchase
             // 
@@ -982,6 +991,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStockProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertySetup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertySale;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyPurchase;
         public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksCostBase;

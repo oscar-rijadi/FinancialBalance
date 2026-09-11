@@ -92,7 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
-| `Process` | **Property** | Property Setup, Property Purchase |
+| `Process` | **Property** | Property Setup, Property Purchase, Property Sale |
 | `Administration` | **Property** | State Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
@@ -123,6 +123,7 @@ flowchart LR
     MAIN --> PPROPG{{"Property"}}
     PPROPG --> SPROP["Setup_Property"]
     PPROPG --> PPUR["Property_Purchase"]
+    PPROPG --> PSAL["Property_Sale"]
     MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -213,8 +214,9 @@ flowchart LR
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
+| `Property_Sale` | Shown as **Property Sale**. What one property fetched when it was sold — price, and the costs of selling. One record per property. |
 | `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy — price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
-| `Setup_Property` | Shown as **Property Setup**. Maintains the properties — name, address, purchase date, and whether and when it was sold. |
+| `Setup_Property` | Shown as **Property Setup**. Maintains the properties — name and address. What happened to each one lives on its purchase and sale records. |
 | `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories — a three-character code and its full name. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
 | `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
@@ -223,7 +225,7 @@ flowchart LR
 
 ## Data model
 
-Thirty-one tables. **No foreign keys or relationships are defined in the database** — the links below are
+Thirty-two tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -263,6 +265,7 @@ erDiagram
     TblETFStocks ||--o{ TblETFStocksDiversificationAllocation : "split across"
     TblState        ||--o{ TblProperty : "locates"
     TblProperty     ||--o| TblPropertyPurchase : "was bought for"
+    TblProperty     ||--o| TblPropertySale : "was sold for"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -430,6 +433,15 @@ erDiagram
         text Name PK "3 chars, the state code"
         text Long_Name "50 chars"
     }
+    TblPropertySale {
+        long    Property_Id "joins TblProperty, one row per property"
+        text    Sold_Date "yyyyMMdd"
+        decimal Sold_Price "2 dp"
+        decimal Conveyancing_Cost "2 dp"
+        decimal Sale_Agent_Cost "2 dp"
+        decimal Settlement_Cost "2 dp"
+        decimal Other_Cost "2 dp"
+    }
     TblPropertyPurchase {
         long    Property_Id "joins TblProperty, one row per property"
         text    Purchase_Date "yyyyMMdd"
@@ -442,6 +454,7 @@ erDiagram
         decimal Other_Cost "2 dp"
         decimal Down_Payment "2 dp"
         decimal Initial_Loan "2 dp"
+        decimal Percentage_Ownership "2 dp, 0 to 100"
     }
     TblProperty {
         long Property_Id PK "handed out by the page, not an AutoNumber"
@@ -450,9 +463,6 @@ erDiagram
         text Suburb "50 chars"
         text State "3 chars, a code from TblState"
         text Post_Code "4 chars"
-        text Purchase_Date "yyyyMMdd"
-        bool Is_Sold
-        text Sold_Date "yyyyMMdd, blank unless sold"
     }
     TblETFStocksDistributionDividend {
         text    Pay_Date "yyyyMMdd"
@@ -1999,6 +2009,7 @@ C#.Net/
 │   ├── Setup_State.*                 # the Australian states and territories
 │   ├── Setup_Property.*              # properties, and whether they are sold
 │   ├── Property_Purchase.*           # what each one cost to buy
+│   ├── Property_Sale.*               # what each one fetched when sold
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -2645,6 +2656,38 @@ table and all five figures are cleared so nothing stale is left looking like an 
 
 ---
 
+### Property Sale
+
+`Process` ▸ Property ▸ Property Sale is [Property Purchase](#property-purchase) the other way
+round, and is built the same way: `TblPropertySale`, **one row per property**, joined to
+[`TblProperty`](#property-setup) by `Property_Id`.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Property_Id` | Number | which property; joins `TblProperty` |
+| `Sold_Date` | Short Text(8) | `yyyyMMdd` |
+| `Sold_Price` | Decimal(22,2) | |
+| `Conveyancing_Cost` | Decimal(22,2) | |
+| `Sale_Agent_Cost` | Decimal(22,2) | shown as **Sale Agent Cost** |
+| `Settlement_Cost` | Decimal(22,2) | |
+| `Other_Cost` | Decimal(22,2) | |
+
+Seven columns in the list: the property's **Name** read across from `TblProperty`, the **Sold
+Date** as `dd-MMM-yyyy`, then each amount with a `$` and thousands grouped to two places. The
+entry area is the same shape as the purchase page's — a **Property Id** dropdown with the
+property's name beside it, the Daily Input date picker with its `..` calendar, and money boxes on
+the shared numeric filter. Add refuses a property that already has a sale, Update refuses to move
+one onto a property that does, Delete asks first, and a sale whose property has since been deleted
+shows as `(id)` and cannot be updated — all for the reasons set out under
+[Property Purchase](#property-purchase).
+
+**Whether a property is sold is this table, and only this table.** `TblProperty` used to carry
+`Is_Sold` and `Sold_Date` as well, which meant the same fact in two places with nothing keeping
+them in step — those three columns have been dropped, along with `Purchase_Date`. A property is
+sold if it has a row here, and the date it sold is the one in that row.
+
+---
+
 ### Property Purchase
 
 `Process` ▸ Property ▸ Property Purchase records what a property cost to buy, in
@@ -2664,6 +2707,7 @@ table and all five figures are cleared so nothing stale is left looking like an 
 | `Other_Cost` | Decimal(22,2) | |
 | `Down_Payment` | Decimal(22,2) | shown as **DP** |
 | `Initial_Loan` | Decimal(22,2) | |
+| `Percentage_Ownership` | Decimal(22,2) | the share of the property owned, 0 to 100 |
 
 Every cost is **`DECIMAL(22,2)` created through ACE DDL**, not DAO `CreateField`, which silently
 produces a BigInt and would round each of them to whole dollars — the same reason the other
@@ -2671,17 +2715,23 @@ money tables are built that way.
 
 #### The list
 
-Eleven columns: the property's **Name** read across from `TblProperty`, the **Purchase Date** as
-`dd-MMM-yyyy`, and then every cost with a `$` and thousands grouped, to two places — the shared
-`Mdl1.FormatAmt` already does exactly that. A purchase whose property has since been deleted
+Twelve columns: the property's **Name** read across from `TblProperty`, the **Purchase Date** as
+`dd-MMM-yyyy`, then every cost with a `$` and thousands grouped, to two places — the shared
+`Mdl1.FormatAmt` already does exactly that — and last **Percentage Ownership (%)**, which is a
+share rather than an amount and so reads `62.50 %` instead of carrying a dollar sign. A purchase whose property has since been deleted
 still appears, showing `(id)` where the name would be, rather than vanishing from view.
 
 #### The entry area
 
 **Property Id** is a dropdown of the ids in `TblProperty`, with **the property's name shown
 beside it** so an id never has to be recognised on its own. The date uses the same three
-dropdowns and `..` calendar as [Property Setup](#property-setup), bounded the same way. Every
-cost box carries the shared numeric filter, so only digits and a decimal point get in.
+dropdowns and `..` calendar as Daily Input, bounded to the years the dropdown carries. Every
+figure box carries the shared numeric filter, so only digits and a decimal point get in.
+
+**Percentage Ownership** is checked against **0 to 100** before anything is written — a share
+outside that is not a share. The filter already keeps a minus sign out of the box, so in practice
+it is the upper end that does the work, but both ends are checked rather than one being relied on
+from somewhere else.
 
 **Stamp Duty has a box of its own.** It is a field on the table and a column in the list, but was
 missing from the inputs as originally specified — which would have left that column permanently
@@ -2710,9 +2760,12 @@ the box would sit showing the previous record while the rest of the form showed 
 | `Suburb` | Short Text(50) | |
 | `State` | Short Text(3) | a code from [`TblState`](#state-setup) |
 | `Post_Code` | Short Text(4) | digits only |
-| `Purchase_Date` | Short Text(8) | `yyyyMMdd`, as every date in this database is stored |
-| `Is_Sold` | Yes/No | |
-| `Sold_Date` | Short Text(8) | `yyyyMMdd`, blank unless sold |
+
+It holds **what a property is, and nothing about what happened to it.** It used to carry
+`Purchase_Date`, `Is_Sold` and `Sold_Date` too; those have been dropped, and now live on
+[`TblPropertyPurchase`](#property-purchase) and [`TblPropertySale`](#property-sale) beside the
+costs that belong with them. Keeping them here as well meant the same fact written twice with
+nothing holding the two copies together.
 
 `Name`, `Address` and `State` are all reserved words in Access, so **every** column is bracketed
 rather than only the ones that have to be.
@@ -2731,53 +2784,30 @@ A row per property, in id order:
 | `Property Id` | `Property_Id` |
 | `Name` | `Name` |
 | `Full Address` | `Address`, `Suburb`, `State` and `Post_Code` run together with spaces |
-| `Purchase Date` | `Purchase_Date` read as `dd-MMM-yyyy` |
-| `Is_Sold` | Yes or No |
-| `Sold Date` | `Sold_Date` read as `dd-MMM-yyyy` |
 
-The two dates are **stored** as `yyyyMMdd` and only **shown** the long way round; anything that is
-not a real date shows blank rather than eight raw digits. Clicking a row loads it back into the
-entry area — read from the table rather than off the grid, since the address is one column there
-and the dates are the wrong way round to take apart again.
+Clicking a row loads it back into the entry area — read from the table rather than off the grid,
+since the address is one column there and cannot be taken apart again.
 
 #### The entry area
 
 **Property Id** appears only once a record has been picked: it is the table's own number, not
 something anyone types, so there is nothing to show until there is a record it belongs to.
 
-**State** is a dropdown filled from `TblState`, so the codes cannot drift from the list
-[State Setup](#state-setup) maintains.
+Six inputs, one column. **State** is a dropdown filled from `TblState`, so the codes cannot
+drift from the list [State Setup](#state-setup) maintains. There are no dates here any more, and
+so no date pickers and no calendar — [Property Purchase](#property-purchase) and
+[Property Sale](#property-sale) each carry their own.
 
-Both dates work the way the date on **Daily Input** does: three dropdowns — day,
-month, year — with a **`..`** button beside them that opens a `MonthCalendar`. Picking a day
-fills the three dropdowns and puts the calendar away. One calendar serves both dates, so which
-one opened it is remembered while it is up.
-
-Two differences from Daily Input's, both forced by this page rather than chosen:
-
-- **The year list runs back to 1950.** `Mdl1.Fill_Date` offers three years, which suits a
-  transaction entered as it happens but not a property bought decades ago. Day and month are
-  unchanged.
-- **The calendar is bounded to match.** `MinDate` is 1 January 1950 and `MaxDate` the end of this
-  year, so it cannot return a year the dropdown does not carry. This matters more than it looks:
-  assigning a value that is not in a `DropDownList` does **nothing at all, silently**, so an
-  unbounded calendar would appear to work while leaving the date unchanged.
-
-Daily Input parses its three boxes straight into a date when the calendar opens. That cannot be
-done here — a date not yet filled in is blank, and blank does not parse — so an unset date opens
-the calendar on today instead.
-
-**Sold Date is disabled until Is Sold is ticked**, and cleared when it is unticked — a sold date
-on a property that is not sold would be a contradiction the table could not express.
-
-Refused before anything is written: an empty name, a post code that is not digits, a missing
-purchase date, a date part-filled (day but no year), a date that does not exist (31 February), and
-a sold date **earlier than** the purchase date.
+Refused before anything is written: an empty name, and a post code that is not digits.
 
 **Add** hands out the next id and inserts. **Update** works on the row picked from the list and
-never changes the id, since that is the key it is found by; both refuse before a row has been
-picked. **Delete** asks first, naming the property. **Clear** empties the entry area and drops the
+never changes the id — it is the key the row is found by, and what the purchase and sale records
+point at; both refuse before a row has been picked. **Clear** empties the entry area and drops the
 selection, so Add starts from nothing.
+
+**Delete refuses while a purchase or sale record still belongs to the property**, and says how
+many, rather than leaving those rows pointing at something that is gone. With none, it asks first,
+naming the property.
 
 ---
 

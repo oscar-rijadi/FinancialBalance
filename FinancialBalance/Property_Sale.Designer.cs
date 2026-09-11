@@ -1,6 +1,6 @@
 ﻿namespace FinancialBalance
 {
-    partial class Property_Purchase
+    partial class Property_Sale
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -17,7 +17,7 @@
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Property_Purchase));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Property_Sale));
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnDailyInput = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyClosing = new System.Windows.Forms.ToolStripMenuItem();
@@ -31,38 +31,28 @@
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertySetup = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnPropertySale = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyPurchase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
-            this.gvPurchase = new System.Windows.Forms.DataGridView();
+            this.gvSale = new System.Windows.Forms.DataGridView();
             this.Lbl_CmbPropertyId = new System.Windows.Forms.Label();
             this.CmbPropertyId = new System.Windows.Forms.ComboBox();
             this.LblPropertyName = new System.Windows.Forms.Label();
-            this.Lbl_Purchase = new System.Windows.Forms.Label();
-            this.CmbPurchDD = new System.Windows.Forms.ComboBox();
-            this.CmbPurchMM = new System.Windows.Forms.ComboBox();
-            this.CmbPurchYear = new System.Windows.Forms.ComboBox();
-            this.CmdPurchCal = new System.Windows.Forms.Button();
-            this.Lbl_txtPurchasePrice = new System.Windows.Forms.Label();
-            this.txtPurchasePrice = new System.Windows.Forms.TextBox();
-            this.Lbl_txtStampDuty = new System.Windows.Forms.Label();
-            this.txtStampDuty = new System.Windows.Forms.TextBox();
+            this.Lbl_Sold = new System.Windows.Forms.Label();
+            this.CmbSoldDD = new System.Windows.Forms.ComboBox();
+            this.CmbSoldMM = new System.Windows.Forms.ComboBox();
+            this.CmbSoldYear = new System.Windows.Forms.ComboBox();
+            this.CmdSoldCal = new System.Windows.Forms.Button();
+            this.Lbl_txtSoldPrice = new System.Windows.Forms.Label();
+            this.txtSoldPrice = new System.Windows.Forms.TextBox();
             this.Lbl_txtConveyancing = new System.Windows.Forms.Label();
             this.txtConveyancing = new System.Windows.Forms.TextBox();
-            this.Lbl_txtInspection = new System.Windows.Forms.Label();
-            this.txtInspection = new System.Windows.Forms.TextBox();
-            this.Lbl_txtBuyersAgent = new System.Windows.Forms.Label();
-            this.txtBuyersAgent = new System.Windows.Forms.TextBox();
+            this.Lbl_txtSaleAgent = new System.Windows.Forms.Label();
+            this.txtSaleAgent = new System.Windows.Forms.TextBox();
             this.Lbl_txtSettlement = new System.Windows.Forms.Label();
             this.txtSettlement = new System.Windows.Forms.TextBox();
             this.Lbl_txtOtherCost = new System.Windows.Forms.Label();
             this.txtOtherCost = new System.Windows.Forms.TextBox();
-            this.Lbl_txtDownPayment = new System.Windows.Forms.Label();
-            this.txtDownPayment = new System.Windows.Forms.TextBox();
-            this.Lbl_txtInitialLoan = new System.Windows.Forms.Label();
-            this.txtInitialLoan = new System.Windows.Forms.TextBox();
-            this.Lbl_txtPctOwnership = new System.Windows.Forms.Label();
-            this.txtPctOwnership = new System.Windows.Forms.TextBox();
             this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.LblNote = new System.Windows.Forms.Label();
             this.CmdCreate = new System.Windows.Forms.Button();
@@ -71,7 +61,7 @@
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             this.MainMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvPurchase)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvSale)).BeginInit();
             this.SuspendLayout();
             // 
             // MainMenu1
@@ -84,7 +74,7 @@
             this.MnSuperProcess});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
-            this.MainMenu1.Size = new System.Drawing.Size(1264, 24);
+            this.MainMenu1.Size = new System.Drawing.Size(1100, 24);
             this.MainMenu1.TabIndex = 1;
             // 
             // MnDailyInput
@@ -168,7 +158,7 @@
             // 
             this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnPropertySetup,
-            this.MnPropertySale});
+            this.MnPropertyPurchase});
             this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
             this.MnPropertyProcessGroup.Size = new System.Drawing.Size(150, 20);
             this.MnPropertyProcessGroup.Text = "P&roperty";
@@ -180,12 +170,12 @@
             this.MnPropertySetup.Text = "P&roperty Setup";
             this.MnPropertySetup.Click += new System.EventHandler(this.MnPropertySetup_Click);
             // 
-            // MnPropertySale
+            // MnPropertyPurchase
             // 
-            this.MnPropertySale.Name = "MnPropertySale";
-            this.MnPropertySale.Size = new System.Drawing.Size(216, 22);
-            this.MnPropertySale.Text = "Property Sa&le";
-            this.MnPropertySale.Click += new System.EventHandler(this.MnPropertySale_Click);
+            this.MnPropertyPurchase.Name = "MnPropertyPurchase";
+            this.MnPropertyPurchase.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertyPurchase.Text = "Property P&urchase";
+            this.MnPropertyPurchase.Click += new System.EventHandler(this.MnPropertyPurchase_Click);
             // 
             // MnSuperProcess
             // 
@@ -201,28 +191,28 @@
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.Label21.Location = new System.Drawing.Point(20, 28);
             this.Label21.Name = "Label21";
-            this.Label21.Size = new System.Drawing.Size(1224, 40);
+            this.Label21.Size = new System.Drawing.Size(1060, 40);
             this.Label21.TabIndex = 2;
-            this.Label21.Text = "PROPERTY PURCHASE";
+            this.Label21.Text = "PROPERTY SALE";
             this.Label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // gvPurchase
+            // gvSale
             // 
-            this.gvPurchase.AllowUserToAddRows = false;
-            this.gvPurchase.AllowUserToDeleteRows = false;
-            this.gvPurchase.AllowUserToResizeRows = false;
-            this.gvPurchase.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.gvPurchase.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvPurchase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gvPurchase.Location = new System.Drawing.Point(19, 76);
-            this.gvPurchase.MultiSelect = false;
-            this.gvPurchase.Name = "gvPurchase";
-            this.gvPurchase.ReadOnly = true;
-            this.gvPurchase.RowHeadersVisible = false;
-            this.gvPurchase.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvPurchase.Size = new System.Drawing.Size(1226, 230);
-            this.gvPurchase.TabIndex = 3;
-            this.gvPurchase.SelectionChanged += new System.EventHandler(this.gvPurchase_SelectionChanged);
+            this.gvSale.AllowUserToAddRows = false;
+            this.gvSale.AllowUserToDeleteRows = false;
+            this.gvSale.AllowUserToResizeRows = false;
+            this.gvSale.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvSale.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvSale.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gvSale.Location = new System.Drawing.Point(19, 76);
+            this.gvSale.MultiSelect = false;
+            this.gvSale.Name = "gvSale";
+            this.gvSale.ReadOnly = true;
+            this.gvSale.RowHeadersVisible = false;
+            this.gvSale.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvSale.Size = new System.Drawing.Size(1062, 230);
+            this.gvSale.TabIndex = 3;
+            this.gvSale.SelectionChanged += new System.EventHandler(this.gvSale_SelectionChanged);
             // 
             // Lbl_CmbPropertyId
             // 
@@ -254,127 +244,101 @@
             this.LblPropertyName.ForeColor = System.Drawing.Color.Black;
             this.LblPropertyName.Location = new System.Drawing.Point(255, 324);
             this.LblPropertyName.Name = "LblPropertyName";
-            this.LblPropertyName.Size = new System.Drawing.Size(200, 22);
+            this.LblPropertyName.Size = new System.Drawing.Size(240, 22);
             this.LblPropertyName.TabIndex = 6;
             // 
-            // Lbl_Purchase
+            // Lbl_Sold
             // 
-            this.Lbl_Purchase.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_Purchase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_Purchase.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_Purchase.Location = new System.Drawing.Point(19, 354);
-            this.Lbl_Purchase.Name = "Lbl_Purchase";
-            this.Lbl_Purchase.Size = new System.Drawing.Size(140, 22);
-            this.Lbl_Purchase.TabIndex = 7;
-            this.Lbl_Purchase.Text = "Purchase Date";
-            this.Lbl_Purchase.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Lbl_Sold.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_Sold.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_Sold.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_Sold.Location = new System.Drawing.Point(19, 354);
+            this.Lbl_Sold.Name = "Lbl_Sold";
+            this.Lbl_Sold.Size = new System.Drawing.Size(140, 22);
+            this.Lbl_Sold.TabIndex = 7;
+            this.Lbl_Sold.Text = "Sold Date";
+            this.Lbl_Sold.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // CmbPurchDD
+            // CmbSoldDD
             // 
-            this.CmbPurchDD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbPurchDD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbPurchDD.FormattingEnabled = true;
-            this.CmbPurchDD.Location = new System.Drawing.Point(165, 352);
-            this.CmbPurchDD.Name = "CmbPurchDD";
-            this.CmbPurchDD.Size = new System.Drawing.Size(41, 22);
-            this.CmbPurchDD.TabIndex = 8;
+            this.CmbSoldDD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbSoldDD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbSoldDD.FormattingEnabled = true;
+            this.CmbSoldDD.Location = new System.Drawing.Point(165, 352);
+            this.CmbSoldDD.Name = "CmbSoldDD";
+            this.CmbSoldDD.Size = new System.Drawing.Size(41, 22);
+            this.CmbSoldDD.TabIndex = 8;
             // 
-            // CmbPurchMM
+            // CmbSoldMM
             // 
-            this.CmbPurchMM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbPurchMM.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbPurchMM.FormattingEnabled = true;
-            this.CmbPurchMM.Location = new System.Drawing.Point(215, 352);
-            this.CmbPurchMM.Name = "CmbPurchMM";
-            this.CmbPurchMM.Size = new System.Drawing.Size(41, 22);
-            this.CmbPurchMM.TabIndex = 9;
+            this.CmbSoldMM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbSoldMM.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbSoldMM.FormattingEnabled = true;
+            this.CmbSoldMM.Location = new System.Drawing.Point(215, 352);
+            this.CmbSoldMM.Name = "CmbSoldMM";
+            this.CmbSoldMM.Size = new System.Drawing.Size(41, 22);
+            this.CmbSoldMM.TabIndex = 9;
             // 
-            // CmbPurchYear
+            // CmbSoldYear
             // 
-            this.CmbPurchYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbPurchYear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbPurchYear.FormattingEnabled = true;
-            this.CmbPurchYear.Location = new System.Drawing.Point(265, 352);
-            this.CmbPurchYear.Name = "CmbPurchYear";
-            this.CmbPurchYear.Size = new System.Drawing.Size(57, 22);
-            this.CmbPurchYear.TabIndex = 10;
+            this.CmbSoldYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbSoldYear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbSoldYear.FormattingEnabled = true;
+            this.CmbSoldYear.Location = new System.Drawing.Point(265, 352);
+            this.CmbSoldYear.Name = "CmbSoldYear";
+            this.CmbSoldYear.Size = new System.Drawing.Size(57, 22);
+            this.CmbSoldYear.TabIndex = 10;
             // 
-            // CmdPurchCal
+            // CmdSoldCal
             // 
-            this.CmdPurchCal.BackColor = System.Drawing.SystemColors.Control;
-            this.CmdPurchCal.Cursor = System.Windows.Forms.Cursors.Default;
-            this.CmdPurchCal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdPurchCal.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdPurchCal.Location = new System.Drawing.Point(330, 353);
-            this.CmdPurchCal.Name = "CmdPurchCal";
-            this.CmdPurchCal.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.CmdPurchCal.Size = new System.Drawing.Size(25, 19);
-            this.CmdPurchCal.TabIndex = 11;
-            this.CmdPurchCal.Text = "..";
-            this.CmdPurchCal.UseVisualStyleBackColor = false;
-            this.CmdPurchCal.Click += new System.EventHandler(this.CmdPurchCal_Click);
+            this.CmdSoldCal.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdSoldCal.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdSoldCal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdSoldCal.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdSoldCal.Location = new System.Drawing.Point(330, 353);
+            this.CmdSoldCal.Name = "CmdSoldCal";
+            this.CmdSoldCal.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdSoldCal.Size = new System.Drawing.Size(25, 19);
+            this.CmdSoldCal.TabIndex = 11;
+            this.CmdSoldCal.Text = "..";
+            this.CmdSoldCal.UseVisualStyleBackColor = false;
+            this.CmdSoldCal.Click += new System.EventHandler(this.CmdSoldCal_Click);
             // 
-            // Lbl_txtPurchasePrice
+            // Lbl_txtSoldPrice
             // 
-            this.Lbl_txtPurchasePrice.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtPurchasePrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtPurchasePrice.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtPurchasePrice.Location = new System.Drawing.Point(19, 384);
-            this.Lbl_txtPurchasePrice.Name = "Lbl_txtPurchasePrice";
-            this.Lbl_txtPurchasePrice.Size = new System.Drawing.Size(140, 22);
-            this.Lbl_txtPurchasePrice.TabIndex = 12;
-            this.Lbl_txtPurchasePrice.Text = "Purchase Price";
-            this.Lbl_txtPurchasePrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Lbl_txtSoldPrice.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_txtSoldPrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_txtSoldPrice.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_txtSoldPrice.Location = new System.Drawing.Point(19, 384);
+            this.Lbl_txtSoldPrice.Name = "Lbl_txtSoldPrice";
+            this.Lbl_txtSoldPrice.Size = new System.Drawing.Size(140, 22);
+            this.Lbl_txtSoldPrice.TabIndex = 12;
+            this.Lbl_txtSoldPrice.Text = "Sold Price";
+            this.Lbl_txtSoldPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // txtPurchasePrice
+            // txtSoldPrice
             // 
-            this.txtPurchasePrice.BackColor = System.Drawing.SystemColors.Window;
-            this.txtPurchasePrice.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPurchasePrice.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtPurchasePrice.Location = new System.Drawing.Point(165, 382);
-            this.txtPurchasePrice.MaxLength = 18;
-            this.txtPurchasePrice.Name = "txtPurchasePrice";
-            this.txtPurchasePrice.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtPurchasePrice.Size = new System.Drawing.Size(120, 20);
-            this.txtPurchasePrice.TabIndex = 13;
-            this.txtPurchasePrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtPurchasePrice.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
-            // 
-            // Lbl_txtStampDuty
-            // 
-            this.Lbl_txtStampDuty.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtStampDuty.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtStampDuty.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtStampDuty.Location = new System.Drawing.Point(19, 414);
-            this.Lbl_txtStampDuty.Name = "Lbl_txtStampDuty";
-            this.Lbl_txtStampDuty.Size = new System.Drawing.Size(140, 22);
-            this.Lbl_txtStampDuty.TabIndex = 14;
-            this.Lbl_txtStampDuty.Text = "Stamp Duty";
-            this.Lbl_txtStampDuty.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // txtStampDuty
-            // 
-            this.txtStampDuty.BackColor = System.Drawing.SystemColors.Window;
-            this.txtStampDuty.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtStampDuty.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtStampDuty.Location = new System.Drawing.Point(165, 412);
-            this.txtStampDuty.MaxLength = 18;
-            this.txtStampDuty.Name = "txtStampDuty";
-            this.txtStampDuty.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtStampDuty.Size = new System.Drawing.Size(120, 20);
-            this.txtStampDuty.TabIndex = 15;
-            this.txtStampDuty.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtStampDuty.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
+            this.txtSoldPrice.BackColor = System.Drawing.SystemColors.Window;
+            this.txtSoldPrice.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtSoldPrice.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.txtSoldPrice.Location = new System.Drawing.Point(165, 382);
+            this.txtSoldPrice.MaxLength = 18;
+            this.txtSoldPrice.Name = "txtSoldPrice";
+            this.txtSoldPrice.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.txtSoldPrice.Size = new System.Drawing.Size(120, 20);
+            this.txtSoldPrice.TabIndex = 13;
+            this.txtSoldPrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtSoldPrice.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
             // Lbl_txtConveyancing
             // 
             this.Lbl_txtConveyancing.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtConveyancing.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtConveyancing.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtConveyancing.Location = new System.Drawing.Point(470, 324);
+            this.Lbl_txtConveyancing.Location = new System.Drawing.Point(19, 414);
             this.Lbl_txtConveyancing.Name = "Lbl_txtConveyancing";
-            this.Lbl_txtConveyancing.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtConveyancing.TabIndex = 16;
+            this.Lbl_txtConveyancing.Size = new System.Drawing.Size(140, 22);
+            this.Lbl_txtConveyancing.TabIndex = 14;
             this.Lbl_txtConveyancing.Text = "Conveyancing Cost";
             this.Lbl_txtConveyancing.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -383,76 +347,50 @@
             this.txtConveyancing.BackColor = System.Drawing.SystemColors.Window;
             this.txtConveyancing.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtConveyancing.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtConveyancing.Location = new System.Drawing.Point(626, 322);
+            this.txtConveyancing.Location = new System.Drawing.Point(165, 412);
             this.txtConveyancing.MaxLength = 18;
             this.txtConveyancing.Name = "txtConveyancing";
             this.txtConveyancing.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtConveyancing.Size = new System.Drawing.Size(120, 20);
-            this.txtConveyancing.TabIndex = 17;
+            this.txtConveyancing.TabIndex = 15;
             this.txtConveyancing.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtConveyancing.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
-            // Lbl_txtInspection
+            // Lbl_txtSaleAgent
             // 
-            this.Lbl_txtInspection.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtInspection.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtInspection.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtInspection.Location = new System.Drawing.Point(470, 354);
-            this.Lbl_txtInspection.Name = "Lbl_txtInspection";
-            this.Lbl_txtInspection.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtInspection.TabIndex = 18;
-            this.Lbl_txtInspection.Text = "B&&P Inspection Cost";
-            this.Lbl_txtInspection.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.Lbl_txtSaleAgent.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_txtSaleAgent.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_txtSaleAgent.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_txtSaleAgent.Location = new System.Drawing.Point(560, 324);
+            this.Lbl_txtSaleAgent.Name = "Lbl_txtSaleAgent";
+            this.Lbl_txtSaleAgent.Size = new System.Drawing.Size(150, 22);
+            this.Lbl_txtSaleAgent.TabIndex = 16;
+            this.Lbl_txtSaleAgent.Text = "Sale Agent Cost";
+            this.Lbl_txtSaleAgent.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // txtInspection
+            // txtSaleAgent
             // 
-            this.txtInspection.BackColor = System.Drawing.SystemColors.Window;
-            this.txtInspection.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtInspection.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtInspection.Location = new System.Drawing.Point(626, 352);
-            this.txtInspection.MaxLength = 18;
-            this.txtInspection.Name = "txtInspection";
-            this.txtInspection.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtInspection.Size = new System.Drawing.Size(120, 20);
-            this.txtInspection.TabIndex = 19;
-            this.txtInspection.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtInspection.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
-            // 
-            // Lbl_txtBuyersAgent
-            // 
-            this.Lbl_txtBuyersAgent.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtBuyersAgent.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtBuyersAgent.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtBuyersAgent.Location = new System.Drawing.Point(470, 384);
-            this.Lbl_txtBuyersAgent.Name = "Lbl_txtBuyersAgent";
-            this.Lbl_txtBuyersAgent.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtBuyersAgent.TabIndex = 20;
-            this.Lbl_txtBuyersAgent.Text = "BA Cost";
-            this.Lbl_txtBuyersAgent.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // txtBuyersAgent
-            // 
-            this.txtBuyersAgent.BackColor = System.Drawing.SystemColors.Window;
-            this.txtBuyersAgent.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBuyersAgent.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtBuyersAgent.Location = new System.Drawing.Point(626, 382);
-            this.txtBuyersAgent.MaxLength = 18;
-            this.txtBuyersAgent.Name = "txtBuyersAgent";
-            this.txtBuyersAgent.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtBuyersAgent.Size = new System.Drawing.Size(120, 20);
-            this.txtBuyersAgent.TabIndex = 21;
-            this.txtBuyersAgent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtBuyersAgent.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
+            this.txtSaleAgent.BackColor = System.Drawing.SystemColors.Window;
+            this.txtSaleAgent.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtSaleAgent.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.txtSaleAgent.Location = new System.Drawing.Point(716, 322);
+            this.txtSaleAgent.MaxLength = 18;
+            this.txtSaleAgent.Name = "txtSaleAgent";
+            this.txtSaleAgent.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.txtSaleAgent.Size = new System.Drawing.Size(120, 20);
+            this.txtSaleAgent.TabIndex = 17;
+            this.txtSaleAgent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtSaleAgent.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
             // Lbl_txtSettlement
             // 
             this.Lbl_txtSettlement.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtSettlement.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtSettlement.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtSettlement.Location = new System.Drawing.Point(470, 414);
+            this.Lbl_txtSettlement.Location = new System.Drawing.Point(560, 354);
             this.Lbl_txtSettlement.Name = "Lbl_txtSettlement";
             this.Lbl_txtSettlement.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtSettlement.TabIndex = 22;
+            this.Lbl_txtSettlement.TabIndex = 18;
             this.Lbl_txtSettlement.Text = "Settlement Cost";
             this.Lbl_txtSettlement.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -461,12 +399,12 @@
             this.txtSettlement.BackColor = System.Drawing.SystemColors.Window;
             this.txtSettlement.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSettlement.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtSettlement.Location = new System.Drawing.Point(626, 412);
+            this.txtSettlement.Location = new System.Drawing.Point(716, 352);
             this.txtSettlement.MaxLength = 18;
             this.txtSettlement.Name = "txtSettlement";
             this.txtSettlement.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtSettlement.Size = new System.Drawing.Size(120, 20);
-            this.txtSettlement.TabIndex = 23;
+            this.txtSettlement.TabIndex = 19;
             this.txtSettlement.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtSettlement.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -475,10 +413,10 @@
             this.Lbl_txtOtherCost.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtOtherCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtOtherCost.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtOtherCost.Location = new System.Drawing.Point(860, 324);
+            this.Lbl_txtOtherCost.Location = new System.Drawing.Point(560, 384);
             this.Lbl_txtOtherCost.Name = "Lbl_txtOtherCost";
             this.Lbl_txtOtherCost.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtOtherCost.TabIndex = 24;
+            this.Lbl_txtOtherCost.TabIndex = 20;
             this.Lbl_txtOtherCost.Text = "Other Cost";
             this.Lbl_txtOtherCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -487,99 +425,21 @@
             this.txtOtherCost.BackColor = System.Drawing.SystemColors.Window;
             this.txtOtherCost.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtOtherCost.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtOtherCost.Location = new System.Drawing.Point(1016, 322);
+            this.txtOtherCost.Location = new System.Drawing.Point(716, 382);
             this.txtOtherCost.MaxLength = 18;
             this.txtOtherCost.Name = "txtOtherCost";
             this.txtOtherCost.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtOtherCost.Size = new System.Drawing.Size(120, 20);
-            this.txtOtherCost.TabIndex = 25;
+            this.txtOtherCost.TabIndex = 21;
             this.txtOtherCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtOtherCost.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
-            // 
-            // Lbl_txtDownPayment
-            // 
-            this.Lbl_txtDownPayment.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtDownPayment.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtDownPayment.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtDownPayment.Location = new System.Drawing.Point(860, 354);
-            this.Lbl_txtDownPayment.Name = "Lbl_txtDownPayment";
-            this.Lbl_txtDownPayment.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtDownPayment.TabIndex = 26;
-            this.Lbl_txtDownPayment.Text = "DP";
-            this.Lbl_txtDownPayment.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // txtDownPayment
-            // 
-            this.txtDownPayment.BackColor = System.Drawing.SystemColors.Window;
-            this.txtDownPayment.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDownPayment.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtDownPayment.Location = new System.Drawing.Point(1016, 352);
-            this.txtDownPayment.MaxLength = 18;
-            this.txtDownPayment.Name = "txtDownPayment";
-            this.txtDownPayment.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtDownPayment.Size = new System.Drawing.Size(120, 20);
-            this.txtDownPayment.TabIndex = 27;
-            this.txtDownPayment.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtDownPayment.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
-            // 
-            // Lbl_txtInitialLoan
-            // 
-            this.Lbl_txtInitialLoan.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtInitialLoan.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtInitialLoan.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtInitialLoan.Location = new System.Drawing.Point(860, 384);
-            this.Lbl_txtInitialLoan.Name = "Lbl_txtInitialLoan";
-            this.Lbl_txtInitialLoan.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtInitialLoan.TabIndex = 28;
-            this.Lbl_txtInitialLoan.Text = "Initial Loan";
-            this.Lbl_txtInitialLoan.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // txtInitialLoan
-            // 
-            this.txtInitialLoan.BackColor = System.Drawing.SystemColors.Window;
-            this.txtInitialLoan.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtInitialLoan.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtInitialLoan.Location = new System.Drawing.Point(1016, 382);
-            this.txtInitialLoan.MaxLength = 18;
-            this.txtInitialLoan.Name = "txtInitialLoan";
-            this.txtInitialLoan.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtInitialLoan.Size = new System.Drawing.Size(120, 20);
-            this.txtInitialLoan.TabIndex = 29;
-            this.txtInitialLoan.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtInitialLoan.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
-            // 
-            // Lbl_txtPctOwnership
-            // 
-            this.Lbl_txtPctOwnership.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtPctOwnership.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtPctOwnership.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtPctOwnership.Location = new System.Drawing.Point(860, 414);
-            this.Lbl_txtPctOwnership.Name = "Lbl_txtPctOwnership";
-            this.Lbl_txtPctOwnership.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtPctOwnership.TabIndex = 30;
-            this.Lbl_txtPctOwnership.Text = "Percentage Ownership";
-            this.Lbl_txtPctOwnership.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // txtPctOwnership
-            // 
-            this.txtPctOwnership.BackColor = System.Drawing.SystemColors.Window;
-            this.txtPctOwnership.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPctOwnership.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtPctOwnership.Location = new System.Drawing.Point(1016, 412);
-            this.txtPctOwnership.MaxLength = 18;
-            this.txtPctOwnership.Name = "txtPctOwnership";
-            this.txtPctOwnership.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtPctOwnership.Size = new System.Drawing.Size(120, 20);
-            this.txtPctOwnership.TabIndex = 31;
-            this.txtPctOwnership.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtPctOwnership.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
             // monthCalendar1
             // 
             this.monthCalendar1.Location = new System.Drawing.Point(200, 130);
             this.monthCalendar1.MaxSelectionCount = 1;
             this.monthCalendar1.Name = "monthCalendar1";
-            this.monthCalendar1.TabIndex = 32;
+            this.monthCalendar1.TabIndex = 22;
             this.monthCalendar1.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.monthCalendar1_DateSelected);
             // 
             // LblNote
@@ -589,8 +449,8 @@
             this.LblNote.ForeColor = System.Drawing.Color.Black;
             this.LblNote.Location = new System.Drawing.Point(19, 452);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(1226, 22);
-            this.LblNote.TabIndex = 33;
+            this.LblNote.Size = new System.Drawing.Size(1062, 22);
+            this.LblNote.TabIndex = 23;
             // 
             // CmdCreate
             // 
@@ -598,11 +458,11 @@
             this.CmdCreate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCreate.Location = new System.Drawing.Point(789, 484);
+            this.CmdCreate.Location = new System.Drawing.Point(615, 484);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
-            this.CmdCreate.TabIndex = 34;
+            this.CmdCreate.TabIndex = 24;
             this.CmdCreate.Text = "&Add";
             this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
@@ -613,11 +473,11 @@
             this.CmdUpdate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdUpdate.Location = new System.Drawing.Point(884, 484);
+            this.CmdUpdate.Location = new System.Drawing.Point(710, 484);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
-            this.CmdUpdate.TabIndex = 35;
+            this.CmdUpdate.TabIndex = 25;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -628,11 +488,11 @@
             this.CmdClear.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdClear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdClear.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdClear.Location = new System.Drawing.Point(979, 484);
+            this.CmdClear.Location = new System.Drawing.Point(805, 484);
             this.CmdClear.Name = "CmdClear";
             this.CmdClear.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdClear.Size = new System.Drawing.Size(85, 28);
-            this.CmdClear.TabIndex = 36;
+            this.CmdClear.TabIndex = 26;
             this.CmdClear.Text = "&Clear";
             this.CmdClear.UseVisualStyleBackColor = false;
             this.CmdClear.Click += new System.EventHandler(this.CmdClear_Click);
@@ -643,11 +503,11 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(1074, 484);
+            this.CmdDel.Location = new System.Drawing.Point(900, 484);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
-            this.CmdDel.TabIndex = 37;
+            this.CmdDel.TabIndex = 27;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -658,22 +518,22 @@
             this.CmdBack.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(1160, 484);
+            this.CmdBack.Location = new System.Drawing.Point(995, 484);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
-            this.CmdBack.TabIndex = 38;
+            this.CmdBack.TabIndex = 28;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
-            // Property_Purchase
+            // Property_Sale
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1264, 600);
+            this.ClientSize = new System.Drawing.Size(1100, 572);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
@@ -682,48 +542,38 @@
             this.Controls.Add(this.CmdCreate);
             this.Controls.Add(this.LblNote);
             this.Controls.Add(this.monthCalendar1);
-            this.Controls.Add(this.txtPctOwnership);
-            this.Controls.Add(this.Lbl_txtPctOwnership);
-            this.Controls.Add(this.txtInitialLoan);
-            this.Controls.Add(this.Lbl_txtInitialLoan);
-            this.Controls.Add(this.txtDownPayment);
-            this.Controls.Add(this.Lbl_txtDownPayment);
             this.Controls.Add(this.txtOtherCost);
             this.Controls.Add(this.Lbl_txtOtherCost);
             this.Controls.Add(this.txtSettlement);
             this.Controls.Add(this.Lbl_txtSettlement);
-            this.Controls.Add(this.txtBuyersAgent);
-            this.Controls.Add(this.Lbl_txtBuyersAgent);
-            this.Controls.Add(this.txtInspection);
-            this.Controls.Add(this.Lbl_txtInspection);
+            this.Controls.Add(this.txtSaleAgent);
+            this.Controls.Add(this.Lbl_txtSaleAgent);
             this.Controls.Add(this.txtConveyancing);
             this.Controls.Add(this.Lbl_txtConveyancing);
-            this.Controls.Add(this.txtStampDuty);
-            this.Controls.Add(this.Lbl_txtStampDuty);
-            this.Controls.Add(this.txtPurchasePrice);
-            this.Controls.Add(this.Lbl_txtPurchasePrice);
-            this.Controls.Add(this.CmdPurchCal);
-            this.Controls.Add(this.CmbPurchYear);
-            this.Controls.Add(this.CmbPurchMM);
-            this.Controls.Add(this.CmbPurchDD);
-            this.Controls.Add(this.Lbl_Purchase);
+            this.Controls.Add(this.txtSoldPrice);
+            this.Controls.Add(this.Lbl_txtSoldPrice);
+            this.Controls.Add(this.CmdSoldCal);
+            this.Controls.Add(this.CmbSoldYear);
+            this.Controls.Add(this.CmbSoldMM);
+            this.Controls.Add(this.CmbSoldDD);
+            this.Controls.Add(this.Lbl_Sold);
             this.Controls.Add(this.LblPropertyName);
             this.Controls.Add(this.CmbPropertyId);
             this.Controls.Add(this.Lbl_CmbPropertyId);
-            this.Controls.Add(this.gvPurchase);
+            this.Controls.Add(this.gvSale);
             this.Controls.Add(this.Label21);
             this.Controls.Add(this.MainMenu1);
             this.Font = new System.Drawing.Font("Arial", 8F);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = new System.Drawing.Point(4, 43);
             this.MainMenuStrip = this.MainMenu1;
-            this.Name = "Property_Purchase";
+            this.Name = "Property_Sale";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Property Purchase";
-            this.Load += new System.EventHandler(this.Property_Purchase_Load);
+            this.Text = "Property Sale";
+            this.Load += new System.EventHandler(this.Property_Sale_Load);
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvPurchase)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvSale)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -744,38 +594,28 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertySetup;
-        public System.Windows.Forms.ToolStripMenuItem MnPropertySale;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyPurchase;
         public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;
         public System.Windows.Forms.Label Label21;
-        private System.Windows.Forms.DataGridView gvPurchase;
+        private System.Windows.Forms.DataGridView gvSale;
         public System.Windows.Forms.Label Lbl_CmbPropertyId;
         public System.Windows.Forms.ComboBox CmbPropertyId;
         public System.Windows.Forms.Label LblPropertyName;
-        public System.Windows.Forms.Label Lbl_Purchase;
-        public System.Windows.Forms.ComboBox CmbPurchDD;
-        public System.Windows.Forms.ComboBox CmbPurchMM;
-        public System.Windows.Forms.ComboBox CmbPurchYear;
-        public System.Windows.Forms.Button CmdPurchCal;
-        public System.Windows.Forms.Label Lbl_txtPurchasePrice;
-        public System.Windows.Forms.TextBox txtPurchasePrice;
-        public System.Windows.Forms.Label Lbl_txtStampDuty;
-        public System.Windows.Forms.TextBox txtStampDuty;
+        public System.Windows.Forms.Label Lbl_Sold;
+        public System.Windows.Forms.ComboBox CmbSoldDD;
+        public System.Windows.Forms.ComboBox CmbSoldMM;
+        public System.Windows.Forms.ComboBox CmbSoldYear;
+        public System.Windows.Forms.Button CmdSoldCal;
+        public System.Windows.Forms.Label Lbl_txtSoldPrice;
+        public System.Windows.Forms.TextBox txtSoldPrice;
         public System.Windows.Forms.Label Lbl_txtConveyancing;
         public System.Windows.Forms.TextBox txtConveyancing;
-        public System.Windows.Forms.Label Lbl_txtInspection;
-        public System.Windows.Forms.TextBox txtInspection;
-        public System.Windows.Forms.Label Lbl_txtBuyersAgent;
-        public System.Windows.Forms.TextBox txtBuyersAgent;
+        public System.Windows.Forms.Label Lbl_txtSaleAgent;
+        public System.Windows.Forms.TextBox txtSaleAgent;
         public System.Windows.Forms.Label Lbl_txtSettlement;
         public System.Windows.Forms.TextBox txtSettlement;
         public System.Windows.Forms.Label Lbl_txtOtherCost;
         public System.Windows.Forms.TextBox txtOtherCost;
-        public System.Windows.Forms.Label Lbl_txtDownPayment;
-        public System.Windows.Forms.TextBox txtDownPayment;
-        public System.Windows.Forms.Label Lbl_txtInitialLoan;
-        public System.Windows.Forms.TextBox txtInitialLoan;
-        public System.Windows.Forms.Label Lbl_txtPctOwnership;
-        public System.Windows.Forms.TextBox txtPctOwnership;
         public System.Windows.Forms.MonthCalendar monthCalendar1;
         public System.Windows.Forms.Label LblNote;
         public System.Windows.Forms.Button CmdCreate;

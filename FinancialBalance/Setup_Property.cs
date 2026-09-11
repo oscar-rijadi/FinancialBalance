@@ -22,10 +22,14 @@ namespace FinancialBalance
         //is anything to update.
         int OrgId;
 
-        //Name, Address, State and Post_Code are all reserved or awkward enough in Access that
-        //every column is bracketed rather than only the ones that have to be.
-        const string Fields = "[Property_Id], [Name], [Address], [Suburb], [State], [Post_Code],"
-                            + " [Purchase_Date], [Is_Sold], [Sold_Date]";
+        //What a property is, and nothing about what happened to it: the purchase date lives on
+        //TblPropertyPurchase and whether and when it sold on TblPropertySale, each alongside the
+        //costs that belong with it. Holding those here as well meant the same fact written in
+        //two places with nothing keeping them in step.
+        //
+        //Name, Address and State are all reserved or awkward enough in Access that every column
+        //is bracketed rather than only the ones that have to be.
+        const string Fields = "[Property_Id], [Name], [Address], [Suburb], [State], [Post_Code]";
 
         public Setup_Property()
         {
@@ -35,11 +39,9 @@ namespace FinancialBalance
         private void Setup_Property_Load(object sender, EventArgs e)
         {
             Filling = true;
-            Fill_Dates();
             Fill_State();
             Filling = false;
 
-            monthCalendar1.Hide();
             Get_Data();
             Clear_Entry();
         }
@@ -107,13 +109,6 @@ namespace FinancialBalance
             this.Close();
         }
 
-        private void MnSuperProcess_Click(object sender, EventArgs e)
-        {
-            Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();
-            Super_Financial_Year.Show();
-            this.Close();
-        }
-
         private void MnPropertyPurchase_Click(object sender, EventArgs e)
         {
             Property_Purchase Property_Purchase = new Property_Purchase();
@@ -121,41 +116,21 @@ namespace FinancialBalance
             this.Close();
         }
 
-        //---- the dropdowns ----------------------------------------------------------
-
-        //The shared Mdl1.Fill_Date offers three years, which suits a transaction entered as it
-        //happens but not a property bought decades ago. The day and month lists are the same as
-        //everywhere else; only the year range is opened up.
-        private void Fill_Dates()
+        private void MnPropertySale_Click(object sender, EventArgs e)
         {
-            foreach (ComboBox Day in new ComboBox[] { CmbPurchDD, CmbSoldDD })
-            {
-                Day.Items.Clear();
-                Day.Items.Add("");
-                for (int i = 1; i <= 31; i++)
-                {
-                    Day.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
-                }
-            }
-            foreach (ComboBox Month in new ComboBox[] { CmbPurchMM, CmbSoldMM })
-            {
-                Month.Items.Clear();
-                Month.Items.Add("");
-                for (int i = 1; i <= 12; i++)
-                {
-                    Month.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
-                }
-            }
-            foreach (ComboBox Year in new ComboBox[] { CmbPurchYear, CmbSoldYear })
-            {
-                Year.Items.Clear();
-                Year.Items.Add("");
-                for (int i = DateTime.Now.Year; i >= 1950; i--)
-                {
-                    Year.Items.Add(i.ToString("0000", CultureInfo.InvariantCulture));
-                }
-            }
+            Property_Sale Property_Sale = new Property_Sale();
+            Property_Sale.Show();
+            this.Close();
         }
+
+        private void MnSuperProcess_Click(object sender, EventArgs e)
+        {
+            Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();
+            Super_Financial_Year.Show();
+            this.Close();
+        }
+
+        //---- the dropdowns ----------------------------------------------------------
 
         private void Fill_State()
         {
@@ -177,54 +152,26 @@ namespace FinancialBalance
         {
             gvProperty.Rows.Clear();
             gvProperty.Columns.Clear();
-            gvProperty.ColumnCount = 6;
-            string[] names = new string[] { "Property Id", "Name", "Full Address",
-                                            "Purchase Date", "Is_Sold", "Sold Date" };
-            int[] weights = new int[] { 9, 18, 39, 12, 8, 12 };
-            for (int i = 0; i < 6; i++)
+            gvProperty.ColumnCount = 3;
+            string[] names = new string[] { "Property Id", "Name", "Full Address" };
+            int[] weights = new int[] { 10, 28, 62 };
+            for (int i = 0; i < 3; i++)
             {
                 gvProperty.Columns[i].Name = names[i];
                 gvProperty.Columns[i].FillWeight = weights[i];
-                //the id and the two dates read centred, the flag too; the words read left
+                //the id reads centred, the words read left
                 DataGridViewContentAlignment TmpAlign =
-                    (i == 1 || i == 2 ? DataGridViewContentAlignment.MiddleLeft
-                                      : DataGridViewContentAlignment.MiddleCenter);
+                    (i == 0 ? DataGridViewContentAlignment.MiddleCenter
+                            : DataGridViewContentAlignment.MiddleLeft);
                 gvProperty.Columns[i].HeaderCell.Style.Alignment = TmpAlign;
                 gvProperty.Columns[i].DefaultCellStyle.Alignment = TmpAlign;
             }
-        }
-
-        //yyyyMMdd as it is stored, dd-MMM-yyyy as it is read. Anything that is not a date comes
-        //back blank rather than as eight raw digits.
-        private string Long_Date(string parYyyyMMdd)
-        {
-            string TmpText = (parYyyyMMdd == null ? "" : parYyyyMMdd.Trim());
-            if (TmpText.Length != 8)
-            {
-                return "";
-            }
-            DateTime TmpDate;
-            if (!DateTime.TryParseExact(TmpText, "yyyyMMdd", CultureInfo.InvariantCulture,
-                                        DateTimeStyles.None, out TmpDate))
-            {
-                return "";
-            }
-            return TmpDate.ToString("dd-MMM-yyyy", CultureInfo.InvariantCulture);
         }
 
         private string Read_Text(object parValue)
         {
             return (parValue == null || parValue == DBNull.Value
                     ? "" : parValue.ToString().Trim());
-        }
-
-        private bool Read_Flag(object parValue)
-        {
-            if (parValue == null || parValue == DBNull.Value)
-            {
-                return false;
-            }
-            return Convert.ToBoolean(parValue);
         }
 
         private void Get_Data()
@@ -248,10 +195,7 @@ namespace FinancialBalance
                     gvProperty.Rows.Add(new string[] {
                         Read_Text(reader["Property_Id"]),
                         Read_Text(reader["Name"]),
-                        TmpFull,
-                        Long_Date(Read_Text(reader["Purchase_Date"])),
-                        (Read_Flag(reader["Is_Sold"]) ? "Yes" : "No"),
-                        Long_Date(Read_Text(reader["Sold_Date"])) });
+                        TmpFull });
                 }
                 reader.Close();
 
@@ -296,7 +240,7 @@ namespace FinancialBalance
         }
 
         //Read back from the table rather than off the grid: the grid shows the address as one
-        //column and the dates the long way round, neither of which can be taken apart again.
+        //column, which cannot be taken apart again.
         private void Load_Record(int parId)
         {
             try
@@ -320,13 +264,8 @@ namespace FinancialBalance
                 txtSuburb.Text = Read_Text(reader["Suburb"]);
                 CmbState.Text = Read_Text(reader["State"]);
                 txtPostCode.Text = Read_Text(reader["Post_Code"]);
-                Set_Date(CmbPurchDD, CmbPurchMM, CmbPurchYear, Read_Text(reader["Purchase_Date"]));
-                chkIsSold.Checked = Read_Flag(reader["Is_Sold"]);
-                Set_Date(CmbSoldDD, CmbSoldMM, CmbSoldYear, Read_Text(reader["Sold_Date"]));
                 Filling = false;
                 reader.Close();
-
-                Show_Sold();
             }
             catch (Exception ex)
             {
@@ -345,39 +284,6 @@ namespace FinancialBalance
             LblPropertyId.Visible = parShow;
         }
 
-        //A sold date on a property that is not sold would be a contradiction, so the boxes are
-        //only live while the flag is ticked - and cleared when it is not.
-        private void Show_Sold()
-        {
-            bool TmpSold = chkIsSold.Checked;
-            Lbl_Sold.Enabled = TmpSold;
-            CmbSoldDD.Enabled = TmpSold;
-            CmbSoldMM.Enabled = TmpSold;
-            CmbSoldYear.Enabled = TmpSold;
-            CmdSoldCal.Enabled = TmpSold;
-            if (!TmpSold)
-            {
-                CmbSoldDD.Text = "";
-                CmbSoldMM.Text = "";
-                CmbSoldYear.Text = "";
-                //the calendar would otherwise be left open over a date nobody can now set
-                if (CalFor == "S")
-                {
-                    CalFor = "";
-                    monthCalendar1.Hide();
-                }
-            }
-        }
-
-        private void chkIsSold_CheckedChanged(object sender, EventArgs e)
-        {
-            if (Filling)
-            {
-                return;
-            }
-            Show_Sold();
-        }
-
         private void Clear_Entry()
         {
             Filling = true;
@@ -389,171 +295,18 @@ namespace FinancialBalance
             txtSuburb.Text = "";
             CmbState.Text = "";
             txtPostCode.Text = "";
-            CmbPurchDD.Text = "";
-            CmbPurchMM.Text = "";
-            CmbPurchYear.Text = "";
-            chkIsSold.Checked = false;
-            CmbSoldDD.Text = "";
-            CmbSoldMM.Text = "";
-            CmbSoldYear.Text = "";
-            //ClearSelection fires SelectionChanged, and the handler falls back to
-            //CurrentRow when nothing is selected - so clearing outside the guard
-            //loads straight back the record it was clearing, leaving OrgId set.
+            //ClearSelection fires SelectionChanged, and the handler falls back to CurrentRow
+            //when nothing is selected - so clearing outside the guard loads straight back the
+            //record it was clearing, leaving OrgId set.
             gvProperty.ClearSelection();
             Filling = false;
 
-            Show_Sold();
             LblNote.Text = "";
         }
 
         private void CmdClear_Click(object sender, EventArgs e)
         {
             Clear_Entry();
-        }
-
-        //---- dates in and out -------------------------------------------------------
-
-        //Stored as yyyyMMdd, the same as every other date in this database.
-        private string Date_From(ComboBox parDD, ComboBox parMM, ComboBox parYear)
-        {
-            string TmpDD = parDD.Text.Trim();
-            string TmpMM = parMM.Text.Trim();
-            string TmpYear = parYear.Text.Trim();
-            if (TmpDD == "" && TmpMM == "" && TmpYear == "")
-            {
-                return "";
-            }
-            return TmpYear + TmpMM + TmpDD;
-        }
-
-        //---- the calendar -----------------------------------------------------------
-        //
-        //The same arrangement Daily Input has: three dropdowns and a ".." beside them that opens
-        //a MonthCalendar, which fills them in and hides again.  One calendar serves both dates,
-        //so which one asked for it is remembered while it is open.
-
-        //"P" for Purchase, "S" for Sold; empty when the calendar is not up
-        string CalFor = "";
-
-        private void Open_Calendar(string parWhich, ComboBox parDD, ComboBox parMM, ComboBox parYear)
-        {
-            CalFor = parWhich;
-
-            //A property cannot be bought or sold in the future, and the year dropdowns only go
-            //back to 1950 - so the calendar is held to the same range.  Without the lower bound
-            //it could return a year the dropdown does not carry, and assigning a missing value
-            //to a DropDownList does nothing at all, silently: the calendar would appear to work
-            //and the date would not change.
-            monthCalendar1.MinDate = new DateTime(1950, 1, 1);
-            monthCalendar1.MaxDate = new DateTime(DateTime.Now.Year, 12, 31);
-
-            //Daily Input parses its three boxes straight into a date, which cannot be done here:
-            //a date that has not been filled in yet is blank, and blank does not parse.
-            DateTime TmpStart;
-            if (!Whole_Date(parDD, parMM, parYear, out TmpStart))
-            {
-                TmpStart = DateTime.Today;
-            }
-            if (TmpStart < monthCalendar1.MinDate) { TmpStart = monthCalendar1.MinDate; }
-            if (TmpStart > monthCalendar1.MaxDate) { TmpStart = monthCalendar1.MaxDate; }
-
-            monthCalendar1.SetDate(TmpStart);
-            monthCalendar1.BringToFront();
-            monthCalendar1.Show();
-        }
-
-        private bool Whole_Date(ComboBox parDD, ComboBox parMM, ComboBox parYear, out DateTime parDate)
-        {
-            parDate = DateTime.Today;
-            string TmpText = parDD.Text.Trim() + parMM.Text.Trim() + parYear.Text.Trim();
-            if (TmpText.Length != 8)
-            {
-                return false;
-            }
-            return DateTime.TryParseExact(TmpText, "ddMMyyyy", CultureInfo.InvariantCulture,
-                                          DateTimeStyles.None, out parDate);
-        }
-
-        private void CmdPurchCal_Click(object sender, EventArgs e)
-        {
-            Open_Calendar("P", CmbPurchDD, CmbPurchMM, CmbPurchYear);
-        }
-
-        private void CmdSoldCal_Click(object sender, EventArgs e)
-        {
-            //the sold date is only live once the property is marked sold
-            if (!chkIsSold.Checked)
-            {
-                return;
-            }
-            Open_Calendar("S", CmbSoldDD, CmbSoldMM, CmbSoldYear);
-        }
-
-        private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
-        {
-            if (CalFor == "P")
-            {
-                CmbPurchDD.Text = e.Start.Day.ToString("00", CultureInfo.InvariantCulture);
-                CmbPurchMM.Text = e.Start.Month.ToString("00", CultureInfo.InvariantCulture);
-                CmbPurchYear.Text = e.Start.Year.ToString("0000", CultureInfo.InvariantCulture);
-            }
-            else if (CalFor == "S")
-            {
-                CmbSoldDD.Text = e.Start.Day.ToString("00", CultureInfo.InvariantCulture);
-                CmbSoldMM.Text = e.Start.Month.ToString("00", CultureInfo.InvariantCulture);
-                CmbSoldYear.Text = e.Start.Year.ToString("0000", CultureInfo.InvariantCulture);
-            }
-            CalFor = "";
-            monthCalendar1.Hide();
-        }
-
-        private void Set_Date(ComboBox parDD, ComboBox parMM, ComboBox parYear, string parYyyyMMdd)
-        {
-            string TmpText = (parYyyyMMdd == null ? "" : parYyyyMMdd.Trim());
-            if (TmpText.Length != 8)
-            {
-                parDD.Text = "";
-                parMM.Text = "";
-                parYear.Text = "";
-                return;
-            }
-            parYear.Text = TmpText.Substring(0, 4);
-            parMM.Text = TmpText.Substring(4, 2);
-            parDD.Text = TmpText.Substring(6, 2);
-        }
-
-        //A part-filled date is refused rather than stored as something that is not a date. The
-        //shared k_Date check wants ddMMyyyy, so that is the order it is given.
-        private bool Date_Ok(ComboBox parDD, ComboBox parMM, ComboBox parYear, string parWhich,
-                             bool parNeeded, out string parValue, out string parWhy)
-        {
-            parValue = "";
-            parWhy = "";
-            string TmpDD = parDD.Text.Trim();
-            string TmpMM = parMM.Text.Trim();
-            string TmpYear = parYear.Text.Trim();
-
-            if (TmpDD == "" && TmpMM == "" && TmpYear == "")
-            {
-                if (parNeeded)
-                {
-                    parWhy = parWhich + " is needed.";
-                    return false;
-                }
-                return true;
-            }
-            if (TmpDD == "" || TmpMM == "" || TmpYear == "")
-            {
-                parWhy = parWhich + " needs a day, a month and a year.";
-                return false;
-            }
-            if (!Mdl1.k_Date(TmpDD + TmpMM + TmpYear))
-            {
-                parWhy = parWhich + " is not a real date.";
-                return false;
-            }
-            parValue = TmpYear + TmpMM + TmpDD;
-            return true;
         }
 
         //---- what may be saved ------------------------------------------------------
@@ -565,10 +318,8 @@ namespace FinancialBalance
             return "'" + (parText == null ? "" : parText.Trim()).Replace("'", "''") + "'";
         }
 
-        private bool Read_Entry(out string parPurchase, out string parSold, out string parWhy)
+        private bool Read_Entry(out string parWhy)
         {
-            parPurchase = "";
-            parSold = "";
             parWhy = "";
 
             if (txtName.Text.Trim() == "")
@@ -582,36 +333,16 @@ namespace FinancialBalance
                 parWhy = "Post Code must be digits only.";
                 return false;
             }
-            if (!Date_Ok(CmbPurchDD, CmbPurchMM, CmbPurchYear, "Purchase Date", true,
-                         out parPurchase, out parWhy))
-            {
-                return false;
-            }
-            if (!Date_Ok(CmbSoldDD, CmbSoldMM, CmbSoldYear, "Sold Date", chkIsSold.Checked,
-                         out parSold, out parWhy))
-            {
-                return false;
-            }
-            //a property cannot have been sold before it was bought
-            if (parSold != "" && parPurchase != ""
-                && string.CompareOrdinal(parSold, parPurchase) < 0)
-            {
-                parWhy = "Sold Date is before Purchase Date.";
-                return false;
-            }
             return true;
         }
 
-        private string Values(string parPurchase, string parSold)
+        private string Values()
         {
             return Quoted(txtName.Text) + ", "
                  + Quoted(txtAddress.Text) + ", "
                  + Quoted(txtSuburb.Text) + ", "
                  + Quoted(CmbState.Text) + ", "
-                 + Quoted(txtPostCode.Text) + ", "
-                 + Quoted(parPurchase) + ", "
-                 + (chkIsSold.Checked ? "True" : "False") + ", "
-                 + Quoted(parSold);
+                 + Quoted(txtPostCode.Text);
         }
 
         //Property_Id is a plain number rather than an AutoNumber, so the next one is worked out
@@ -641,16 +372,34 @@ namespace FinancialBalance
             return Found;
         }
 
+        //How many rows elsewhere hang off this property. Now that the purchase and the sale live
+        //in tables of their own, deleting the property would leave them pointing at nothing.
+        private int Depends_On(int parId)
+        {
+            int TmpCount = 0;
+            foreach (string Table in new string[] { "TblPropertyPurchase", "TblPropertySale" })
+            {
+                Mdl1.Ssql = "select Count(*) as N from " + Table + " where [Property_Id] = "
+                          + parId.ToString(CultureInfo.InvariantCulture);
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                if (reader.Read() && reader["N"] != DBNull.Value)
+                {
+                    TmpCount = TmpCount + Convert.ToInt32(reader["N"]);
+                }
+                reader.Close();
+            }
+            return TmpCount;
+        }
+
         //---- add, update, delete ----------------------------------------------------
 
         private void CmdCreate_Click(object sender, EventArgs e)
         {
             try
             {
-                string TmpPurchase;
-                string TmpSold;
                 string TmpWhy;
-                if (!Read_Entry(out TmpPurchase, out TmpSold, out TmpWhy))
+                if (!Read_Entry(out TmpWhy))
                 {
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
@@ -658,8 +407,7 @@ namespace FinancialBalance
 
                 int TmpId = Next_Id();
                 Mdl1.Ssql = "Insert into TblProperty (" + Fields + ") values ("
-                          + TmpId.ToString(CultureInfo.InvariantCulture) + ", "
-                          + Values(TmpPurchase, TmpSold) + ")";
+                          + TmpId.ToString(CultureInfo.InvariantCulture) + ", " + Values() + ")";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
@@ -690,25 +438,21 @@ namespace FinancialBalance
                     return;
                 }
 
-                string TmpPurchase;
-                string TmpSold;
                 string TmpWhy;
-                if (!Read_Entry(out TmpPurchase, out TmpSold, out TmpWhy))
+                if (!Read_Entry(out TmpWhy))
                 {
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
                 }
 
-                //the id itself is never changed - it is the key the row is found by
+                //the id itself is never changed - it is the key the row is found by, and what the
+                //purchase and sale records point at
                 Mdl1.Ssql = "Update TblProperty set"
                           + " [Name] = " + Quoted(txtName.Text) + ","
                           + " [Address] = " + Quoted(txtAddress.Text) + ","
                           + " [Suburb] = " + Quoted(txtSuburb.Text) + ","
                           + " [State] = " + Quoted(CmbState.Text) + ","
-                          + " [Post_Code] = " + Quoted(txtPostCode.Text) + ","
-                          + " [Purchase_Date] = " + Quoted(TmpPurchase) + ","
-                          + " [Is_Sold] = " + (chkIsSold.Checked ? "True" : "False") + ","
-                          + " [Sold_Date] = " + Quoted(TmpSold)
+                          + " [Post_Code] = " + Quoted(txtPostCode.Text)
                           + " where [Property_Id] = " + OrgId.ToString(CultureInfo.InvariantCulture);
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
@@ -737,6 +481,18 @@ namespace FinancialBalance
                 {
                     MessageBox.Show("Data not found for Property Id : "
                         + OrgId.ToString(CultureInfo.InvariantCulture), "Error Message");
+                    return;
+                }
+
+                //a purchase or sale record left behind would point at a property that is gone
+                int TmpHanging = Depends_On(OrgId);
+                if (TmpHanging > 0)
+                {
+                    MessageBox.Show(TmpHanging.ToString(CultureInfo.InvariantCulture)
+                        + " purchase or sale record(s) belong to this property, so it cannot be"
+                        + " deleted." + Environment.NewLine
+                        + "Remove those first, in Property Purchase and Property Sale.",
+                        "Error Message");
                     return;
                 }
 

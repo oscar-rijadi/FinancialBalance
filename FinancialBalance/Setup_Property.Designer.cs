@@ -31,6 +31,7 @@
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyPurchase = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertySale = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.gvProperty = new System.Windows.Forms.DataGridView();
@@ -46,18 +47,6 @@
             this.CmbState = new System.Windows.Forms.ComboBox();
             this.Lbl_txtPostCode = new System.Windows.Forms.Label();
             this.txtPostCode = new System.Windows.Forms.TextBox();
-            this.Lbl_Purchase = new System.Windows.Forms.Label();
-            this.CmbPurchDD = new System.Windows.Forms.ComboBox();
-            this.CmbPurchMM = new System.Windows.Forms.ComboBox();
-            this.CmbPurchYear = new System.Windows.Forms.ComboBox();
-            this.CmdPurchCal = new System.Windows.Forms.Button();
-            this.chkIsSold = new System.Windows.Forms.CheckBox();
-            this.Lbl_Sold = new System.Windows.Forms.Label();
-            this.CmbSoldDD = new System.Windows.Forms.ComboBox();
-            this.CmbSoldMM = new System.Windows.Forms.ComboBox();
-            this.CmbSoldYear = new System.Windows.Forms.ComboBox();
-            this.CmdSoldCal = new System.Windows.Forms.Button();
-            this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.LblNote = new System.Windows.Forms.Label();
             this.CmdCreate = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
@@ -161,7 +150,8 @@
             // MnPropertyProcessGroup
             // 
             this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnPropertyPurchase});
+            this.MnPropertyPurchase,
+            this.MnPropertySale});
             this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
             this.MnPropertyProcessGroup.Size = new System.Drawing.Size(150, 20);
             this.MnPropertyProcessGroup.Text = "P&roperty";
@@ -172,6 +162,13 @@
             this.MnPropertyPurchase.Size = new System.Drawing.Size(216, 22);
             this.MnPropertyPurchase.Text = "Property P&urchase";
             this.MnPropertyPurchase.Click += new System.EventHandler(this.MnPropertyPurchase_Click);
+            // 
+            // MnPropertySale
+            // 
+            this.MnPropertySale.Name = "MnPropertySale";
+            this.MnPropertySale.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertySale.Text = "Property Sa&le";
+            this.MnPropertySale.Click += new System.EventHandler(this.MnPropertySale_Click);
             // 
             // MnSuperProcess
             // 
@@ -215,7 +212,7 @@
             this.Lbl_PropertyId.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_PropertyId.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_PropertyId.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_PropertyId.Location = new System.Drawing.Point(19, 334);
+            this.Lbl_PropertyId.Location = new System.Drawing.Point(19, 324);
             this.Lbl_PropertyId.Name = "Lbl_PropertyId";
             this.Lbl_PropertyId.Size = new System.Drawing.Size(130, 22);
             this.Lbl_PropertyId.TabIndex = 4;
@@ -227,7 +224,7 @@
             this.LblPropertyId.BackColor = System.Drawing.Color.Transparent;
             this.LblPropertyId.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPropertyId.ForeColor = System.Drawing.Color.Black;
-            this.LblPropertyId.Location = new System.Drawing.Point(158, 334);
+            this.LblPropertyId.Location = new System.Drawing.Point(158, 324);
             this.LblPropertyId.Name = "LblPropertyId";
             this.LblPropertyId.Size = new System.Drawing.Size(120, 22);
             this.LblPropertyId.TabIndex = 5;
@@ -237,7 +234,7 @@
             this.Lbl_txtName.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtName.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtName.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtName.Location = new System.Drawing.Point(19, 364);
+            this.Lbl_txtName.Location = new System.Drawing.Point(19, 354);
             this.Lbl_txtName.Name = "Lbl_txtName";
             this.Lbl_txtName.Size = new System.Drawing.Size(130, 22);
             this.Lbl_txtName.TabIndex = 6;
@@ -249,7 +246,7 @@
             this.txtName.BackColor = System.Drawing.SystemColors.Window;
             this.txtName.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtName.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtName.Location = new System.Drawing.Point(158, 362);
+            this.txtName.Location = new System.Drawing.Point(158, 352);
             this.txtName.MaxLength = 50;
             this.txtName.Name = "txtName";
             this.txtName.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -261,7 +258,7 @@
             this.Lbl_txtAddress.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtAddress.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtAddress.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtAddress.Location = new System.Drawing.Point(19, 394);
+            this.Lbl_txtAddress.Location = new System.Drawing.Point(19, 384);
             this.Lbl_txtAddress.Name = "Lbl_txtAddress";
             this.Lbl_txtAddress.Size = new System.Drawing.Size(130, 22);
             this.Lbl_txtAddress.TabIndex = 8;
@@ -273,7 +270,7 @@
             this.txtAddress.BackColor = System.Drawing.SystemColors.Window;
             this.txtAddress.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtAddress.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtAddress.Location = new System.Drawing.Point(158, 392);
+            this.txtAddress.Location = new System.Drawing.Point(158, 382);
             this.txtAddress.MaxLength = 150;
             this.txtAddress.Name = "txtAddress";
             this.txtAddress.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -285,7 +282,7 @@
             this.Lbl_txtSuburb.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtSuburb.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtSuburb.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtSuburb.Location = new System.Drawing.Point(19, 424);
+            this.Lbl_txtSuburb.Location = new System.Drawing.Point(19, 414);
             this.Lbl_txtSuburb.Name = "Lbl_txtSuburb";
             this.Lbl_txtSuburb.Size = new System.Drawing.Size(130, 22);
             this.Lbl_txtSuburb.TabIndex = 10;
@@ -297,7 +294,7 @@
             this.txtSuburb.BackColor = System.Drawing.SystemColors.Window;
             this.txtSuburb.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSuburb.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtSuburb.Location = new System.Drawing.Point(158, 422);
+            this.txtSuburb.Location = new System.Drawing.Point(158, 412);
             this.txtSuburb.MaxLength = 50;
             this.txtSuburb.Name = "txtSuburb";
             this.txtSuburb.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -309,7 +306,7 @@
             this.Lbl_CmbState.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_CmbState.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_CmbState.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_CmbState.Location = new System.Drawing.Point(19, 454);
+            this.Lbl_CmbState.Location = new System.Drawing.Point(19, 444);
             this.Lbl_CmbState.Name = "Lbl_CmbState";
             this.Lbl_CmbState.Size = new System.Drawing.Size(130, 22);
             this.Lbl_CmbState.TabIndex = 12;
@@ -321,7 +318,7 @@
             this.CmbState.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbState.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbState.FormattingEnabled = true;
-            this.CmbState.Location = new System.Drawing.Point(158, 452);
+            this.CmbState.Location = new System.Drawing.Point(158, 442);
             this.CmbState.Name = "CmbState";
             this.CmbState.Size = new System.Drawing.Size(80, 22);
             this.CmbState.TabIndex = 13;
@@ -331,7 +328,7 @@
             this.Lbl_txtPostCode.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtPostCode.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtPostCode.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtPostCode.Location = new System.Drawing.Point(520, 334);
+            this.Lbl_txtPostCode.Location = new System.Drawing.Point(19, 474);
             this.Lbl_txtPostCode.Name = "Lbl_txtPostCode";
             this.Lbl_txtPostCode.Size = new System.Drawing.Size(130, 22);
             this.Lbl_txtPostCode.TabIndex = 14;
@@ -343,156 +340,22 @@
             this.txtPostCode.BackColor = System.Drawing.SystemColors.Window;
             this.txtPostCode.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPostCode.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtPostCode.Location = new System.Drawing.Point(659, 332);
+            this.txtPostCode.Location = new System.Drawing.Point(158, 472);
             this.txtPostCode.MaxLength = 4;
             this.txtPostCode.Name = "txtPostCode";
             this.txtPostCode.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtPostCode.Size = new System.Drawing.Size(60, 20);
             this.txtPostCode.TabIndex = 15;
             // 
-            // Lbl_Purchase
-            // 
-            this.Lbl_Purchase.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_Purchase.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_Purchase.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_Purchase.Location = new System.Drawing.Point(520, 364);
-            this.Lbl_Purchase.Name = "Lbl_Purchase";
-            this.Lbl_Purchase.Size = new System.Drawing.Size(130, 22);
-            this.Lbl_Purchase.TabIndex = 16;
-            this.Lbl_Purchase.Text = "Purchase Date";
-            this.Lbl_Purchase.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // CmbPurchDD
-            // 
-            this.CmbPurchDD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbPurchDD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbPurchDD.FormattingEnabled = true;
-            this.CmbPurchDD.Location = new System.Drawing.Point(659, 362);
-            this.CmbPurchDD.Name = "CmbPurchDD";
-            this.CmbPurchDD.Size = new System.Drawing.Size(41, 22);
-            this.CmbPurchDD.TabIndex = 17;
-            // 
-            // CmbPurchMM
-            // 
-            this.CmbPurchMM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbPurchMM.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbPurchMM.FormattingEnabled = true;
-            this.CmbPurchMM.Location = new System.Drawing.Point(709, 362);
-            this.CmbPurchMM.Name = "CmbPurchMM";
-            this.CmbPurchMM.Size = new System.Drawing.Size(41, 22);
-            this.CmbPurchMM.TabIndex = 18;
-            // 
-            // CmbPurchYear
-            // 
-            this.CmbPurchYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbPurchYear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbPurchYear.FormattingEnabled = true;
-            this.CmbPurchYear.Location = new System.Drawing.Point(759, 362);
-            this.CmbPurchYear.Name = "CmbPurchYear";
-            this.CmbPurchYear.Size = new System.Drawing.Size(57, 22);
-            this.CmbPurchYear.TabIndex = 19;
-            // 
-            // CmdPurchCal
-            // 
-            this.CmdPurchCal.BackColor = System.Drawing.SystemColors.Control;
-            this.CmdPurchCal.Cursor = System.Windows.Forms.Cursors.Default;
-            this.CmdPurchCal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdPurchCal.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdPurchCal.Location = new System.Drawing.Point(824, 363);
-            this.CmdPurchCal.Name = "CmdPurchCal";
-            this.CmdPurchCal.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.CmdPurchCal.Size = new System.Drawing.Size(25, 19);
-            this.CmdPurchCal.TabIndex = 20;
-            this.CmdPurchCal.Text = "..";
-            this.CmdPurchCal.UseVisualStyleBackColor = false;
-            this.CmdPurchCal.Click += new System.EventHandler(this.CmdPurchCal_Click);
-            // 
-            // chkIsSold
-            // 
-            this.chkIsSold.BackColor = System.Drawing.Color.Transparent;
-            this.chkIsSold.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkIsSold.Location = new System.Drawing.Point(659, 392);
-            this.chkIsSold.Name = "chkIsSold";
-            this.chkIsSold.Size = new System.Drawing.Size(100, 24);
-            this.chkIsSold.TabIndex = 21;
-            this.chkIsSold.Text = "Is Sold";
-            this.chkIsSold.UseVisualStyleBackColor = false;
-            this.chkIsSold.CheckedChanged += new System.EventHandler(this.chkIsSold_CheckedChanged);
-            // 
-            // Lbl_Sold
-            // 
-            this.Lbl_Sold.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_Sold.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_Sold.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_Sold.Location = new System.Drawing.Point(520, 424);
-            this.Lbl_Sold.Name = "Lbl_Sold";
-            this.Lbl_Sold.Size = new System.Drawing.Size(130, 22);
-            this.Lbl_Sold.TabIndex = 22;
-            this.Lbl_Sold.Text = "Sold Date";
-            this.Lbl_Sold.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // CmbSoldDD
-            // 
-            this.CmbSoldDD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbSoldDD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbSoldDD.FormattingEnabled = true;
-            this.CmbSoldDD.Location = new System.Drawing.Point(659, 422);
-            this.CmbSoldDD.Name = "CmbSoldDD";
-            this.CmbSoldDD.Size = new System.Drawing.Size(41, 22);
-            this.CmbSoldDD.TabIndex = 23;
-            // 
-            // CmbSoldMM
-            // 
-            this.CmbSoldMM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbSoldMM.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbSoldMM.FormattingEnabled = true;
-            this.CmbSoldMM.Location = new System.Drawing.Point(709, 422);
-            this.CmbSoldMM.Name = "CmbSoldMM";
-            this.CmbSoldMM.Size = new System.Drawing.Size(41, 22);
-            this.CmbSoldMM.TabIndex = 24;
-            // 
-            // CmbSoldYear
-            // 
-            this.CmbSoldYear.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbSoldYear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbSoldYear.FormattingEnabled = true;
-            this.CmbSoldYear.Location = new System.Drawing.Point(759, 422);
-            this.CmbSoldYear.Name = "CmbSoldYear";
-            this.CmbSoldYear.Size = new System.Drawing.Size(57, 22);
-            this.CmbSoldYear.TabIndex = 25;
-            // 
-            // CmdSoldCal
-            // 
-            this.CmdSoldCal.BackColor = System.Drawing.SystemColors.Control;
-            this.CmdSoldCal.Cursor = System.Windows.Forms.Cursors.Default;
-            this.CmdSoldCal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdSoldCal.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSoldCal.Location = new System.Drawing.Point(824, 423);
-            this.CmdSoldCal.Name = "CmdSoldCal";
-            this.CmdSoldCal.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.CmdSoldCal.Size = new System.Drawing.Size(25, 19);
-            this.CmdSoldCal.TabIndex = 26;
-            this.CmdSoldCal.Text = "..";
-            this.CmdSoldCal.UseVisualStyleBackColor = false;
-            this.CmdSoldCal.Click += new System.EventHandler(this.CmdSoldCal_Click);
-            // 
-            // monthCalendar1
-            // 
-            this.monthCalendar1.Location = new System.Drawing.Point(620, 150);
-            this.monthCalendar1.MaxSelectionCount = 1;
-            this.monthCalendar1.Name = "monthCalendar1";
-            this.monthCalendar1.TabIndex = 27;
-            this.monthCalendar1.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.monthCalendar1_DateSelected);
-            // 
             // LblNote
             // 
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
             this.LblNote.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblNote.ForeColor = System.Drawing.Color.Black;
-            this.LblNote.Location = new System.Drawing.Point(19, 484);
+            this.LblNote.Location = new System.Drawing.Point(19, 506);
             this.LblNote.Name = "LblNote";
             this.LblNote.Size = new System.Drawing.Size(962, 22);
-            this.LblNote.TabIndex = 28;
+            this.LblNote.TabIndex = 16;
             // 
             // CmdCreate
             // 
@@ -500,11 +363,11 @@
             this.CmdCreate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCreate.Location = new System.Drawing.Point(525, 516);
+            this.CmdCreate.Location = new System.Drawing.Point(525, 538);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
-            this.CmdCreate.TabIndex = 29;
+            this.CmdCreate.TabIndex = 17;
             this.CmdCreate.Text = "&Add";
             this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
@@ -515,11 +378,11 @@
             this.CmdUpdate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdUpdate.Location = new System.Drawing.Point(620, 516);
+            this.CmdUpdate.Location = new System.Drawing.Point(620, 538);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
-            this.CmdUpdate.TabIndex = 30;
+            this.CmdUpdate.TabIndex = 18;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -530,11 +393,11 @@
             this.CmdClear.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdClear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdClear.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdClear.Location = new System.Drawing.Point(715, 516);
+            this.CmdClear.Location = new System.Drawing.Point(715, 538);
             this.CmdClear.Name = "CmdClear";
             this.CmdClear.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdClear.Size = new System.Drawing.Size(85, 28);
-            this.CmdClear.TabIndex = 31;
+            this.CmdClear.TabIndex = 19;
             this.CmdClear.Text = "&Clear";
             this.CmdClear.UseVisualStyleBackColor = false;
             this.CmdClear.Click += new System.EventHandler(this.CmdClear_Click);
@@ -545,11 +408,11 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(810, 516);
+            this.CmdDel.Location = new System.Drawing.Point(810, 538);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
-            this.CmdDel.TabIndex = 32;
+            this.CmdDel.TabIndex = 20;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -560,11 +423,11 @@
             this.CmdBack.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(896, 516);
+            this.CmdBack.Location = new System.Drawing.Point(896, 538);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
-            this.CmdBack.TabIndex = 33;
+            this.CmdBack.TabIndex = 21;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -575,7 +438,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1000, 572);
+            this.ClientSize = new System.Drawing.Size(1000, 596);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
@@ -583,18 +446,6 @@
             this.Controls.Add(this.CmdUpdate);
             this.Controls.Add(this.CmdCreate);
             this.Controls.Add(this.LblNote);
-            this.Controls.Add(this.monthCalendar1);
-            this.Controls.Add(this.CmdSoldCal);
-            this.Controls.Add(this.CmbSoldYear);
-            this.Controls.Add(this.CmbSoldMM);
-            this.Controls.Add(this.CmbSoldDD);
-            this.Controls.Add(this.Lbl_Sold);
-            this.Controls.Add(this.chkIsSold);
-            this.Controls.Add(this.CmdPurchCal);
-            this.Controls.Add(this.CmbPurchYear);
-            this.Controls.Add(this.CmbPurchMM);
-            this.Controls.Add(this.CmbPurchDD);
-            this.Controls.Add(this.Lbl_Purchase);
             this.Controls.Add(this.txtPostCode);
             this.Controls.Add(this.Lbl_txtPostCode);
             this.Controls.Add(this.CmbState);
@@ -641,6 +492,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyPurchase;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertySale;
         public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;
         public System.Windows.Forms.Label Label21;
         private System.Windows.Forms.DataGridView gvProperty;
@@ -656,18 +508,6 @@
         public System.Windows.Forms.ComboBox CmbState;
         public System.Windows.Forms.Label Lbl_txtPostCode;
         public System.Windows.Forms.TextBox txtPostCode;
-        public System.Windows.Forms.Label Lbl_Purchase;
-        public System.Windows.Forms.ComboBox CmbPurchDD;
-        public System.Windows.Forms.ComboBox CmbPurchMM;
-        public System.Windows.Forms.ComboBox CmbPurchYear;
-        public System.Windows.Forms.Button CmdPurchCal;
-        public System.Windows.Forms.CheckBox chkIsSold;
-        public System.Windows.Forms.Label Lbl_Sold;
-        public System.Windows.Forms.ComboBox CmbSoldDD;
-        public System.Windows.Forms.ComboBox CmbSoldMM;
-        public System.Windows.Forms.ComboBox CmbSoldYear;
-        public System.Windows.Forms.Button CmdSoldCal;
-        public System.Windows.Forms.MonthCalendar monthCalendar1;
         public System.Windows.Forms.Label LblNote;
         public System.Windows.Forms.Button CmdCreate;
         public System.Windows.Forms.Button CmdUpdate;

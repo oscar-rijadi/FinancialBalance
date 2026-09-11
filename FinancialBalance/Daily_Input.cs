@@ -34,6 +34,13 @@ namespace FinancialBalance
             monthCalendar1.Hide();
         }
 
+        private void MnPropertySale_Click(object sender, EventArgs e)
+        {
+            Property_Sale Property_Sale = new Property_Sale();
+            Property_Sale.Show();
+            this.Close();
+        }
+
         private void MnPropertyPurchase_Click(object sender, EventArgs e)
         {
             Property_Purchase Property_Purchase = new Property_Purchase();

@@ -112,6 +112,13 @@ namespace FinancialBalance
             AnimationTimer.Enabled = true;
         }
 
+        private void MnPropertySale_Click(object sender, EventArgs e)
+        {
+            Property_Sale Property_Sale = new Property_Sale();
+            Property_Sale.Show();
+            this.Hide();
+        }
+
         private void MnPropertyPurchase_Click(object sender, EventArgs e)
         {
             Property_Purchase Property_Purchase = new Property_Purchase();
