@@ -436,6 +436,7 @@ erDiagram
     TblPropertySale {
         long    Property_Id "joins TblProperty, one row per property"
         text    Sold_Date "yyyyMMdd"
+        text    Settlement_Date "yyyyMMdd, blank until it settles"
         decimal Sold_Price "2 dp"
         decimal Conveyancing_Cost "2 dp"
         decimal Sale_Agent_Cost "2 dp"
@@ -445,6 +446,7 @@ erDiagram
     TblPropertyPurchase {
         long    Property_Id "joins TblProperty, one row per property"
         text    Purchase_Date "yyyyMMdd"
+        text    Settlement_Date "yyyyMMdd, blank until it settles"
         decimal Purchase_Price "2 dp"
         decimal Stamp_Duty "2 dp"
         decimal Conveyancing_Cost "2 dp"
@@ -2666,14 +2668,15 @@ round, and is built the same way: `TblPropertySale`, **one row per property**, j
 | --- | --- | --- |
 | `Property_Id` | Number | which property; joins `TblProperty` |
 | `Sold_Date` | Short Text(8) | `yyyyMMdd` |
+| `Settlement_Date` | Short Text(8) | `yyyyMMdd`, blank until it settles |
 | `Sold_Price` | Decimal(22,2) | |
 | `Conveyancing_Cost` | Decimal(22,2) | |
 | `Sale_Agent_Cost` | Decimal(22,2) | shown as **Sale Agent Cost** |
 | `Settlement_Cost` | Decimal(22,2) | |
 | `Other_Cost` | Decimal(22,2) | |
 
-Seven columns in the list: the property's **Name** read across from `TblProperty`, the **Sold
-Date** as `dd-MMM-yyyy`, then each amount with a `$` and thousands grouped to two places. The
+Eight columns in the list: the property's **Name** read across from `TblProperty`, the **Sold
+Date** and **Settlement Date** as `dd-MMM-yyyy`, then each amount with a `$` and thousands grouped to two places. The
 entry area is the same shape as the purchase page's — a **Property Id** dropdown with the
 property's name beside it, the Daily Input date picker with its `..` calendar, and money boxes on
 the shared numeric filter. Add refuses a property that already has a sale, Update refuses to move
@@ -2698,6 +2701,7 @@ sold if it has a row here, and the date it sold is the one in that row.
 | --- | --- | --- |
 | `Property_Id` | Number | which property; joins `TblProperty` |
 | `Purchase_Date` | Short Text(8) | `yyyyMMdd` |
+| `Settlement_Date` | Short Text(8) | `yyyyMMdd`, blank until it settles |
 | `Purchase_Price` | Decimal(22,2) | |
 | `Stamp_Duty` | Decimal(22,2) | |
 | `Conveyancing_Cost` | Decimal(22,2) | |
@@ -2713,10 +2717,17 @@ Every cost is **`DECIMAL(22,2)` created through ACE DDL**, not DAO `CreateField`
 produces a BigInt and would round each of them to whole dollars — the same reason the other
 money tables are built that way.
 
+`Settlement_Date` sits **after** `Purchase_Date` rather than at the end, which took both tools:
+ACE `ALTER TABLE ADD COLUMN` can only append, and only DAO can move a field afterwards, through
+`OrdinalPosition`. It is set across **every** field rather than just the new one, so the order is
+stated outright instead of depending on what the moved field displaces. Both harnesses read the
+column order back from the database, so a move that silently failed would fail a check rather
+than pass unnoticed.
+
 #### The list
 
-Twelve columns: the property's **Name** read across from `TblProperty`, the **Purchase Date** as
-`dd-MMM-yyyy`, then every cost with a `$` and thousands grouped, to two places — the shared
+Thirteen columns: the property's **Name** read across from `TblProperty`, the **Purchase Date**
+and **Settlement Date** as `dd-MMM-yyyy`, then every cost with a `$` and thousands grouped, to two places — the shared
 `Mdl1.FormatAmt` already does exactly that — and last **Percentage Ownership (%)**, which is a
 share rather than an amount and so reads `62.50 %` instead of carrying a dollar sign. A purchase whose property has since been deleted
 still appears, showing `(id)` where the name would be, rather than vanishing from view.
@@ -2727,6 +2738,13 @@ still appears, showing `(id)` where the name would be, rather than vanishing fro
 beside it** so an id never has to be recognised on its own. The date uses the same three
 dropdowns and `..` calendar as Daily Input, bounded to the years the dropdown carries. Every
 figure box carries the shared numeric filter, so only digits and a decimal point get in.
+
+**Settlement Date** is the same picker again — three dropdowns and a `..` — sharing the one
+calendar with the purchase date, which remembers which of the two opened it. It may be left
+**empty**, since a purchase can be agreed before it settles; but a date with only some of its
+parts filled in is refused rather than stored as whatever those parts run together into, and a
+settlement **earlier than the purchase** is refused too. Property Sale has the same pair, and
+behaves the same way.
 
 **Percentage Ownership** is checked against **0 to 100** before anything is written — a share
 outside that is not a share. The filter already keeps a minus sign out of the box, so in practice

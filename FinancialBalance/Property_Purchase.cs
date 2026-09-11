@@ -25,13 +25,15 @@ namespace FinancialBalance
         //dropdown does not need a query every time the choice changes
         List<string> PropertyNames = new List<string>();
 
-        const string Fields = "[Property_Id], [Purchase_Date], [Purchase_Price], [Stamp_Duty],"
+        const string Fields = "[Property_Id], [Purchase_Date], [Settlement_Date],"
+                            + " [Purchase_Price], [Stamp_Duty],"
                             + " [Conveyancing_Cost], [Building_Pest_Inspection_Cost],"
                             + " [Buyers_Agent_Cost], [Settlement_Cost], [Other_Cost],"
                             + " [Down_Payment], [Initial_Loan], [Percentage_Ownership]";
 
         //the same columns again, qualified for the join that fetches the property's name
-        const string Joined_Fields = "p.[Property_Id], p.[Purchase_Date], p.[Purchase_Price],"
+        const string Joined_Fields = "p.[Property_Id], p.[Purchase_Date],"
+                            + " p.[Settlement_Date], p.[Purchase_Price],"
                             + " p.[Stamp_Duty], p.[Conveyancing_Cost],"
                             + " p.[Building_Pest_Inspection_Cost], p.[Buyers_Agent_Cost],"
                             + " p.[Settlement_Cost], p.[Other_Cost], p.[Down_Payment],"
@@ -145,23 +147,32 @@ namespace FinancialBalance
         //same as everywhere else.
         private void Fill_Dates()
         {
-            CmbPurchDD.Items.Clear();
-            CmbPurchDD.Items.Add("");
+            foreach (ComboBox Day in new ComboBox[] { CmbPurchDD, CmbSettleDD })
+            {
+            Day.Items.Clear();
+            Day.Items.Add("");
             for (int i = 1; i <= 31; i++)
             {
-                CmbPurchDD.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
+                Day.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
             }
-            CmbPurchMM.Items.Clear();
-            CmbPurchMM.Items.Add("");
-            for (int i = 1; i <= 12; i++)
-            {
-                CmbPurchMM.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
             }
-            CmbPurchYear.Items.Clear();
-            CmbPurchYear.Items.Add("");
-            for (int i = DateTime.Now.Year; i >= 1950; i--)
+            foreach (ComboBox Month in new ComboBox[] { CmbPurchMM, CmbSettleMM })
             {
-                CmbPurchYear.Items.Add(i.ToString("0000", CultureInfo.InvariantCulture));
+                Month.Items.Clear();
+                Month.Items.Add("");
+                for (int i = 1; i <= 12; i++)
+                {
+                    Month.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
+                }
+            }
+            foreach (ComboBox Year in new ComboBox[] { CmbPurchYear, CmbSettleYear })
+            {
+                Year.Items.Clear();
+                Year.Items.Add("");
+                for (int i = DateTime.Now.Year; i >= 1950; i--)
+                {
+                    Year.Items.Add(i.ToString("0000", CultureInfo.InvariantCulture));
+                }
             }
         }
 
@@ -259,13 +270,14 @@ namespace FinancialBalance
         {
             gvPurchase.Rows.Clear();
             gvPurchase.Columns.Clear();
-            gvPurchase.ColumnCount = 12;
-            string[] names = new string[] { "Name", "Purchase Date", "Purchase Price", "Stamp Duty",
+            gvPurchase.ColumnCount = 13;
+            string[] names = new string[] { "Name", "Purchase Date", "Settlement Date",
+                                            "Purchase Price", "Stamp Duty",
                                             "Conveyancing Cost", "B&P Inspection Cost", "BA Cost",
                                             "Settlement Cost", "Other Cost", "DP", "Initial Loan",
                                             "Percentage Ownership (%)" };
-            int[] weights = new int[] { 12, 9, 9, 8, 9, 9, 7, 8, 7, 7, 8, 9 };
-            for (int i = 0; i < 12; i++)
+            int[] weights = new int[] { 11, 8, 8, 8, 7, 8, 8, 6, 7, 6, 6, 7, 8 };
+            for (int i = 0; i < 13; i++)
             {
                 gvPurchase.Columns[i].Name = names[i];
                 //A grid header is not a caption: it does not treat & as an accelerator marker,
@@ -313,6 +325,7 @@ namespace FinancialBalance
                     gvPurchase.Rows.Add(new string[] {
                         TmpName,
                         Long_Date(Read_Text(reader["Purchase_Date"])),
+                        Long_Date(Read_Text(reader["Settlement_Date"])),
                         Money(Read_Number(reader["Purchase_Price"])),
                         Money(Read_Number(reader["Stamp_Duty"])),
                         Money(Read_Number(reader["Conveyancing_Cost"])),
@@ -391,7 +404,10 @@ namespace FinancialBalance
                 string TmpWanted = parId.ToString(CultureInfo.InvariantCulture);
                 CmbPropertyId.Text = TmpWanted;
                 bool TmpOrphan = (CmbPropertyId.Text != TmpWanted);
-                Set_Date(Read_Text(reader["Purchase_Date"]));
+                Set_Date(CmbPurchDD, CmbPurchMM, CmbPurchYear,
+                         Read_Text(reader["Purchase_Date"]));
+                Set_Date(CmbSettleDD, CmbSettleMM, CmbSettleYear,
+                         Read_Text(reader["Settlement_Date"]));
                 txtPurchasePrice.Text = Box(Read_Number(reader["Purchase_Price"]));
                 txtStampDuty.Text = Box(Read_Number(reader["Stamp_Duty"]));
                 txtConveyancing.Text = Box(Read_Number(reader["Conveyancing_Cost"]));
@@ -455,6 +471,9 @@ namespace FinancialBalance
             CmbPurchDD.Text = "";
             CmbPurchMM.Text = "";
             CmbPurchYear.Text = "";
+            CmbSettleDD.Text = "";
+            CmbSettleMM.Text = "";
+            CmbSettleYear.Text = "";
             foreach (TextBox Box in Money_Boxes())
             {
                 Box.Text = "";
@@ -486,7 +505,23 @@ namespace FinancialBalance
         //The same arrangement Daily Input has, and Property Setup: three dropdowns and a ".."
         //beside them that opens a MonthCalendar, which fills them in and hides again.
 
+        //"F" for the first date, "S" for settlement; empty when the calendar is not up.
+        //One calendar serves both, so which one asked for it is remembered while it is open.
+        string CalFor = "";
+
         private void CmdPurchCal_Click(object sender, EventArgs e)
+        {
+            CalFor = "F";
+            Open_Calendar(CmbPurchDD, CmbPurchMM, CmbPurchYear);
+        }
+
+        private void CmdSettleCal_Click(object sender, EventArgs e)
+        {
+            CalFor = "S";
+            Open_Calendar(CmbSettleDD, CmbSettleMM, CmbSettleYear);
+        }
+
+        private void Open_Calendar(ComboBox parDD, ComboBox parMM, ComboBox parYear)
         {
             //Held to the same range the year dropdown carries. Assigning a value that is not in
             //a DropDownList does nothing at all, silently, so an unbounded calendar could appear
@@ -497,7 +532,7 @@ namespace FinancialBalance
             //Daily Input parses its three boxes straight into a date; here the date may not have
             //been filled in yet, and blank does not parse.
             DateTime TmpStart;
-            string TmpText = CmbPurchDD.Text.Trim() + CmbPurchMM.Text.Trim() + CmbPurchYear.Text.Trim();
+            string TmpText = parDD.Text.Trim() + parMM.Text.Trim() + parYear.Text.Trim();
             if (TmpText.Length != 8
                 || !DateTime.TryParseExact(TmpText, "ddMMyyyy", CultureInfo.InvariantCulture,
                                            DateTimeStyles.None, out TmpStart))
@@ -514,25 +549,39 @@ namespace FinancialBalance
 
         private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
         {
-            CmbPurchDD.Text = e.Start.Day.ToString("00", CultureInfo.InvariantCulture);
-            CmbPurchMM.Text = e.Start.Month.ToString("00", CultureInfo.InvariantCulture);
-            CmbPurchYear.Text = e.Start.Year.ToString("0000", CultureInfo.InvariantCulture);
+            string TmpDD = e.Start.Day.ToString("00", CultureInfo.InvariantCulture);
+            string TmpMM = e.Start.Month.ToString("00", CultureInfo.InvariantCulture);
+            string TmpYear = e.Start.Year.ToString("0000", CultureInfo.InvariantCulture);
+            if (CalFor == "S")
+            {
+                CmbSettleDD.Text = TmpDD;
+                CmbSettleMM.Text = TmpMM;
+                CmbSettleYear.Text = TmpYear;
+            }
+            else
+            {
+                CmbPurchDD.Text = TmpDD;
+                CmbPurchMM.Text = TmpMM;
+                CmbPurchYear.Text = TmpYear;
+            }
+            CalFor = "";
             monthCalendar1.Hide();
         }
 
-        private void Set_Date(string parYyyyMMdd)
+        private void Set_Date(ComboBox parDD, ComboBox parMM, ComboBox parYear,
+                              string parYyyyMMdd)
         {
             string TmpText = (parYyyyMMdd == null ? "" : parYyyyMMdd.Trim());
             if (TmpText.Length != 8)
             {
-                CmbPurchDD.Text = "";
-                CmbPurchMM.Text = "";
-                CmbPurchYear.Text = "";
+                parDD.Text = "";
+                parMM.Text = "";
+                parYear.Text = "";
                 return;
             }
-            CmbPurchYear.Text = TmpText.Substring(0, 4);
-            CmbPurchMM.Text = TmpText.Substring(4, 2);
-            CmbPurchDD.Text = TmpText.Substring(6, 2);
+            parYear.Text = TmpText.Substring(0, 4);
+            parMM.Text = TmpText.Substring(4, 2);
+            parDD.Text = TmpText.Substring(6, 2);
         }
 
         //---- what may be saved ------------------------------------------------------
@@ -549,10 +598,12 @@ namespace FinancialBalance
             return Math.Round(parValue, 2).ToString("0.00", CultureInfo.InvariantCulture);
         }
 
-        private bool Read_Entry(out int parId, out string parDate, out string parWhy)
+        private bool Read_Entry(out int parId, out string parDate, out string parSettle,
+                                out string parWhy)
         {
             parId = 0;
             parDate = "";
+            parSettle = "";
             parWhy = "";
 
             string TmpId = CmbPropertyId.Text.Trim();
@@ -581,6 +632,34 @@ namespace FinancialBalance
                 return false;
             }
             parDate = TmpYear + TmpMM + TmpDD;
+
+            //Settlement may not have happened yet, so an empty one is allowed - but a date with
+            //only some of its parts filled in is not a date, and is refused rather than stored
+            //as whatever those parts happen to concatenate to.
+            string TmpSDD = CmbSettleDD.Text.Trim();
+            string TmpSMM = CmbSettleMM.Text.Trim();
+            string TmpSYear = CmbSettleYear.Text.Trim();
+            if (TmpSDD != "" || TmpSMM != "" || TmpSYear != "")
+            {
+                if (TmpSDD == "" || TmpSMM == "" || TmpSYear == "")
+                {
+                    parWhy = "Settlement Date needs a day, a month and a year.";
+                    return false;
+                }
+                if (!Mdl1.k_Date(TmpSDD + TmpSMM + TmpSYear))
+                {
+                    parWhy = "Settlement Date is not a real date.";
+                    return false;
+                }
+                parSettle = TmpSYear + TmpSMM + TmpSDD;
+
+                //a property cannot settle before it was bought
+                if (string.CompareOrdinal(parSettle, parDate) < 0)
+                {
+                    parWhy = "Settlement Date is before Purchase Date.";
+                    return false;
+                }
+            }
 
             //A share of a property, so anything outside 0 to 100 is not one. The shared numeric
             //filter already keeps a minus sign out of the box, so this is really the upper end -
@@ -627,8 +706,9 @@ namespace FinancialBalance
             {
                 int TmpId;
                 string TmpDate;
+                string TmpSettle;
                 string TmpWhy;
-                if (!Read_Entry(out TmpId, out TmpDate, out TmpWhy))
+                if (!Read_Entry(out TmpId, out TmpDate, out TmpSettle, out TmpWhy))
                 {
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
@@ -644,8 +724,8 @@ namespace FinancialBalance
                 }
 
                 Mdl1.Ssql = "Insert into TblPropertyPurchase (" + Fields + ") values ("
-                          + TmpId.ToString(CultureInfo.InvariantCulture) + ", '" + TmpDate + "', "
-                          + Values() + ")";
+                          + TmpId.ToString(CultureInfo.InvariantCulture) + ", '" + TmpDate + "', '"
+                          + TmpSettle + "', " + Values() + ")";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
@@ -672,8 +752,9 @@ namespace FinancialBalance
 
                 int TmpId;
                 string TmpDate;
+                string TmpSettle;
                 string TmpWhy;
-                if (!Read_Entry(out TmpId, out TmpDate, out TmpWhy))
+                if (!Read_Entry(out TmpId, out TmpDate, out TmpSettle, out TmpWhy))
                 {
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
@@ -695,6 +776,7 @@ namespace FinancialBalance
                 Mdl1.Ssql = "Update TblPropertyPurchase set"
                           + " [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture) + ","
                           + " [Purchase_Date] = '" + TmpDate + "',"
+                          + " [Settlement_Date] = '" + TmpSettle + "',"
                           + " [Purchase_Price] = " + Num(Amount(txtPurchasePrice)) + ","
                           + " [Stamp_Duty] = " + Num(Amount(txtStampDuty)) + ","
                           + " [Conveyancing_Cost] = " + Num(Amount(txtConveyancing)) + ","
