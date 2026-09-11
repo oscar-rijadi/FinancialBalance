@@ -114,6 +114,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnPropertyPurchase_Click(object sender, EventArgs e)
+        {
+            Property_Purchase Property_Purchase = new Property_Purchase();
+            Property_Purchase.Show();
+            this.Close();
+        }
+
         //---- the dropdowns ----------------------------------------------------------
 
         //The shared Mdl1.Fill_Date offers three years, which suits a transaction entered as it
@@ -389,10 +396,13 @@ namespace FinancialBalance
             CmbSoldDD.Text = "";
             CmbSoldMM.Text = "";
             CmbSoldYear.Text = "";
+            //ClearSelection fires SelectionChanged, and the handler falls back to
+            //CurrentRow when nothing is selected - so clearing outside the guard
+            //loads straight back the record it was clearing, leaving OrgId set.
+            gvProperty.ClearSelection();
             Filling = false;
 
             Show_Sold();
-            gvProperty.ClearSelection();
             LblNote.Text = "";
         }
 

@@ -288,6 +288,12 @@
     <Compile Include="Setup_Property.Designer.cs">
       <DependentUpon>Setup_Property.cs</DependentUpon>
     </Compile>
+    <Compile Include="Property_Purchase.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Property_Purchase.Designer.cs">
+      <DependentUpon>Property_Purchase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Setup_State.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -437,6 +443,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_Property.resx">
       <DependentUpon>Setup_Property.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Property_Purchase.resx">
+      <DependentUpon>Property_Purchase.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_State.resx">
       <DependentUpon>Setup_State.cs</DependentUpon>

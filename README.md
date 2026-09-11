@@ -92,7 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
-| `Process` | **Property** | Property Setup |
+| `Process` | **Property** | Property Setup, Property Purchase |
 | `Administration` | **Property** | State Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
@@ -122,6 +122,7 @@ flowchart LR
     PETFG --> ETR["ETF_Stocks_FY_Reconciliation"]
     MAIN --> PPROPG{{"Property"}}
     PPROPG --> SPROP["Setup_Property"]
+    PPROPG --> PPUR["Property_Purchase"]
     MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -212,6 +213,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
+| `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy — price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
 | `Setup_Property` | Shown as **Property Setup**. Maintains the properties — name, address, purchase date, and whether and when it was sold. |
 | `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories — a three-character code and its full name. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
@@ -221,7 +223,7 @@ flowchart LR
 
 ## Data model
 
-Thirty tables. **No foreign keys or relationships are defined in the database** — the links below are
+Thirty-one tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -260,6 +262,7 @@ erDiagram
     TblCurrCode     ||--o{ TblSuperFinancialYear : "denominates"
     TblETFStocks ||--o{ TblETFStocksDiversificationAllocation : "split across"
     TblState        ||--o{ TblProperty : "locates"
+    TblProperty     ||--o| TblPropertyPurchase : "was bought for"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -426,6 +429,19 @@ erDiagram
     TblState {
         text Name PK "3 chars, the state code"
         text Long_Name "50 chars"
+    }
+    TblPropertyPurchase {
+        long    Property_Id "joins TblProperty, one row per property"
+        text    Purchase_Date "yyyyMMdd"
+        decimal Purchase_Price "2 dp"
+        decimal Stamp_Duty "2 dp"
+        decimal Conveyancing_Cost "2 dp"
+        decimal Building_Pest_Inspection_Cost "2 dp"
+        decimal Buyers_Agent_Cost "2 dp"
+        decimal Settlement_Cost "2 dp"
+        decimal Other_Cost "2 dp"
+        decimal Down_Payment "2 dp"
+        decimal Initial_Loan "2 dp"
     }
     TblProperty {
         long Property_Id PK "handed out by the page, not an AutoNumber"
@@ -1982,6 +1998,7 @@ C#.Net/
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
 │   ├── Setup_State.*                 # the Australian states and territories
 │   ├── Setup_Property.*              # properties, and whether they are sold
+│   ├── Property_Purchase.*           # what each one cost to buy
 │   ├── Setup_Super_Fund.*            # the list of super funds
 │   ├── Setup_Super.*                 # super accounts
 │   ├── Super_Financial_Year.*         # one year per super account
@@ -2625,6 +2642,59 @@ Dividend Income is the one input that may be left blank.**
 As on the compound interest calculator, the page **recalculates on every keystroke**, so a refused
 input is reported **in the note above the table, in red** rather than in a message box, and the
 table and all five figures are cleared so nothing stale is left looking like an answer.
+
+---
+
+### Property Purchase
+
+`Process` ▸ Property ▸ Property Purchase records what a property cost to buy, in
+`TblPropertyPurchase` — **one row per property**, joined to [`TblProperty`](#property-setup) by
+`Property_Id`.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Property_Id` | Number | which property; joins `TblProperty` |
+| `Purchase_Date` | Short Text(8) | `yyyyMMdd` |
+| `Purchase_Price` | Decimal(22,2) | |
+| `Stamp_Duty` | Decimal(22,2) | |
+| `Conveyancing_Cost` | Decimal(22,2) | |
+| `Building_Pest_Inspection_Cost` | Decimal(22,2) | shown as **B&P Inspection Cost** |
+| `Buyers_Agent_Cost` | Decimal(22,2) | shown as **BA Cost** |
+| `Settlement_Cost` | Decimal(22,2) | |
+| `Other_Cost` | Decimal(22,2) | |
+| `Down_Payment` | Decimal(22,2) | shown as **DP** |
+| `Initial_Loan` | Decimal(22,2) | |
+
+Every cost is **`DECIMAL(22,2)` created through ACE DDL**, not DAO `CreateField`, which silently
+produces a BigInt and would round each of them to whole dollars — the same reason the other
+money tables are built that way.
+
+#### The list
+
+Eleven columns: the property's **Name** read across from `TblProperty`, the **Purchase Date** as
+`dd-MMM-yyyy`, and then every cost with a `$` and thousands grouped, to two places — the shared
+`Mdl1.FormatAmt` already does exactly that. A purchase whose property has since been deleted
+still appears, showing `(id)` where the name would be, rather than vanishing from view.
+
+#### The entry area
+
+**Property Id** is a dropdown of the ids in `TblProperty`, with **the property's name shown
+beside it** so an id never has to be recognised on its own. The date uses the same three
+dropdowns and `..` calendar as [Property Setup](#property-setup), bounded the same way. Every
+cost box carries the shared numeric filter, so only digits and a decimal point get in.
+
+**Stamp Duty has a box of its own.** It is a field on the table and a column in the list, but was
+missing from the inputs as originally specified — which would have left that column permanently
+at zero with no way to fill it.
+
+**One record per property** is enforced by the page rather than by a key on the table: Add refuses
+a property that already has a purchase and says to use Update instead, and Update refuses to move
+a record onto a property that already has one. Delete asks first.
+
+If the property behind the selected row has been deleted, the page **says so in red and refuses
+to update it**. That case is worth guarding explicitly: `CmbPropertyId` is a `DropDownList`, and
+assigning an id that is not among its items does nothing at all, silently — so without the check
+the box would sit showing the previous record while the rest of the form showed this one.
 
 ---
 

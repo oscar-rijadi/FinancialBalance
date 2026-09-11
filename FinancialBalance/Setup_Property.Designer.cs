@@ -29,6 +29,8 @@
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksCostBase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyPurchase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
             this.gvProperty = new System.Windows.Forms.DataGridView();
@@ -72,6 +74,7 @@
             this.MnDailyInput,
             this.MnMonthlyClosing,
             this.MnETFStockProcessGroup,
+            this.MnPropertyProcessGroup,
             this.MnSuperProcess});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
@@ -154,6 +157,21 @@
             this.MnETFStocksFYRecon.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksFYRecon.Text = "ETF/Stock Financial &Year Reconciliation";
             this.MnETFStocksFYRecon.Click += new System.EventHandler(this.MnETFStocksFYRecon_Click);
+            // 
+            // MnPropertyProcessGroup
+            // 
+            this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnPropertyPurchase});
+            this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
+            this.MnPropertyProcessGroup.Size = new System.Drawing.Size(150, 20);
+            this.MnPropertyProcessGroup.Text = "P&roperty";
+            // 
+            // MnPropertyPurchase
+            // 
+            this.MnPropertyPurchase.Name = "MnPropertyPurchase";
+            this.MnPropertyPurchase.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertyPurchase.Text = "Property P&urchase";
+            this.MnPropertyPurchase.Click += new System.EventHandler(this.MnPropertyPurchase_Click);
             // 
             // MnSuperProcess
             // 
@@ -621,6 +639,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksCostBase;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyPurchase;
         public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;
         public System.Windows.Forms.Label Label21;
         private System.Windows.Forms.DataGridView gvProperty;
