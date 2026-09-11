@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
@@ -371,18 +371,138 @@ namespace FinancialBalance
         //that happens to share the name. The flip side is that a Sheet they delete, or rename,
         //or that was made by a different OAuth client, will not be found - and a new one is
         //made instead, which is the right thing to do in each of those cases.
-        internal static string Find_Existing(string parToken, string parName, out string parWhy)
+        //---- remembering which file we made ------------------------------------------
+        //
+        //The search below can only see files this application has a per-file grant for, and this
+        //button deliberately signs in from scratch on every click - no stored token, a fresh
+        //consent every time.  Those two things do not sit well together: a new authorisation is
+        //not a reliable way to inherit per-file access to something an earlier one created, and
+        //when it does not, searching by name finds nothing and a second file of the same name
+        //gets made.  That is the duplicate.
+        //
+        //So the id is written down.  A Drive file id is not a secret - it is in the URL of the
+        //Sheet - so keeping it costs nothing, and it makes "the same file every time" hold
+        //whether or not the grant carries over.  It lives beside the user's own settings rather
+        //than in the .mdb, because the databases get copied between Sample, Current, Debug and
+        //Release and a file id has no business travelling with them.
+        internal static string Remembered_Path()
         {
+            return Path.Combine(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                             "FinancialBalance"),
+                "google_drive.txt");
+        }
+
+        internal static string Recall(string parName)
+        {
+            try
+            {
+                string TmpPath = Remembered_Path();
+                if (!File.Exists(TmpPath))
+                {
+                    return null;
+                }
+                foreach (string Line in File.ReadAllLines(TmpPath))
+                {
+                    int Tab = Line.IndexOf('\t');
+                    if (Tab > 0 && Line.Substring(0, Tab) == parName)
+                    {
+                        string TmpId = Line.Substring(Tab + 1).Trim();
+                        return (TmpId == "" ? null : TmpId);
+                    }
+                }
+            }
+            catch
+            {
+                //an unreadable note is no reason to fail the export; the search still runs
+            }
+            return null;
+        }
+
+        internal static void Remember(string parName, string parId)
+        {
+            try
+            {
+                string TmpPath = Remembered_Path();
+                string TmpDir = Path.GetDirectoryName(TmpPath);
+                if (!Directory.Exists(TmpDir))
+                {
+                    Directory.CreateDirectory(TmpDir);
+                }
+
+                List<string> Lines = new List<string>();
+                if (File.Exists(TmpPath))
+                {
+                    foreach (string Line in File.ReadAllLines(TmpPath))
+                    {
+                        int Tab = Line.IndexOf('\t');
+                        if (Tab > 0 && Line.Substring(0, Tab) != parName && Line.Trim() != "")
+                        {
+                            Lines.Add(Line);
+                        }
+                    }
+                }
+                Lines.Add(parName + "\t" + parId);
+                File.WriteAllLines(TmpPath, Lines.ToArray());
+            }
+            catch
+            {
+                //failing to write it down only means the next run has to search again
+            }
+        }
+
+        //Is the remembered file still there, still called that, and not in the bin?  A file the
+        //user has deleted or renamed is not ours to overwrite, so it is treated as gone.
+        internal static bool Still_There(string parToken, string parId, string parName)
+        {
+            try
+            {
+                string Url = FindEndpoint + "/" + Uri.EscapeDataString(parId)
+                           + "?fields=" + Uri.EscapeDataString("id,name,trashed,mimeType");
+                string Reply;
+                string Why;
+                if (!Get(Url, parToken, out Reply, out Why))
+                {
+                    return false;
+                }
+                JavaScriptSerializer Json = new JavaScriptSerializer();
+                Dictionary<string, object> Map = Json.Deserialize<Dictionary<string, object>>(Reply);
+                if (Map == null || !Map.ContainsKey("id"))
+                {
+                    return false;
+                }
+                if (Map.ContainsKey("trashed") && Convert.ToBoolean(Map["trashed"]))
+                {
+                    return false;
+                }
+                return (Map.ContainsKey("name") && Map["name"].ToString() == parName);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        //parSearched says whether the question was actually answered.  Without it a search that
+        //failed looks exactly like one that found nothing, and the caller makes a duplicate.
+        internal static string Find_Existing(string parToken, string parName, out int parMatches,
+                                             out bool parSearched, out string parWhy)
+        {
+            parMatches = 0;
+            parSearched = false;
             parWhy = "";
             try
             {
-                //a quote inside the name would otherwise end the literal
+                //a quote or a backslash inside the name would otherwise break out of the literal
                 string TmpQuery = "name = '" + parName.Replace("\\", "\\\\").Replace("'", "\\'") + "'"
                                 + " and mimeType = '" + SheetsMimeType + "'"
                                 + " and trashed = false";
+                //newest first, so which one gets overwritten is decided rather than left to
+                //whatever order Drive happens to answer in
                 string Url = FindEndpoint
                            + "?q=" + Uri.EscapeDataString(TmpQuery)
-                           + "&fields=" + Uri.EscapeDataString("files(id,name)")
+                           + "&fields=" + Uri.EscapeDataString("files(id,name,modifiedTime)")
+                           + "&orderBy=" + Uri.EscapeDataString("modifiedTime desc")
                            + "&spaces=drive&pageSize=10";
 
                 string Reply;
@@ -395,19 +515,26 @@ namespace FinancialBalance
                 Dictionary<string, object> Map = Json.Deserialize<Dictionary<string, object>>(Reply);
                 if (Map == null || !Map.ContainsKey("files"))
                 {
+                    parWhy = "Google Drive's reply to the search could not be read.";
                     return null;
                 }
+
+                //from here the question has been answered - nothing found is a real answer
+                parSearched = true;
                 object[] Files = Map["files"] as object[];
                 if (Files == null || Files.Length == 0)
                 {
                     return null;
                 }
-                //more than one would mean an earlier run made a duplicate; the first is taken
-                //and the rest left alone rather than quietly deleting anything
-                Dictionary<string, object> First = Files[0] as Dictionary<string, object>;
-                if (First != null && First.ContainsKey("id"))
+                parMatches = Files.Length;
+
+                //more than one means an earlier run made a duplicate. The most recently touched
+                //is the one written to, and the others are left alone - deleting a file of the
+                //user's on a guess is not this button's business.
+                Dictionary<string, object> Newest = Files[0] as Dictionary<string, object>;
+                if (Newest != null && Newest.ContainsKey("id"))
                 {
-                    return First["id"].ToString();
+                    return Newest["id"].ToString();
                 }
                 return null;
             }
@@ -418,18 +545,64 @@ namespace FinancialBalance
             }
         }
 
+        //parReplaced says whether an existing Sheet was overwritten rather than a new one made.
+        //parDuplicates is 0 unless more than one Sheet already carried the name, in which case
+        //it is how many - worth telling the user about, since only one of them is being kept up
+        //to date and the others will quietly go stale.
         public static bool Upload(string parToken, string parPath, string parTitle,
-                                  out string parLink, out bool parReplaced, out string parWhy)
+                                  out string parLink, out bool parReplaced, out int parDuplicates,
+                                  out string parHow, out string parWhy)
         {
             parLink = "";
             parReplaced = false;
+            parDuplicates = 0;
+            parHow = "";
             parWhy = "";
             try
             {
-                //if this application has made the file before, replace its contents so the id,
-                //the link and anything shared off it all survive
-                string TmpFound = Find_Existing(parToken, parTitle, out parWhy);
+                //Which file to write to, in order of how much it can be trusted:
+                //
+                //  1. the id written down last time, if that file is still there and still
+                //     called this. This is the one that works even when a fresh sign-in has
+                //     not inherited per-file access to it.
+                //  2. failing that, a search by name - which finds it when the grant did carry
+                //     over, and picks up a Sheet made by an earlier version of this button.
+                //  3. failing that, a new one.
+                //
+                //A search that could not be carried out is NOT step 3. Treating a failed
+                //question as "nothing there" is what quietly produces a second file of the
+                //same name, so it stops here instead.
+                int TmpMatches = 0;
+                string TmpFound = null;
+                parHow = "created";
+
+                string TmpRemembered = Recall(parTitle);
+                if (TmpRemembered != null && Still_There(parToken, TmpRemembered, parTitle))
+                {
+                    TmpFound = TmpRemembered;
+                    parHow = "updated the one it made before";
+                }
+                else
+                {
+                    bool TmpSearched;
+                    TmpFound = Find_Existing(parToken, parTitle, out TmpMatches, out TmpSearched,
+                                             out parWhy);
+                    if (!TmpSearched)
+                    {
+                        parWhy = "Could not check whether that Sheet already exists, so nothing"
+                               + " was uploaded - making a second one of the same name would be"
+                               + " worse than doing nothing." + Environment.NewLine
+                               + Environment.NewLine + parWhy;
+                        return false;
+                    }
+                    if (TmpFound != null)
+                    {
+                        parHow = "found by name and updated";
+                    }
+                }
+
                 parReplaced = (TmpFound != null);
+                parDuplicates = (TmpMatches > 1 ? TmpMatches : 0);
                 string Boundary = "FinancialBalance" + New_Secret(12).Replace("-", "").Replace("_", "");
                 JavaScriptSerializer Json = new JavaScriptSerializer();
                 Dictionary<string, object> Meta = new Dictionary<string, object>();
@@ -471,6 +644,13 @@ namespace FinancialBalance
                 else if (Id != null)
                 {
                     parLink = "https://docs.google.com/spreadsheets/d/" + Id.ToString();
+                }
+
+                //written down so the next click goes straight to this file rather than hoping a
+                //fresh sign-in can still see it
+                if (Id != null && Id.ToString().Trim() != "")
+                {
+                    Remember(parTitle, Id.ToString().Trim());
                 }
                 return true;
             }

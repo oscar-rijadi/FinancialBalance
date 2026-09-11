@@ -1673,15 +1673,51 @@ The name comes from `GoogleSheetName` in `app.config`; empty or missing falls ba
 **Financial Balance ETFs or Stocks Investments**. It carries no timestamp, deliberately — a
 timestamp would make every run a different file, which is the behaviour this replaces.
 
-Finding it again is a search by name, and the `drive.file` scope is what makes that safe: the
-query can only ever see files **this application created**, so it cannot pick up something of the
-user's that happens to share the name. The flip side is that a Sheet the user deletes, renames,
-or that was made under a different OAuth client will not be found, and a new one is made — which
-is the right answer in each of those cases. If an earlier run somehow left two, the first is used
-and the other left alone rather than quietly deleted.
+Every run **looks first**, and writes to the file it finds. Replacing the contents is a `PATCH`
+to the same file id rather than a delete and re-create, so the id, the link and any sharing all
+survive.
 
-Replacing the contents is a `PATCH` to the same file id rather than a delete and re-create, so
-the id, the link and any sharing survive.
+It looks in two places, in order of how far they can be trusted:
+
+1. **The id it wrote down last time**, if that file is still in Drive and still carries that name.
+2. Failing that, **a search by name** for an untrashed Google Sheet.
+3. Failing both, it creates one — and writes the new id down.
+
+**Why the id is written down at all.** This button signs in from scratch on every click: no stored
+token, a fresh consent every time. That does not sit well with `drive.file`, which grants access
+*per file*. A brand-new authorisation is not a reliable way to inherit per-file access to
+something an earlier one created, and when it does not carry over, the search finds nothing and a
+second Sheet of the same name gets made. **That is the duplicate.** Writing the id down makes
+"the same file every time" hold either way. A Drive file id is not a secret — it is in the URL of
+the Sheet — so keeping it costs nothing that the design was trying to avoid by storing no token.
+
+It is kept in `%APPDATA%\FinancialBalance\google_drive.txt`, one line per Sheet name, rather
+than in the `.mdb`: the databases get copied between Sample, Current, Debug and Release, and a
+file id has no business travelling with them. Delete the file and the next run falls back to
+searching. A remembered id is **checked before it is used** — still present, still that name,
+not in the bin — so a Sheet the user has deleted or renamed is never silently written over.
+
+**A search that cannot be carried out is not the same as finding nothing.** If Drive refuses or
+cannot be reached, the upload stops and says so rather than treating the unanswered question as
+"nothing there" and making a second file — which is exactly how duplicates used to appear.
+
+The `drive.file` scope is what makes searching by name safe: the query can only ever see files
+**this application created**, so it cannot pick up something of the user's that happens to share
+the name, and it cannot overwrite a file the app has no business touching.
+
+**The same scope is the one remaining limit.** A Sheet of that name that this application did
+not create — one made by hand, or under a different OAuth client — is invisible both to the
+search and to the remembered id, so a file of its own is created rather than the existing one
+being overwritten. From then on that new file is the one kept up to date. Overwriting a Sheet
+the app did not create would mean asking for the full `drive` scope, which Google classes as
+**restricted**: full verification and a security assessment, and read access to everything in the
+Drive. That is a poor trade for a personal export, so it is deliberately not done.
+
+If more than one Sheet already carries the name, the **most recently changed** one is written to
+— the search asks for `orderBy=modifiedTime desc`, so which one gets overwritten is decided
+rather than left to whatever order Drive answers in. The others are left alone; deleting a file
+of the user's on a guess is not this button's business. The success dialog says how many were
+found, since only one of them is being kept current and the rest will go stale.
 
 #### A tab per holding
 

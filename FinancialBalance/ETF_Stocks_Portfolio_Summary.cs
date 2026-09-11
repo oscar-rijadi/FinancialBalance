@@ -1096,18 +1096,34 @@ namespace FinancialBalance
                 LblNote.Refresh();
                 string TmpLink;
                 bool TmpReplaced;
+                int TmpDuplicates;
+                string TmpHow;
                 if (!Google_Drive.Upload(TmpToken, TmpPath, TmpTitle, out TmpLink, out TmpReplaced,
-                                         out TmpWhy))
+                                         out TmpDuplicates, out TmpHow, out TmpWhy))
                 {
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
                 }
 
+                //only one of a set of same-named Sheets is being kept up to date; saying so
+                //beats letting the others quietly go stale
+                string TmpWarning = "";
+                if (TmpDuplicates > 1)
+                {
+                    TmpWarning = Environment.NewLine + Environment.NewLine
+                               + TmpDuplicates.ToString() + " Sheets carry this name."
+                               + Environment.NewLine
+                               + "The most recently changed one was updated; the rest were left"
+                               + " alone and will now be out of date.";
+                }
+
                 DialogResult Response = MessageBox.Show(
                     (TmpReplaced ? "Google Sheet updated :" : "Google Sheet created :")
                     + Environment.NewLine + TmpTitle
+                    + Environment.NewLine + "(" + TmpHow + ")"
                     + Environment.NewLine + Environment.NewLine
                     + Tabs_Said(Tabs)
+                    + TmpWarning
                     + Environment.NewLine + Environment.NewLine + TmpLink
                     + Environment.NewLine + Environment.NewLine + "Open it now ?",
                     "Success", MessageBoxButtons.YesNo);
