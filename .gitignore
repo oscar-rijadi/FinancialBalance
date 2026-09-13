@@ -1,0 +1,3 @@
+# The live install. Build output sits here alongside the real database and the
+# configured Google credentials, so nothing in it belongs in the repository.
+Prod/

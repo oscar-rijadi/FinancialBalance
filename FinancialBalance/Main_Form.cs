@@ -168,6 +168,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnPropertySummary_Click(object sender, EventArgs e)
+        {
+            Property_Summary Property_Summary = new Property_Summary();
+            Property_Summary.Show();
+            this.Hide();
+        }
+
         private void MnSuperBalance_Click(object sender, EventArgs e)
         {
             Super_Balance_Historical Super_Balance_Historical = new Super_Balance_Historical();
