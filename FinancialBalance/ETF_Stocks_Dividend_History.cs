@@ -241,15 +241,6 @@ namespace FinancialBalance
             return DateTime.Now.ToString("yyyyMMdd");
         }
 
-        private string Code_Match(string parCode)
-        {
-            if (parCode == null || parCode == "")
-            {
-                return " and [Portfolio_Code] Is Null";
-            }
-            return " and [Portfolio_Code] = '" + parCode + "'";
-        }
-
         //One money column added up to the cut-off.  The currency comes back too, but only when
         //every contributing row agrees on it - Min and Max matching is the cheapest way to ask
         //that without a second trip to the database.
@@ -437,72 +428,205 @@ namespace FinancialBalance
             }
         }
 
-        //One row per ticker, portfolio and currency.  Currency joins the grouping because two
-        //currencies under one ticker cannot be added together - without it the Total would be
-        //a sum of unlike amounts and the Currency column would be whichever row came last.
-        private void Get_Summary()
+        //One row per portfolio and ticker that has ever been bought.  The purchases decide what
+        //is listed, not the payments: a holding that has paid nothing still belongs on the page,
+        //showing what is tied up in it against a nil return.  Grouping is by portfolio and
+        //ticker alone - the currency is the one the holding was bought in, read from the
+        //purchases rather than grouped on, so a payment recorded against the wrong currency
+        //cannot split one holding into two rows.
+        private class Holding
         {
-            Clear_Summary_Grid();
+            public string Ticker;
+            public string Code;
+            public string Currency;     //the earliest purchase's, which is what the money is in
+            public double Bought;       //Real_Total_Cost_Base, so DRIP units add no cost
+            public double Sold;         //Selling_Total_Amount
+            public double PaidAll;
+            public double PaidYes;
+            public double PaidNo;
 
-            Mdl1.Ssql = "select Full_Ticker, [Portfolio_Code], [Currency],"
+            //What is still tied up: what was really paid, less what selling has already
+            //returned.  Proceeds can exceed cost, so this can legitimately go negative.
+            public double Investment
+            {
+                get { return Math.Round(Bought - Sold, 2); }
+            }
+        }
+
+        //Portfolio_Code can be empty, and an empty code is a group of its own rather than a
+        //missing one, so the two parts are joined on a character no code can contain.
+        private string Holding_Key(string parCode, string parTicker)
+        {
+            return parCode + "\u0001" + parTicker;
+        }
+
+        //Everything is counted up to the close of the chosen financial year rather than within
+        //it, so each figure reads as where that holding stood on that date.  "All" means no
+        //cut-off at all - every row ever recorded.
+        private string Upto_Filter(string parField)
+        {
+            string TmpStart;
+            string TmpEnd;
+            if (!Financial_Year_Range(out TmpStart, out TmpEnd))
+            {
+                return "";
+            }
+            return " and " + parField + " <= '" + TmpEnd + "'";
+        }
+
+        //The rows themselves, and what was paid for them.  Read row by row rather than grouped
+        //so the currency can be the earliest purchase's - Access's First() follows storage
+        //order, which is not the same thing.
+        private List<Holding> Load_Holdings()
+        {
+            Dictionary<string, Holding> TmpIndex = new Dictionary<string, Holding>();
+            List<Holding> TmpOrder = new List<Holding>();
+
+            Mdl1.Ssql = "select [Portfolio_Code], Full_Ticker, [Currency], [Real_Total_Cost_Base]"
+                      + " from TblETFStocksPurchase"
+                      + " where 1 = 1" + Portfolio_Filter() + Ticker_Filter() + Upto_Filter("Trans_Date")
+                      + " order by Full_Ticker, [Portfolio_Code], Trans_Date";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string TmpCode = Read_Text(reader["Portfolio_Code"]);
+                string TmpTicker = Read_Text(reader["Full_Ticker"]);
+                string TmpKey = Holding_Key(TmpCode, TmpTicker);
+
+                Holding TmpHolding;
+                if (!TmpIndex.TryGetValue(TmpKey, out TmpHolding))
+                {
+                    TmpHolding = new Holding();
+                    TmpHolding.Ticker = TmpTicker;
+                    TmpHolding.Code = TmpCode;
+                    //first row of the group, and the read is ordered by date within it, so this
+                    //is the currency the holding was opened in
+                    TmpHolding.Currency = Read_Text(reader["Currency"]);
+                    TmpIndex.Add(TmpKey, TmpHolding);
+                    TmpOrder.Add(TmpHolding);
+                }
+                TmpHolding.Bought += Read_Double(reader["Real_Total_Cost_Base"]);
+            }
+            reader.Close();
+
+            Add_Sales(TmpIndex);
+            Add_Payments(TmpIndex);
+            return TmpOrder;
+        }
+
+        //What selling has returned, across the same selection.  A sale whose purchase is not in
+        //the selection has nothing to sit against, and is passed over rather than made a row of
+        //its own - there would be no cost, and the yield would read as though it were free.
+        private void Add_Sales(Dictionary<string, Holding> parIndex)
+        {
+            Mdl1.Ssql = "select [Portfolio_Code], Full_Ticker, Sum([Selling_Total_Amount]) as N"
+                      + " from TblETFStocksSale"
+                      + " where 1 = 1" + Portfolio_Filter() + Ticker_Filter() + Upto_Filter("Trans_Date")
+                      + " group by [Portfolio_Code], Full_Ticker";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                Holding TmpHolding;
+                if (Find_Holding(parIndex, reader, out TmpHolding))
+                {
+                    TmpHolding.Sold += Read_Double(reader["N"]);
+                }
+            }
+            reader.Close();
+        }
+
+        //What each holding has paid, split by whether it was taken as cash or put straight back
+        //in.  A payment against a ticker never bought in this selection is passed over for the
+        //same reason a stray sale is.
+        private void Add_Payments(Dictionary<string, Holding> parIndex)
+        {
+            Mdl1.Ssql = "select [Portfolio_Code], Full_Ticker,"
                       + " Sum([Total_Amount]) as TotAll,"
                       + " Sum(IIf([Is_Reinvested] = True, [Total_Amount], 0)) as TotYes,"
                       + " Sum(IIf([Is_Reinvested] = True, 0, [Total_Amount])) as TotNo"
                       + " from TblETFStocksDistributionDividend"
-                      + Where_Clause()
-                      + " group by Full_Ticker, [Portfolio_Code], [Currency]"
-                      + " order by Full_Ticker, [Portfolio_Code], [Currency]";
+                      + " where 1 = 1" + Portfolio_Filter() + Ticker_Filter() + Upto_Filter("Pay_Date")
+                      + " group by [Portfolio_Code], Full_Ticker";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                Holding TmpHolding;
+                if (Find_Holding(parIndex, reader, out TmpHolding))
+                {
+                    TmpHolding.PaidAll += Read_Double(reader["TotAll"]);
+                    TmpHolding.PaidYes += Read_Double(reader["TotYes"]);
+                    TmpHolding.PaidNo += Read_Double(reader["TotNo"]);
+                }
+            }
+            reader.Close();
+        }
+
+        //The portfolio and ticker on the row in hand, looked up among the holdings the
+        //purchases produced.
+        private bool Find_Holding(Dictionary<string, Holding> parIndex, OleDbDataReader parReader,
+                                     out Holding parHolding)
+        {
+            string TmpKey = Holding_Key(Read_Text(parReader["Portfolio_Code"]),
+                                        Read_Text(parReader["Full_Ticker"]));
+            return parIndex.TryGetValue(TmpKey, out parHolding);
+        }
+
+        //What the payments came to against what is tied up in the holding.  Nothing invested
+        //gives no denominator, and the yield is reported as zero rather than left undefined.
+        private double Yield_Of(double parInvestment, double parPaid)
+        {
+            if (parInvestment > 0)
+            {
+                return parPaid / parInvestment * 100;
+            }
+            return 0;
+        }
+
+        private string Percent(double parValue)
+        {
+            return parValue.ToString("#,##0.00") + " %";
+        }
+
+        private void Get_Summary()
+        {
+            Clear_Summary_Grid();
+
+            List<Holding> TmpHoldings = Load_Holdings();
+
+            double GrandInv = 0;
             double GrandAll = 0;
             double GrandYes = 0;
             double GrandNo = 0;
             List<string> Currencies = new List<string>();
-            string TmpCutoff = Cutoff_Date();
-            while (reader.Read())
+
+            foreach (Holding TmpHolding in TmpHoldings)
             {
-                string TmpCurr = Read_Text(reader["Currency"]);
-                double TmpAll = Read_Double(reader["TotAll"]);
-                double TmpYes = Read_Double(reader["TotYes"]);
-                double TmpNo = Read_Double(reader["TotNo"]);
-                string TmpTicker = Read_Text(reader["Full_Ticker"]);
-                string TmpCode = Read_Text(reader["Portfolio_Code"]);
-
-                string TmpInvCurr;
-                double TmpInvestment = Net_Cost(" and Full_Ticker = '" + TmpTicker + "'",
-                                                Code_Match(TmpCode), TmpCutoff, out TmpInvCurr);
-                string strInvestment = Money(TmpInvestment, TmpInvCurr);
-
-                //what the payments came to against what the holding is worth.  An unpriced or
-                //empty holding gives no denominator, and the yield is reported as zero rather
-                //than left undefined.
-                double TmpYield = 0;
-                if (TmpInvestment > 0)
-                {
-                    TmpYield = TmpAll / TmpInvestment * 100;
-                }
+                double TmpInvestment = TmpHolding.Investment;
 
                 gvSummary.Rows.Add(new string[] {
-                    TmpTicker,
-                    TmpCode,
-                    (TmpCurr == "" ? "-" : TmpCurr),
-                    strInvestment,
-                    Money(TmpAll, TmpCurr),
-                    TmpYield.ToString("#,##0.00") + " %",
-                    Money(TmpYes, TmpCurr),
-                    Money(TmpNo, TmpCurr) });
+                    TmpHolding.Ticker,
+                    TmpHolding.Code,
+                    (TmpHolding.Currency == "" ? "-" : TmpHolding.Currency),
+                    Money(TmpInvestment, TmpHolding.Currency),
+                    Money(TmpHolding.PaidAll, TmpHolding.Currency),
+                    Percent(Yield_Of(TmpInvestment, TmpHolding.PaidAll)),
+                    Money(TmpHolding.PaidYes, TmpHolding.Currency),
+                    Money(TmpHolding.PaidNo, TmpHolding.Currency) });
 
-                GrandAll += TmpAll;
-                GrandYes += TmpYes;
-                GrandNo += TmpNo;
-                if (!Currencies.Contains(TmpCurr))
+                GrandInv += TmpInvestment;
+                GrandAll += TmpHolding.PaidAll;
+                GrandYes += TmpHolding.PaidYes;
+                GrandNo += TmpHolding.PaidNo;
+                if (!Currencies.Contains(TmpHolding.Currency))
                 {
-                    Currencies.Add(TmpCurr);
+                    Currencies.Add(TmpHolding.Currency);
                 }
             }
-            reader.Close();
 
-            Show_Summary_Totals(GrandAll, GrandYes, GrandNo, Currencies);
+            Show_Summary_Totals(GrandInv, GrandAll, GrandYes, GrandNo, Currencies);
 
             gvSummary.ClearSelection();
         }
@@ -586,26 +710,18 @@ namespace FinancialBalance
             return (parCurrencies.Count == 1 ? parCurrencies[0] : "");
         }
 
-        //Summary view: the whole selection's holding value, then the payments, the yield those
-        //payments represent, and the reinvested split.
-        private void Show_Summary_Totals(double parAll, double parYes, double parNo, List<string> parCurrencies)
+        //Summary view: the columns above added straight down, so what is under the table and
+        //what is in it can never disagree.  The yield comes from the two grand totals rather
+        //than from averaging the per-row yields, which would weigh a small holding the same as
+        //a large one.
+        private void Show_Summary_Totals(double parInvestment, double parAll, double parYes,
+                                         double parNo, List<string> parCurrencies)
         {
             string TmpCurr = One_Currency(parCurrencies);
 
-            //the same two sums across whatever the Portfolio dropdown and Main Only select,
-            //rather than one named portfolio, so no per-ticker walk is needed
-            string TmpInvCurr;
-            double TmpInvestment = Net_Cost("", Portfolio_Filter(), Cutoff_Date(), out TmpInvCurr);
-
-            double TmpYield = 0;
-            if (TmpInvestment > 0)
-            {
-                TmpYield = parAll / TmpInvestment * 100;
-            }
-
-            Set_Slot(0, "Grand Total Investment", Money(TmpInvestment, TmpInvCurr));
+            Set_Slot(0, "Grand Total Investment", Money(parInvestment, TmpCurr));
             Set_Slot(1, "Grand Total", Money(parAll, TmpCurr));
-            Set_Slot(2, "Yield", TmpYield.ToString("#,##0.00") + " %");
+            Set_Slot(2, "Yield", Percent(Yield_Of(parInvestment, parAll)));
             Set_Slot(3, "Grand Total Reinvested", Money(parYes, TmpCurr));
             Set_Slot(4, "Grand Total Not Reinvested", Money(parNo, TmpCurr));
         }
@@ -649,7 +765,12 @@ namespace FinancialBalance
                 string TmpEnd;
                 if (Financial_Year_Range(out TmpStart, out TmpEnd))
                 {
-                    Parts.Add("financial year " + TmpYear + "  (" + Format_Date(TmpStart) + " to " + Format_Date(TmpEnd) + ")");
+                    //the table counts everything up to the year closing, the payment list only
+                    //what falls inside it, so the note has to say which of the two is on screen
+                    string TmpWhen = (gvSummary.Visible
+                                        ? "as at " + Format_Date(TmpEnd)
+                                        : Format_Date(TmpStart) + " to " + Format_Date(TmpEnd));
+                    Parts.Add("financial year " + TmpYear + "  (" + TmpWhen + ")");
                 }
                 else
                 {

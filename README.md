@@ -1368,56 +1368,85 @@ throws away the formatting on screen, so `-$489.75` comes back as a red `($489.7
 
 ### Dividend history
 
-`ETF_Stocks_Dividend_History` reads `TblETFStocksDistributionDividend` back out. It shares the
-**Portfolio** dropdown and **Main Only** checkbox with the portfolio summary â descriptions shown,
-codes filtered on, Main Only ticked when the page opens and narrowing the dropdown as well as the
-data â and adds a **Financial Year** dropdown listing `TblFinancialYear.Name` newest-closing first,
-plus `All`.
-
-Picking a financial year brackets `Pay_Date` between that year's `Start_Date` and `End_Date`. All
-three are stored `yyyyMMdd`, so a plain string comparison *is* a date comparison. `All` applies no
-date filter.
+`ETF_Stocks_Dividend_History` answers "what have the holdings paid, and what is tied up in them".
+It shares the **Portfolio** dropdown and **Main Only** checkbox with the portfolio summary —
+descriptions shown, codes filtered on, Main Only ticked when the page opens and narrowing the
+dropdown as well as the data — and adds a **Financial Year** dropdown listing
+`TblFinancialYear.Name` newest-closing first, plus `All`.
 
 The **Full Ticker** dropdown chooses between two tables, the same way the portfolio summary does:
 
 | Full Ticker | Table |
 | --- | --- |
-| `All` | One row per ticker: `Investment`, `Total`, `Yield`, `Total Reinvested`, `Total Not Reinvested`. |
+| `All` | One row per portfolio and ticker: `Investment`, `Total`, `Yield`, `Total Reinvested`, `Total Not Reinvested`. |
 | a ticker | Every payment for it, newest first, with `Amount`, `Amount Reinvested` and `Amount Not Reinvested`. |
 
-`Investment` is the **money actually put in and not yet taken back out**, as at a cut-off date â
-today when the Financial Year is `All`, otherwise the day the chosen year closes:
+#### The purchases decide the rows
+
+The table is built from `TblETFStocksPurchase` first, grouped by `Portfolio_Code` and `Full_Ticker`;
+every pair it finds becomes a row. `TblETFStocksSale` and `TblETFStocksDistributionDividend` are then
+read the same way and matched onto those rows.
+
+| Read | From | Filtered on | Grouped by |
+| --- | --- | --- | --- |
+| what was paid for the holding | `TblETFStocksPurchase` | `Portfolio_Code`, `Full_Ticker`, `Trans_Date` | `Portfolio_Code`, `Full_Ticker` |
+| what selling has returned | `TblETFStocksSale` | the same three | the same two |
+| what it has paid out | `TblETFStocksDistributionDividend` | `Portfolio_Code`, `Full_Ticker`, `Pay_Date` | the same two |
+
+Each filter drops out when its dropdown reads `All`.
+
+**A holding that has never paid anything still appears**, showing what is in it against a nil return
+and a `0.00 %` yield — which is the point of driving the table this way: a holding earning nothing is
+exactly the thing worth seeing. Conversely a payment recorded against a ticker with no purchase in
+the selection has nothing to sit against, and is passed over rather than becoming a row with no cost
+whose yield would read as though the money had been free.
+
+#### The financial year is a cut-off, not a window
+
+Picking a financial year counts **everything up to that year's `End_Date`** rather than only what
+falls inside it — `Trans_Date <= End_Date` on the two transaction tables, `Pay_Date <= End_Date` on
+the payments. Every figure then reads as *where this holding stood on that date*, which is the only
+basis on which `Investment` and `Total` can be compared: money put in three years ago is still in the
+holding today, so counting it against a single year's payments alone would report a yield several
+times too high. All the dates are stored `yyyyMMdd`, so a plain string comparison *is* a date
+comparison, and `All` applies no cut-off at all.
+
+The per-payment table keeps the older rule and brackets `Pay_Date` between `Start_Date` and
+`End_Date`, since there each row *is* a payment and the question is which of them fall in the year.
+The note line under the filters says which of the two rules is in force.
+
+#### The columns
+
+`Currency` is the currency of the **earliest purchase** for that portfolio and ticker. It is read off
+the purchases rather than grouped on, so a payment entered in the wrong currency cannot split one
+holding into two rows.
+
+`Investment` is the **money actually put in and not yet taken back out**:
 
 ```
 Investment = SUM(Real_Total_Cost_Base) from TblETFStocksPurchase  up to the cut-off
            - SUM(Selling_Total_Amount) from TblETFStocksSale      up to the cut-off
 ```
 
-Both sums are filtered to the row's own `Full_Ticker` and `Portfolio_Code`. It is a **cost** figure,
-not a market valuation â no price is consulted, and the page never reads `TblETFStocksPrice`.
-`Real_Total_Cost_Base` is `0` on a reinvested purchase, so units that arrived as a DRIP add no cost,
-which is the point of using that field rather than `Total_Cost_Base`.
+It is a **cost** figure, not a market valuation — no price is consulted, and the page never reads
+`TblETFStocksPrice`. `Real_Total_Cost_Base` is `0` on a reinvested purchase, so units that arrived as
+a DRIP add no cost, which is the point of using that field rather than `Total_Cost_Base`.
 
-> Proceeds can exceed cost, so `Investment` can legitimately go **negative** â a holding bought for
-> `100.00` and sold for `150.00` reads `-$50.00`. Since the yield rule only divides when
-> `Investment` is above zero, such a row shows `0.00 %` rather than a negative yield.
+> Proceeds can exceed cost, so `Investment` can legitimately go **negative** — a holding bought for
+> `100.00` and sold for `150.00` reads `-$50.00`. Since the yield rule only divides when `Investment`
+> is above zero, such a row shows `0.00 %` rather than a negative yield.
 
-> The column only appears on rows the table already has, and the table is driven by dividends. A
-> ticker that paid nothing in the chosen financial year is absent entirely, so its holding is not
-> shown for that year even if it was held throughout.
-
-`Yield` sits directly after `Total` and measures the payments against that holding â
-`Total / Investment x 100`, or `0` when `Investment` is not above zero. A holding that has never
-been priced therefore reads `-` for `Investment` and `0.00 %` for `Yield`, rather than dividing by
-nothing. The columns run in the same order as the totals underneath, so a row reads the same way
-as the summary beneath it.
+`Yield` sits directly after `Total` and measures the payments against the holding —
+`Total / Investment x 100`, or `0` when `Investment` is not above zero.
 
 The reinvested split is a single `Sum(IIf(...))` pass rather than three queries. In the per-payment
 table a payment is either reinvested or it is not, so its amount lands in one of those two columns
 and the other reads zero. Amounts carry a `$` for AUD and USD and stay bare otherwise, as elsewhere.
 
-Totals sit under whichever table is showing, in five fixed slots filled from the top so neither
-view leaves a gap and the two sets can never appear at once:
+#### The totals underneath
+
+Totals sit under whichever table is showing, in five fixed slots filled from the top so neither view
+leaves a gap and the two sets can never appear at once:
 
 | Slot | Summary view | Payment view |
 | --- | --- | --- |
@@ -1427,15 +1456,22 @@ view leaves a gap and the two sets can never appear at once:
 | 4 | `Grand Total Reinvested` | `Total Amount Reinvested` |
 | 5 | `Grand Total Not Reinvested` | `Total Amount Not Reinvested` |
 
-`Grand Total Investment` is the **same two sums without the ticker filter** â every holding the
-current Portfolio and Main Only selection covers, not just the ones that paid a dividend. So it is
-**not the Investment column added up**: on real data the column summed to `$2,800.86` across the
-dividend-paying rows while the grand total came to `$3,315.61`, the difference being holdings that
-paid nothing and are absent from the table.
+In the summary view each is **the column above it added straight down**, so what is under the table
+and what is in it can never disagree. `Yield` is worked out from the two grand totals rather than by
+averaging the per-row yields, which would weigh a small holding the same as a large one.
 
-Because it drops the ticker filter rather than walking every ticker in turn, it costs two queries
-regardless of how many holdings there are. `Yield` then measures the payments against it â
-`Grand Total / Grand Total Investment x 100`, or `0` when that is not above zero.
+Worked through on seeded data, with the year closing `30-Jun-2025` and both portfolios in scope:
+
+| Full Ticker | Portfolio Code | Currency | Investment | Total | Yield | Total Reinvested | Total Not Reinvested |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VAS.AX | MAIN | AUD | `$1,200.00` | `$80.00` | `6.67 %` | `$30.00` | `$50.00` |
+| VAS.AX | SUPER | AUD | `$2,000.00` | `$80.00` | `4.00 %` | `$0.00` | `$80.00` |
+| VGS.AX | MAIN | USD | `$3,000.00` | `$0.00` | `0.00 %` | `$0.00` | `$0.00` |
+| **Grand** | | | **`$6,200.00`** | **`$160.00`** | **`2.58 %`** | **`$30.00`** | **`$130.00`** |
+
+`VGS.AX` is listed on nil payments because it was bought before the cut-off, and its own later sale
+and later payment are both excluded by it. A holding bought *after* the cut-off produces no row at
+all, and its payments drop out with it.
 
 The payment view carries the same two figures for the one ticker on screen. `Total Investment` runs
 the identical sums narrowed to that ticker, and `Yield` is `Total Amount / Total Investment x 100`.
@@ -1450,12 +1486,6 @@ the identical sums narrowed to that ticker, and `Yield` is `Total Amount / Total
 > USD does not produce an amount in either, so a mixed selection is left bare rather than labelled
 > with a currency it is not in. An empty table shows `0.00`, since with no rows there is no currency
 > to claim.
-
-> **The summary groups by ticker, portfolio code *and currency*.** Currency is not part of the
-> grouping the page was specified with, but without it a ticker paying in two currencies would have
-> its amounts added together into one meaningless `Total`, and the `Currency` column would show
-> whichever row happened to come last. The extra key only ever splits a row where summing would
-> have been wrong.
 
 A note line under the filters says how many rows are showing and which filters are narrowing them,
 so an empty table is explainable rather than mysterious.
