@@ -441,6 +441,7 @@ erDiagram
         long    Property_Id "joins TblProperty, one row per property"
         text    Sold_Date "yyyyMMdd"
         text    Settlement_Date "yyyyMMdd, blank until it settles"
+        text    Currency "3 chars, a code from TblCurrCode"
         decimal Sold_Price "2 dp"
         decimal Conveyancing_Cost "2 dp"
         decimal Sale_Agent_Cost "2 dp"
@@ -451,6 +452,7 @@ erDiagram
         long    Property_Id "joins TblProperty, one row per property"
         text    Purchase_Date "yyyyMMdd"
         text    Settlement_Date "yyyyMMdd, blank until it settles"
+        text    Currency "3 chars, a code from TblCurrCode"
         decimal Purchase_Price "2 dp"
         decimal Stamp_Duty "2 dp"
         decimal Conveyancing_Cost "2 dp"
@@ -2769,14 +2771,15 @@ round, and is built the same way: `TblPropertySale`, **one row per property**, j
 | `Property_Id` | Number | which property; joins `TblProperty` |
 | `Sold_Date` | Short Text(8) | `yyyyMMdd` |
 | `Settlement_Date` | Short Text(8) | `yyyyMMdd`, blank until it settles |
+| `Currency` | Short Text(3) | a code from [`TblCurrCode`](#reference-data) |
 | `Sold_Price` | Decimal(22,2) | |
 | `Conveyancing_Cost` | Decimal(22,2) | |
 | `Sale_Agent_Cost` | Decimal(22,2) | shown as **Sale Agent Cost** |
 | `Settlement_Cost` | Decimal(22,2) | |
 | `Other_Cost` | Decimal(22,2) | |
 
-Eight columns in the list: the property's **Name** read across from `TblProperty`, the **Sold
-Date** and **Settlement Date** as `dd-MMM-yyyy`, then each amount with a `$` and thousands grouped to two places. The
+Nine columns in the list: the property's **Name** read across from `TblProperty`, the **Sold
+Date** and **Settlement Date** as `dd-MMM-yyyy`, the **Currency**, then each amount with a `$` and thousands grouped to two places. The
 entry area is the same shape as the purchase page's â a **Property Id** dropdown with the
 property's name beside it, the Daily Input date picker with its `..` calendar, and money boxes on
 the shared numeric filter. Add refuses a property that already has a sale, Update refuses to move
@@ -2802,6 +2805,7 @@ sold if it has a row here, and the date it sold is the one in that row.
 | `Property_Id` | Number | which property; joins `TblProperty` |
 | `Purchase_Date` | Short Text(8) | `yyyyMMdd` |
 | `Settlement_Date` | Short Text(8) | `yyyyMMdd`, blank until it settles |
+| `Currency` | Short Text(3) | a code from [`TblCurrCode`](#reference-data) |
 | `Purchase_Price` | Decimal(22,2) | |
 | `Stamp_Duty` | Decimal(22,2) | |
 | `Conveyancing_Cost` | Decimal(22,2) | |
@@ -2824,10 +2828,30 @@ stated outright instead of depending on what the moved field displaces. Both har
 column order back from the database, so a move that silently failed would fail a check rather
 than pass unnoticed.
 
+`Currency` was added after the fact, and sits **before** the price rather than at the end for
+the same reason `Settlement_Date` does, and it took the same two tools: Jet/ACE `ALTER TABLE
+ADD COLUMN` can only append, and only DAO can move a field afterwards through
+`OrdinalPosition`, which is again set across **every** field so the order is stated outright
+rather than left to depend on what the moved field displaces. Existing rows were stamped
+`AUD`, and the migration reads the column order back out afterwards, so a move that silently
+failed fails the run rather than passing unnoticed.
+
+In the entry area it is a **dropdown of `TblCurrCode`**, sitting between Settlement Date and
+the price. The shared `Mdl1.Fill_Curr` opens every currency list on `IDR`; these two pages
+then set `AUD`, since a property here carries an Australian `State` and `Post_Code`.
+`CmbCurrency` is a `DropDownList`, so that assignment quietly does nothing when no `AUD` row
+exists, which is the wanted behaviour rather than a failure.
+
+> **The column is stored and shown, but it does not yet drive the formatting.** Both pages,
+> and [Property Summary](#property-summary), still put a `$` on every amount unconditionally,
+> the way they did when a property could only be in dollars. A property recorded in a
+> non-dollar currency will therefore read with a `$` against it until those pages are taught
+> to switch on `Currency` the way the multi-currency pages already do.
+
 #### The list
 
-Thirteen columns: the property's **Name** read across from `TblProperty`, the **Purchase Date**
-and **Settlement Date** as `dd-MMM-yyyy`, then every cost with a `$` and thousands grouped, to two places â the shared
+Fourteen columns: the property's **Name** read across from `TblProperty`, the **Purchase Date**
+and **Settlement Date** as `dd-MMM-yyyy`, the **Currency**, then every cost with a `$` and thousands grouped, to two places â the shared
 `Mdl1.FormatAmt` already does exactly that â and last **Percentage Ownership (%)**, which is a
 share rather than an amount and so reads `62.50 %` instead of carrying a dollar sign. A purchase whose property has since been deleted
 still appears, showing `(id)` where the name would be, rather than vanishing from view.

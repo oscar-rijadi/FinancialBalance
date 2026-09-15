@@ -37,6 +37,8 @@
             this.gvPurchase = new System.Windows.Forms.DataGridView();
             this.Lbl_CmbPropertyId = new System.Windows.Forms.Label();
             this.CmbPropertyId = new System.Windows.Forms.ComboBox();
+            this.Lbl_CmbCurrency = new System.Windows.Forms.Label();
+            this.CmbCurrency = new System.Windows.Forms.ComboBox();
             this.LblPropertyName = new System.Windows.Forms.Label();
             this.Lbl_Purchase = new System.Windows.Forms.Label();
             this.CmbPurchDD = new System.Windows.Forms.ComboBox();
@@ -376,15 +378,37 @@
             this.CmdSettleCal.UseVisualStyleBackColor = false;
             this.CmdSettleCal.Click += new System.EventHandler(this.CmdSettleCal_Click);
             // 
+            // Lbl_CmbCurrency
+            // 
+            this.Lbl_CmbCurrency.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_CmbCurrency.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_CmbCurrency.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_CmbCurrency.Location = new System.Drawing.Point(19, 414);
+            this.Lbl_CmbCurrency.Name = "Lbl_CmbCurrency";
+            this.Lbl_CmbCurrency.Size = new System.Drawing.Size(140, 22);
+            this.Lbl_CmbCurrency.TabIndex = 17;
+            this.Lbl_CmbCurrency.Text = "Currency";
+            this.Lbl_CmbCurrency.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // CmbCurrency
+            // 
+            this.CmbCurrency.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbCurrency.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbCurrency.FormattingEnabled = true;
+            this.CmbCurrency.Location = new System.Drawing.Point(165, 412);
+            this.CmbCurrency.Name = "CmbCurrency";
+            this.CmbCurrency.Size = new System.Drawing.Size(80, 22);
+            this.CmbCurrency.TabIndex = 18;
+            // 
             // Lbl_txtPurchasePrice
             // 
             this.Lbl_txtPurchasePrice.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtPurchasePrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtPurchasePrice.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtPurchasePrice.Location = new System.Drawing.Point(19, 414);
+            this.Lbl_txtPurchasePrice.Location = new System.Drawing.Point(19, 444);
             this.Lbl_txtPurchasePrice.Name = "Lbl_txtPurchasePrice";
             this.Lbl_txtPurchasePrice.Size = new System.Drawing.Size(140, 22);
-            this.Lbl_txtPurchasePrice.TabIndex = 17;
+            this.Lbl_txtPurchasePrice.TabIndex = 19;
             this.Lbl_txtPurchasePrice.Text = "Purchase Price";
             this.Lbl_txtPurchasePrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -393,12 +417,12 @@
             this.txtPurchasePrice.BackColor = System.Drawing.SystemColors.Window;
             this.txtPurchasePrice.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPurchasePrice.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtPurchasePrice.Location = new System.Drawing.Point(165, 412);
+            this.txtPurchasePrice.Location = new System.Drawing.Point(165, 442);
             this.txtPurchasePrice.MaxLength = 18;
             this.txtPurchasePrice.Name = "txtPurchasePrice";
             this.txtPurchasePrice.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtPurchasePrice.Size = new System.Drawing.Size(120, 20);
-            this.txtPurchasePrice.TabIndex = 18;
+            this.txtPurchasePrice.TabIndex = 20;
             this.txtPurchasePrice.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtPurchasePrice.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -407,10 +431,10 @@
             this.Lbl_txtStampDuty.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_txtStampDuty.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_txtStampDuty.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtStampDuty.Location = new System.Drawing.Point(19, 444);
+            this.Lbl_txtStampDuty.Location = new System.Drawing.Point(19, 474);
             this.Lbl_txtStampDuty.Name = "Lbl_txtStampDuty";
             this.Lbl_txtStampDuty.Size = new System.Drawing.Size(140, 22);
-            this.Lbl_txtStampDuty.TabIndex = 19;
+            this.Lbl_txtStampDuty.TabIndex = 21;
             this.Lbl_txtStampDuty.Text = "Stamp Duty";
             this.Lbl_txtStampDuty.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -419,12 +443,12 @@
             this.txtStampDuty.BackColor = System.Drawing.SystemColors.Window;
             this.txtStampDuty.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtStampDuty.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtStampDuty.Location = new System.Drawing.Point(165, 442);
+            this.txtStampDuty.Location = new System.Drawing.Point(165, 472);
             this.txtStampDuty.MaxLength = 18;
             this.txtStampDuty.Name = "txtStampDuty";
             this.txtStampDuty.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtStampDuty.Size = new System.Drawing.Size(120, 20);
-            this.txtStampDuty.TabIndex = 20;
+            this.txtStampDuty.TabIndex = 22;
             this.txtStampDuty.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtStampDuty.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -436,7 +460,7 @@
             this.Lbl_txtConveyancing.Location = new System.Drawing.Point(470, 324);
             this.Lbl_txtConveyancing.Name = "Lbl_txtConveyancing";
             this.Lbl_txtConveyancing.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtConveyancing.TabIndex = 21;
+            this.Lbl_txtConveyancing.TabIndex = 23;
             this.Lbl_txtConveyancing.Text = "Conveyancing Cost";
             this.Lbl_txtConveyancing.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -450,7 +474,7 @@
             this.txtConveyancing.Name = "txtConveyancing";
             this.txtConveyancing.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtConveyancing.Size = new System.Drawing.Size(120, 20);
-            this.txtConveyancing.TabIndex = 22;
+            this.txtConveyancing.TabIndex = 24;
             this.txtConveyancing.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtConveyancing.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -462,7 +486,7 @@
             this.Lbl_txtInspection.Location = new System.Drawing.Point(470, 354);
             this.Lbl_txtInspection.Name = "Lbl_txtInspection";
             this.Lbl_txtInspection.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtInspection.TabIndex = 23;
+            this.Lbl_txtInspection.TabIndex = 25;
             this.Lbl_txtInspection.Text = "B&&P Inspection Cost";
             this.Lbl_txtInspection.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -476,7 +500,7 @@
             this.txtInspection.Name = "txtInspection";
             this.txtInspection.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtInspection.Size = new System.Drawing.Size(120, 20);
-            this.txtInspection.TabIndex = 24;
+            this.txtInspection.TabIndex = 26;
             this.txtInspection.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtInspection.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -488,7 +512,7 @@
             this.Lbl_txtBuyersAgent.Location = new System.Drawing.Point(470, 384);
             this.Lbl_txtBuyersAgent.Name = "Lbl_txtBuyersAgent";
             this.Lbl_txtBuyersAgent.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtBuyersAgent.TabIndex = 25;
+            this.Lbl_txtBuyersAgent.TabIndex = 27;
             this.Lbl_txtBuyersAgent.Text = "BA Cost";
             this.Lbl_txtBuyersAgent.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -502,7 +526,7 @@
             this.txtBuyersAgent.Name = "txtBuyersAgent";
             this.txtBuyersAgent.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtBuyersAgent.Size = new System.Drawing.Size(120, 20);
-            this.txtBuyersAgent.TabIndex = 26;
+            this.txtBuyersAgent.TabIndex = 28;
             this.txtBuyersAgent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtBuyersAgent.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -514,7 +538,7 @@
             this.Lbl_txtSettlement.Location = new System.Drawing.Point(470, 414);
             this.Lbl_txtSettlement.Name = "Lbl_txtSettlement";
             this.Lbl_txtSettlement.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtSettlement.TabIndex = 27;
+            this.Lbl_txtSettlement.TabIndex = 29;
             this.Lbl_txtSettlement.Text = "Settlement Cost";
             this.Lbl_txtSettlement.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -528,7 +552,7 @@
             this.txtSettlement.Name = "txtSettlement";
             this.txtSettlement.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtSettlement.Size = new System.Drawing.Size(120, 20);
-            this.txtSettlement.TabIndex = 28;
+            this.txtSettlement.TabIndex = 30;
             this.txtSettlement.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtSettlement.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -540,7 +564,7 @@
             this.Lbl_txtOtherCost.Location = new System.Drawing.Point(860, 324);
             this.Lbl_txtOtherCost.Name = "Lbl_txtOtherCost";
             this.Lbl_txtOtherCost.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtOtherCost.TabIndex = 29;
+            this.Lbl_txtOtherCost.TabIndex = 31;
             this.Lbl_txtOtherCost.Text = "Other Cost";
             this.Lbl_txtOtherCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -554,7 +578,7 @@
             this.txtOtherCost.Name = "txtOtherCost";
             this.txtOtherCost.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtOtherCost.Size = new System.Drawing.Size(120, 20);
-            this.txtOtherCost.TabIndex = 30;
+            this.txtOtherCost.TabIndex = 32;
             this.txtOtherCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtOtherCost.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -566,7 +590,7 @@
             this.Lbl_txtDownPayment.Location = new System.Drawing.Point(860, 354);
             this.Lbl_txtDownPayment.Name = "Lbl_txtDownPayment";
             this.Lbl_txtDownPayment.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtDownPayment.TabIndex = 31;
+            this.Lbl_txtDownPayment.TabIndex = 33;
             this.Lbl_txtDownPayment.Text = "DP";
             this.Lbl_txtDownPayment.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -580,7 +604,7 @@
             this.txtDownPayment.Name = "txtDownPayment";
             this.txtDownPayment.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtDownPayment.Size = new System.Drawing.Size(120, 20);
-            this.txtDownPayment.TabIndex = 32;
+            this.txtDownPayment.TabIndex = 34;
             this.txtDownPayment.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtDownPayment.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -592,7 +616,7 @@
             this.Lbl_txtInitialLoan.Location = new System.Drawing.Point(860, 384);
             this.Lbl_txtInitialLoan.Name = "Lbl_txtInitialLoan";
             this.Lbl_txtInitialLoan.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtInitialLoan.TabIndex = 33;
+            this.Lbl_txtInitialLoan.TabIndex = 35;
             this.Lbl_txtInitialLoan.Text = "Initial Loan";
             this.Lbl_txtInitialLoan.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -606,7 +630,7 @@
             this.txtInitialLoan.Name = "txtInitialLoan";
             this.txtInitialLoan.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtInitialLoan.Size = new System.Drawing.Size(120, 20);
-            this.txtInitialLoan.TabIndex = 34;
+            this.txtInitialLoan.TabIndex = 36;
             this.txtInitialLoan.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtInitialLoan.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -618,7 +642,7 @@
             this.Lbl_txtPctOwnership.Location = new System.Drawing.Point(860, 414);
             this.Lbl_txtPctOwnership.Name = "Lbl_txtPctOwnership";
             this.Lbl_txtPctOwnership.Size = new System.Drawing.Size(150, 22);
-            this.Lbl_txtPctOwnership.TabIndex = 35;
+            this.Lbl_txtPctOwnership.TabIndex = 37;
             this.Lbl_txtPctOwnership.Text = "Percentage Ownership";
             this.Lbl_txtPctOwnership.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -632,7 +656,7 @@
             this.txtPctOwnership.Name = "txtPctOwnership";
             this.txtPctOwnership.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtPctOwnership.Size = new System.Drawing.Size(120, 20);
-            this.txtPctOwnership.TabIndex = 36;
+            this.txtPctOwnership.TabIndex = 38;
             this.txtPctOwnership.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtPctOwnership.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             // 
@@ -641,7 +665,7 @@
             this.monthCalendar1.Location = new System.Drawing.Point(200, 130);
             this.monthCalendar1.MaxSelectionCount = 1;
             this.monthCalendar1.Name = "monthCalendar1";
-            this.monthCalendar1.TabIndex = 37;
+            this.monthCalendar1.TabIndex = 39;
             this.monthCalendar1.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.monthCalendar1_DateSelected);
             // 
             // LblNote
@@ -649,10 +673,10 @@
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
             this.LblNote.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblNote.ForeColor = System.Drawing.Color.Black;
-            this.LblNote.Location = new System.Drawing.Point(19, 480);
+            this.LblNote.Location = new System.Drawing.Point(19, 506);
             this.LblNote.Name = "LblNote";
             this.LblNote.Size = new System.Drawing.Size(1226, 22);
-            this.LblNote.TabIndex = 38;
+            this.LblNote.TabIndex = 40;
             // 
             // CmdCreate
             // 
@@ -660,11 +684,11 @@
             this.CmdCreate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCreate.Location = new System.Drawing.Point(789, 512);
+            this.CmdCreate.Location = new System.Drawing.Point(789, 542);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
-            this.CmdCreate.TabIndex = 39;
+            this.CmdCreate.TabIndex = 41;
             this.CmdCreate.Text = "&Add";
             this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
@@ -675,11 +699,11 @@
             this.CmdUpdate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdUpdate.Location = new System.Drawing.Point(884, 512);
+            this.CmdUpdate.Location = new System.Drawing.Point(884, 542);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
-            this.CmdUpdate.TabIndex = 40;
+            this.CmdUpdate.TabIndex = 42;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -690,11 +714,11 @@
             this.CmdClear.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdClear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdClear.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdClear.Location = new System.Drawing.Point(979, 512);
+            this.CmdClear.Location = new System.Drawing.Point(979, 542);
             this.CmdClear.Name = "CmdClear";
             this.CmdClear.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdClear.Size = new System.Drawing.Size(85, 28);
-            this.CmdClear.TabIndex = 41;
+            this.CmdClear.TabIndex = 43;
             this.CmdClear.Text = "&Clear";
             this.CmdClear.UseVisualStyleBackColor = false;
             this.CmdClear.Click += new System.EventHandler(this.CmdClear_Click);
@@ -705,11 +729,11 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(1074, 512);
+            this.CmdDel.Location = new System.Drawing.Point(1074, 542);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
-            this.CmdDel.TabIndex = 42;
+            this.CmdDel.TabIndex = 44;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -720,11 +744,11 @@
             this.CmdBack.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(1160, 512);
+            this.CmdBack.Location = new System.Drawing.Point(1160, 542);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
-            this.CmdBack.TabIndex = 43;
+            this.CmdBack.TabIndex = 45;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -775,6 +799,8 @@
             this.Controls.Add(this.CmbPurchDD);
             this.Controls.Add(this.Lbl_Purchase);
             this.Controls.Add(this.LblPropertyName);
+            this.Controls.Add(this.CmbCurrency);
+            this.Controls.Add(this.Lbl_CmbCurrency);
             this.Controls.Add(this.CmbPropertyId);
             this.Controls.Add(this.Lbl_CmbPropertyId);
             this.Controls.Add(this.gvPurchase);
@@ -817,6 +843,8 @@
         private System.Windows.Forms.DataGridView gvPurchase;
         public System.Windows.Forms.Label Lbl_CmbPropertyId;
         public System.Windows.Forms.ComboBox CmbPropertyId;
+        public System.Windows.Forms.Label Lbl_CmbCurrency;
+        public System.Windows.Forms.ComboBox CmbCurrency;
         public System.Windows.Forms.Label LblPropertyName;
         public System.Windows.Forms.Label Lbl_Purchase;
         public System.Windows.Forms.ComboBox CmbPurchDD;

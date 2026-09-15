@@ -26,12 +26,12 @@ namespace FinancialBalance
         List<string> PropertyNames = new List<string>();
 
         const string Fields = "[Property_Id], [Sold_Date], [Settlement_Date],"
-                            + " [Sold_Price], [Conveyancing_Cost],"
+                            + " [Currency], [Sold_Price], [Conveyancing_Cost],"
                             + " [Sale_Agent_Cost], [Settlement_Cost], [Other_Cost]";
 
         //the same columns again, qualified for the join that fetches the property's name
         const string Joined_Fields = "p.[Property_Id], p.[Sold_Date],"
-                            + " p.[Settlement_Date], p.[Sold_Price],"
+                            + " p.[Settlement_Date], p.[Currency], p.[Sold_Price],"
                             + " p.[Conveyancing_Cost], p.[Sale_Agent_Cost],"
                             + " p.[Settlement_Cost], p.[Other_Cost]";
 
@@ -45,6 +45,7 @@ namespace FinancialBalance
             Filling = true;
             Fill_Dates();
             Fill_Property();
+            Fill_Currency();
             Filling = false;
 
             monthCalendar1.Hide();
@@ -190,6 +191,29 @@ namespace FinancialBalance
             reader.Close();
         }
 
+        //The currency the sale is in. Every currency on file is offered, but a
+        //property here is an Australian one - it carries a State and a Post_Code - so the
+        //list opens on AUD rather than on the shared Fill_Curr default of IDR.
+        private void Fill_Currency()
+        {
+            Mdl1.Fill_Curr(CmbCurrency);
+            Default_Currency();
+        }
+
+        //CmbCurrency is a DropDownList, so assigning a code that is not among its items
+        //does nothing at all rather than failing - which is the wanted behaviour here: a
+        //database with no AUD set up simply keeps whatever Fill_Curr chose.
+        private void Default_Currency()
+        {
+            CmbCurrency.Text = "AUD";
+        }
+
+        //What the amounts on this page are in, as it goes into the record.
+        private string Currency()
+        {
+            return CmbCurrency.Text.Trim();
+        }
+
         //The name beside the dropdown, so an id on its own never has to be recognised. Taken
         //from the list filled above rather than looked up again.
         private void Show_Property_Name()
@@ -259,12 +283,13 @@ namespace FinancialBalance
         {
             gvSale.Rows.Clear();
             gvSale.Columns.Clear();
-            gvSale.ColumnCount = 8;
-            string[] names = new string[] { "Name", "Sold Date", "Settlement Date", "Sold Price",
+            gvSale.ColumnCount = 9;
+            string[] names = new string[] { "Name", "Sold Date", "Settlement Date",
+                                            "Currency", "Sold Price",
                                             "Conveyancing Cost", "Sale Agent Cost",
                                             "Settlement Cost", "Other Cost" };
-            int[] weights = new int[] { 19, 12, 12, 13, 13, 11, 10, 10 };
-            for (int i = 0; i < 8; i++)
+            int[] weights = new int[] { 19, 12, 12, 7, 13, 13, 11, 10, 10 };
+            for (int i = 0; i < 9; i++)
             {
                 gvSale.Columns[i].Name = names[i];
                 gvSale.Columns[i].HeaderText = names[i];
@@ -275,7 +300,7 @@ namespace FinancialBalance
                 {
                     TmpAlign = DataGridViewContentAlignment.MiddleLeft;
                 }
-                else if (i == 1)
+                else if (i >= 1 && i <= 3)
                 {
                     TmpAlign = DataGridViewContentAlignment.MiddleCenter;
                 }
@@ -310,6 +335,7 @@ namespace FinancialBalance
                         TmpName,
                         Long_Date(Read_Text(reader["Sold_Date"])),
                         Long_Date(Read_Text(reader["Settlement_Date"])),
+                        Read_Text(reader["Currency"]),
                         Money(Read_Number(reader["Sold_Price"])),
                         Money(Read_Number(reader["Conveyancing_Cost"])),
                         Money(Read_Number(reader["Sale_Agent_Cost"])),
@@ -387,6 +413,7 @@ namespace FinancialBalance
                          Read_Text(reader["Sold_Date"]));
                 Set_Date(CmbSettleDD, CmbSettleMM, CmbSettleYear,
                          Read_Text(reader["Settlement_Date"]));
+                CmbCurrency.Text = Read_Text(reader["Currency"]);
                 txtSoldPrice.Text = Box(Read_Number(reader["Sold_Price"]));
                 txtConveyancing.Text = Box(Read_Number(reader["Conveyancing_Cost"]));
                 txtSaleAgent.Text = Box(Read_Number(reader["Sale_Agent_Cost"]));
@@ -448,6 +475,7 @@ namespace FinancialBalance
             CmbSettleDD.Text = "";
             CmbSettleMM.Text = "";
             CmbSettleYear.Text = "";
+            Default_Currency();
             foreach (TextBox Box in Money_Boxes())
             {
                 Box.Text = "";
@@ -591,6 +619,12 @@ namespace FinancialBalance
                 return false;
             }
 
+            if (Currency() == "")
+            {
+                parWhy = "Please choose a Currency.";
+                return false;
+            }
+
             string TmpDD = CmbSoldDD.Text.Trim();
             string TmpMM = CmbSoldMM.Text.Trim();
             string TmpYear = CmbSoldYear.Text.Trim();
@@ -649,7 +683,8 @@ namespace FinancialBalance
 
         private string Values()
         {
-            return Num(Amount(txtSoldPrice)) + ", "
+            return "'" + Currency() + "', "
+                 + Num(Amount(txtSoldPrice)) + ", "
                  + Num(Amount(txtConveyancing)) + ", "
                  + Num(Amount(txtSaleAgent)) + ", "
                  + Num(Amount(txtSettlement)) + ", "
@@ -735,6 +770,7 @@ namespace FinancialBalance
                           + " [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture) + ","
                           + " [Sold_Date] = '" + TmpDate + "',"
                           + " [Settlement_Date] = '" + TmpSettle + "',"
+                          + " [Currency] = '" + Currency() + "',"
                           + " [Sold_Price] = " + Num(Amount(txtSoldPrice)) + ","
                           + " [Conveyancing_Cost] = " + Num(Amount(txtConveyancing)) + ","
                           + " [Sale_Agent_Cost] = " + Num(Amount(txtSaleAgent)) + ","

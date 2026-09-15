@@ -26,14 +26,14 @@ namespace FinancialBalance
         List<string> PropertyNames = new List<string>();
 
         const string Fields = "[Property_Id], [Purchase_Date], [Settlement_Date],"
-                            + " [Purchase_Price], [Stamp_Duty],"
+                            + " [Currency], [Purchase_Price], [Stamp_Duty],"
                             + " [Conveyancing_Cost], [Building_Pest_Inspection_Cost],"
                             + " [Buyers_Agent_Cost], [Settlement_Cost], [Other_Cost],"
                             + " [Down_Payment], [Initial_Loan], [Percentage_Ownership]";
 
         //the same columns again, qualified for the join that fetches the property's name
         const string Joined_Fields = "p.[Property_Id], p.[Purchase_Date],"
-                            + " p.[Settlement_Date], p.[Purchase_Price],"
+                            + " p.[Settlement_Date], p.[Currency], p.[Purchase_Price],"
                             + " p.[Stamp_Duty], p.[Conveyancing_Cost],"
                             + " p.[Building_Pest_Inspection_Cost], p.[Buyers_Agent_Cost],"
                             + " p.[Settlement_Cost], p.[Other_Cost], p.[Down_Payment],"
@@ -49,6 +49,7 @@ namespace FinancialBalance
             Filling = true;
             Fill_Dates();
             Fill_Property();
+            Fill_Currency();
             Filling = false;
 
             monthCalendar1.Hide();
@@ -194,6 +195,29 @@ namespace FinancialBalance
             reader.Close();
         }
 
+        //The currency the purchase is in. Every currency on file is offered, but a
+        //property here is an Australian one - it carries a State and a Post_Code - so the
+        //list opens on AUD rather than on the shared Fill_Curr default of IDR.
+        private void Fill_Currency()
+        {
+            Mdl1.Fill_Curr(CmbCurrency);
+            Default_Currency();
+        }
+
+        //CmbCurrency is a DropDownList, so assigning a code that is not among its items
+        //does nothing at all rather than failing - which is the wanted behaviour here: a
+        //database with no AUD set up simply keeps whatever Fill_Curr chose.
+        private void Default_Currency()
+        {
+            CmbCurrency.Text = "AUD";
+        }
+
+        //What the amounts on this page are in, as it goes into the record.
+        private string Currency()
+        {
+            return CmbCurrency.Text.Trim();
+        }
+
         //The name beside the dropdown, so an id on its own never has to be recognised. Taken
         //from the list filled above rather than looked up again.
         private void Show_Property_Name()
@@ -270,14 +294,15 @@ namespace FinancialBalance
         {
             gvPurchase.Rows.Clear();
             gvPurchase.Columns.Clear();
-            gvPurchase.ColumnCount = 13;
+            gvPurchase.ColumnCount = 14;
             string[] names = new string[] { "Name", "Purchase Date", "Settlement Date",
+                                            "Currency",
                                             "Purchase Price", "Stamp Duty",
                                             "Conveyancing Cost", "B&P Inspection Cost", "BA Cost",
                                             "Settlement Cost", "Other Cost", "DP", "Initial Loan",
                                             "Percentage Ownership (%)" };
-            int[] weights = new int[] { 11, 8, 8, 8, 7, 8, 8, 6, 7, 6, 6, 7, 8 };
-            for (int i = 0; i < 13; i++)
+            int[] weights = new int[] { 11, 8, 8, 5, 8, 7, 8, 8, 6, 7, 6, 6, 7, 8 };
+            for (int i = 0; i < 14; i++)
             {
                 gvPurchase.Columns[i].Name = names[i];
                 //A grid header is not a caption: it does not treat & as an accelerator marker,
@@ -291,7 +316,7 @@ namespace FinancialBalance
                 {
                     TmpAlign = DataGridViewContentAlignment.MiddleLeft;
                 }
-                else if (i == 1)
+                else if (i >= 1 && i <= 3)
                 {
                     TmpAlign = DataGridViewContentAlignment.MiddleCenter;
                 }
@@ -326,6 +351,7 @@ namespace FinancialBalance
                         TmpName,
                         Long_Date(Read_Text(reader["Purchase_Date"])),
                         Long_Date(Read_Text(reader["Settlement_Date"])),
+                        Read_Text(reader["Currency"]),
                         Money(Read_Number(reader["Purchase_Price"])),
                         Money(Read_Number(reader["Stamp_Duty"])),
                         Money(Read_Number(reader["Conveyancing_Cost"])),
@@ -408,6 +434,7 @@ namespace FinancialBalance
                          Read_Text(reader["Purchase_Date"]));
                 Set_Date(CmbSettleDD, CmbSettleMM, CmbSettleYear,
                          Read_Text(reader["Settlement_Date"]));
+                CmbCurrency.Text = Read_Text(reader["Currency"]);
                 txtPurchasePrice.Text = Box(Read_Number(reader["Purchase_Price"]));
                 txtStampDuty.Text = Box(Read_Number(reader["Stamp_Duty"]));
                 txtConveyancing.Text = Box(Read_Number(reader["Conveyancing_Cost"]));
@@ -474,6 +501,7 @@ namespace FinancialBalance
             CmbSettleDD.Text = "";
             CmbSettleMM.Text = "";
             CmbSettleYear.Text = "";
+            Default_Currency();
             foreach (TextBox Box in Money_Boxes())
             {
                 Box.Text = "";
@@ -618,6 +646,12 @@ namespace FinancialBalance
                 return false;
             }
 
+            if (Currency() == "")
+            {
+                parWhy = "Please choose a Currency.";
+                return false;
+            }
+
             string TmpDD = CmbPurchDD.Text.Trim();
             string TmpMM = CmbPurchMM.Text.Trim();
             string TmpYear = CmbPurchYear.Text.Trim();
@@ -686,7 +720,8 @@ namespace FinancialBalance
 
         private string Values()
         {
-            return Num(Amount(txtPurchasePrice)) + ", "
+            return "'" + Currency() + "', "
+                 + Num(Amount(txtPurchasePrice)) + ", "
                  + Num(Amount(txtStampDuty)) + ", "
                  + Num(Amount(txtConveyancing)) + ", "
                  + Num(Amount(txtInspection)) + ", "
@@ -777,6 +812,7 @@ namespace FinancialBalance
                           + " [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture) + ","
                           + " [Purchase_Date] = '" + TmpDate + "',"
                           + " [Settlement_Date] = '" + TmpSettle + "',"
+                          + " [Currency] = '" + Currency() + "',"
                           + " [Purchase_Price] = " + Num(Amount(txtPurchasePrice)) + ","
                           + " [Stamp_Duty] = " + Num(Amount(txtStampDuty)) + ","
                           + " [Conveyancing_Cost] = " + Num(Amount(txtConveyancing)) + ","
