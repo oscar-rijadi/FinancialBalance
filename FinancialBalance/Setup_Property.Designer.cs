@@ -31,6 +31,7 @@
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyPurchase = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyRentalIncome = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertySale = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
@@ -151,7 +152,8 @@
             // 
             this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnPropertyPurchase,
-            this.MnPropertySale});
+            this.MnPropertySale,
+            this.MnPropertyRentalIncome});
             this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
             this.MnPropertyProcessGroup.Size = new System.Drawing.Size(150, 20);
             this.MnPropertyProcessGroup.Text = "P&roperty";
@@ -169,6 +171,13 @@
             this.MnPropertySale.Size = new System.Drawing.Size(216, 22);
             this.MnPropertySale.Text = "Property Sa&le";
             this.MnPropertySale.Click += new System.EventHandler(this.MnPropertySale_Click);
+            // 
+            // MnPropertyRentalIncome
+            // 
+            this.MnPropertyRentalIncome.Name = "MnPropertyRentalIncome";
+            this.MnPropertyRentalIncome.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertyRentalIncome.Text = "Property Rental &Income";
+            this.MnPropertyRentalIncome.Click += new System.EventHandler(this.MnPropertyRentalIncome_Click);
             // 
             // MnSuperProcess
             // 
@@ -492,6 +501,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyPurchase;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalIncome;
         public System.Windows.Forms.ToolStripMenuItem MnPropertySale;
         public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;
         public System.Windows.Forms.Label Label21;

@@ -113,3 +113,4 @@ C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBal
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.exe.manifest
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.application
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Property_Summary.resources
+C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Property_Rental_Income.resources

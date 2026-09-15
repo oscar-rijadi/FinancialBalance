@@ -92,7 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
-| `Process` | **Property** | Property Setup, Property Purchase, Property Sale |
+| `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income |
 | `Inquiry` | **Property** | Property Summary |
 | `Administration` | **Property** | State Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
@@ -125,6 +125,7 @@ flowchart LR
     PPROPG --> SPROP["Setup_Property"]
     PPROPG --> PPUR["Property_Purchase"]
     PPROPG --> PSAL["Property_Sale"]
+    PPROPG --> PRI["Property_Rental_Income"]
     MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -218,6 +219,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
 | `Property_Summary` | Shown as **Property Summary**. Read-only. One property at a time: what it is, what it cost to buy, and â once it has been sold â what it fetched and what that came to as a profit or a loss. |
+| `Property_Rental_Income` | Shown as **Property Rental Income**. One property at a time: what it let for each month, what that month cost, and what was left. Add, update and delete, one record per property per month. |
 | `Property_Sale` | Shown as **Property Sale**. What one property fetched when it was sold â price, and the costs of selling. One record per property. |
 | `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy â price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
 | `Setup_Property` | Shown as **Property Setup**. Maintains the properties â name and address. What happened to each one lives on its purchase and sale records. |
@@ -270,6 +272,7 @@ erDiagram
     TblState        ||--o{ TblProperty : "locates"
     TblProperty     ||--o| TblPropertyPurchase : "was bought for"
     TblProperty     ||--o| TblPropertySale : "was sold for"
+    TblProperty     ||--o{ TblPropertyRentalIncome : "is let, month by month"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -436,6 +439,14 @@ erDiagram
     TblState {
         text Name PK "3 chars, the state code"
         text Long_Name "50 chars"
+    }
+    TblPropertyRentalIncome {
+        long    Property_Id "joins TblProperty, one row per property per month"
+        text    Rental_Month "yyyyMM"
+        text    Currency "3 chars, a code from TblCurrCode"
+        decimal Income "2 dp"
+        decimal Expense "2 dp"
+        decimal Profit_Loss "2 dp, Income less Expense"
     }
     TblPropertySale {
         long    Property_Id "joins TblProperty, one row per property"
@@ -2049,6 +2060,7 @@ C#.Net/
 â   âââ Setup_Property.*              # properties, and whether they are sold
 â   âââ Property_Purchase.*           # what each one cost to buy
 â   âââ Property_Sale.*               # what each one fetched when sold
+â   âââ Property_Rental_Income.*      # what it lets for, month by month
 â   âââ Property_Summary.*            # one property end to end, read-only
 â   âââ Setup_Super_Fund.*            # the list of super funds
 â   âââ Setup_Super.*                 # super accounts
@@ -2757,6 +2769,76 @@ negative reading `-$1,234.56` rather than `$-1,234.56`. Dates are `dd-MMM-yyyy`,
 stored `yyyyMMdd` by the same `Long_Date` the purchase page uses, and a date that is blank or
 malformed shows as nothing rather than as a placeholder. **Percentage Ownership** and
 **Percentage Profit/Loss** read `62.50 %` â a share rather than an amount, so no dollar sign.
+
+---
+
+### Property Rental Income
+
+`Process` > Property > Property Rental Income is what a property earns while it is held,
+in `TblPropertyRentalIncome` - **one row per property per month**, joined to
+[`TblProperty`](#property-setup) by `Property_Id`.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Property_Id` | Number | which property; joins `TblProperty` |
+| `Rental_Month` | Short Text(6) | `yyyyMM` |
+| `Currency` | Short Text(3) | a code from [`TblCurrCode`](#reference-data) |
+| `Income` | Decimal(22,2) | what it let for that month |
+| `Expense` | Decimal(22,2) | what that month cost |
+| `Profit_Loss` | Decimal(22,2) | `Income` less `Expense`, worked out rather than typed |
+
+The money columns are **`DECIMAL(22,2)` created through ACE DDL**, not DAO `CreateField`,
+which silently produces a BigInt and would round each of them to whole dollars - the same
+reason the other money tables are built that way.
+
+> `Rental_Month` is **Short Text(6)**, not the Short Text(4) the page was specified with.
+> Four characters cannot hold a month and a year together, so there would be nothing to
+> render as `MMM-yyyy`. Six matches `TblMonthlyTrans.Trans_Month`, which is the shape every
+> other month in the database already has.
+
+> **`Currency` is a reserved word in Access.** An unbracketed one fails with a bare "syntax
+> error in INSERT INTO statement" that names nothing, so every column here is bracketed
+> rather than only the ones that have to be - the rule `TblProperty` is already written
+> under, for `Name`, `Address` and `State`.
+
+#### The list
+
+Picking a **Property Id** lists that property one month per row, **newest first**.
+`Rental_Month` is stored `yyyyMM`, so a plain string sort is the same as a date sort, and is
+read back as `MMM-yyyy` - a list running twelve rows a year reads better abbreviated than it
+does through the shared `Mdl1.toLongMonth`, which spells the month out.
+
+Amounts carry a `$` with thousands grouped to two places. **Profit/Loss is coloured** - green
+above zero, red below it, plain black at exactly zero - in the grid and again on the entry
+area below it.
+
+#### The entry area
+
+The dropdown carries **no blank first item**, unlike the purchase and sale pages: this page
+is one property's months rather than a list of every property, so it always has one selected
+and opens on the first. Rental Month is a month and a year dropdown opening on **the month
+just gone**, which is the one usually being entered, and the year list runs from next year
+back to 1990 rather than the three years the shared `Mdl1.Fill_Month` offers.
+
+**Profit/Loss is filled in, but typeable over.** As `Income` and `Expense` are entered it is
+written as `Income` less `Expense`, so the common case needs no typing at all. Entering a
+figure by hand replaces it and that figure is what gets stored - a month can carry something
+neither column accounts for. Changing `Income` or `Expense` afterwards fills it in again,
+since the two figures it was derived from have moved and the old answer no longer belongs to
+anything; typing in the box after that is what makes an override stick.
+
+It is the one amount box on the page that **accepts a minus sign**. The shared
+`Mdl1.NumericKeyPress` admits digits, a decimal point and backspace, which is right for
+rent and for costs, neither of which can be negative - but a loss can be, so this box
+filters through a signed variant that lets a minus through once, and only at the front.
+
+Loading a record back shows the **stored** figure rather than re-deriving it, which would
+quietly undo an override the moment the row was looked at again.
+
+A record is identified by **its property and its month together**. Add refuses a month that
+property already has, Update refuses to move a record onto a month that does, and Delete asks
+first. Changing the Property Id dropdown reloads the list and clears the entry area, so
+nothing from the previous property is left selected underneath it.
 
 ---
 

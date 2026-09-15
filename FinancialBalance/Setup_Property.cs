@@ -109,6 +109,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnPropertyRentalIncome_Click(object sender, EventArgs e)
+        {
+            Property_Rental_Income Property_Rental_Income = new Property_Rental_Income();
+            Property_Rental_Income.Show();
+            this.Close();
+        }
+
         private void MnPropertyPurchase_Click(object sender, EventArgs e)
         {
             Property_Purchase Property_Purchase = new Property_Purchase();
