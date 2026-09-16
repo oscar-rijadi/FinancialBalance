@@ -30,25 +30,25 @@ Money moves through the system in three stages: **entry**, **accumulation**, and
 
 ```mermaid
 flowchart TD
-    subgraph entry["1 Â· Entry"]
+    subgraph entry["1 · Entry"]
         DI["Daily Input<br/><i>up to 5 debit + 5 credit lines</i>"]
         CHK{"Debits = Credits?"}
         DI --> CHK
         CHK -- "no" --> REJ["Rejected"]
     end
 
-    subgraph accum["2 Â· Accumulation"]
+    subgraph accum["2 · Accumulation"]
         DT[("TblDailyTrans<br/><i>every line, append-only</i>")]
         AS[("TblAsset<br/><i>running balance</i>")]
         LI[("TblLiability<br/><i>running balance</i>")]
         MT[("TblMonthlyTrans<br/><i>month buckets</i>")]
     end
 
-    subgraph close["3 Â· Closing"]
+    subgraph close["3 · Closing"]
         MC["Monthly Closing"]
     end
 
-    subgraph report["4 Â· Reporting"]
+    subgraph report["4 · Reporting"]
         MI["Monthly Inquiry<br/><i>balance sheet</i>"]
         YS["Yearly Summary"]
         YT["Yearly Statistic<br/><i>chart</i>"]
@@ -73,7 +73,7 @@ enter transactions, whereas **asset and liability rows are written into `TblMont
 you run a monthly closing**. Assets and liabilities live as running balances (a *stock*) that the
 closing snapshots; income and expense are *flows* bucketed by month as they happen.
 
-Closing a month is idempotent â it deletes existing `A`/`L` rows for that month before re-inserting
+Closing a month is idempotent — it deletes existing `A`/`L` rows for that month before re-inserting
 them, so you can safely re-close.
 
 ---
@@ -97,13 +97,13 @@ Related pages are collected into submenus rather than sitting flat:
 | `Administration` | **Property** | State Setup, Property Rental Expense Type Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
-`Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu â
+`Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
 one page rather than a group. `Inquiry` likewise carries **Super Balance & Historical Data**
-after its own ETF/Stock submenu. `Calculator` holds both its pages â **Compound Interest
-Calculator** and **Dividend Snowball Calculator** â directly, with no submenu between.
+after its own ETF/Stock submenu. `Calculator` holds both its pages — **Compound Interest
+Calculator** and **Dividend Snowball Calculator** — directly, with no submenu between.
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
-never lists itself, a submenu can hold one fewer entry there â from `Setup_Curr` the **Currency**
+never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
 submenu offers only Currency Rate Setup, and it disappears to a single child rather than being
 flattened, so the layout stays the same everywhere.
 
@@ -197,21 +197,21 @@ flowchart LR
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
 | `ETF_Stocks_Tax_Interest` | Shown as **ETF/Stock Tax Deductable Interest**. What the borrowing behind the portfolio cost, month by month, with a financial year filter and the total for whichever year is showing. Add, update and delete, one figure per month. |
 | `ETF_Stocks_FY_Reconciliation` | Shown as **ETF/Stock Financial Year Reconciliation**. One financial year's result per portfolio, with an entry section that defaults every figure from the rest of the database. |
-| `Super_Financial_Year` | Shown as **Super**. One financial year's result per super account â what went in, what the fund returned, what it cost, and what came out at the end. |
+| `Super_Financial_Year` | Shown as **Super**. One financial year's result per super account — what went in, what the fund returned, what it cost, and what came out at the end. |
 | `Super_Balance_Historical` | Shown as **Super Balance & Historical Data**. Read-only, in two parts: where every super account stands, then one account's full year-by-year history. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income and expense breakdown with totals. |
-| `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account â or a whole category â drawn with `System.Windows.Forms.DataVisualization` charting. |
-| `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only â summarised per ticker, or drilled into one ticker's individual purchases. |
+| `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
+| `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
-| `ETF_Stocks_Dividend_History` | What the holdings have paid â summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
+| `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
-| `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year â contributions, a growing yield, reinvestment â and how long a target income takes to reach. Reads and writes nothing. |
+| `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
-| `Setup_Acct_Ref` | Chart of accounts â code, name, type, currency, display order, current-asset flag. |
+| `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
 | `Setup_Curr_Rate` | Dated exchange rates. |
 | `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
@@ -219,27 +219,27 @@ flowchart LR
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
 | `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
-| `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types â the categories a holding can be classified along. |
+| `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
-| `Property_Summary` | Shown as **Property Summary**. Read-only. One property at a time: what it is, what it cost to buy, and â once it has been sold â what it fetched and what that came to as a profit or a loss. |
+| `Property_Summary` | Shown as **Property Summary**. Read-only. One property at a time: what it is, what it cost to buy, and — once it has been sold — what it fetched and what that came to as a profit or a loss. |
 | `Property_Rental_Expense` | Shown as **Property Rental Expense**. What one property cost to hold, expense by expense - rates, insurance and the rest, each with the date it was paid. Add, update and delete. |
-| `Property_Rental_Bank_Expense` | Shown as **Property Rental Bank Expense**. What the borrowing behind one property cost each month - interest, bank fee, and what the two came to. Add, update and delete, one record per property per month. |
+| `Property_Rental_Bank_Expense` | Shown as **Property Rental Bank Expense**. What the borrowing behind one property cost - interest, bank fee, and what the two came to. Add, update and delete, as many records a month as the bank made charges. |
 | `Property_Rental_Income` | Shown as **Property Rental Income**. One property at a time: what it let for each month, what that month cost, and what was left. Add, update and delete, one record per property per month. |
-| `Property_Sale` | Shown as **Property Sale**. What one property fetched when it was sold â price, and the costs of selling. One record per property. |
-| `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy â price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
-| `Setup_Property` | Shown as **Property Setup**. Maintains the properties â name and address. What happened to each one lives on its purchase and sale records. |
+| `Property_Sale` | Shown as **Property Sale**. What one property fetched when it was sold — price, and the costs of selling. One record per property. |
+| `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy — price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
+| `Setup_Property` | Shown as **Property Setup**. Maintains the properties — name and address. What happened to each one lives on its purchase and sale records. |
 | `Setup_Property_Rental_Expense_Type` | Shown as **Property Rental Expense Type Setup**. Maintains the kinds of rental expense a property can carry - insurance, rates, and the rest. One field, the name, which is also what identifies the row. |
-| `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories â a three-character code and its full name. |
+| `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories — a three-character code and its full name. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
-| `Setup_Super` | Shown as **Super Setup**. Maintains super accounts â a code, a name and the fund each belongs to. |
+| `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
 
 ---
 
 ## Data model
 
-Thirty-two tables. **No foreign keys or relationships are defined in the database** â the links below are
+Thirty-two tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -281,7 +281,7 @@ erDiagram
     TblProperty     ||--o| TblPropertyPurchase : "was bought for"
     TblProperty     ||--o| TblPropertySale : "was sold for"
     TblProperty     ||--o{ TblPropertyRentalIncome : "is let, month by month"
-    TblProperty     ||--o{ TblPropertyRentalBankExpense : "is borrowed against, month by month"
+    TblProperty     ||--o{ TblPropertyRentalBankExpense : "is borrowed against"
     TblProperty     ||--o{ TblPropertyRentalExpense : "costs money to hold"
 
     TblAcctTypeRef {
@@ -462,7 +462,8 @@ erDiagram
         text Name "50 chars, and the only field - it identifies the row"
     }
     TblPropertyRentalBankExpense {
-        long    Property_Id "joins TblProperty, one row per property per month"
+        long    Id PK "AutoNumber, handed out by the database"
+        long    Property_Id "joins TblProperty"
         text    Month "yyyyMM"
         text    Description "50 chars"
         text    Currency "3 chars, a code from TblCurrCode"
@@ -575,7 +576,7 @@ Exchange_Suffix == "None"  ->  Full_Ticker = Ticker
 otherwise                  ->  Full_Ticker = Ticker + "." + Exchange_Suffix
 ```
 
-So suffixes are stored **without** a leading dot â `AX`, not `.AX` â since the dot is added
+So suffixes are stored **without** a leading dot — `AX`, not `.AX` — since the dot is added
 by the rule. `Full_Ticker` is the table's primary key.
 
 #### Financial years
@@ -586,7 +587,7 @@ in the database and shown as `dd-MMM-yyyy`. The list reads chronologically, by `
 
 `Name` is treated as the key, the same way `Full_Ticker` is on ETF/Stock Setup: **Add / Update** is
 an upsert on it and **Delete** matches on it. Editing a row remembers the name it was loaded under,
-so changing the name *renames that year* rather than leaving the old row behind â and renaming onto
+so changing the name *renames that year* rather than leaving the old row behind — and renaming onto
 a name that already exists is refused rather than merging two years into one. **Clear** abandons the
 edit and returns to entering a new year.
 
@@ -595,14 +596,14 @@ A year whose `End_Date` falls before its `Start_Date` is rejected.
 `TblETFStocksFinancialYear` holds one row per financial year per portfolio code, carrying that
 year's opening and closing investment, what was sold, the on-paper and realised results,
 distribution totals, capital gains, loan interest and tax. **No screen reads or writes either table
-yet** beyond Financial Year Setup maintaining the years themselves â both stand ready for whatever
+yet** beyond Financial Year Setup maintaining the years themselves — both stand ready for whatever
 is built on them.
 
 ### ETF/stock purchase and sale rules
 
 Buying and selling are **two pages**, each owning one table: **ETF/Stock Purchase** writes
 `TblETFStocksPurchase`, **ETF/Stock Sale** writes `TblETFStocksSale`. There is no stored
-transaction type â the table a row lives in *is* its type. Each page shows its own rows for a
+transaction type — the table a row lives in *is* its type. Each page shows its own rows for a
 chosen date and nothing else, so neither grid carries a column that is always blank.
 
 > These were one page, `ETF_Stocks_Transaction`, with a Buy/Sell dropdown that swapped the entry
@@ -611,30 +612,30 @@ chosen date and nothing else, so neither grid carries a column that is always bl
 > it into the other. To do that now, delete it on the page that owns it and add it on the other.
 >
 > The rules below apply to whichever page owns the field, and the two pages cross-link through
-> the `Process` â¸ ETF/Stock menu.
+> the `Process` ▸ ETF/Stock menu.
 
 | Field | Rule |
 | --- | --- |
 | `Trans_Date` | From the date picker, stored `yyyyMMdd`. |
-| `Unit` | Buy: typed, numeric, not negative, at most 4 decimal places. **Sell: derived** â see below. |
+| `Unit` | Buy: typed, numeric, not negative, at most 4 decimal places. **Sell: derived** — see below. |
 | `Cost_Base`, `Fee` | Buy only. Numeric, not negative, at most 2 decimal places. |
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
-| `Real_Total_Cost_Base` | Buy only. `0` when the **Reinvestment** box is ticked, otherwise `Total_Cost_Base`. **Add, Update and Delete all move the portfolio's running balance** by it â see below. |
-| `Original_Cost_Base` | Buy only. Typed, with the same guard as `Cost_Base` â digits and a decimal point, no minus. Holds what the lot originally cost, alongside the `Cost_Base` that later processing may change. |
-| `Original_Total_Cost_Base` | Buy only, derived: `round(Unit x Original_Cost_Base, 2) + Fee`. Not editable. The same shape as `Total_Cost_Base`, the Fee included â the only difference between the two is which cost base they are worked out from. |
+| `Real_Total_Cost_Base` | Buy only. `0` when the **Reinvestment** box is ticked, otherwise `Total_Cost_Base`. **Add, Update and Delete all move the portfolio's running balance** by it — see below. |
+| `Original_Cost_Base` | Buy only. Typed, with the same guard as `Cost_Base` — digits and a decimal point, no minus. Holds what the lot originally cost, alongside the `Cost_Base` that later processing may change. |
+| `Original_Total_Cost_Base` | Buy only, derived: `round(Unit x Original_Cost_Base, 2) + Fee`. Not editable. The same shape as `Total_Cost_Base`, the Fee included — the only difference between the two is which cost base they are worked out from. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
 | `Sold_Date` | Buy only. Shown only while Sold is ticked; stored `yyyyMMdd`, otherwise `Null`. |
 | `Sale_Id` | **Not typed anywhere.** Generated by **ETF/Stock Sale** when a sale is added, and written to the sale row *and* to every purchase lot that sale closes. A purchase that has never been sold has none. |
-| `Portfolio_Code` | **Both pages**, from a dropdown labelled **Portfolio** filled from `TblETFStocksPortfolioCode` and defaulting to `OB`, with the chosen code's `Description` shown beside it (`-` when blank). On **ETF/Stock Sale** it also **filters the lots on offer** â see below. It is the first column of the purchase grid and the last of the sale grid. |
+| `Portfolio_Code` | **Both pages**, from a dropdown labelled **Portfolio** filled from `TblETFStocksPortfolioCode` and defaulting to `OB`, with the chosen code's `Description` shown beside it (`-` when blank). On **ETF/Stock Sale** it also **filters the lots on offer** — see below. It is the first column of the purchase grid and the last of the sale grid. |
 | `Selling_Price_Per_Unit` | Sell only. Numeric, not negative, at most 2 decimal places. |
 | `Selling_Total_Amount` | Sell only, derived: `round(Unit x Selling_Price_Per_Unit, 2)`. Not editable. |
-| `Profit_Or_Loss_On_Paper` | Sale only, derived on **Add** from the lots being sold and restated on **Update** â see below. Shown in the sale grid, red below zero and green above. |
-| `Real_Profit_Or_Loss` | Sale only, the same but ignoring what the reinvested lots cost â see below. Shown in the sale grid, coloured the same way. |
+| `Profit_Or_Loss_On_Paper` | Sale only, derived on **Add** from the lots being sold and restated on **Update** — see below. Shown in the sale grid, red below zero and green above. |
+| `Real_Profit_Or_Loss` | Sale only, the same but ignoring what the reinvested lots cost — see below. Shown in the sale grid, coloured the same way. |
 
 > **The two totals differ only by their cost bases.** Both are
 > `round(Unit x <cost base>, 2) + Fee`, so the Fee lands in each of them once. With 4 units, an
 > original cost of `11.11`, a cost base of `13.50` and a `2.00` fee they read `46.44` and
-> `56.00` â `9.56` apart, which is exactly `round(4 x 13.50, 2) - round(4 x 11.11, 2)`.
+> `56.00` — `9.56` apart, which is exactly `round(4 x 13.50, 2) - round(4 x 11.11, 2)`.
 >
 > The one place the Fee is absent from both is the remainder row left by a part sale: that row
 > is written with `Fee = 0.00`, because the fee belonged to the original purchase and has
@@ -648,7 +649,7 @@ carries a description label beside it.
 
 #### Both pages move the portfolio's balance
 
-`TblETFStocksPortfolio` holds one running row per portfolio code â its `Cash` and the
+`TblETFStocksPortfolio` holds one running row per portfolio code — its `Cash` and the
 `Investment_Amount` bought out of that cash. **Buying and selling both move it**, and between them
 they keep `Investment_Amount` meaning one thing throughout: **the real money currently invested**.
 
@@ -663,11 +664,11 @@ Investment_Amount = Investment_Amount + <shift>
 | Button | `<shift>` |
 | --- | --- |
 | **Add** | `+ Real_Total_Cost_Base` |
-| **Update** | `new Real_Total_Cost_Base - stored Real_Total_Cost_Base` â the difference, so only what changed moves |
+| **Update** | `new Real_Total_Cost_Base - stored Real_Total_Cost_Base` — the difference, so only what changed moves |
 | **Delete** | `- stored Real_Total_Cost_Base`, giving the whole cost back |
 
 **ETF/Stock Sale.** The proceeds come into the cash, and the real cost of the lots the sale closed
-leaves the invested amount â releasing exactly what the purchase put there:
+leaves the invested amount — releasing exactly what the purchase put there:
 
 ```
 Cash              = Cash + Selling_Total_Amount
@@ -682,7 +683,7 @@ Investment_Amount = Investment_Amount - <real cost of the lots closed>
 
 The gap between the two sale figures is the sale's **real profit**, so net worth moves by exactly
 that. Sell 4 units for `36.00` out of lots that cost `25.00` real and the cash rises `36.00` while
-the invested amount falls `25.00` â `11.00` better off, which is what `Real_Profit_Or_Loss` records.
+the invested amount falls `25.00` — `11.00` better off, which is what `Real_Profit_Or_Loss` records.
 
 A **reinvested** lot has a `Real_Total_Cost_Base` of `0`, so it moves nothing on either page: buying
 one costs no cash, and selling one releases nothing. The row is still recorded either way. An
@@ -695,19 +696,19 @@ back in, with the lot held again.
 ##### The details that are easy to get wrong
 
 - **Update and Delete use the *stored* figures, not what the boxes are showing.** Both act on the
-  row as it stands in the database, and the entry fields â including the derived
-  `Real Total Cost Base` and `Selling Total Amount` â may have been edited since the row was
+  row as it stands in the database, and the entry fields — including the derived
+  `Real Total Cost Base` and `Selling Total Amount` — may have been edited since the row was
   selected. Reading the box would give back the wrong amount: select a `1,205.00` purchase, change
   the Unit on screen, press Delete, and the box may read `11,993.00` while what actually left the
   portfolio was `1,205.00`. A sale's released cost is likewise read from **the lots stamped with
   its `Sale_Id`**, before Delete releases them.
 - **Changing the Portfolio as part of an Update moves the whole thing between balances.** On a
   purchase the stored cost goes back to the old portfolio in full and the new cost is taken from
-  the new one in full; on a sale the proceeds and the released cost move together the same way â
+  the new one in full; on a sale the proceeds and the released cost move together the same way —
   not the difference, which would leave the old portfolio still carrying figures that are no
   longer its own. Both portfolios are named in the success message.
 - **The movement happens once per row touched.** Identical rows are indistinguishable without a
-  key, so one Update or Delete can affect several â the page already warns how many. The balance
+  key, so one Update or Delete can affect several — the page already warns how many. The balance
   moves by that many multiples, or it would drift by every row but the first.
 - **A portfolio code with no running row yet gets one written.** The codes live in
   `TblETFStocksPortfolioCode` and the balances in `TblETFStocksPortfolio`, so a purchase can name a
@@ -715,12 +716,12 @@ back in, with the lot held again.
   what `ETF_Stocks_Investment` does with a movement against a new portfolio.
 - **A purchase or sale in a currency the portfolio is not held in is refused**, on both Add and
   Update, before anything is written. `Cash` and `Investment_Amount` are single figures and amounts
-  in different currencies cannot be added together â the same rule `ETF_Stocks_Investment`
+  in different currencies cannot be added together — the same rule `ETF_Stocks_Investment`
   applies. Change the currency, or edit the portfolio first.
 - **The success message says where the portfolio now stands**, so the movement is visible without
   going to another page.
 
-> **A sale with no `Sale_Id`** â only rows predating that field â cannot say which lots it
+> **A sale with no `Sale_Id`** — only rows predating that field — cannot say which lots it
 > closed, so it releases nothing from the invested amount. Its proceeds still move the cash.
 
 #### The Sale Id
@@ -732,17 +733,17 @@ Every sale is stamped with an identifier built when the sale is added:
 ```
 
 for example `20260906_ZZSID.AX_OB_154511`. The same value goes onto the sale row and onto every
-purchase lot the sale closes, so the two sides can be tied back together â one sale that settles
+purchase lot the sale closes, so the two sides can be tied back together — one sale that settles
 three lots leaves the same id on all four rows. **ETF/Stock Purchase** shows it in a `Sale Id`
 column, beside a `Sold Date` column showing `Sold_Date` as `dd-MMM-yyyy`; **ETF/Stock Sale** shows
 it as the first column of its own table.
 
-The **remainder row left by a part sale is deliberately not stamped** â those units were not sold,
+The **remainder row left by a part sale is deliberately not stamped** — those units were not sold,
 so they carry no sale id and no sold date, and they stay available to a later sale.
 
 > **The id can be too long for its column, and the page checks before writing.** `Sale_Id` holds
 > 50 characters. The parts add up to 8 + 1 + `Full_Ticker` + 1 + `Portfolio_Code` + 1 + 6, and
-> `Full_Ticker` alone can be 31 with `Portfolio_Code` 5 â **53 at worst**. Real tickers are far
+> `Full_Ticker` alone can be 31 with `Portfolio_Code` 5 — **53 at worst**. Real tickers are far
 > shorter (`ZZSID.AX_OB` gives 27), but rather than let Access reject the insert with an opaque
 > error, **ETF/Stock Sale** measures the id first and refuses with a message naming the length.
 > Nothing is written when that happens. Widening the column to 60 would remove the limit
@@ -759,7 +760,7 @@ Original Total Cost Base | Total Cost Base | Real Total Cost Base |
 Reinvestment | Sold | Sold Date | Sale Id
 ```
 
-`Reinvestment` and `Sold` read `Y` or `N` â the first derived from `Real_Total_Cost_Base == 0`
+`Reinvestment` and `Sold` read `Y` or `N` — the first derived from `Real_Total_Cost_Base == 0`
 rather than stored, the second from `Is_Sold`. `Sold Date` shows `Sold_Date` as `dd-MMM-yyyy` and
 `Sale Id` the sale that closed the lot; both are blank while the lot is still held.
 
@@ -769,14 +770,14 @@ rather than stored, the second from `Is_Sold`. `Sold Date` shows `Sold_Date` as 
 
 | Column | Source |
 | --- | --- |
-| `Sale Id` | `Sale_Id` â blank on a sale recorded before the column existed |
+| `Sale Id` | `Sale_Id` — blank on a sale recorded before the column existed |
 | `Full Ticker`, `Currency`, `Unit` | as stored |
 | `Selling Price/Unit`, `Selling Total Amount` | as stored |
 | `Portfolio Code` | `Portfolio_Code`, `-` when none |
 | `Profit/Loss On Paper` | `Profit_Or_Loss_On_Paper`, with a dollar sign |
 | `Real Profit/Loss` | `Real_Profit_Or_Loss`, with a dollar sign |
 
-The two profit columns are **coloured by sign** â red below zero, green above it, and left alone
+The two profit columns are **coloured by sign** — red below zero, green above it, and left alone
 at exactly zero, the same rule the reconciliation pages use. A loss reads `-$56.78`, with the
 minus outside the dollar sign rather than Excel's bracketed form.
 
@@ -786,7 +787,7 @@ Picking a row in the sale table turns the page from *entering* a sale into *read
 
 - A **Sale Id** line appears under Unit, showing that sale's `Sale_Id`.
 - **Unit** and **Selling Total Amount** are filled from the stored row rather than recomputed.
-- **Add is hidden** â there is nothing to add while a stored sale is on screen.
+- **Add is hidden** — there is nothing to add while a stored sale is on screen.
 - The unsold-lot list is replaced by **Purchases closed by this sale**, every
   `TblETFStocksPurchase` row carrying that `Sale_Id`:
 
@@ -796,7 +797,7 @@ Picking a row in the sale table turns the page from *entering* a sale into *read
 | `Unit` | `Unit` |
 | `Purchase Price / Unit` | `Cost_Base`, with a dollar sign |
 | `Purchase Amount` | `Total_Cost_Base`, with a dollar sign |
-| `Real Purchase Amount` | `Real_Total_Cost_Base`, with a dollar sign â `0` for a reinvested lot |
+| `Real Purchase Amount` | `Real_Total_Cost_Base`, with a dollar sign — `0` for a reinvested lot |
 
 Two totals sit under that table, adding up the two money columns above them:
 
@@ -805,7 +806,7 @@ Two totals sit under that table, adding up the two money columns above them:
 | `Total Purchase Amount` | every `Purchase Amount` |
 | `Total Real Purchase Amount` | every `Real Purchase Amount` |
 
-Both carry a dollar sign under the usual rule â only when every lot that fed the total shares one
+Both carry a dollar sign under the usual rule — only when every lot that fed the total shares one
 dollar currency, since adding AUD to USD gives an amount in neither. They are the very figures
 Update subtracts from the proceeds, so what the profit is worked out from is on screen rather than
 implied.
@@ -833,30 +834,30 @@ are available to sell again.
 
 > Releasing does not re-merge a lot that the sale split. A part sale leaves a closed row and a
 > remainder row; deleting the sale makes both available again, but as **two lots rather than the
-> one** they were before. The units and the money are unchanged â only the grouping differs.
+> one** they were before. The units and the money are unchanged — only the grouping differs.
 
 #### Selling against lots
 
 A sale is not entered as a bare quantity. **ETF/Stock Sale** always lists the ticker's unsold
-purchases **held in the chosen Portfolio** â the grid is part of the page rather than something
-a type dropdown reveals â and the units come from the lots they are actually being taken out of.
+purchases **held in the chosen Portfolio** — the grid is part of the page rather than something
+a type dropdown reveals — and the units come from the lots they are actually being taken out of.
 Changing either the ticker or the Portfolio redraws the list, because units can only be sold out
-of the portfolio holding them â selling from one portfolio leaves another's lots alone. The code
+of the portfolio holding them — selling from one portfolio leaves another's lots alone. The code
 chosen here is stored on the sale as its `Portfolio_Code`:
 
 | Column | Source |
 | --- | --- |
 | `Purchase Date` | `Trans_Date`, shown `dd-MMM-yyyy`. |
-| `Unit` | `Unit` â how many are held in that lot. |
+| `Unit` | `Unit` — how many are held in that lot. |
 | `Purchase Price / Unit` | `Cost_Base` |
-| `Real Purchase Amount` | `Real_Total_Cost_Base` â `0` for a reinvested lot, so it is visible as costing nothing. |
+| `Real Purchase Amount` | `Real_Total_Cost_Base` — `0` for a reinvested lot, so it is visible as costing nothing. |
 | `Sold Unit` | **Editable.** Numeric-only keystrokes, not negative, at most 4 decimal places, and never more than that lot's `Unit`. |
 
 The **Unit** box is read-only and holds the sum of every `Sold Unit`, so `Selling_Total_Amount`
 follows the lots automatically. Adding a sale with nothing allocated is refused.
 
 **Add** generates the sale's [`Sale_Id`](#the-sale-id), writes the `TblETFStocksSale` row, then
-settles each lot it drew from â stamping that same id on every one, so the sale can find them
+settles each lot it drew from — stamping that same id on every one, so the sale can find them
 again afterwards:
 
 When a **part sale splits a lot**, the remainder row keeps the original figures rather than
@@ -866,11 +867,11 @@ a holding would silently leave rows with no original cost recorded.
 
 | Case | Effect on `TblETFStocksPurchase` |
 | --- | --- |
-| Whole lot sold | The row is closed as it stands â `Is_Sold = True`, `Sold_Date` set, `Sale_Id` stamped with the sale's id. |
+| Whole lot sold | The row is closed as it stands — `Is_Sold = True`, `Sold_Date` set, `Sale_Id` stamped with the sale's id. |
 | Part of a lot sold | The row is cut down to the units **sold**, closed and stamped the same way, keeping the original `Fee`; a **new open row** carries the remainder with `Fee = 0` and **no** `Sold_Date` or `Sale_Id`, since those units were not sold. |
 
 So a 10-unit lot at 50.00 with a 9.95 fee, selling 3, leaves a closed `3 @ 50.00` row totalling
-`159.95` and an open `7 @ 50.00` row totalling `350.00`. The portfolio still shows 7 units held â
+`159.95` and an open `7 @ 50.00` row totalling `350.00`. The portfolio still shows 7 units held —
 the closed side is the part that left.
 
 #### Profit recorded against a sale
@@ -884,31 +885,31 @@ lot cost = round(round(Sold Unit x Purchase Price / Unit, 2) + Fee, 2)
 ```
 
 The `Fee` there is **that purchase lot's own fee**, not a fee on the sale, and the closed part of a
-lot carries the whole of it â the same rule the split below uses.
+lot carries the whole of it — the same rule the split below uses.
 
 | Field | Cost subtracted |
 | --- | --- |
 | `Profit_Or_Loss_On_Paper` | Every lot contributes its `lot cost`. |
 | `Real_Profit_Or_Loss` | A lot whose `Real_Total_Cost_Base` is `0` contributes **nothing**; every other lot contributes its `lot cost`. |
 
-So a DRIP lot costs nothing real, and all of its proceeds land in `Real_Profit_Or_Loss` â which is why
+So a DRIP lot costs nothing real, and all of its proceeds land in `Real_Profit_Or_Loss` — which is why
 `Real_Profit_Or_Loss` is the larger of the two whenever a reinvested lot is sold. Selling 10 units bought
 at 100.00 with a 9.95 fee, 5 DRIP units, and 3 of a lot bought at 120.00 with a 5.00 fee, at
-150.00 each, gives proceeds of `2,700.00` against `1,924.95` on paper and `1,374.95` real â
+150.00 each, gives proceeds of `2,700.00` against `1,924.95` on paper and `1,374.95` real —
 `775.05` and `1,325.05`.
 
 This arithmetic deliberately mirrors the settlement below, so the profit on a sale always agrees
 with the cost left behind on the closed purchase rows.
 
-> Both figures are written on **Add**, and **restated on Update** â a sale now records which lots
+> Both figures are written on **Add**, and **restated on Update** — a sale now records which lots
 > it closed, through the `Sale_Id` it stamps on them, so its cost basis can be found again. Update
 > re-reads those lots and recomputes both profits from the two totals shown under the table. A sale
 > carrying no `Sale_Id` cannot name its lots, so Update leaves its profits untouched rather than
 > rewriting them from an empty table.
 >
 > Update still does **not** re-settle the lots themselves: changing the units on a stored sale
-> changes the sale row, not which purchases are closed. To change what was sold, delete the sale â
-> which releases its lots â and enter it again.
+> changes the sale row, not which purchases are closed. To change what was sold, delete the sale —
+> which releases its lots — and enter it again.
 
 `Total_Cost_Base` is recomputed on both rows, and `Real_Total_Cost_Base` follows the DRIP rule:
 **zero stays zero**, so splitting a reinvested lot leaves both halves at `0` rather than
@@ -917,24 +918,24 @@ read with and the update matches on all of them.
 
 **Sold Date** is nested one level deeper: it appears only when the Sold box is ticked on a Buy,
 and unticking clears the value as well as hiding it, so a stale date cannot survive out of sight.
-Both date pickers share the single `MonthCalendar` on the form, routed by a `CalTarget` flag â
+Both date pickers share the single `MonthCalendar` on the form, routed by a `CalTarget` flag —
 picking a transaction date reloads the day's grid, picking a sold date deliberately does not.
 
 The **Reinvestment** checkbox is **not stored**. The form re-derives it on selection as
-`Real_Total_Cost_Base == 0` â a lot bought with no real money is one that was reinvested. It was
+`Real_Total_Cost_Base == 0` — a lot bought with no real money is one that was reinvested. It was
 labelled *DRIP* until it was renamed, and the grid column now reads **Reinvestment** too; only the
 identifier `chkDRIP` still carries the older word, so searching the code for the on-screen label
 will not find it.
 
 > **Access stores Yes/No `True` as `-1`.** A `WHERE Is_Sold = 1` matches nothing and fails
-> silently. Compare against `True`/`False` instead â the same applies to `In_YahooFinance` and
+> silently. Compare against `True`/`False` instead — the same applies to `In_YahooFinance` and
 > `Is_Main`, which are written as literals rather than `1`/`0`. Likewise, `Currency` is a reserved
 > word: it needs brackets in DDL (`[Currency]`), though plain DML tolerates it.
 >
 > A Yes/No column **added to an existing table lands as `False` on every row**, so a migration that
 > wants `Yes` has to follow the `ALTER` with an `UPDATE`.
 
-Neither table has a primary key â the same ticker can be bought twice on one day, so no
+Neither table has a primary key — the same ticker can be bought twice on one day, so no
 combination of columns is reliably unique. Update and delete therefore match on **all of the
 row's original column values**, and each grid row remembers which table it came from. If two
 identical transactions exist on one date, the form says so and asks before touching both.
@@ -944,7 +945,7 @@ in-place update cannot cross tables.
 ### Diversification
 
 Holdings can be classified along several axes at once. `TblETFStocksDiversificationType` names the
-axes, and `TblETFStocksDiversification` holds the values available within each one â its `Type`
+axes, and `TblETFStocksDiversification` holds the values available within each one — its `Type`
 column carries the `Name` of a row in the type table.
 
 | Type | Values |
@@ -954,7 +955,7 @@ column carries the `Name` of a row in the type table.
 | `Geographic` | Australia, US, Ex Australia and Ex US, Other |
 
 The diversification table is keyed on **`(Type, Name)`**, so the same name can appear under two
-different types â `Other` exists under both Investment Style and Geographic â while a duplicate
+different types — `Other` exists under both Investment Style and Geographic — while a duplicate
 within one type is rejected.
 
 Deleting a type that still has values is refused with a count of what depends on it. Nothing in
@@ -966,7 +967,7 @@ the database enforces that link, so the check lives in `Setup_ETF_Stocks_Div_Typ
 lists every value of the chosen type with an editable percentage, shows a running total that is
 green at 100 and red otherwise, and **refuses to save at any other total**.
 
-Saving rewrites that ticker-and-type in one pass â delete, then re-insert â so the stored data can
+Saving rewrites that ticker-and-type in one pass — delete, then re-insert — so the stored data can
 never be left part-way at a total other than 100. Only non-zero rows are written, so an unused
 value simply has no row. `Clear All` drops the whole type for that ticker after a confirmation.
 
@@ -978,7 +979,7 @@ across types: without it a ticker could not hold both an Investment Style `Other
 ### Portfolio diversification
 
 `ETF_Stocks_Portfolio_Diversification` takes the same **Portfolio** dropdown and **Main Only**
-checkbox as the summary page â same filters, same defaults â and re-cuts the holdings as **one pie
+checkbox as the summary page — same filters, same defaults — and re-cuts the holdings as **one pie
 chart per diversification type**. The charts are built at run time from
 `TblETFStocksDiversificationType`, so adding a type adds a chart with no code change.
 
@@ -994,12 +995,12 @@ no current amount, so it carries no weight into any pie.
 
 Because each ticker's allocation totals 100 within a type, and the shares themselves total 100,
 a fully allocated portfolio produces pies that total 100 %. **Any shortfall is drawn as a grey
-`(unallocated)` slice** rather than left out â a pie normalises to the sum of its slices, so
+`(unallocated)` slice** rather than left out — a pie normalises to the sum of its slices, so
 omitting the gap would silently inflate every other wedge.
 
 ### ETF/stock price rules
 
-`ETF_Stocks_Price` maintains `TblETFStocksPrice`, which is keyed on `(Price_Date, Full_Ticker)` â
+`ETF_Stocks_Price` maintains `TblETFStocksPrice`, which is keyed on `(Price_Date, Full_Ticker)` —
 **one price per ticker per day**. That key makes Add an upsert: it updates the row when the
 ticker and date already exist, and inserts otherwise. The page opens with a blank ticker and
 loads nothing until one is picked, then shows that ticker's most recent 5 prices.
@@ -1008,7 +1009,7 @@ Prices arrive two ways:
 
 | Route | Behaviour |
 | --- | --- |
-| **Manual** | Pick a date, a currency and type a price â numeric, not negative, at most 2 decimal places. |
+| **Manual** | Pick a date, a currency and type a price — numeric, not negative, at most 2 decimal places. |
 | **Sync with Yahoo Finance** | One ticker. Enabled only when its `In_YahooFinance` is `True`, otherwise greyed with a note. |
 | **Sync all with Yahoo Finance** | Every ticker flagged `In_YahooFinance`, in one pass. |
 
@@ -1018,7 +1019,7 @@ shows `-`. It refreshes after any add, update, delete or sync, so it never goes 
 columns are `Full Ticker`, `Currency`, `Current Price`; the per-ticker grid below shows
 `Price Date`, `Currency`, `Price`.
 
-The bulk sync attempts each ticker independently â one failure does not abort the run. Results
+The bulk sync attempts each ticker independently — one failure does not abort the run. Results
 are reported once at the end as *"n of m ticker(s) updated"*, with any failures listed, rather
 than a dialog per ticker. Both sync buttons disable while it runs.
 
@@ -1054,8 +1055,8 @@ Two cases are worth knowing:
 - **Yahoo returns no currency at all.** Rather than guess, the sync falls back to whatever that
   ticker was last priced in, and only then to `AUD`.
 
-> Rows that predate the column were backfilled to `AUD`, then `GOOGL` â the one holding not
-> quoted in Australian dollars â was corrected to `USD`, so the stored currencies now match the
+> Rows that predate the column were backfilled to `AUD`, then `GOOGL` — the one holding not
+> quoted in Australian dollars — was corrected to `USD`, so the stored currencies now match the
 > exchanges. Worth remembering when **adding a ticker quoted somewhere new**: a manually entered
 > price takes whatever the dropdown is showing, and that defaults to `AUD`. A sync sets it from
 > the exchange instead. Prices written before the column existed read back as null and display
@@ -1063,7 +1064,7 @@ Two cases are worth knowing:
 
 ### ETF/stock investment rules
 
-`ETF_Stocks_Investment` keeps track of the **cash sitting in each portfolio** â money paid in and
+`ETF_Stocks_Investment` keeps track of the **cash sitting in each portfolio** — money paid in and
 taken out, separate from what has been spent on securities. It writes two tables:
 
 | Table | Holds |
@@ -1072,7 +1073,7 @@ taken out, separate from what has been spent on securities. It writes two tables
 | `TblETFStocksPortfolio` | One running row per portfolio code: its currency, `Cash` and `Investment_Amount`. |
 
 The grid shows the running rows, with `Portfolio` resolved from `TblETFStocksPortfolioCode` by
-matching `Portfolio_Code`. `Cash` and `Investment_Amount` follow the same rule as everywhere else â
+matching `Portfolio_Code`. `Cash` and `Investment_Amount` follow the same rule as everywhere else —
 a `$` for AUD and USD, bare otherwise, and a negative reads `-$1,234.56`. A code with no matching
 description shows `-` rather than a blank.
 
@@ -1083,8 +1084,8 @@ always positive; the sign lives in Investment Type** (`+` pays in, `-` takes out
 box uses the same digits-only keypress guard as every other amount field in the app. The entry is
 appended to `TblETFStocksPortfolioInvestment`, and then:
 
-- **The portfolio already exists** â `Cash` moves by the signed amount.
-- **It does not** â a row is created with the chosen currency, `Cash` set to the signed amount and
+- **The portfolio already exists** — `Cash` moves by the signed amount.
+- **It does not** — a row is created with the chosen currency, `Cash` set to the signed amount and
   `Investment_Amount` set to `0`.
 
 > `Investment_Amount` is **not** touched by adding a movement. It only changes through the edit
@@ -1100,14 +1101,14 @@ Two things are worth knowing:
   AUD balance would quietly corrupt the running total, so the entry is blocked with both currencies
   named rather than silently added.
 - **A `-` on a portfolio that does not exist yet creates it with negative cash.** That is taken as a
-  real state â money owed â rather than an error to reject.
+  real state — money owed — rather than an error to reject.
 
 There is no delete on this page. A movement, once recorded, stays; a balance is corrected through the
 edit panel, which leaves the movement history intact.
 
 ### ETF/stock distribution and dividend rules
 
-`ETF_Stocks_Distribution` records what a holding actually **paid** â distributions and dividends â
+`ETF_Stocks_Distribution` records what a holding actually **paid** — distributions and dividends —
 in `TblETFStocksDistributionDividend`, one row per payment.
 
 The page is filtered rather than dated. Two dropdowns at the top choose a **Full Ticker** and a
@@ -1125,7 +1126,7 @@ A second, independent set of inputs below the table is what actually writes:
 | `Currency` | Dropdown from `TblCurrCode`, defaulting to `AUD`. |
 | `Entitled_Unit` | Numeric, not negative, at most 4 decimal places. |
 | `Amount_Per_Unit` | Numeric, not negative, at most 4 decimal places. |
-| `Total_Amount` | Derived as `round(Entitled_Unit x Amount_Per_Unit, 2)` â **but editable**. |
+| `Total_Amount` | Derived as `round(Entitled_Unit x Amount_Per_Unit, 2)` — **but editable**. |
 | `Is_Reinvested` | The **Reinvested** checkbox, for a payment taken as units rather than cash. Shown as **Reinvested** in the table too. |
 
 **Total Amount is derived but not locked.** It is recomputed whenever Entitled Unit or Amount Per
@@ -1133,25 +1134,25 @@ Unit changes, and a figure typed over it stands until one of those two changes a
 because a registry's rounding or a withholding deduction can leave the paid total slightly off the
 product of the two.
 
-> The rounding is `Math.Round`, which is **banker's rounding** â `round(12.345, 2)` gives `12.34`,
+> The rounding is `Math.Round`, which is **banker's rounding** — `round(12.345, 2)` gives `12.34`,
 > not `12.35`. This is the same helper every other derived total in the app uses, so the behaviour
 > is consistent across pages rather than correct in isolation.
 
 Add, Update and Delete all work. The entry area defaults its ticker and portfolio to whatever the
-filter is showing, and after a save the filter moves to the row just written â otherwise a payment
+filter is showing, and after a save the filter moves to the row just written — otherwise a payment
 saved outside the current filter would vanish with no explanation. Clicking a row loads it for
 editing; **Clear** abandons the edit and returns to entering a new payment.
 
-Like the transaction tables, this one has **no primary key** â the same ticker can pay twice on one
-date â so update and delete match on **all eight of the row's original column values**, re-read from
+Like the transaction tables, this one has **no primary key** — the same ticker can pay twice on one
+date — so update and delete match on **all eight of the row's original column values**, re-read from
 the table rather than taken from the display, and the form warns before touching more than one
 identical row.
 
 ### Cost base adjustment
 
-`ETF_Stocks_Cost_Base_Adjustment`, shown as **ETF/Stock Cost Base Adjustment** under `Process` â¸
+`ETF_Stocks_Cost_Base_Adjustment`, shown as **ETF/Stock Cost Base Adjustment** under `Process` ▸
 ETF/Stock, records an adjustment to what a holding is treated as having cost in a given financial
-year â the kind of thing a fund's annual tax statement hands you â and can then spread that
+year — the kind of thing a fund's annual tax statement hands you — and can then spread that
 amount across the purchase lots the year rests on.
 
 The page has two halves. The top one keeps records in `TblETFStocksCostBaseAdjustment`; the
@@ -1159,7 +1160,7 @@ bottom one applies an adjustment to `TblETFStocksPurchase`.
 
 #### The stored adjustments
 
-Three filters â Financial Year, Portfolio and Full Ticker, each with an `All` entry â narrow the
+Three filters — Financial Year, Portfolio and Full Ticker, each with an `All` entry — narrow the
 table above the entry area. The Portfolio filter lists **descriptions** but matches on the code
 behind them. Below it, six inputs add, update and delete a record: Financial Year, Portfolio Code
 (with its description beside it), Full Ticker, Currency, Adjustment Type (`+` or `-`) and
@@ -1167,7 +1168,7 @@ Adjustment.
 
 `Adjustment` is stored **positive**; the direction lives in `Adjustment_Type`, so a negative
 figure is refused with a message pointing at the type instead. The table has no key, so update
-and delete match on all six columns â identical rows are indistinguishable and would be changed
+and delete match on all six columns — identical rows are indistinguishable and would be changed
 together.
 
 #### The lots an adjustment applies to
@@ -1217,10 +1218,10 @@ Real_Total_Cost_Base = new Total_Cost_Base, unless it was already 0
 ```
 
 The lot keeps its own `Fee` in the restated total, which is the same shape the total is given
-everywhere else it is worked out â on entry, and when a part sale splits a lot. Ten units at
+everywhere else it is worked out — on entry, and when a part sale splits a lot. Ten units at
 `5.00` with a `2.50` fee total `52.50`; add `2.50` a unit and they total `77.50`, not `75.00`.
 
-A reinvested lot has a real cost of `0`, and **zero stays zero** â spreading an adjustment over it
+A reinvested lot has a real cost of `0`, and **zero stays zero** — spreading an adjustment over it
 would invent money that was never paid.
 
 **The table above the button is deliberately left as it was.** Only the third table is re-read, so
@@ -1229,7 +1230,7 @@ can be compared line by line. Re-choosing the Financial Year, Portfolio Code or 
 the middle table from the database and clears the result.
 
 > **This rewrites stored purchases and cannot be undone.** The button says what it is about to do
-> â the amount per unit, the direction, how many rows and which ticker and portfolio â and asks
+> — the amount per unit, the direction, how many rows and which ticker and portfolio — and asks
 > before doing it.
 >
 > **Pressing it a second time is refused.** Once an adjustment has been spread, the rows listed
@@ -1304,7 +1305,7 @@ and Delete asks first.
 dropdown listing `TblFinancialYear.Name` newest-closing first, plus the **Portfolio** dropdown and
 **Main Only** checkbox the other ETF pages use, and a table of the matching rows.
 
-The year dropdown has **no `All` option** â a reconciliation is read one year at a time â and it
+The year dropdown has **no `All` option** — a reconciliation is read one year at a time — and it
 selects the most recently closing year when the page opens. Sixteen of the table's twenty columns
 are shown; `Investment`, `Sold_Amount`, `Investment_Loan_Interest` and `Tax` are stored but not
 displayed.
@@ -1313,13 +1314,13 @@ Six columns are coloured **red below zero and green above it**, zero left alone:
 figures, both percentages, and both capital gains. The plain money columns are never coloured.
 
 Each row carries its own `Currency`, shown as the third column and driving the `$` on every money
-column beside it â a row left without one displays `-` and its amounts stay bare, the same rule the
+column beside it — a row left without one displays `-` and its amounts stay bare, the same rule the
 other ETF pages follow.
 
 #### Entering a reconciliation
 
 Below the table an entry section adds, updates and deletes rows. **`Financial_Year` and
-`Portfolio_Code` together identify a reconciliation** â one per portfolio per year â so Add refuses
+`Portfolio_Code` together identify a reconciliation** — one per portfolio per year — so Add refuses
 a pair that already exists, and Update and Delete match on that pair. Clicking a row in the table
 loads it back exactly as stored, without re-deriving anything.
 
@@ -1328,14 +1329,14 @@ database, all of them still editable afterwards:
 
 | Field | Default |
 | --- | --- |
-| `Previous_Investment` | The preceding year's `Ending_Investment` for the same code â the year whose `End_Date` falls latest before this one starts. `0` when there is none. |
-| `Investment` | Money **in less money out less what is still cash**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash` â see below. |
+| `Previous_Investment` | The preceding year's `Ending_Investment` for the same code — the year whose `End_Date` falls latest before this one starts. `0` when there is none. |
+| `Investment` | Money **in less money out less what is still cash**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash` — see below. |
 | `Sold_Amount` | `SUM(Real_Total_Cost_Base)` from sold purchases inside the year. |
 | `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
 | `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below. |
 | `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year. |
 | `Capital_Gains_On_Paper`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
-| `Investment_Loan_Interest`, `Tax` | `0` â nothing in the database records them. |
+| `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
 
 **The portfolio's `Cash` is subtracted.** Money paid in is not all of it invested: whatever is
 still sitting as cash has not bought anything, and this figure is meant to be what actually went
@@ -1358,7 +1359,7 @@ default, the same way a year of withdrawals alone does. Like every figure in thi
 editable, so it can be typed over.
 
 > The page used to carry a note beside the box reading *"Please minus any amount in cash"*. The
-> subtraction is done for you now, so that note is gone â leaving it would have asked for the
+> subtraction is done for you now, so that note is gone — leaving it would have asked for the
 > deduction to be made twice.
 
 > `Amount` on a portfolio movement is **always stored positive**, with the direction held in
@@ -1383,7 +1384,7 @@ The rest are derived and re-derive as their inputs change: `On_Paper_Profit_Or_L
 `Ending_Investment`.
 
 > Every derived box stays editable, and a typed figure stands **until something it depends on
-> changes again** â editing Ending Investment then changing Investment replaces it, the same rule
+> changes again** — editing Ending Investment then changing Investment replaces it, the same rule
 > the Distribution page uses for its total. The chain only ever runs one way, so nothing loops.
 >
 > A percentage whose `Ending_Investment` is not above zero reports `0` rather than being left
@@ -1392,7 +1393,7 @@ The rest are derived and re-derive as their inputs change: `On_Paper_Profit_Or_L
 
 ### Financial year historical
 
-`ETF_Stocks_FY_Historical`, shown as **ETF/Stock Financial Year Historical** under `Inquiry` â¸
+`ETF_Stocks_FY_Historical`, shown as **ETF/Stock Financial Year Historical** under `Inquiry` ▸
 ETF/Stock, is the read-only companion to
 [ETF/Stock Financial Year Reconciliation](#financial-year-reconciliation). It shows what is
 already stored in `TblETFStocksFinancialYear` and never writes: no entry section, no defaults,
@@ -1408,27 +1409,27 @@ There is deliberately **no "All" on Financial Year**. A row is one portfolio's r
 year, so stacking several years into one table would list the same portfolio more than once and
 the totals underneath would double-count it.
 
-The page **opens with Main Only ticked**, as does every other page carrying that box â Portfolio
+The page **opens with Main Only ticked**, as does every other page carrying that box — Portfolio
 Summary, Portfolio Diversification, Dividend History and Financial Year Reconciliation. So the
 first table drawn already covers main portfolios only, and the Portfolio dropdown already omits
 the non-main ones.
 
 `Main Only` narrows the Portfolio list itself, so a non-main portfolio cannot be left selected
-while it is ticked â otherwise the page would show an empty table with nothing to explain it.
+while it is ticked — otherwise the page would show an empty table with nothing to explain it.
 On `All`, `Main Only` still applies, and a row carrying no portfolio code belongs to no main
 portfolio, so it drops out with the rest.
 
 #### The table
 
 The same sixteen columns as the reconciliation page, in the same order, with the same
-formatting and the same red/green rules â negative red, positive green, zero left alone on
+formatting and the same red/green rules — negative red, positive green, zero left alone on
 On Paper Profit/Loss, Percentage On Paper Profit/Loss, Capital Gains On Paper, Real Capital
 Gains, Real Profit/Loss and Percentage Real Profit/Loss. Rows are ordered by portfolio code.
 
 #### The totals
 
 Twelve figures sit under the table, in two columns of six. **They appear only while Portfolio is
-`All`** â choosing one portfolio puts them away rather than repeating that portfolio's own row
+`All`** — choosing one portfolio puts them away rather than repeating that portfolio's own row
 back at the reader.
 
 | Label | How it is worked out | Coloured |
@@ -1436,15 +1437,15 @@ back at the reader.
 | Total Ending Investment | sum of `Ending Investment` | no |
 | Total On Paper Ending Value | sum of `On Paper Ending Value` | no |
 | Total On Paper Profit/Loss | sum of `On Paper Profit/Loss` | yes |
-| Percentage Total On Paper Profit/Loss | `Total On Paper Profit/Loss` Ã· `Total Ending Investment` Ã 100, or 0 when the investment is not above zero | yes |
+| Percentage Total On Paper Profit/Loss | `Total On Paper Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 when the investment is not above zero | yes |
 | Total Distribution/Dividend | sum of `Distribution/Dividend` | no |
-| Total Distribution/Dividend Yield | `Total Distribution/Dividend` Ã· `Total Ending Investment` Ã 100, or 0 | no |
+| Total Distribution/Dividend Yield | `Total Distribution/Dividend` ÷ `Total Ending Investment` × 100, or 0 | no |
 | Total Distribution/Dividend Reinvested | sum of `Distribution/Dividend Reinvested` | no |
 | Total Distribution/Dividend Not Reinvested | sum of `Distribution/Dividend Not Reinvested` | no |
 | Total Capital Gains On Paper | sum of `Capital Gains On Paper` | no |
 | Total Real Capital Gains | sum of `Real Capital Gains` | no |
 | Total Real Profit/Loss | sum of `Real Profit/Loss` | yes |
-| Percentage Real Profit/Loss | `Total Real Profit/Loss` Ã· `Total Ending Investment` Ã 100, or 0 | yes |
+| Percentage Real Profit/Loss | `Total Real Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 | yes |
 
 Every percentage divides by **Total Ending Investment**, including the two that measure real
 rather than on-paper results, and each guards its own divide-by-zero.
@@ -1452,12 +1453,12 @@ rather than on-paper results, and each guards its own divide-by-zero.
 Amounts carry a dollar sign under the same rule as the rest of the app: only when the rows that
 fed the total all share one dollar currency (AUD or USD). A selection spanning AUD and USD
 totals to a number that is in neither, so it is shown bare rather than labelled with a currency
-it is not in â and a selection with no rows at all has no currency to name, so its zeros are
+it is not in — and a selection with no rows at all has no currency to name, so its zeros are
 bare too, matching [Dividend history](#dividend-history).
 
 #### Generate Excel
 
-Writes what is on screen to a `.xlsx` â the filters, the note, the twelve totals (only when they
+Writes what is on screen to a `.xlsx` — the filters, the note, the twelve totals (only when they
 are showing), then the table. The file is named:
 
 ```
@@ -1597,7 +1598,7 @@ so an empty table is explainable rather than mysterious.
 
 #### Generate Excel
 
-Writes what is on screen to a `.xlsx` â the four filters, the note, the aggregate labels, then the
+Writes what is on screen to a `.xlsx` — the four filters, the note, the aggregate labels, then the
 table. **Whichever of the two tables is showing is the one exported**, with its own headings: the
 eight-column summary on `All`, the six-column payment list for a single ticker. The aggregate rows
 follow the same view, so the sheet always matches the screen it was taken from.
@@ -1609,7 +1610,7 @@ ETF_Stocks_Dividend_History _ yyyyMMddHHmmss _ <Portfolio> _ <Yes|No for Main On
 ```
 
 for example `ETF_Stocks_Dividend_History_20260905175507_All_No_All_All.xlsx`. Because the Portfolio dropdown shows
-*descriptions*, a name like `Oz Betashares Direct` puts spaces in the filename â legal, and the same
+*descriptions*, a name like `Oz Betashares Direct` puts spaces in the filename — legal, and the same
 as [Portfolio summary](#portfolio-summary) already does.
 
 Every cell is written as text, for the reason given under Portfolio summary: left to itself Excel
@@ -1622,7 +1623,7 @@ The button refuses an empty table rather than producing a sheet with nothing und
 
 ### Price chart
 
-`ETF_Stocks_Price_Chart`, shown as **ETF/Stock Price Chart** under `Inquiry` â¸ ETF/Stock, plots
+`ETF_Stocks_Price_Chart`, shown as **ETF/Stock Price Chart** under `Inquiry` ▸ ETF/Stock, plots
 what `TblETFStocksPrice` holds for a single ticker. It reads and never writes.
 
 Two filters drive it, and changing either redraws immediately:
@@ -1633,7 +1634,7 @@ Two filters drive it, and changing either redraws immediately:
 | Financial Year | `All`, then `TblFinancialYear.Name` newest closing year first | `All` |
 
 `All` charts every price on record for the ticker. Naming a year restricts the prices to
-`Price_Date` between that year's `Start_Date` and `End_Date` inclusive â so the earliest and
+`Price_Date` between that year's `Start_Date` and `End_Date` inclusive — so the earliest and
 latest points become the first and last prices *within the year*, not overall.
 
 #### Choosing which prices to plot
@@ -1643,11 +1644,11 @@ together. When the ticker has eight prices or fewer in range, all of them are pl
 that, the points are chosen by walking evenly across the ordered list:
 
 ```
-index = round( i Ã (count - 1) / 7 )   for i = 0 .. 7
+index = round( i × (count - 1) / 7 )   for i = 0 .. 7
 ```
 
-Because `i / 7` runs exactly 0 to 1, the first and last prices are always kept â they are the
-ends of the range being shown â and the six in between land at even intervals. Twenty prices,
+Because `i / 7` runs exactly 0 to 1, the first and last prices are always kept — they are the
+ends of the range being shown — and the six in between land at even intervals. Twenty prices,
 for instance, plot as positions 0, 3, 5, 8, 11, 14, 16, 19.
 
 Spreading them this way rather than taking any eight matters for real data: a ticker priced
@@ -1656,16 +1657,16 @@ daily for one week and then not again for a year would otherwise chart as a sing
 > **The points are chosen evenly, not at random.** The request asked for "random price in
 > between ... with as big as spread as possible". Even spacing is what produces the largest
 > possible spread, and it also means the same ticker draws the same chart every time it is
-> opened â a genuinely random pick would move the line about on each viewing and make two
+> opened — a genuinely random pick would move the line about on each viewing and make two
 > readings of the same data disagree. If randomness is actually wanted, `Spread` in
 > `ETF_Stocks_Price_Chart.cs` is the single method to change.
 
 #### What is displayed
 
-- The **currency label** shows the `Currency` of the *first* price in range â the earliest one â
+- The **currency label** shows the `Currency` of the *first* price in range — the earliest one —
   and the Y axis title repeats it. A ticker whose prices are not all in one currency is not
   detected here; see [Multi-currency handling](#multi-currency-handling).
-- The **X axis** carries the full date, formatted `dd-MMM-yyyy` in `en-AU` â the same format the
+- The **X axis** carries the full date, formatted `dd-MMM-yyyy` in `en-AU` — the same format the
   rest of the app uses for a date. Labels are the plotted dates themselves, so every point is
   distinct even when several prices fall in one month. The axis is a series of points in date
   order, not a calendar: the gap between two labels is one price to the next, not elapsed time,
@@ -1675,7 +1676,7 @@ daily for one week and then not again for a year would otherwise chart as a sing
   date and amount. It is **not anchored at zero** (`IsStartedFromZero = false`): a share
   moving $24 to $38 is the whole point of the chart, and a zero baseline squeezes that into
   the top third. This is the usual way a price series is drawn, but it does mean the
-  vertical scale exaggerates movement compared with a zero-based chart â read the axis, not
+  vertical scale exaggerates movement compared with a zero-based chart — read the axis, not
   the slope.
 - A **note line** under the filters reports how many of how many prices were plotted and the
   range they span, e.g. `8 of 20 price(s) plotted, 15-Jan-2025 to 15-Aug-2026 - spread evenly across
@@ -1688,7 +1689,7 @@ daily for one week and then not again for a year would otherwise chart as a sing
 ### Portfolio summary
 
 `ETF_Stocks_Portfolio_Summary` aggregates `TblETFStocksPurchase` into one row per `Full_Ticker`.
-It only ever counts **unsold** lots (`Is_Sold = False`) â a sold lot leaves the portfolio.
+It only ever counts **unsold** lots (`Is_Sold = False`) — a sold lot leaves the portfolio.
 
 The **Portfolio** dropdown offers `All` plus one entry per row in `TblETFStocksPortfolioCode`,
 showing the `Description`. Picking one filters on that row's `Portfolio_Code`; `All` applies no
@@ -1697,14 +1698,14 @@ two portfolio codes sharing a description still filter correctly.
 
 A **Main Only** checkbox narrows everything to portfolio codes marked `Is_Main`, and is **ticked when the
 page opens**, so the default view is main portfolios only. It filters the Portfolio dropdown as
-well as the data, so a non-main portfolio cannot be selected while it is ticked â
+well as the data, so a non-main portfolio cannot be selected while it is ticked —
 otherwise the page would show an empty table with no explanation. A purchase carrying **no
 portfolio code at all** is excluded too, since it belongs to no main portfolio. The note line says when the
 filter is on.
 
 A second **Full Ticker** dropdown chooses between two views. It is filled from the tickers the
-selected portfolio actually holds â taken from the summary result rather than a separate query,
-so the two views cannot disagree â and resets to `All` whenever the portfolio changes.
+selected portfolio actually holds — taken from the summary result rather than a separate query,
+so the two views cannot disagree — and resets to `All` whenever the portfolio changes.
 
 | Full Ticker | View |
 | --- | --- |
@@ -1715,7 +1716,7 @@ so the two views cannot disagree â and resets to `All` whenever the portfol
 | --- | --- |
 | `Full Ticker` | Grouping key. |
 | `Total Unit` | `SUM(Unit)` |
-| `Total Investment` | `SUM(Real_Total_Cost_Base)` â so DRIP lots add units but no cost. |
+| `Total Investment` | `SUM(Real_Total_Cost_Base)` — so DRIP lots add units but no cost. |
 | `Current Price` | Latest `TblETFStocksPrice` row for the ticker, by `Price_Date`. |
 | `Total Current Amount` | `round(Total Unit x Current Price, 2)` |
 | `Current Real Profit/Loss` | `Total Current Amount - Total Investment`. **Green** above zero, **red** below. |
@@ -1727,7 +1728,7 @@ so the two views cannot disagree â and resets to `All` whenever the portfol
 > left out of the portfolio total as well, so the remaining shares still add up to 100 %.
 
 `Percentage from whole portfolio` divides by a figure that is only known once every row has been
-priced, so the grid is built in **two passes** â the first works out each row and the running
+priced, so the grid is built in **two passes** — the first works out each row and the running
 totals, the second renders. Prices are still fetched once per ticker.
 
 Four totals sit below the grid, each the sum of its own column:
@@ -1760,7 +1761,7 @@ Picking a ticker lists every unsold purchase behind it, under the same portfolio
 | `Portfolio Code` | `Portfolio_Code` |
 
 Its five totals: `Total Unit`, `Grand Total Cost Base`, `Grand Total Real Cost Base`,
-`Total Real Current Profit/Loss` (coloured), and `Percentage Total Real Current Profit/Loss` â
+`Total Real Current Profit/Loss` (coloured), and `Percentage Total Real Current Profit/Loss` —
 the profit over the **real** cost base when that is above zero, otherwise `0`.
 
 A DRIP purchase is where the two cost-base totals separate: it has a `Total_Cost_Base` but a
@@ -1770,7 +1771,7 @@ both profit totals read `-`, while the unit and cost-base totals still compute.
 
 #### Generate Excel
 
-Writes what is on screen to a `.xlsx` â the filters, the aggregates, then the table, with the
+Writes what is on screen to a `.xlsx` — the filters, the aggregates, then the table, with the
 single-ticker view exporting its own columns rather than the summary's. The file is named:
 
 ```
@@ -1787,7 +1788,7 @@ cells are kept exactly as displayed. The trade-off is that the figures arrive as
 spreadsheet formula over them needs converting first.
 
 Excel is driven with one bulk write rather than cell by cell, every COM object is released
-explicitly, and the Excel process is killed as a backstop â `Quit` does not always end it, and
+explicitly, and the Excel process is killed as a backstop — `Quit` does not always end it, and
 without that an export could leave an invisible copy running.
 
 #### Money formatting
@@ -1797,7 +1798,7 @@ Where a figure is denominated in **AUD or USD** it is shown with a `$`; any othe
 the bare amount. A negative reads `-$75.30`, not `$-75.30`.
 
 Unit counts and percentages never take a sign. A **total** only takes one when *every* row
-feeding it is AUD or USD â mixing currencies into one sum is already approximate, so stamping a
+feeding it is AUD or USD — mixing currencies into one sum is already approximate, so stamping a
 dollar sign on the result would overstate it. The summary reads each ticker's currency with
 `Max([Currency])` rather than grouping by it, which would otherwise split one ticker across
 several rows.
@@ -1805,7 +1806,7 @@ several rows.
 The aggregate is read fully before any price lookup, so no second reader is opened on the shared
 connection while the first is still live.
 
-The sample database ships with six currencies â AUD, BHT, IDR, SGD, USD, YEN â 8 accounts,
+The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — 8 accounts,
 11 tickers with their latest prices, and a single portfolio code `OB` ("Oz Betashares Direct")
 which is the default the transaction page selects.
 
@@ -1818,7 +1819,7 @@ Three pages export: [Portfolio summary](#portfolio-summary),
 [Financial year historical](#financial-year-historical). They share these rules.
 
 - **The form's name leads the file name**, so an export says which page produced it before
-  anything else â `ETF_Stocks_Portfolio_Summary_...`, `ETF_Stocks_Dividend_History_...`,
+  anything else — `ETF_Stocks_Portfolio_Summary_...`, `ETF_Stocks_Dividend_History_...`,
   `ETF_Stocks_FY_Historical_...`. It is taken from the form's own `Name` property rather than
   typed out, so it cannot drift from the form it belongs to. The timestamp follows the prefix,
   then that page's own filters.
@@ -1838,7 +1839,7 @@ Google Sheet instead of saving it locally.
 [Portfolio summary](#portfolio-summary) has a third button beside **Generate Excel**. It builds
 **the same workbook**, uploads it to the signed-in user's Google Drive, and asks Drive to convert
 it into a Google Sheet on the way in. The workbook itself is written to the temporary directory
-and deleted afterwards â it is only a carrier. Nothing is saved locally; that is what the Excel
+and deleted afterwards — it is only a carrier. Nothing is saved locally; that is what the Excel
 button is for.
 
 Both buttons go through one `Build_Sheet`, so the workbook and the Sheet are the same sheet by
@@ -1848,14 +1849,14 @@ the tabs and where to write them; only the caller differs.
 #### One file, reused
 
 Unlike the Excel export, this does **not** make a new file each time. It writes to **one Sheet,
-by name**, creating it the first time and replacing its contents after that â so the link keeps
+by name**, creating it the first time and replacing its contents after that — so the link keeps
 working and anyone it has been shared with sees the current figures rather than collecting a
 fresh file per export. The success dialog says whether it created or updated.
 
 The name comes from `PortfolioGoogleSheetName` in `app.config`; empty or missing falls back to
 **Financial Balance ETFs or Stocks Portfolio Investments**. The setting is named for the page
 rather than for Drive, so a second page exporting this way later gets its own rather than quietly
-sharing this one. The name carries no timestamp, deliberately â a timestamp would make every run
+sharing this one. The name carries no timestamp, deliberately — a timestamp would make every run
 a different file, which is the behaviour this replaces.
 
 **Changing the name starts a new Sheet.** Both the search and the remembered id are keyed by
@@ -1872,32 +1873,32 @@ It looks in two places, in order of how far they can be trusted:
 
 1. **The id it wrote down last time**, if that file is still in Drive and still carries that name.
 2. Failing that, **a search by name** for an untrashed Google Sheet.
-3. Failing both, it creates one â and writes the new id down.
+3. Failing both, it creates one — and writes the new id down.
 
 **Why the id is written down at all.** This button signs in from scratch on every click: no stored
 token, a fresh consent every time. That does not sit well with `drive.file`, which grants access
 *per file*. A brand-new authorisation is not a reliable way to inherit per-file access to
 something an earlier one created, and when it does not carry over, the search finds nothing and a
 second Sheet of the same name gets made. **That is the duplicate.** Writing the id down makes
-"the same file every time" hold either way. A Drive file id is not a secret â it is in the URL of
-the Sheet â so keeping it costs nothing that the design was trying to avoid by storing no token.
+"the same file every time" hold either way. A Drive file id is not a secret — it is in the URL of
+the Sheet — so keeping it costs nothing that the design was trying to avoid by storing no token.
 
 It is kept in `%APPDATA%\FinancialBalance\google_drive.txt`, one line per Sheet name, rather
 than in the `.mdb`: the databases get copied between Sample, Current, Debug and Release, and a
 file id has no business travelling with them. Delete the file and the next run falls back to
-searching. A remembered id is **checked before it is used** â still present, still that name,
-not in the bin â so a Sheet the user has deleted or renamed is never silently written over.
+searching. A remembered id is **checked before it is used** — still present, still that name,
+not in the bin — so a Sheet the user has deleted or renamed is never silently written over.
 
 **A search that cannot be carried out is not the same as finding nothing.** If Drive refuses or
 cannot be reached, the upload stops and says so rather than treating the unanswered question as
-"nothing there" and making a second file â which is exactly how duplicates used to appear.
+"nothing there" and making a second file — which is exactly how duplicates used to appear.
 
 The `drive.file` scope is what makes searching by name safe: the query can only ever see files
 **this application created**, so it cannot pick up something of the user's that happens to share
 the name, and it cannot overwrite a file the app has no business touching.
 
 **The same scope is the one remaining limit.** A Sheet of that name that this application did
-not create â one made by hand, or under a different OAuth client â is invisible both to the
+not create — one made by hand, or under a different OAuth client — is invisible both to the
 search and to the remembered id, so a file of its own is created rather than the existing one
 being overwritten. From then on that new file is the one kept up to date. Overwriting a Sheet
 the app did not create would mean asking for the full `drive` scope, which Google classes as
@@ -1905,7 +1906,7 @@ the app did not create would mean asking for the full `drive` scope, which Googl
 Drive. That is a poor trade for a personal export, so it is deliberately not done.
 
 If more than one Sheet already carries the name, the **most recently changed** one is written to
-â the search asks for `orderBy=modifiedTime desc`, so which one gets overwritten is decided
+— the search asks for `orderBy=modifiedTime desc`, so which one gets overwritten is decided
 rather than left to whatever order Drive answers in. The others are left alone; deleting a file
 of the user's on a guess is not this button's business. The success dialog says how many were
 found, since only one of them is being kept current and the rest will go stale.
@@ -1914,26 +1915,26 @@ found, since only one of them is being kept current and the rest will go stale.
 
 When **Full Ticker** is `All`, the Sheet gets the summary as its first tab and then **one tab per
 holding**, each carrying what the page would show had that ticker been chosen. With a single
-ticker chosen it is that ticker alone, one tab. The Excel button is unchanged â it exports what
+ticker chosen it is that ticker alone, one tab. The Excel button is unchanged — it exports what
 is on screen and nothing more, since that file is a snapshot rather than something shared.
 
 Each per-ticker tab is produced by putting the page into that ticker's view and reading it back,
-not by a second query written for the purpose â so a tab shows exactly what the user would see,
+not by a second query written for the purpose — so a tab shows exactly what the user would see,
 and there is no second copy of the logic to drift. The page is put back as it was found.
 
 The detail view is driven by setting which grid is visible and calling `Get_Detail` directly,
 **not** by assigning to the dropdown's `Text`. `CmbTicker` is a `DropDownList`, and assigning a
-value that is not among its items does nothing at all â silently â which would leave a tab
+value that is not among its items does nothing at all — silently — which would leave a tab
 headed with one ticker sitting over another ticker's rows. `Build_Sheet` is told which ticker the
 sheet is for rather than reading the dropdown, for the same reason.
 
 Tab names are the ticker, put through Excel's rules: 31 characters at most, `: \ / ? * [ ]`
-replaced, and made unique with a `(2)` suffix if two would collide â Excel refuses a workbook
+replaced, and made unique with a `(2)` suffix if two would collide — Excel refuses a workbook
 with two tabs alike. `Full_Ticker` is 31 characters in the database, so it only just fits.
 
 #### No new dependencies
 
-This is written against the framework alone â `HttpWebRequest`, `TcpListener`,
+This is written against the framework alone — `HttpWebRequest`, `TcpListener`,
 `RNGCryptoServiceProvider`, and `JavaScriptSerializer` from `System.Web.Extensions`. The
 alternative, Google's own `Google.Apis.*` packages, would have been less code but would have
 brought a dozen or so DLLs to a program that **ships as one exe, one config and one mdb**. Two
@@ -1949,7 +1950,7 @@ dialog is not available however well it would match the rest of the application.
 It is the OAuth 2.0 authorization code flow for installed applications, with PKCE:
 
 1. a random `code_verifier`, and its SHA-256 as the `code_challenge`
-2. a `TcpListener` on `127.0.0.1` on a port **the OS picks** â nothing to configure, and two
+2. a `TcpListener` on `127.0.0.1` on a port **the OS picks** — nothing to configure, and two
    copies of the program cannot collide
 3. the browser is opened on Google's consent page
 4. Google redirects back to that port with a one-time code, which is read straight off the socket
@@ -1958,7 +1959,7 @@ It is the OAuth 2.0 authorization code flow for installed applications, with PKC
 **Every click signs in again.** No refresh token is requested (`access_type=online`) and nothing
 is written to disk, so there is no stored credential to leak and no session to go stale. The
 request also carries `prompt=select_account consent`, which makes Google ask rather than wave
-through an account it already knows. What it cannot do is force a password prompt â if the
+through an account it already knows. What it cannot do is force a password prompt — if the
 browser is still signed in to Google the user picks an account instead, and that is the browser's
 session, not something this program can clear.
 
@@ -1975,7 +1976,7 @@ instead of the "you can close this tab" page.
 
 #### The scope
 
-`drive.file` â only the files this application creates. It cannot see anything else in the
+`drive.file` — only the files this application creates. It cannot see anything else in the
 Drive, which is the right level of access for something that only ever writes exports, and it
 stays clear of the scopes Google treats as restricted.
 
@@ -1988,14 +1989,14 @@ is asked for `id,webViewLink`, and the link is offered in the success dialog wit
 open it.
 
 Google puts the reason for a refusal in the body of the failing response, which is far more use
-than *"The remote server returned an error: (400) Bad Request"* â so the body is read and its
+than *"The remote server returned an error: (400) Bad Request"* — so the body is read and its
 message shown instead.
 
 #### Setting it up
 
 The button does nothing until an OAuth client exists. It says so, and names what it needs, rather
-than failing at the browser. What has to be created on the Google side â the Cloud project, the
-Drive API, the consent screen, and a **Desktop app** client â is written up in
+than failing at the browser. What has to be created on the Google side — the Cloud project, the
+Drive API, the consent screen, and a **Desktop app** client — is written up in
 `GOOGLE_DRIVE_EXPORT_PLAN.md`. The resulting client id and secret go in `app.config`; see
 [Configuration](#configuration).
 
@@ -2009,12 +2010,12 @@ right table:
 
 | Account type | Debit (`D`) | Credit (`C`) | Accumulates into |
 | --- | --- | --- | --- |
-| `1` Asset | `+` amount | `â` amount | `TblAsset.Balance` |
-| `2` Liability | `â` amount | `+` amount | `TblLiability.Balance` |
-| `3` Income | `â` amount | `+` amount | `TblMonthlyTrans.Balance` |
-| `4` Expense | `+` amount | `â` amount | `TblMonthlyTrans.Balance` |
+| `1` Asset | `+` amount | `−` amount | `TblAsset.Balance` |
+| `2` Liability | `−` amount | `+` amount | `TblLiability.Balance` |
+| `3` Income | `−` amount | `+` amount | `TblMonthlyTrans.Balance` |
+| `4` Expense | `+` amount | `−` amount | `TblMonthlyTrans.Balance` |
 
-Every line, regardless of type, is also appended verbatim to `TblDailyTrans` â that table is the
+Every line, regardless of type, is also appended verbatim to `TblDailyTrans` — that table is the
 audit trail and the source `Daily_Input` reads back when you reopen a voucher.
 
 Amending a voucher is implemented as delete-then-reinsert:
@@ -2033,7 +2034,7 @@ dropdown offers all four account types, and each is read the way its `Acct_Type`
 | Income | `3` | `I` | total for the year | `TblMonthlyTrans` |
 | Expense | `4` | `E` | total for the year | `TblMonthlyTrans` |
 
-Asset and Liability are **stocks** â a balance at a point in time â so past years take the balance
+Asset and Liability are **stocks** — a balance at a point in time — so past years take the balance
 at that year's last closed month, and the current year reads the live balance table. Income and
 Expense are **flows**, summed across every month of the year.
 
@@ -2044,7 +2045,7 @@ converts every account to AUD using December's rate for that year.
 
 ## Conventions
 
-Several conventions are load-bearing â the code depends on them and will misbehave if they are
+Several conventions are load-bearing — the code depends on them and will misbehave if they are
 broken.
 
 - **Account codes are five characters**, a one-letter type prefix plus a four-digit serial
@@ -2060,43 +2061,43 @@ broken.
 - **Every page answers Escape, via `Form.CancelButton = this.CmdBack`.** It is set in the
   designer, not by a key handler, and it is what makes Escape behave as a click on **Back**.
   A new page that omits it looks and works correctly until someone presses Escape and nothing
-  happens. Every form except `Main_Form` â the launcher, which has no Back button â sets it.
+  happens. Every form except `Main_Form` — the launcher, which has no Back button — sets it.
   New pages should also carry the shared form background, `Color.FromArgb(255, 247, 238)`;
   the named `Color.OldLace` is a near-miss at `(253, 245, 230)` and shows as a subtly
   different shade beside the other pages.
 - **`Main_Form` hides, every other form closes.** `Program.Main` runs `Application.Run(new
-  Main_Form())`, so Main_Form *is* the message loop â a menu handler there must call `this.Hide()`.
+  Main_Form())`, so Main_Form *is* the message loop — a menu handler there must call `this.Hide()`.
   Every other form navigates with `this.Show()` on the target followed by `this.Close()` on itself.
   Calling `Close()` from a Main_Form handler quits the application instead of opening the page,
   with no error to explain it.
 - **Every form sets `ControlBox = false`, and it follows from the rule above.** Because
   Main_Form only hides, closing a page any way *other* than through **Back** never brings it
   back: the page closes, Main_Form stays hidden, and the message loop keeps running with nothing
-  on screen â the app appears to vanish while the process is still alive. Removing the title-bar
+  on screen — the app appears to vanish while the process is still alive. Removing the title-bar
   buttons makes Back the only way out, which is why all thirty-three forms do it.
 - **Buttons are Arial 8 on `SystemColors.Control`**, with `UseVisualStyleBackColor = false`.
   Left unset, a button inherits the form's cream background and renders visibly lighter and
   larger than every other button in the app.
 - **No page is designed wider than 1264.** Windows clamps a window to the screen's working area
-  on first show, and **anything past that clamp is clipped rather than scrolled** â there is no
+  on first show, and **anything past that clamp is clipped rather than scrolled** — there is no
   horizontal scrolling on these forms. The five widest pages were designed at 1340, which on a
   1280-wide screen came up with a 1284 client area: the **Back** button lost a third of itself and
   each wide grid lost 35px of its last column, silently, since nothing errors. 1264 leaves 20px of
   headroom under the clamp on such a screen rather than sitting on it. Heights are less
-  constrained â several pages are taller than the working area and simply extend past the bottom.
+  constrained — several pages are taller than the working area and simply extend past the bottom.
 
 ---
 
 ## Multi-currency handling
 
 Each account is denominated in one currency, and **balances are stored in that account's own
-currency** â never pre-converted. Conversion happens at report time.
+currency** — never pre-converted. Conversion happens at report time.
 
 `TblCurrRate.Curr_Rate` holds **IDR per one unit** of the currency, so IDR is the pivot:
 
 ```
-amount_IDR   = Balance Ã GetCurrRate(Curr_Code, month)
-amount_AUD   = amount_IDR Ã· GetCurrRate("AUD", month)
+amount_IDR   = Balance × GetCurrRate(Curr_Code, month)
+amount_AUD   = amount_IDR ÷ GetCurrRate("AUD", month)
 ```
 
 `Mdl1.GetCurrRate` resolves a rate for a given currency and month with a three-step fallback:
@@ -2105,7 +2106,7 @@ amount_AUD   = amount_IDR Ã· GetCurrRate("AUD", month)
 2. Failing that, the latest rate **on or before** the first of that month.
 3. Failing that, the earliest rate **on or after** the month's end.
 
-If none exists it returns `1`, silently leaving the amount unconverted â worth knowing when a
+If none exists it returns `1`, silently leaving the amount unconverted — worth knowing when a
 report shows an implausible figure for a currency with no rates loaded.
 
 The `Rate` column on `TblDailyTrans` is a separate, per-line value captured at entry time and used
@@ -2117,72 +2118,72 @@ only for the debit-equals-credit check; it defaults to `1` and does not read fro
 
 ```
 C#.Net/
-âââ README.md
-âââ .gitignore                       # keeps Prod/ out of the repository
-âââ FinancialBalance/                # Visual Studio project
-â   âââ FinancialBalance.sln
-â   âââ FinancialBalance.csproj
-â   âââ app.config
-â   âââ Program.cs                   # entry point
-â   âââ Google_Drive.cs               # OAuth and Drive upload, framework only
-â   âââ Mdl1.cs                      # data access + shared helpers
-â   âââ Main_Form.*                  # splash / menu
-â   âââ Daily_Input.*                # voucher entry
-â   âââ Monthly_Closing.*
-â   âââ Monthly_Inquiry.*
-â   âââ Yearly_Summary.*
-â   âââ Yearly_Statistic.*
-â   âââ Setup_Acct_Type_Ref.*
-â   âââ Setup_Acct_Ref.*
-â   âââ Setup_Curr.*
-â   âââ Setup_Curr_Rate.*
-â   âââ Setup_Activa_Passiva.*
-â   âââ Setup_Financial_Year.*
-â   âââ Setup_ETF_Stocks_Suffix.*
-â   âââ Setup_ETF_Stocks.*
-â   âââ Setup_ETF_Stocks_Flag.*       # portfolio codes
-â   âââ Setup_ETF_Stocks_Div_Type.*
-â   âââ Setup_ETF_Stocks_Div.*
-â   âââ Setup_ETF_Stocks_Div_Alloc.*
-â   âââ Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
-â   âââ ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
-â   âââ Compound_Interest_Calculator.*  # savings growth, no database
-â   âââ Dividend_Snowball_Calculator.*  # dividend income growth, no database
-â   âââ Setup_State.*                 # the Australian states and territories
-â   âââ Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
-â   âââ Setup_Property.*              # properties, and whether they are sold
-â   âââ Property_Purchase.*           # what each one cost to buy
-â   âââ Property_Sale.*               # what each one fetched when sold
-â   âââ Property_Rental_Income.*      # what it lets for, month by month
-â   âââ Property_Rental_Bank_Expense.*  # what the borrowing on it cost
-â   âââ Property_Rental_Expense.*       # rates, insurance and the rest
-â   âââ Property_Summary.*            # one property end to end, read-only
-â   âââ Setup_Super_Fund.*            # the list of super funds
-â   âââ Setup_Super.*                 # super accounts
-â   âââ Super_Financial_Year.*         # one year per super account
-â   âââ Super_Balance_Historical.*     # latest year per account, read-only
-â   âââ ETF_Stocks_Purchase.*         # buy entry
-â   âââ ETF_Stocks_Sale.*             # sell entry, settles the lots
-â   âââ ETF_Stocks_Price.*            # prices + Yahoo sync
-â   âââ ETF_Stocks_Investment.*       # cash in / out of a portfolio
-â   âââ ETF_Stocks_Distribution.*     # distributions and dividends
-â   âââ ETF_Stocks_Cost_Base_Adjustment.*
-â   âââ ETF_Stocks_FY_Reconciliation.*
-â   âââ ETF_Stocks_Tax_Interest.*          # what the borrowing cost, by month
-â   âââ ETF_Stocks_FY_Historical.*     # read-only view of the above
-â   âââ ETF_Stocks_Portfolio_Summary.*
-â   âââ ETF_Stocks_Portfolio_Diversification.*
-â   âââ ETF_Stocks_Dividend_History.*
-â   âââ ETF_Stocks_Price_Chart.*      # price line chart
-â   âââ images/Project1.ico
-â   âââ bin/{Debug,Release}/         # build output + a copy of the .mdb
-âââ Sample Database/
-â   âââ Financial Balance.mdb         # reference data, no transactions
-âââ Prod/                             # git-ignored, see below
-â   âââ Financial Balance.mdb         # the live data
-â   âââ FinancialBalance.exe          # the copy actually run day to day
-â   âââ FinancialBalance.exe.config   # the live Google credentials
-âââ Publish/                          # ClickOnce output
+├── README.md
+├── .gitignore                       # keeps Prod/ out of the repository
+├── FinancialBalance/                # Visual Studio project
+│   ├── FinancialBalance.sln
+│   ├── FinancialBalance.csproj
+│   ├── app.config
+│   ├── Program.cs                   # entry point
+│   ├── Google_Drive.cs               # OAuth and Drive upload, framework only
+│   ├── Mdl1.cs                      # data access + shared helpers
+│   ├── Main_Form.*                  # splash / menu
+│   ├── Daily_Input.*                # voucher entry
+│   ├── Monthly_Closing.*
+│   ├── Monthly_Inquiry.*
+│   ├── Yearly_Summary.*
+│   ├── Yearly_Statistic.*
+│   ├── Setup_Acct_Type_Ref.*
+│   ├── Setup_Acct_Ref.*
+│   ├── Setup_Curr.*
+│   ├── Setup_Curr_Rate.*
+│   ├── Setup_Activa_Passiva.*
+│   ├── Setup_Financial_Year.*
+│   ├── Setup_ETF_Stocks_Suffix.*
+│   ├── Setup_ETF_Stocks.*
+│   ├── Setup_ETF_Stocks_Flag.*       # portfolio codes
+│   ├── Setup_ETF_Stocks_Div_Type.*
+│   ├── Setup_ETF_Stocks_Div.*
+│   ├── Setup_ETF_Stocks_Div_Alloc.*
+│   ├── Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
+│   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
+│   ├── Compound_Interest_Calculator.*  # savings growth, no database
+│   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
+│   ├── Setup_State.*                 # the Australian states and territories
+│   ├── Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
+│   ├── Setup_Property.*              # properties, and whether they are sold
+│   ├── Property_Purchase.*           # what each one cost to buy
+│   ├── Property_Sale.*               # what each one fetched when sold
+│   ├── Property_Rental_Income.*      # what it lets for, month by month
+│   ├── Property_Rental_Bank_Expense.*  # what the borrowing on it cost
+│   ├── Property_Rental_Expense.*       # rates, insurance and the rest
+│   ├── Property_Summary.*            # one property end to end, read-only
+│   ├── Setup_Super_Fund.*            # the list of super funds
+│   ├── Setup_Super.*                 # super accounts
+│   ├── Super_Financial_Year.*         # one year per super account
+│   ├── Super_Balance_Historical.*     # latest year per account, read-only
+│   ├── ETF_Stocks_Purchase.*         # buy entry
+│   ├── ETF_Stocks_Sale.*             # sell entry, settles the lots
+│   ├── ETF_Stocks_Price.*            # prices + Yahoo sync
+│   ├── ETF_Stocks_Investment.*       # cash in / out of a portfolio
+│   ├── ETF_Stocks_Distribution.*     # distributions and dividends
+│   ├── ETF_Stocks_Cost_Base_Adjustment.*
+│   ├── ETF_Stocks_FY_Reconciliation.*
+│   ├── ETF_Stocks_Tax_Interest.*          # what the borrowing cost, by month
+│   ├── ETF_Stocks_FY_Historical.*     # read-only view of the above
+│   ├── ETF_Stocks_Portfolio_Summary.*
+│   ├── ETF_Stocks_Portfolio_Diversification.*
+│   ├── ETF_Stocks_Dividend_History.*
+│   ├── ETF_Stocks_Price_Chart.*      # price line chart
+│   ├── images/Project1.ico
+│   └── bin/{Debug,Release}/         # build output + a copy of the .mdb
+├── Sample Database/
+│   └── Financial Balance.mdb         # reference data, no transactions
+├── Prod/                             # git-ignored, see below
+│   ├── Financial Balance.mdb         # the live data
+│   ├── FinancialBalance.exe          # the copy actually run day to day
+│   └── FinancialBalance.exe.config   # the live Google credentials
+└── Publish/                          # ClickOnce output
 ```
 
 `Prod/` is the copy of the application actually run, and is **ignored through `.gitignore`**.
@@ -2194,7 +2195,7 @@ copying `bin/Release/FinancialBalance.exe` over the one already there **and noth
 in `bin/` are a small sample database and a config with the credential keys left empty.
 
 `Mdl1` is a static class holding the single shared `OleDbConnection` plus roughly two dozen
-helpers: combo-box population (`Fill_Acct_Code`, `Fill_Curr`, `Fill_Month`, â¦), input validation
+helpers: combo-box population (`Fill_Acct_Code`, `Fill_Curr`, `Fill_Month`, …), input validation
 (`k_Numeric`, `k_Date`, `NumericKeyPress`), formatting (`FormatAmt`, `toLongDate`, `toLongMonth`),
 and the two posting routines.
 
@@ -2202,9 +2203,9 @@ and the two posting routines.
 
 ### A note on page sizes
 
-The widest pages are **1264Ã620 to 1264Ã720**: ETF/Stock Financial Year Reconciliation, ETF/Stock
+The widest pages are **1264×620 to 1264×720**: ETF/Stock Financial Year Reconciliation, ETF/Stock
 Cost Base Adjustment, ETF/Stock Financial Year Historical, Super, and Super Balance & Historical
-Data. Everything else is narrower, down to 361Ã226 for Monthly Closing. Each page is sized to its
+Data. Everything else is narrower, down to 361×226 for Monthly Closing. Each page is sized to its
 content, and the ones with a wide grid or several columns of entry boxes sit at the 1264 ceiling
 described under [Conventions](#conventions).
 
@@ -2226,7 +2227,7 @@ Two things about that ceiling are worth knowing before adding a page:
 
 - Visual Studio 2010 or later (the solution is Format Version 11.00), or MSBuild alone
 - .NET Framework 4.8 developer pack
-- The 32-bit Microsoft Jet OLEDB 4.0 provider â included with Windows, no install needed
+- The 32-bit Microsoft Jet OLEDB 4.0 provider — included with Windows, no install needed
 
 **Build**
 
@@ -2236,7 +2237,7 @@ msbuild "FinancialBalance\FinancialBalance.csproj" /p:Configuration=Release
 
 **Run**
 
-The application opens `Financial Balance.mdb` from `Application.StartupPath` â the folder holding
+The application opens `Financial Balance.mdb` from `Application.StartupPath` — the folder holding
 the executable. Copy a database next to the binary before launching:
 
 ```powershell
@@ -2259,7 +2260,7 @@ currencies, rates and accounts first, then open Daily Input.
 
 The connection string is **hard-coded in `Mdl1.DB_Connect()`** (`Mdl1.cs:22`) and built from
 `Application.StartupPath`. The two `connectionStrings` entries in `app.config` are leftovers from
-the Visual Studio data-source designer and are **not read at runtime** â editing them changes
+the Visual Studio data-source designer and are **not read at runtime** — editing them changes
 nothing.
 
 The `appSettings` entries, however, **are** read:
@@ -2276,9 +2277,9 @@ All three ship empty. Until the id and secret are filled in,
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so
 treat the database as obfuscated rather than protected. **The same goes for the Google client
-secret.** For an installed application Google does not treat it as confidential â it cannot be
+secret.** For an installed application Google does not treat it as confidential — it cannot be
 kept secret in a program the user holds, and the flow's security comes from PKCE and the redirect
-check rather than from hiding it â but it is still a credential in a plain text file, sitting
+check rather than from hiding it — but it is still a credential in a plain text file, sitting
 next to one this README already tells you not to rely on.
 
 ---
@@ -2299,7 +2300,7 @@ Things worth knowing before changing this code.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
 - **`ETF_Stocks_Price` reaches the network** on either sync button, the only outbound calls in
-  the app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread â the form freezes
+  the app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes
   for the duration. **Sync all** makes one request per flagged ticker in sequence, so the freeze
   scales with how many you track. Yahoo's endpoint is undocumented and can change without notice.
 - **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
@@ -2307,40 +2308,40 @@ Things worth knowing before changing this code.
   `ETF_Stocks_Purchase` and `ETF_Stocks_Sale` the dropdown is labelled **Portfolio** and the grid column
   **Portfolio Code**. Both edit `TblETFStocksPortfolioCode.Portfolio_Code`. The form class, its
   file and the identifiers `CmbFlagCode`, `OrgFlagCode`, `Set_Default_Flag` and
-  `MnETFStocksFlagSetup` were left as they were â searching the code for the on-screen name will
+  `MnETFStocksFlagSetup` were left as they were — searching the code for the on-screen name will
   not find them.
 - **`Setup_Activa_Passiva` is displayed as "Asset Liability Setup".** The class, file and the
   `Mdl1.*ActivaPassiva*` posting routines keep the older Indonesian naming, so searching the
   code for the on-screen label will not find them.
-- `adodb` is referenced in the project file but **not used by any code** â the reference can be
+- `adodb` is referenced in the project file but **not used by any code** — the reference can be
   dropped. `Microsoft.Office.Interop.Excel` *is* used, by the three pages that export to Excel.
 
 ### Super
 
 Superannuation is kept separately from the ETF and stock side of the app: two setup pages under
-`Administration` â¸ Super holding the accounts, and one page under `Process` recording a year's
+`Administration` ▸ Super holding the accounts, and one page under `Process` recording a year's
 result for each of them.
 
 `TblSuperFund` is a single column, `Name`, and ships with **AustralianSuper** and **UniSuper**.
 `Setup_Super_Fund` maintains it: one grid, one box, and Add / Update / Delete.
 
-`TblSuper` holds one row per super account â `Super_Code`, `Name` and `Super_Fund_Name`.
+`TblSuper` holds one row per super account — `Super_Code`, `Name` and `Super_Fund_Name`.
 `Setup_Super` shows all three as columns and takes them from a Super Code box, a Name box and a
 **Super Fund Name dropdown filled from `TblSuperFund`**, so a super account can only name a fund
 that exists.
 
 #### How the two are kept in step
 
-The fund is stored on each super row as **text, not a reference** â there are no foreign keys
-anywhere in this database â so the two pages guard the join themselves:
+The fund is stored on each super row as **text, not a reference** — there are no foreign keys
+anywhere in this database — so the two pages guard the join themselves:
 
 - **Renaming a fund carries its super accounts with it.** `Setup_Super_Fund` counts the rows in
   `TblSuper` naming that fund, asks before going ahead, then updates both tables. Without that,
   renaming would leave those accounts pointing at a fund that no longer exists.
 - **A fund still in use cannot be deleted.** The page says how many super accounts name it and
   points at Super Setup. Deleting would leave the same orphans by another route.
-- **Duplicate names are refused** on both pages â a fund name in `TblSuperFund`, a `Super_Code`
-  in `TblSuper` â since each is what the other side identifies a row by.
+- **Duplicate names are refused** on both pages — a fund name in `TblSuperFund`, a `Super_Code`
+  in `TblSuper` — since each is what the other side identifies a row by.
 
 Neither table has a key, so `Setup_Super`'s update and delete match on all three of a row's
 original values, as the rest of the app does.
@@ -2349,9 +2350,9 @@ original values, as the rest of the app does.
 
 #### The Super page
 
-`Process` â¸ Super keeps one row of `TblSuperFinancialYear` per super account per financial year.
-Two dropdowns narrow the table â **Financial Year** and **Super**, each with an **All** entry
-â and the entry area below adds, updates and deletes.
+`Process` ▸ Super keeps one row of `TblSuperFinancialYear` per super account per financial year.
+Two dropdowns narrow the table — **Financial Year** and **Super**, each with an **All** entry
+— and the entry area below adds, updates and deletes.
 
 The **Super** filter reads `Name - Super_Fund_Name`, because that is how an account is recognised;
 the `Super_Code` behind the chosen entry is what the query actually filters on. The entry area
@@ -2359,13 +2360,13 @@ takes the opposite approach: a **Super Code** dropdown with the name and fund sh
 label, so what is being typed against is unambiguous.
 
 The table shows fourteen columns. **`Admin_Fee`, `Insurance_Premium`, `Goverment_Tax` and
-`Goverment_Tax_Benefit` are stored but not shown there** â they are the workings behind
+`Goverment_Tax_Benefit` are stored but not shown there** — they are the workings behind
 Investment Profit/Loss rather than results in their own right, and they stay visible in the entry
 area where they are typed.
 
 ##### What is worked out, and what is typed
 
-Every percentage on the page measures against the same base â **what went into the year**:
+Every percentage on the page measures against the same base — **what went into the year**:
 
 ```
 base = Opening Balance + Contribution + Transfer In
@@ -2379,20 +2380,20 @@ is not that. It comes off the ending balance and nothing else.
 
 | Field | Where it comes from |
 | --- | --- |
-| Opening Balance | defaults to the **previous year's Ending Balance for the same account**, and can be typed over â see below |
-| Percentage Investment Returns | `Investment Returns / base Ã 100` â **a label**, never typed |
-| Investment Profit/Loss | defaults to `Investment Returns â Admin Fee â Insurance Premium â Goverment Tax + Goverment Tax Benefit`, and can be typed over |
-| Percentage Investment Profit/Loss | `Investment Profit/Loss / base Ã 100` â **a label**, red below zero, green above |
+| Opening Balance | defaults to the **previous year's Ending Balance for the same account**, and can be typed over — see below |
+| Percentage Investment Returns | `Investment Returns / base × 100` — **a label**, never typed |
+| Investment Profit/Loss | defaults to `Investment Returns − Admin Fee − Insurance Premium − Goverment Tax + Goverment Tax Benefit`, and can be typed over |
+| Percentage Investment Profit/Loss | `Investment Profit/Loss / base × 100` — **a label**, red below zero, green above |
 | Total Surplus/Minus | defaults to `Contribution + Investment Profit/Loss`, and can be typed over |
-| Percentage Total Surplus/Minus | `Total Surplus/Minus / base Ã 100` â **a label**, red below zero, green above |
-| Ending Balance | defaults to `Opening Balance + Contribution + Transfer In + Investment Profit/Loss â Transfer Out`, and can be typed over |
+| Percentage Total Surplus/Minus | `Total Surplus/Minus / base × 100` — **a label**, red below zero, green above |
+| Ending Balance | defaults to `Opening Balance + Contribution + Transfer In + Investment Profit/Loss − Transfer Out`, and can be typed over |
 
 The three defaults form a chain: correcting the opening balance re-derives the profit, which
 re-derives the surplus and the ending balance. **A figure typed by hand stands, but what depends
-on it still follows** â override the profit and the surplus and ending balance move with it,
+on it still follows** — override the profit and the surplus and ending balance move with it,
 while the profit itself is left as typed. A `Calculating` guard stops the chain firing while a
 stored row is being loaded, so **selecting a row shows the figures as they were saved rather than
-recomputing them** â an override entered months ago is not silently undone by opening the page.
+recomputing them** — an override entered months ago is not silently undone by opening the page.
 
 The percentages are always recomputed from the boxes when a row is written, so a stored percentage
 can never disagree with the amounts it was derived from.
@@ -2401,9 +2402,9 @@ can never disagree with the amounts it was derived from.
 
 Two separate columns record movements of the balance itself, apart from what the fund earned:
 
-- **Transfer In** (`Transfer_In`) â money moved into the account, counted alongside Contribution
+- **Transfer In** (`Transfer_In`) — money moved into the account, counted alongside Contribution
   as part of what the year had to work with.
-- **Transfer Out** (`Transfer_Out`) â money moved out. It sits immediately before Ending Balance
+- **Transfer Out** (`Transfer_Out`) — money moved out. It sits immediately before Ending Balance
   in both the table and the entry area, and **subtracts** from the ending balance.
 
 `Transfer_In` was originally called `Transfer`; it was renamed in place, so the rows entered
@@ -2413,7 +2414,7 @@ before the split kept their values and `Transfer_Out` starts at 0 on them.
 
 A super account opens a year on whatever it closed the previous one at, so **Opening Balance is
 filled in from the previous year's `Ending_Balance` for the same `Super_Code`** rather than typed
-again. It stays editable â the carried figure is a default, not a lock.
+again. It stays editable — the carried figure is a default, not a lock.
 
 The preceding year is **the one whose `End_Date` falls latest before the selected year's
 `Start_Date`**, which is the same rule `ETF_Stocks_FY_Reconciliation` uses to carry a portfolio's
@@ -2422,7 +2423,7 @@ does *not* then reach further back: a missing year means the balance in between 
 that it was zero, and a figure silently carried across a two-year gap would be wrong in a way
 nothing on the page would show.
 
-**Changing either the entry `Financial Year` or the entry `Super Code` dropdown re-reads it** â
+**Changing either the entry `Financial Year` or the entry `Super Code` dropdown re-reads it** —
 those two dropdowns are what say which row is being entered, so a figure left over from the
 previous selection would belong to a different row. That does overwrite anything already typed
 into the box. Changing `Currency` does not touch it. The two **filter** dropdowns at the top of
@@ -2433,11 +2434,11 @@ the rest of the entry area through the same chain.
 
 Selecting a stored row is the one case where the lookup does not run: `Filling` is set while the
 row is being loaded, so **a saved opening balance is shown as saved**. A figure entered by hand
-months ago â an account opened mid-year, say â is not quietly replaced by today's lookup.
+months ago — an account opened mid-year, say — is not quietly replaced by today's lookup.
 
 ##### One row per account per year
 
-`Financial_Year` and `Super_Code` together identify a row â there is no key on the table â so:
+`Financial_Year` and `Super_Code` together identify a row — there is no key on the table — so:
 
 - **Add refuses a second row** for a year and account that already has one, and says to select and
   update the existing one instead.
@@ -2453,11 +2454,11 @@ is refused on save.
 
 #### The Super Balance & Historical Data page
 
-`Inquiry` â¸ Super Balance & Historical Data is read-only and comes in **two stacked parts**,
+`Inquiry` ▸ Super Balance & Historical Data is read-only and comes in **two stacked parts**,
 both drawn from `TblSuperFinancialYear`:
 
-1. **Where each account stands** â one row per super account, no filters.
-2. **One account's history** â two filters and every year that account has a record for.
+1. **Where each account stands** — one row per super account, no filters.
+2. **One account's history** — two filters and every year that account has a record for.
 
 The two tables are deliberately different widths: three columns stretched across 1300px would be
 mostly empty, so the summary sits in 700px and the history takes the full width. Both start at
@@ -2482,7 +2483,7 @@ Two consequences worth knowing:
 - **An account with only an old record still appears**, showing that old year. The page never
   hides an account because its data has not been kept up to date.
 - **Accounts can be showing different years**, and the **Financial Year** column is what makes
-  that visible â without it, two balances from different years would sit side by side looking
+  that visible — without it, two balances from different years would sit side by side looking
   comparable. The note above the table only counts the accounts.
 
 A `Super_Code` recorded against a financial year but missing from `TblSuper` has no caption to
@@ -2494,22 +2495,22 @@ year records at all does not appear, since this table's source is `TblSuperFinan
 
 Two filters sit below the summary table:
 
-- **Financial Year** â **All** plus every `TblFinancialYear.Name`, defaulting to All.
-- **Super** â **All** plus the `Name - Super_Fund_Name` caption for each account, defaulting to
+- **Financial Year** — **All** plus every `TblFinancialYear.Name`, defaulting to All.
+- **Super** — **All** plus the `Name - Super_Fund_Name` caption for each account, defaulting to
   All.
 
 Eleven columns: **Super**, **Financial Year**, Opening Balance, Contribution, Transfer In,
 Investment Returns, Percentage Investment Returns, Investment Profit/Loss, Percentage Investment
 Profit/Loss, Transfer Out, Ending Balance. The two profit columns are **red below zero and green
 above**. `Admin_Fee`, `Insurance_Premium`, the two `Goverment_Tax` fields and the surplus columns
-are stored but not shown â they are visible on the `Process` â¸ Super page where they are typed.
+are stored but not shown — they are visible on the `Process` ▸ Super page where they are typed.
 
 Rows come back **`Super_Code` ascending, then financial year descending**, with the year order
 taken from **`End_Date`** rather than the year's name, for the same reason part one uses it. A
 year missing from `TblFinancialYear` sorts to the bottom of its account rather than to an
 arbitrary place in the middle. **With Super on All that ordering groups the accounts in code
 order and runs each one's years newest first**, which is the only arrangement in which it is
-visible â with a single account selected, the `Super_Code` half of it has nothing to do.
+visible — with a single account selected, the `Super_Code` half of it has nothing to do.
 
 One detail worth knowing: **a `Financial Year` column is included** even though the ten data
 columns alone were specified. With either filter on **All** a single account shows several rows
@@ -2520,21 +2521,21 @@ year each belonged to.
 
 The page's name contains an `&`, which is the one thing a WinForms caption cannot take literally.
 The menu entry doubles it (`"&Super Balance && Historical Data"`) and the heading label sets
-**`UseMnemonic = false`** â the only label in the app that does. Left alone, a single `&` is read
+**`UseMnemonic = false`** — the only label in the app that does. Left alone, a single `&` is read
 as the accelerator marker: it disappears and underlines the `H` after it.
 
 ---
 
 ### Investment plans
 
-`Administration` â¸ ETF/Stock â¸ Investment Plan Setup holds **target allocations**: a named plan,
-and the percentage of it each ticker is meant to take. Nothing else reads these two tables yet â
+`Administration` ▸ ETF/Stock ▸ Investment Plan Setup holds **target allocations**: a named plan,
+and the percentage of it each ticker is meant to take. Nothing else reads these two tables yet —
 they are reference data, recording an intention rather than anything that has happened.
 
 The page is two sections stacked, each a grid over its own Add / Update / Delete row:
 
-1. **The plans** â `TblETFStocksInvestmentPlan` is a single column, `Name`.
-2. **One plan's allocations** â an **Investment Plan** dropdown chooses which plan the table below
+1. **The plans** — `TblETFStocksInvestmentPlan` is a single column, `Name`.
+2. **One plan's allocations** — an **Investment Plan** dropdown chooses which plan the table below
    shows, drawn from `TblETFStocksInvestmentPlanAllocation`. Its three columns are Investment
    Plan, Full Ticker and Allocation, the last **written with a per-cent sign** since the stored
    figure is a percentage. The entry row below takes a plan, a `Full_Ticker` from `TblETFStocks`,
@@ -2543,7 +2544,7 @@ The page is two sections stacked, each a grid over its own Add / Update / Delete
 #### Total Percentage
 
 Under the allocation table, **Total Percentage** sums the allocations shown and is **green at
-exactly 100, red at anything else** â including at 0, where nothing has been allocated yet. A
+exactly 100, red at anything else** — including at 0, where nothing has been allocated yet. A
 plan only means anything once its allocations account for the whole of it.
 
 **Nothing is refused for failing to total 100.** The label is the feedback, not a gate: a plan
@@ -2564,7 +2565,7 @@ followed**, one per diversification type, in this order:
 | Investment Style | `Investment Style` |
 
 All three appear together, and only when the selected plan **has allocations and they total
-exactly 100** â below that the picture would be of a plan that is not finished, and the shares
+exactly 100** — below that the picture would be of a plan that is not finished, and the shares
 would not be out of a whole. When they are not shown, a line in their place says what is missing.
 
 They share one calculation. Each ticker's share of the plan is split across that type's values in
@@ -2580,11 +2581,11 @@ adds to the same slice rather than replacing it.
 
 **A ticker with no rows of a given type leaves part of the plan unaccounted for**, and so does one
 whose own percentages do not reach 100. That remainder is shown as a grey **`(unallocated)`**
-slice rather than being dropped â the same thing `ETF_Stocks_Portfolio_Diversification` does, and
+slice rather than being dropped — the same thing `ETF_Stocks_Portfolio_Diversification` does, and
 for the same reason: a pie quietly totalling less than 100 would look complete when it is not.
 The three charts routinely have **different remainders**, since a ticker classified by asset class
 need not be classified geographically. A type with nothing recorded against it at all shows a
-single `(unallocated)` slice â which is the honest answer, and says the classification is missing
+single `(unallocated)` slice — which is the honest answer, and says the classification is missing
 rather than hiding the chart.
 
 The whole of `TblETFStocksDiversificationAllocation` is read in **one query** and combined in
@@ -2592,15 +2593,15 @@ memory, rather than one query per type or per ticker: OleDb cannot hold two read
 same connection, and the table is a few dozen rows. A row of some other diversification type is
 read past rather than charted.
 
-The three stack in a **scrolling** column, as `ETF_Stocks_Portfolio_Diversification`'s three do â
+The three stack in a **scrolling** column, as `ETF_Stocks_Portfolio_Diversification`'s three do —
 three pies do not fit a column of any sensible height. Each is drawn a little narrower than that
 page's (410 rather than 440) so they clear the panel's vertical scrollbar instead of provoking a
 horizontal one as well.
 
 #### How the two tables are kept in step
 
-An allocation names its plan as **text, not a reference** â there are no foreign keys anywhere in
-this database â so the page guards the join itself, the same way `Setup_Super_Fund` does for
+An allocation names its plan as **text, not a reference** — there are no foreign keys anywhere in
+this database — so the page guards the join itself, the same way `Setup_Super_Fund` does for
 super funds:
 
 - **Renaming a plan carries its allocations with it.** The page counts them, asks before going
@@ -2608,7 +2609,7 @@ super funds:
   longer exists.
 - **A plan that still has allocations cannot be deleted.** The page says how many and points at
   the section below. Deleting would leave the same orphans by another route.
-- **Duplicate plan names are refused**, and so is **the same ticker twice in one plan** â a
+- **Duplicate plan names are refused**, and so is **the same ticker twice in one plan** — a
   repeated ticker would make the total meaningless.
 
 Neither table has a key. A plan is identified by its `Name`; an allocation by its plan and ticker
@@ -2622,9 +2623,9 @@ changed by hand to file a row against a different plan.
 
 ### Applying an investment plan
 
-`Inquiry` â¸ ETF/Stock â¸ Investment Plan takes a plan from
+`Inquiry` ▸ ETF/Stock ▸ Investment Plan takes a plan from
 [Investment plans](#investment-plans) and works out **what putting a given amount of money in
-would come to**. It is read-only â nothing on it writes anywhere.
+would come to**. It is read-only — nothing on it writes anywhere.
 
 Choosing a plan fills the first table, **Full Ticker** and **Allocation**, and the note above it
 says how many allocations there are and what they total. Below that, **Investment Amount** takes a
@@ -2641,7 +2642,7 @@ under a column should be that column's total. They agree exactly whenever the al
 100.
 
 The **same three diversification pies** the setup page draws appear down the right-hand side, from
-the same rows and by the same calculation â including the same rule that they appear only once the
+the same rows and by the same calculation — including the same rule that they appear only once the
 plan's allocations total exactly 100. **The two tables and the amounts do not wait for that**: a
 plan part-way through being built still shows its allocations and what they would come to, and
 only the charts hold back, since their shares would not be out of a whole.
@@ -2657,7 +2658,7 @@ the plan, not the amount, so they are left as they are.
 <form name>_yyyyMMdd_HHmmss_<investment plan>_<investment amount>.xlsx
 ```
 
-The form's own `Name` leads, as on every other export â taken from `this.Name` rather than typed
+The form's own `Name` leads, as on every other export — taken from `this.Name` rather than typed
 out, so it cannot drift from the form it belongs to. The date and time are separated by an
 underscore here, unlike the other exports' unbroken `yyyyMMddHHmmss`. An export with nothing on
 screen is refused rather than writing an empty workbook, and every cell is written as **text** for
@@ -2667,15 +2668,15 @@ the reason given under [Excel exports](#excel-exports).
 
 ### The compound interest calculator
 
-`Calculator` â¸ Compound Interest Calculator is one of **the two pages that touch no data at
-all** â it reads nothing, writes nothing, and works only on what is typed into it. (The other is
+`Calculator` ▸ Compound Interest Calculator is one of **the two pages that touch no data at
+all** — it reads nothing, writes nothing, and works only on what is typed into it. (The other is
 [the dividend snowball calculator](#the-dividend-snowball-calculator).) It is modelled on the
 [MoneySmart compound interest calculator](https://moneysmart.gov.au/budgeting/compound-interest-calculator).
 
 Six inputs: **Initial Deposit**, **Regular Deposit**, **Deposit Frequency** (Daily, Weekly,
 Fortnightly, Monthly, Annually), **Compound Frequency** (Monthly, Annually), **Number of Years**
-and **Annual Interest Rate**. Below them, four figures â Initial Deposit, Regular Deposits, Total
-Interest and Total Savings â and beside them a **stacked column per year** showing the three
+and **Annual Interest Rate**. Below them, four figures — Initial Deposit, Regular Deposits, Total
+Interest and Total Savings — and beside them a **stacked column per year** showing the three
 parts of the balance as it grows.
 
 Across the bottom, the same run again as a **table, a row per year**:
@@ -2684,7 +2685,7 @@ Across the bottom, the same run again as a **table, a row per year**:
 | --- | --- |
 | `Year` | 1 upwards |
 | `Regular Deposits` | everything deposited **up to and including** that year |
-| `Yearly Deposits` | that year's figure less the year before's â for year 1, measured from nothing |
+| `Yearly Deposits` | that year's figure less the year before's — for year 1, measured from nothing |
 | `Total Interest` | all the interest earned up to that year |
 | `Yearly Interest` | the same step, year on year |
 | `Total` | what the balance stands at that year's end |
@@ -2712,7 +2713,7 @@ each period:  balance = balance x (1 + rate per period) + deposit per period
 with a year of 365 days, 52 weeks or 26 fortnights. Two conventions are worth stating, because a
 calculator that picks the other one gives different figures for the same inputs:
 
-- **A deposit arrives at the end of its period** and earns nothing in the period it lands in â
+- **A deposit arrives at the end of its period** and earns nothing in the period it lands in —
   the ordinary-annuity convention. Assuming deposits arrive at the start would show more interest.
 - **Deposits finer than the compounding are pooled**, not compounded separately. Weekly deposits
   with annual compounding go in as one yearly sum, since interest is only worked out once a year.
@@ -2720,8 +2721,8 @@ calculator that picks the other one gives different figures for the same inputs:
 So the figures track MoneySmart's closely but need not agree to the cent, depending on the
 conventions that site uses.
 
-`Total Interest` is what is left once the deposits are accounted for â `balance - initial -
-contributed` â so the four figures always add up, and the chart's three bands always sum to the
+`Total Interest` is what is left once the deposits are accounted for — `balance - initial -
+contributed` — so the four figures always add up, and the chart's three bands always sum to the
 balance at that year's end.
 
 #### The limits, and how they are said
@@ -2730,7 +2731,7 @@ balance at that year's end.
 cannot be negative, which the shared numeric filter already prevents by refusing a minus sign.
 
 The page **recalculates on every keystroke**, so a rejected input is reported **in the note above
-the totals, in red** rather than in a message box â a dialog per character would be unusable. When
+the totals, in red** rather than in a message box — a dialog per character would be unusable. When
 an input is refused the totals are cleared and no chart is drawn, so nothing stale is left on
 screen looking like an answer.
 
@@ -2738,7 +2739,7 @@ screen looking like an answer.
 
 ### The dividend snowball calculator
 
-`Calculator` â¸ Dividend Snowball Calculator is the other page that **touches no data at all**. It
+`Calculator` ▸ Dividend Snowball Calculator is the other page that **touches no data at all**. It
 projects what a dividend income grows to when the portfolio is contributed to, the yield itself
 grows, and the dividends are either ploughed back in or taken out.
 
@@ -2762,7 +2763,7 @@ Below them, **a row per year up to the time horizon**:
 | `Taken as Cash` | the gross dividend when not reinvesting, otherwise nothing |
 | `Ending Balance` | see below |
 
-`Reinvested` and `Taken as Cash` are the same figure sent one way or the other, never both â the
+`Reinvested` and `Taken as Cash` are the same figure sent one way or the other, never both — the
 dropdown decides which column it lands in, and only the reinvested one feeds back into the
 portfolio. That feedback is the snowball.
 
@@ -2802,7 +2803,7 @@ rather than taking the page down with it.
 #### The limits, and how they are said
 
 **Time Horizon is 1 to 50 years**, matching the compound interest calculator, and its box takes
-**digits only** â a year count has no decimal point, so it uses its own keypress filter rather than
+**digits only** — a year count has no decimal point, so it uses its own keypress filter rather than
 the shared numeric one. The four percentages are **0 to 100 %**. Every other box takes digits and a
 decimal point through the shared filter, which already refuses a minus sign. **Target Annual
 Dividend Income is the one input that may be left blank.**
@@ -2815,10 +2816,13 @@ table and all five figures are cleared so nothing stale is left looking like an 
 
 ### Property Summary
 
-`Inquiry` â¸ Property â¸ Property Summary is one property read end to end. It writes nothing: it
+`Inquiry` ▸ Property ▸ Property Summary is one property read end to end. It writes nothing: it
 reads [`TblProperty`](#property-setup), [`TblPropertyPurchase`](#property-purchase) and
-[`TblPropertySale`](#property-sale) for the single `Property_Id` picked, and lays the three out
-as labels rather than a grid, because there is only ever one row of each to show.
+[`TblPropertySale`](#property-sale) for the single `Property_Id` picked, and lays them out as
+labels rather than a grid, because there is only ever one row of each to show.
+
+It runs in three columns - **Purchase**, **Ongoing**, **Sale** - and the middle one adds up
+three more tables, which do have many rows each.
 
 **Property Id** is the same dropdown the purchase and sale pages carry, with the property's name
 beside it so an id never has to be recognised on its own. It opens on the **first property in the
@@ -2832,24 +2836,49 @@ read with a hole in it.
 
 #### What is worked out rather than stored
 
-Six of the figures are not columns anywhere â they are added up as the page is drawn:
+Ten of the figures are not columns anywhere — they are added up as the page is drawn:
 
 | Shown as | Worked out from |
 | --- | --- |
 | **Purchase Other Cost** | `Building_Pest_Inspection_Cost` + `Settlement_Cost` + `Other_Cost` |
-| **Total Purchase Cost** | **Stamp Duty** + **Purchase Conveyancing Cost** + **BA Cost** + **Purchase Other Cost** â what the purchase cost *on top of* the price itself, so the price is not counted twice when the profit subtracts both |
+| **Total Purchase Cost** | **Stamp Duty** + **Purchase Conveyancing Cost** + **BA Cost** + **Purchase Other Cost** — what the purchase cost *on top of* the price itself, so the price is not counted twice when the profit subtracts both |
 | **Sale Other Cost** | `Settlement_Cost` + `Other_Cost`, from the sale row |
-| **Total Sale Cost** | **Sale Conveyancing Cost** + **Sale Agent Cost** + **Sale Other Cost** â which comes to `Conveyancing_Cost` + `Sale_Agent_Cost` + `Settlement_Cost` + `Other_Cost`. What selling cost, the price it fetched aside |
-| **Profit/Loss** | **Sold Price** â **Total Sale Cost** â **Purchase Price** â **Total Purchase Cost** â what it fetched, less what selling cost, less what buying cost |
-| **Percentage Profit/Loss** | **Profit/Loss** Ã· **Purchase Price**, as a percentage â against the price paid rather than the whole outlay, so it reads as the return on the purchase itself. `0.00 %` when the purchase price is zero, since nothing can be divided by it |
+| **Total Sale Cost** | **Sale Conveyancing Cost** + **Sale Agent Cost** + **Sale Other Cost** — which comes to `Conveyancing_Cost` + `Sale_Agent_Cost` + `Settlement_Cost` + `Other_Cost`. What selling cost, the price it fetched aside |
+| **Ongoing Rental Profit/Loss** | `Profit_Loss` on [`TblPropertyRentalIncome`](#property-rental-income), added up for this property |
+| **Bank Expense** | `Total_Expense` on [`TblPropertyRentalBankExpense`](#property-rental-bank-expense), added up |
+| **Other Expense** | `Expense` on [`TblPropertyRentalExpense`](#property-rental-expense), added up |
+| **Grand Total Ongoing Profit/Loss** | **Ongoing Rental Profit/Loss** − **Bank Expense** − **Other Expense** — what holding the property has made or cost so far |
+| **Profit/Loss** | **Sold Price** − **Total Sale Cost** − **Purchase Price** − **Total Purchase Cost** **+ Grand Total Ongoing Profit/Loss** — what the property made overall: what selling it returned over what buying it cost, plus what holding it made along the way |
+| **Percentage Profit/Loss** | **Profit/Loss** ÷ **Purchase Price**, as a percentage — against the price paid rather than the whole outlay, so it reads as the return on the purchase itself. `0.00 %` when the purchase price is zero, since nothing can be divided by it |
 
 **Profit/Loss** and **Percentage Profit/Loss** are coloured the way every other profit figure in
-the app is â red below zero, green above it, plain black at exactly zero â through the same
+the app is — red below zero, green above it, plain black at exactly zero — through the same
 `Colour_Label` shape the [portfolio summary](#portfolio-summary) uses.
+
+#### The ongoing half
+
+The **Ongoing** column is what the property has earned and cost while it is held, as opposed
+to what buying or selling it came to. Each figure is one table's column added up for this
+property, so unlike the other two sections it is reading many rows rather than one.
+
+**It is always shown**, sold or not - a property earns and costs whether or not it has been
+sold, and a property with nothing recorded against it reads `$0.00` rather than blank, which
+is a different statement from the sale half being hidden.
+
+**Bank Expense and Other Expense are red whatever they come to**, rather than coloured by
+sign like the rest. They are costs: a large one is not good news the way a large rental
+profit is, and green against it would read as though it were. The rental result and the
+ongoing total keep the usual rule - green above zero, red below it, black at exactly zero.
+
+> **Profit/Loss under Sale now carries the ongoing total.** It used to be the sale against
+> the purchase alone, which answered "what did buying and selling it come to" rather than
+> "what did this property make". Years of rent, interest and rates sat outside it. The
+> **Percentage Profit/Loss** beneath it divides the new figure by the purchase price, so it
+> moves with it.
 
 #### The sale half
 
-The sale block â its header and all nine rows â is **hidden outright until the property has been
+The sale block — its header and all nine rows — is **hidden outright until the property has been
 sold**, rather than standing empty. Whether it is sold is the presence of a `TblPropertySale` row
 and nothing else, the same rule [Property Sale](#property-sale) sets out.
 
@@ -2864,7 +2893,7 @@ Money carries a `$` with thousands grouped to two places through the shared `Mdl
 negative reading `-$1,234.56` rather than `$-1,234.56`. Dates are `dd-MMM-yyyy`, parsed out of the
 stored `yyyyMMdd` by the same `Long_Date` the purchase page uses, and a date that is blank or
 malformed shows as nothing rather than as a placeholder. **Percentage Ownership** and
-**Percentage Profit/Loss** read `62.50 %` â a share rather than an amount, so no dollar sign.
+**Percentage Profit/Loss** read `62.50 %` — a share rather than an amount, so no dollar sign.
 
 ---
 
@@ -2919,11 +2948,13 @@ the page answers the question it is usually opened for without a separate total 
 
 `Process` > Property > Property Rental Bank Expense is the other side of
 [Property Rental Income](#property-rental-income): what the borrowing behind a property cost
-each month, in `TblPropertyRentalBankExpense` - **one row per property per month**, joined to
-[`TblProperty`](#property-setup) by `Property_Id`.
+in `TblPropertyRentalBankExpense`, joined to [`TblProperty`](#property-setup) by
+`Property_Id`. A month can carry **as many records as the bank made charges** - two loans on
+one property, or an annual package fee landing in the same month as the interest.
 
 | Field | Type | Holds |
 | --- | --- | --- |
+| `Id` | AutoNumber, **primary key** | handed out by the database; never written by the page |
 | `Property_Id` | Number | which property; joins `TblProperty` |
 | `Month` | Short Text(6) | `yyyyMM` |
 | `Description` | Short Text(50) | what the charge was |
@@ -2943,13 +2974,21 @@ which silently produces a BigInt and would round each of them to whole dollars.
 > the way in - a bank statement line reading `Bank's monthly charge` would otherwise cut the
 > statement in half.
 
-The page is built like [Property Rental Income](#property-rental-income) and behaves the same
-way: a **Property Id** dropdown with no blank entry, opening on the first property with its
-name beside it; the list running that property **newest month first**, read back as
-`MMM-yyyy`; and a record identified by **its property and its month together**, so Add
-refuses a month that property already has, Update refuses to move one onto a month that does,
-and Delete asks first. The entry area runs in two columns rather than one, since there are
-seven fields rather than five.
+The page is built like [Property Rental Income](#property-rental-income): a **Property Id**
+dropdown with no blank entry, opening on the first property with its name beside it, and the
+list running that property **newest month first**, read back as `MMM-yyyy`. Within a month
+the rows come back in the order they were entered, by `Id` - they would otherwise arrive in
+whatever order the database felt like, and jump about as they were edited. The entry area
+runs in two columns rather than one, since there are seven fields rather than five.
+
+> **A record is its `Id`, and nothing else.** It began as its property and its month
+> together, which is precisely what stopped a second charge in one month being entered. The
+> AutoNumber replaces that: two rows can now agree on every other column and still be told
+> apart, so Add refuses nothing, and Update and Delete name the one row they mean rather
+> than everything that matches its month. Existing rows were numbered as the column went in.
+
+> `Id` is left out of the page's field list, which is what both the insert and the update
+> are built from: the database hands the number out, and the page only ever reads it back.
 
 **Total Expense is filled in but typeable over**, exactly as Profit/Loss is on the income
 page: `Interest` plus `Bank_Fee` as those are entered, replaced by anything typed into it,
@@ -3047,7 +3086,7 @@ nothing from the previous property is left selected underneath it.
 
 ### Property Sale
 
-`Process` â¸ Property â¸ Property Sale is [Property Purchase](#property-purchase) the other way
+`Process` ▸ Property ▸ Property Sale is [Property Purchase](#property-purchase) the other way
 round, and is built the same way: `TblPropertySale`, **one row per property**, joined to
 [`TblProperty`](#property-setup) by `Property_Id`.
 
@@ -3065,24 +3104,24 @@ round, and is built the same way: `TblPropertySale`, **one row per property**, j
 
 Nine columns in the list: the property's **Name** read across from `TblProperty`, the **Sold
 Date** and **Settlement Date** as `dd-MMM-yyyy`, the **Currency**, then each amount with a `$` and thousands grouped to two places. The
-entry area is the same shape as the purchase page's â a **Property Id** dropdown with the
+entry area is the same shape as the purchase page's — a **Property Id** dropdown with the
 property's name beside it, the Daily Input date picker with its `..` calendar, and money boxes on
 the shared numeric filter. Add refuses a property that already has a sale, Update refuses to move
 one onto a property that does, Delete asks first, and a sale whose property has since been deleted
-shows as `(id)` and cannot be updated â all for the reasons set out under
+shows as `(id)` and cannot be updated — all for the reasons set out under
 [Property Purchase](#property-purchase).
 
 **Whether a property is sold is this table, and only this table.** `TblProperty` used to carry
 `Is_Sold` and `Sold_Date` as well, which meant the same fact in two places with nothing keeping
-them in step â those three columns have been dropped, along with `Purchase_Date`. A property is
+them in step — those three columns have been dropped, along with `Purchase_Date`. A property is
 sold if it has a row here, and the date it sold is the one in that row.
 
 ---
 
 ### Property Purchase
 
-`Process` â¸ Property â¸ Property Purchase records what a property cost to buy, in
-`TblPropertyPurchase` â **one row per property**, joined to [`TblProperty`](#property-setup) by
+`Process` ▸ Property ▸ Property Purchase records what a property cost to buy, in
+`TblPropertyPurchase` — **one row per property**, joined to [`TblProperty`](#property-setup) by
 `Property_Id`.
 
 | Field | Type | Holds |
@@ -3103,7 +3142,7 @@ sold if it has a row here, and the date it sold is the one in that row.
 | `Percentage_Ownership` | Decimal(22,2) | the share of the property owned, 0 to 100 |
 
 Every cost is **`DECIMAL(22,2)` created through ACE DDL**, not DAO `CreateField`, which silently
-produces a BigInt and would round each of them to whole dollars â the same reason the other
+produces a BigInt and would round each of them to whole dollars — the same reason the other
 money tables are built that way.
 
 `Settlement_Date` sits **after** `Purchase_Date` rather than at the end, which took both tools:
@@ -3136,8 +3175,8 @@ exists, which is the wanted behaviour rather than a failure.
 #### The list
 
 Fourteen columns: the property's **Name** read across from `TblProperty`, the **Purchase Date**
-and **Settlement Date** as `dd-MMM-yyyy`, the **Currency**, then every cost with a `$` and thousands grouped, to two places â the shared
-`Mdl1.FormatAmt` already does exactly that â and last **Percentage Ownership (%)**, which is a
+and **Settlement Date** as `dd-MMM-yyyy`, the **Currency**, then every cost with a `$` and thousands grouped, to two places — the shared
+`Mdl1.FormatAmt` already does exactly that — and last **Percentage Ownership (%)**, which is a
 share rather than an amount and so reads `62.50 %` instead of carrying a dollar sign. A purchase whose property has since been deleted
 still appears, showing `(id)` where the name would be, rather than vanishing from view.
 
@@ -3148,20 +3187,20 @@ beside it** so an id never has to be recognised on its own. The date uses the sa
 dropdowns and `..` calendar as Daily Input, bounded to the years the dropdown carries. Every
 figure box carries the shared numeric filter, so only digits and a decimal point get in.
 
-**Settlement Date** is the same picker again â three dropdowns and a `..` â sharing the one
+**Settlement Date** is the same picker again — three dropdowns and a `..` — sharing the one
 calendar with the purchase date, which remembers which of the two opened it. It may be left
 **empty**, since a purchase can be agreed before it settles; but a date with only some of its
 parts filled in is refused rather than stored as whatever those parts run together into, and a
 settlement **earlier than the purchase** is refused too. Property Sale has the same pair, and
 behaves the same way.
 
-**Percentage Ownership** is checked against **0 to 100** before anything is written â a share
+**Percentage Ownership** is checked against **0 to 100** before anything is written — a share
 outside that is not a share. The filter already keeps a minus sign out of the box, so in practice
 it is the upper end that does the work, but both ends are checked rather than one being relied on
 from somewhere else.
 
 **Stamp Duty has a box of its own.** It is a field on the table and a column in the list, but was
-missing from the inputs as originally specified â which would have left that column permanently
+missing from the inputs as originally specified — which would have left that column permanently
 at zero with no way to fill it.
 
 **One record per property** is enforced by the page rather than by a key on the table: Add refuses
@@ -3170,18 +3209,18 @@ a record onto a property that already has one. Delete asks first.
 
 If the property behind the selected row has been deleted, the page **says so in red and refuses
 to update it**. That case is worth guarding explicitly: `CmbPropertyId` is a `DropDownList`, and
-assigning an id that is not among its items does nothing at all, silently â so without the check
+assigning an id that is not among its items does nothing at all, silently — so without the check
 the box would sit showing the previous record while the rest of the form showed this one.
 
 ---
 
 ### Property Setup
 
-`Process` â¸ Property â¸ Property Setup maintains `TblProperty`: one row per property.
+`Process` ▸ Property ▸ Property Setup maintains `TblProperty`: one row per property.
 
 | Field | Type | Holds |
 | --- | --- | --- |
-| `Property_Id` | Number, **primary key** | handed out by the page â see below |
+| `Property_Id` | Number, **primary key** | handed out by the page — see below |
 | `Name` | Short Text(50) | what the property is called |
 | `Address` | Short Text(150) | street address |
 | `Suburb` | Short Text(50) | |
@@ -3212,7 +3251,7 @@ A row per property, in id order:
 | `Name` | `Name` |
 | `Full Address` | `Address`, `Suburb`, `State` and `Post_Code` run together with spaces |
 
-Clicking a row loads it back into the entry area â read from the table rather than off the grid,
+Clicking a row loads it back into the entry area — read from the table rather than off the grid,
 since the address is one column there and cannot be taken apart again.
 
 #### The entry area
@@ -3222,13 +3261,13 @@ something anyone types, so there is nothing to show until there is a record it b
 
 Six inputs, one column. **State** is a dropdown filled from `TblState`, so the codes cannot
 drift from the list [State Setup](#state-setup) maintains. There are no dates here any more, and
-so no date pickers and no calendar â [Property Purchase](#property-purchase) and
+so no date pickers and no calendar — [Property Purchase](#property-purchase) and
 [Property Sale](#property-sale) each carry their own.
 
 Refused before anything is written: an empty name, and a post code that is not digits.
 
 **Add** hands out the next id and inserts. **Update** works on the row picked from the list and
-never changes the id â it is the key the row is found by, and what the purchase and sale records
+never changes the id — it is the key the row is found by, and what the purchase and sale records
 point at; both refuse before a row has been picked. **Clear** empties the entry area and drops the
 selection, so Add starts from nothing.
 
@@ -3272,7 +3311,7 @@ wherever it appears, as on [State Setup](#state-setup).
 
 ### State Setup
 
-`Administration` â¸ Property â¸ State Setup maintains `TblState`: a state code and the full name it
+`Administration` ▸ Property ▸ State Setup maintains `TblState`: a state code and the full name it
 stands for.
 
 | Field | Type | Holds |
@@ -3281,7 +3320,7 @@ stands for.
 | `Long_Name` | Short Text(50) | the full name, e.g. `New South Wales` |
 
 `Name` is a reserved word in Access, so it is bracketed as `[Name]` in every statement that
-touches it â the same treatment `TblSuper` and `TblFinancialYear` need for their own `Name`.
+touches it — the same treatment `TblSuper` and `TblFinancialYear` need for their own `Name`.
 
 The table ships with the six states and two mainland territories:
 
@@ -3293,14 +3332,14 @@ The table ships with the six states and two mainland territories:
 | `QLD` | Queensland | | `WA` | Western Australia |
 
 These are the official Australia Post abbreviations, which is what a state code means here. **Three
-characters is the widest of them, not a fixed width** â `NT`, `SA` and `WA` are two, and they are
+characters is the widest of them, not a fixed width** — `NT`, `SA` and `WA` are two, and they are
 stored as they are actually written rather than padded out to fill the field.
 
 The page itself is the standard setup shape, laid out on `Setup_Curr`'s geometry to the pixel: the
 rows in a read-only grid in code order, a box for each field, and **Add** / **Update** / **Delete** /
-**Back** across the bottom on `Setup_Super_Fund`'s measurements â 85x28 at a 95px pitch.
+**Back** across the bottom on `Setup_Super_Fund`'s measurements — 85x28 at a 95px pitch.
 
-**Clicking a row copies it into the boxes**, ready to change or delete â the selection-fills-the-
+**Clicking a row copies it into the boxes**, ready to change or delete — the selection-fills-the-
 entry-area behaviour that `Setup_Super_Fund`, `Setup_Financial_Year` and the other newer setup
 pages have. Without it the page could only ever insert, since there would be no way to bring an
 existing row back without retyping its code exactly. `Get_Data` guards itself with a `Filling`
@@ -3310,12 +3349,12 @@ oldest account pages still lack the handler entirely.)
 
 #### Add against Update
 
-The two buttons are what `Setup_Super_Fund` has, and they divide the work the same way â one
+The two buttons are what `Setup_Super_Fund` has, and they divide the work the same way — one
 insists the code is **new**, the other insists a row has been **picked**:
 
 | | Add | Update |
 | --- | --- | --- |
-| Needs a row picked from the grid | no | **yes** â otherwise *Please select a state from the list first* |
+| Needs a row picked from the grid | no | **yes** — otherwise *Please select a state from the list first* |
 | Code already in the table | refused, *State Code already exists* | allowed only if it is the picked row's own code |
 | Changing the code | n/a | **renames that row**, carrying the name with it |
 | Empty code | refused | refused |
@@ -3323,17 +3362,17 @@ insists the code is **new**, the other insists a row has been **picked**:
 
 The page remembers the code the row was picked under in `OrgCode`, and Update writes
 `where [Name] = OrgCode`. That is what lets a code be *changed*: without it a retyped code would be
-indistinguishable from a new one, which is exactly the ambiguity the single Setup button had â it
+indistinguishable from a new one, which is exactly the ambiguity the single Setup button had — it
 inserted or updated depending on whether the typed code happened to exist, so a typo silently
 created a row instead of being refused. `OrgCode` is cleared whenever the grid is refilled, so
 Update always refuses until a row has been picked afresh.
 
 Nothing joins to `TblState` yet, so neither button has dependent rows to carry along or guard
-â unlike `Setup_Super_Fund`, where a rename has to be pushed into `TblSuper` and a delete is
+— unlike `Setup_Super_Fund`, where a rename has to be pushed into `TblSuper` and a delete is
 blocked while any super record still names the fund.
 
 **The page carries no Property entry of its own.** State Setup is the only page in the group, and a
-page never lists itself, so the group would be an empty dead end â the entry appears on every
+page never lists itself, so the group would be an empty dead end — the entry appears on every
 *other* Administration page's menu, and on `Main_Form`. Adding a second Property page means giving
 this one the group back, with that page in it.
 
@@ -3341,13 +3380,13 @@ this one the group back, with that page in it.
 
 Worth knowing before adding more Administration pages: on the narrower Setup pages the menu bar
 **silently clips** the entries that do not fit. A 616px bar holds four of them, and a Form's main
-`MenuStrip` does not overflow â setting `CanOverflow` changes nothing, the surplus entries simply
+`MenuStrip` does not overflow — setting `CanOverflow` changes nothing, the surplus entries simply
 land nowhere and are unreachable. Ten pages were already in that state before Property existed
 (`Super` and `ETF/Stock` among the casualties); Property makes it one entry worse on each of them,
 and `Setup_State` inherits it by matching its siblings' width.
 
-`Main_Form` is unaffected â its Administration list is a dropdown under one bar entry, so
-`Administration` â¸ `Property` â¸ `State Setup` is always reachable there. Fixing the peer pages
+`Main_Form` is unaffected — its Administration list is a dropdown under one bar entry, so
+`Administration` ▸ `Property` ▸ `State Setup` is always reachable there. Fixing the peer pages
 means either widening them or nesting their entries under one `Administration` heading the way
 `Main_Form` does, across fifteen forms.
 

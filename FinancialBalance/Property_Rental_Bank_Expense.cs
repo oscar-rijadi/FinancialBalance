@@ -17,10 +17,11 @@ namespace FinancialBalance
         //added do not fire the handlers and type themselves back into the boxes
         bool Filling;
 
-        //The month whose row was picked out of the list, so Update and Delete know which record
-        //they are working on - a record is identified by its property and its month together,
-        //and the property comes from the dropdown. Empty until a row is picked.
-        string OrgMonth = "";
+        //The Id of the row picked out of the list, so Update and Delete know which record they
+        //are working on. The table carries its own AutoNumber key, which is what lets a
+        //property hold more than one record for the same month: two rows can agree on every
+        //other column and still be told apart. Zero until a row is picked.
+        int OrgId;
 
         //index-aligned with CmbPropertyId: the name behind each id, so the label beside the
         //dropdown does not need a query every time the choice changes
@@ -29,6 +30,8 @@ namespace FinancialBalance
         //Month, Description and Currency are all reserved words in Access - an unbracketed one
         //fails with a bare "syntax error" that names nothing - so every column is bracketed
         //rather than only the ones that have to be.
+        //Id is left out of this list: it is read back separately, and never written - the
+        //database hands it out.
         const string Fields = "[Property_Id], [Month], [Description], [Currency],"
                             + " [Interest], [Bank_Fee], [Total_Expense]";
 
@@ -368,9 +371,12 @@ namespace FinancialBalance
 
                 //newest month first, which is the one usually being looked at. Month is stored
                 //yyyyMM, so a plain string sort is the same as a date sort.
-                Mdl1.Ssql = "select " + Fields + " from TblPropertyRentalBankExpense"
+                //newest month first, and within a month the order they were entered in - two
+                //records for one month would otherwise come back in whatever order the
+                //database felt like, and jump about as they were edited
+                Mdl1.Ssql = "select [Id], " + Fields + " from TblPropertyRentalBankExpense"
                           + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " order by [Month] Desc";
+                          + " order by [Month] Desc, [Id]";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -384,8 +390,8 @@ namespace FinancialBalance
                         Money(Read_Number(reader["Bank_Fee"])),
                         Money(TmpExpense) });
 
-                    //the stored month is not shown as it is stored, so it rides along on the row
-                    gvExpense.Rows[gvExpense.Rows.Count - 1].Tag = Read_Text(reader["Month"]);
+                    //the Id is not a column on screen, so it rides along on the row
+                    gvExpense.Rows[gvExpense.Rows.Count - 1].Tag = Read_Text(reader["Id"]);
 
                     TmpTotal += TmpExpense;
                 }
@@ -436,24 +442,23 @@ namespace FinancialBalance
             {
                 return;
             }
-            Load_Record(Row.Tag.ToString());
+            int TmpRowId;
+            if (!int.TryParse(Row.Tag.ToString(), NumberStyles.Integer,
+                              CultureInfo.InvariantCulture, out TmpRowId))
+            {
+                return;
+            }
+            Load_Record(TmpRowId);
         }
 
         //Read back from the table rather than off the grid: the amounts are dressed with a
         //dollar sign there and the month is the wrong way round to take apart again.
-        private void Load_Record(string parMonth)
+        private void Load_Record(int parRowId)
         {
             try
             {
-                int TmpId = Selected_Property();
-                if (TmpId == 0)
-                {
-                    return;
-                }
-
-                Mdl1.Ssql = "select " + Fields + " from TblPropertyRentalBankExpense"
-                          + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " and [Month] = '" + parMonth + "'";
+                Mdl1.Ssql = "select [Id], " + Fields + " from TblPropertyRentalBankExpense"
+                          + " where [Id] = " + parRowId.ToString(CultureInfo.InvariantCulture);
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (!reader.Read())
@@ -463,11 +468,12 @@ namespace FinancialBalance
                 }
 
                 Filling = true;
-                OrgMonth = Read_Text(reader["Month"]);
-                if (OrgMonth.Length == 6)
+                OrgId = parRowId;
+                string TmpMonth = Read_Text(reader["Month"]);
+                if (TmpMonth.Length == 6)
                 {
-                    CmbYear.Text = OrgMonth.Substring(0, 4);
-                    CmbMonth.Text = OrgMonth.Substring(4, 2);
+                    CmbYear.Text = TmpMonth.Substring(0, 4);
+                    CmbMonth.Text = TmpMonth.Substring(4, 2);
                 }
                 txtDescription.Text = Read_Text(reader["Description"]);
                 CmbCurrency.Text = Read_Text(reader["Currency"]);
@@ -587,7 +593,7 @@ namespace FinancialBalance
         private void Clear_Entry()
         {
             Filling = true;
-            OrgMonth = "";
+            OrgId = 0;
             Default_Month();
             txtDescription.Text = "";
             Default_Currency();
@@ -596,7 +602,7 @@ namespace FinancialBalance
             txtTotalExpense.Text = "";
             //ClearSelection fires SelectionChanged, and the handler falls back to CurrentRow
             //when nothing is selected - so clearing outside the guard loads straight back the
-            //record it was clearing, leaving OrgMonth set.
+            //record it was clearing, leaving OrgId set.
             gvExpense.ClearSelection();
             Filling = false;
         }
@@ -638,11 +644,12 @@ namespace FinancialBalance
             return true;
         }
 
-        private bool Exists(int parId, string parMonth)
+        //Whether the row picked out of the list is still there, which is all Update and
+        //Delete need to know now that nothing else is refused.
+        private bool Exists(int parRowId)
         {
-            Mdl1.Ssql = "select [Month] from TblPropertyRentalBankExpense"
-                      + " where [Property_Id] = " + parId.ToString(CultureInfo.InvariantCulture)
-                      + " and [Month] = '" + parMonth + "'";
+            Mdl1.Ssql = "select [Id] from TblPropertyRentalBankExpense"
+                      + " where [Id] = " + parRowId.ToString(CultureInfo.InvariantCulture);
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             bool Found = reader.Read();
@@ -663,16 +670,8 @@ namespace FinancialBalance
                     return;
                 }
 
-                //one record per property per month, so a second is an update rather than a row
-                if (Exists(TmpId, TmpMonth))
-                {
-                    MessageBox.Show("Property Id " + TmpId.ToString(CultureInfo.InvariantCulture)
-                        + " already has a record for " + Month_Text(TmpMonth) + "."
-                        + Environment.NewLine + "Pick it from the list and use Update.",
-                        "Error Message");
-                    return;
-                }
-
+                //a month can carry as many charges as the bank cared to make, so nothing is
+                //refused here - the Id the database hands out keeps them apart
                 Mdl1.Ssql = "Insert into TblPropertyRentalBankExpense (" + Fields + ") values ("
                           + TmpId.ToString(CultureInfo.InvariantCulture) + ", '"
                           + TmpMonth + "', '" + Quote(txtDescription.Text) + "', '"
@@ -696,9 +695,9 @@ namespace FinancialBalance
         {
             try
             {
-                if (OrgMonth == "")
+                if (OrgId == 0)
                 {
-                    MessageBox.Show("Please select a month from the list first !", "Error Message");
+                    MessageBox.Show("Please select a record from the list first !", "Error Message");
                     return;
                 }
 
@@ -710,16 +709,11 @@ namespace FinancialBalance
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
                 }
-                //moving the record onto a month that already has one would make two
-                if (TmpMonth != OrgMonth && Exists(TmpId, TmpMonth))
+                //nothing to refuse: the month may repeat, and the row being changed is
+                //named by its Id rather than by what is in it
+                if (!Exists(OrgId))
                 {
-                    MessageBox.Show("Property Id " + TmpId.ToString(CultureInfo.InvariantCulture)
-                        + " already has a record for " + Month_Text(TmpMonth) + ".", "Error Message");
-                    return;
-                }
-                if (!Exists(TmpId, OrgMonth))
-                {
-                    MessageBox.Show("Data not found for " + Month_Text(OrgMonth), "Error Message");
+                    MessageBox.Show("That record is no longer there.", "Error Message");
                     return;
                 }
 
@@ -730,8 +724,8 @@ namespace FinancialBalance
                           + " [Interest] = " + Num(Amount(txtInterest)) + ","
                           + " [Bank_Fee] = " + Num(Amount(txtBankFee)) + ","
                           + " [Total_Expense] = " + Num(Total_Expense())
-                          + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " and [Month] = '" + OrgMonth + "'";
+                          + " , [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
+                          + " where [Id] = " + OrgId.ToString(CultureInfo.InvariantCulture);
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
@@ -749,30 +743,27 @@ namespace FinancialBalance
         {
             try
             {
-                if (OrgMonth == "")
+                if (OrgId == 0)
                 {
-                    MessageBox.Show("Please select a month from the list first !", "Error Message");
+                    MessageBox.Show("Please select a record from the list first !", "Error Message");
                     return;
                 }
 
-                int TmpId = Selected_Property();
-                if (TmpId == 0)
-                {
-                    return;
-                }
-                if (MessageBox.Show("Delete the record for " + Month_Text(OrgMonth) + " ?",
+                //the month is only in the question, not in the matching - two records for one
+                //month would otherwise both go
+                string TmpMonth = CmbYear.Text.Trim() + CmbMonth.Text.Trim();
+                if (MessageBox.Show("Delete the selected record for " + Month_Text(TmpMonth) + " ?",
                         "Confirmation", MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {
                     return;
                 }
 
                 Mdl1.Ssql = "Delete from TblPropertyRentalBankExpense"
-                          + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " and [Month] = '" + OrgMonth + "'";
+                          + " where [Id] = " + OrgId.ToString(CultureInfo.InvariantCulture);
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for " + Month_Text(OrgMonth), "Success");
+                MessageBox.Show("Delete successfully for " + Month_Text(TmpMonth), "Success");
                 Get_Data();
                 Clear_Entry();
             }

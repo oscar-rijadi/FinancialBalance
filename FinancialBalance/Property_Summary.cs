@@ -36,6 +36,21 @@ namespace FinancialBalance
             }
         }
 
+        //What the property has earned and cost while it is held, as opposed to what buying
+        //or selling it came to. Each figure is one table's column added up for this property.
+        private class Ongoing
+        {
+            public double Rental;        //Profit_Loss on TblPropertyRentalIncome
+            public double BankExpense;   //Total_Expense on TblPropertyRentalBankExpense
+            public double OtherExpense;  //Expense on TblPropertyRentalExpense
+
+            //What the two costs leave of the rental result.
+            public double Total
+            {
+                get { return Math.Round(Rental - BankExpense - OtherExpense, 2); }
+            }
+        }
+
         private class Sale
         {
             public string SoldDate;
@@ -251,6 +266,16 @@ namespace FinancialBalance
             LblInitialLoan.Text = "";
         }
 
+        private void Clear_Ongoing()
+        {
+            foreach (Label TmpLabel in new Label[] { LblOngoingRental, LblBankExpense,
+                                                     LblOtherExpense, LblOngoingTotal })
+            {
+                TmpLabel.Text = "";
+                TmpLabel.ForeColor = System.Drawing.Color.Black;
+            }
+        }
+
         private void Clear_Details()
         {
             LblNote.Text = "";
@@ -258,6 +283,7 @@ namespace FinancialBalance
             LblName.Text = "";
             LblAddress.Text = "";
             Clear_Purchase();
+            Clear_Ongoing();
             Show_Sale_Block(false);
         }
 
@@ -283,6 +309,10 @@ namespace FinancialBalance
                     return;
                 }
 
+                //always shown: a property earns and costs whether or not it has been sold
+                Ongoing TmpOngoing = Get_Ongoing(TmpId);
+                Show_Ongoing(TmpOngoing);
+
                 Purchase TmpPurchase = Get_Purchase(TmpId);
                 if (TmpPurchase != null)
                 {
@@ -300,7 +330,7 @@ namespace FinancialBalance
                     return;
                 }
 
-                Show_Sale(TmpSale, TmpPurchase);
+                Show_Sale(TmpSale, TmpPurchase, TmpOngoing);
             }
             catch (Exception ex)
             {
@@ -405,6 +435,53 @@ namespace FinancialBalance
             return TmpSale;
         }
 
+        //Three sums, one per table. A property with nothing recorded against it reads zero
+        //rather than blank - the section is always shown, since a property earns and costs
+        //whether or not it has been sold.
+        private Ongoing Get_Ongoing(int parId)
+        {
+            Ongoing TmpOngoing = new Ongoing();
+            TmpOngoing.Rental = Sum_For("TblPropertyRentalIncome", "[Profit_Loss]", parId);
+            TmpOngoing.BankExpense = Sum_For("TblPropertyRentalBankExpense", "[Total_Expense]", parId);
+            TmpOngoing.OtherExpense = Sum_For("TblPropertyRentalExpense", "[Expense]", parId);
+            return TmpOngoing;
+        }
+
+        //One money column added up for one property. Sum returns null rather than zero when
+        //nothing matches, which Read_Number already reads as zero.
+        private double Sum_For(string parTable, string parColumn, int parId)
+        {
+            Mdl1.Ssql = "select Sum(" + parColumn + ") as N from " + parTable
+                      + " where [Property_Id] = " + parId.ToString(CultureInfo.InvariantCulture);
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            double TmpValue = 0;
+            if (reader.Read())
+            {
+                TmpValue = Read_Number(reader["N"]);
+            }
+            reader.Close();
+            return Math.Round(TmpValue, 2);
+        }
+
+        //The two expenses are costs, so they are red whatever they come to - a large one is
+        //not good news the way a large rental profit is. The rental result and the total go
+        //green or red the way every other profit figure does.
+        private void Show_Ongoing(Ongoing parOngoing)
+        {
+            LblOngoingRental.Text = Money(parOngoing.Rental);
+            Colour_Label(LblOngoingRental, parOngoing.Rental);
+
+            LblBankExpense.Text = Money(parOngoing.BankExpense);
+            LblBankExpense.ForeColor = System.Drawing.Color.Red;
+
+            LblOtherExpense.Text = Money(parOngoing.OtherExpense);
+            LblOtherExpense.ForeColor = System.Drawing.Color.Red;
+
+            LblOngoingTotal.Text = Money(parOngoing.Total);
+            Colour_Label(LblOngoingTotal, parOngoing.Total);
+        }
+
         private void Show_Purchase(Purchase parPurchase)
         {
             LblPurchaseDate.Text = Long_Date(parPurchase.PurchaseDate);
@@ -420,10 +497,11 @@ namespace FinancialBalance
             LblInitialLoan.Text = Money(parPurchase.InitialLoan);
         }
 
-        //The profit is what the sale brought in less what getting out of it cost and less what
-        //getting into it cost, so it needs the purchase as well. Without a purchase record
-        //there is nothing to subtract and a figure would only mislead, so it is left blank.
-        private void Show_Sale(Sale parSale, Purchase parPurchase)
+        //The profit is what the sale brought in, less what getting out of it cost and less
+        //what getting into it cost, plus what the property made while it was held - so it
+        //needs the purchase and the ongoing figures as well. Without a purchase record there
+        //is nothing to subtract and a figure would only mislead, so it is left blank.
+        private void Show_Sale(Sale parSale, Purchase parPurchase, Ongoing parOngoing)
         {
             Show_Sale_Block(true);
 
@@ -446,10 +524,13 @@ namespace FinancialBalance
                 return;
             }
 
+            //What the property made overall: what selling it returned over what buying it
+            //cost, plus what holding it made or lost along the way.
             double TmpProfit = parSale.Price
                              - parSale.TotalCost
                              - parPurchase.Price
-                             - parPurchase.TotalCost;
+                             - parPurchase.TotalCost
+                             + parOngoing.Total;
             LblProfitLoss.Text = Money(TmpProfit);
             Colour_Label(LblProfitLoss, TmpProfit);
 

@@ -24,6 +24,7 @@
             this.LblPropertyName = new System.Windows.Forms.Label();
             this.LblNote = new System.Windows.Forms.Label();
             this.LblPurchaseHeader = new System.Windows.Forms.Label();
+            this.LblOngoingHeader = new System.Windows.Forms.Label();
             this.LblSaleHeader = new System.Windows.Forms.Label();
             this.Lbl_LblName = new System.Windows.Forms.Label();
             this.LblName = new System.Windows.Forms.Label();
@@ -51,6 +52,14 @@
             this.LblDownPayment = new System.Windows.Forms.Label();
             this.Lbl_LblInitialLoan = new System.Windows.Forms.Label();
             this.LblInitialLoan = new System.Windows.Forms.Label();
+            this.Lbl_LblOngoingRental = new System.Windows.Forms.Label();
+            this.LblOngoingRental = new System.Windows.Forms.Label();
+            this.Lbl_LblBankExpense = new System.Windows.Forms.Label();
+            this.LblBankExpense = new System.Windows.Forms.Label();
+            this.Lbl_LblOtherExpense = new System.Windows.Forms.Label();
+            this.LblOtherExpense = new System.Windows.Forms.Label();
+            this.Lbl_LblOngoingTotal = new System.Windows.Forms.Label();
+            this.LblOngoingTotal = new System.Windows.Forms.Label();
             this.Lbl_LblSoldDate = new System.Windows.Forms.Label();
             this.LblSoldDate = new System.Windows.Forms.Label();
             this.Lbl_LblSaleSettlementDate = new System.Windows.Forms.Label();
@@ -77,9 +86,9 @@
             this.Label21.BackColor = System.Drawing.Color.Transparent;
             this.Label21.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(142, 30);
+            this.Label21.Location = new System.Drawing.Point(19, 30);
             this.Label21.Name = "Label21";
-            this.Label21.Size = new System.Drawing.Size(980, 38);
+            this.Label21.Size = new System.Drawing.Size(1342, 38);
             this.Label21.TabIndex = 1;
             this.Label21.Text = "PROPERTY SUMMARY";
             this.Label21.UseMnemonic = false;
@@ -125,7 +134,7 @@
             this.LblNote.ForeColor = System.Drawing.Color.Black;
             this.LblNote.Location = new System.Drawing.Point(19, 120);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(1100, 20);
+            this.LblNote.Size = new System.Drawing.Size(1342, 20);
             this.LblNote.TabIndex = 5;
             this.LblNote.UseMnemonic = false;
             // 
@@ -141,15 +150,27 @@
             this.LblPurchaseHeader.Text = "PURCHASE";
             this.LblPurchaseHeader.UseMnemonic = false;
             // 
+            // LblOngoingHeader
+            // 
+            this.LblOngoingHeader.BackColor = System.Drawing.Color.Transparent;
+            this.LblOngoingHeader.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblOngoingHeader.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.LblOngoingHeader.Location = new System.Drawing.Point(460, 224);
+            this.LblOngoingHeader.Name = "LblOngoingHeader";
+            this.LblOngoingHeader.Size = new System.Drawing.Size(400, 22);
+            this.LblOngoingHeader.TabIndex = 7;
+            this.LblOngoingHeader.Text = "ONGOING";
+            this.LblOngoingHeader.UseMnemonic = false;
+            // 
             // LblSaleHeader
             // 
             this.LblSaleHeader.BackColor = System.Drawing.Color.Transparent;
             this.LblSaleHeader.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSaleHeader.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.LblSaleHeader.Location = new System.Drawing.Point(650, 224);
+            this.LblSaleHeader.Location = new System.Drawing.Point(900, 224);
             this.LblSaleHeader.Name = "LblSaleHeader";
             this.LblSaleHeader.Size = new System.Drawing.Size(400, 22);
-            this.LblSaleHeader.TabIndex = 7;
+            this.LblSaleHeader.TabIndex = 8;
             this.LblSaleHeader.Text = "SALE";
             this.LblSaleHeader.UseMnemonic = false;
             // 
@@ -160,8 +181,8 @@
             this.Lbl_LblName.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblName.Location = new System.Drawing.Point(19, 156);
             this.Lbl_LblName.Name = "Lbl_LblName";
-            this.Lbl_LblName.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblName.TabIndex = 8;
+            this.Lbl_LblName.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblName.TabIndex = 9;
             this.Lbl_LblName.Text = "Name";
             // 
             // LblName
@@ -169,10 +190,10 @@
             this.LblName.BackColor = System.Drawing.Color.Transparent;
             this.LblName.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblName.ForeColor = System.Drawing.Color.Black;
-            this.LblName.Location = new System.Drawing.Point(225, 156);
+            this.LblName.Location = new System.Drawing.Point(255, 156);
             this.LblName.Name = "LblName";
-            this.LblName.Size = new System.Drawing.Size(420, 20);
-            this.LblName.TabIndex = 9;
+            this.LblName.Size = new System.Drawing.Size(500, 20);
+            this.LblName.TabIndex = 10;
             this.LblName.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.LblName.UseMnemonic = false;
             // 
@@ -183,8 +204,8 @@
             this.Lbl_LblAddress.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblAddress.Location = new System.Drawing.Point(19, 184);
             this.Lbl_LblAddress.Name = "Lbl_LblAddress";
-            this.Lbl_LblAddress.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblAddress.TabIndex = 10;
+            this.Lbl_LblAddress.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblAddress.TabIndex = 11;
             this.Lbl_LblAddress.Text = "Address";
             // 
             // LblAddress
@@ -192,10 +213,10 @@
             this.LblAddress.BackColor = System.Drawing.Color.Transparent;
             this.LblAddress.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAddress.ForeColor = System.Drawing.Color.Black;
-            this.LblAddress.Location = new System.Drawing.Point(225, 184);
+            this.LblAddress.Location = new System.Drawing.Point(255, 184);
             this.LblAddress.Name = "LblAddress";
-            this.LblAddress.Size = new System.Drawing.Size(700, 20);
-            this.LblAddress.TabIndex = 11;
+            this.LblAddress.Size = new System.Drawing.Size(800, 20);
+            this.LblAddress.TabIndex = 12;
             this.LblAddress.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.LblAddress.UseMnemonic = false;
             // 
@@ -206,8 +227,8 @@
             this.Lbl_LblPurchaseDate.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblPurchaseDate.Location = new System.Drawing.Point(19, 254);
             this.Lbl_LblPurchaseDate.Name = "Lbl_LblPurchaseDate";
-            this.Lbl_LblPurchaseDate.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblPurchaseDate.TabIndex = 12;
+            this.Lbl_LblPurchaseDate.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPurchaseDate.TabIndex = 13;
             this.Lbl_LblPurchaseDate.Text = "Purchase Date";
             // 
             // LblPurchaseDate
@@ -215,10 +236,10 @@
             this.LblPurchaseDate.BackColor = System.Drawing.Color.Transparent;
             this.LblPurchaseDate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPurchaseDate.ForeColor = System.Drawing.Color.Black;
-            this.LblPurchaseDate.Location = new System.Drawing.Point(225, 254);
+            this.LblPurchaseDate.Location = new System.Drawing.Point(255, 254);
             this.LblPurchaseDate.Name = "LblPurchaseDate";
-            this.LblPurchaseDate.Size = new System.Drawing.Size(220, 20);
-            this.LblPurchaseDate.TabIndex = 13;
+            this.LblPurchaseDate.Size = new System.Drawing.Size(180, 20);
+            this.LblPurchaseDate.TabIndex = 14;
             this.LblPurchaseDate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblPurchaseDate.UseMnemonic = false;
             // 
@@ -229,8 +250,8 @@
             this.Lbl_LblPurchaseSettlementDate.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblPurchaseSettlementDate.Location = new System.Drawing.Point(19, 284);
             this.Lbl_LblPurchaseSettlementDate.Name = "Lbl_LblPurchaseSettlementDate";
-            this.Lbl_LblPurchaseSettlementDate.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblPurchaseSettlementDate.TabIndex = 14;
+            this.Lbl_LblPurchaseSettlementDate.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPurchaseSettlementDate.TabIndex = 15;
             this.Lbl_LblPurchaseSettlementDate.Text = "Purchase Settlement Date";
             // 
             // LblPurchaseSettlementDate
@@ -238,10 +259,10 @@
             this.LblPurchaseSettlementDate.BackColor = System.Drawing.Color.Transparent;
             this.LblPurchaseSettlementDate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPurchaseSettlementDate.ForeColor = System.Drawing.Color.Black;
-            this.LblPurchaseSettlementDate.Location = new System.Drawing.Point(225, 284);
+            this.LblPurchaseSettlementDate.Location = new System.Drawing.Point(255, 284);
             this.LblPurchaseSettlementDate.Name = "LblPurchaseSettlementDate";
-            this.LblPurchaseSettlementDate.Size = new System.Drawing.Size(220, 20);
-            this.LblPurchaseSettlementDate.TabIndex = 15;
+            this.LblPurchaseSettlementDate.Size = new System.Drawing.Size(180, 20);
+            this.LblPurchaseSettlementDate.TabIndex = 16;
             this.LblPurchaseSettlementDate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblPurchaseSettlementDate.UseMnemonic = false;
             // 
@@ -252,8 +273,8 @@
             this.Lbl_LblPctOwnership.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblPctOwnership.Location = new System.Drawing.Point(19, 314);
             this.Lbl_LblPctOwnership.Name = "Lbl_LblPctOwnership";
-            this.Lbl_LblPctOwnership.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblPctOwnership.TabIndex = 16;
+            this.Lbl_LblPctOwnership.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPctOwnership.TabIndex = 17;
             this.Lbl_LblPctOwnership.Text = "Percentage Ownership";
             // 
             // LblPctOwnership
@@ -261,10 +282,10 @@
             this.LblPctOwnership.BackColor = System.Drawing.Color.Transparent;
             this.LblPctOwnership.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPctOwnership.ForeColor = System.Drawing.Color.Black;
-            this.LblPctOwnership.Location = new System.Drawing.Point(225, 314);
+            this.LblPctOwnership.Location = new System.Drawing.Point(255, 314);
             this.LblPctOwnership.Name = "LblPctOwnership";
-            this.LblPctOwnership.Size = new System.Drawing.Size(220, 20);
-            this.LblPctOwnership.TabIndex = 17;
+            this.LblPctOwnership.Size = new System.Drawing.Size(180, 20);
+            this.LblPctOwnership.TabIndex = 18;
             this.LblPctOwnership.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblPctOwnership.UseMnemonic = false;
             // 
@@ -275,8 +296,8 @@
             this.Lbl_LblPurchasePrice.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblPurchasePrice.Location = new System.Drawing.Point(19, 344);
             this.Lbl_LblPurchasePrice.Name = "Lbl_LblPurchasePrice";
-            this.Lbl_LblPurchasePrice.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblPurchasePrice.TabIndex = 18;
+            this.Lbl_LblPurchasePrice.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPurchasePrice.TabIndex = 19;
             this.Lbl_LblPurchasePrice.Text = "Purchase Price";
             // 
             // LblPurchasePrice
@@ -284,10 +305,10 @@
             this.LblPurchasePrice.BackColor = System.Drawing.Color.Transparent;
             this.LblPurchasePrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPurchasePrice.ForeColor = System.Drawing.Color.Black;
-            this.LblPurchasePrice.Location = new System.Drawing.Point(225, 344);
+            this.LblPurchasePrice.Location = new System.Drawing.Point(255, 344);
             this.LblPurchasePrice.Name = "LblPurchasePrice";
-            this.LblPurchasePrice.Size = new System.Drawing.Size(220, 20);
-            this.LblPurchasePrice.TabIndex = 19;
+            this.LblPurchasePrice.Size = new System.Drawing.Size(180, 20);
+            this.LblPurchasePrice.TabIndex = 20;
             this.LblPurchasePrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblPurchasePrice.UseMnemonic = false;
             // 
@@ -298,8 +319,8 @@
             this.Lbl_LblStampDuty.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblStampDuty.Location = new System.Drawing.Point(19, 374);
             this.Lbl_LblStampDuty.Name = "Lbl_LblStampDuty";
-            this.Lbl_LblStampDuty.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblStampDuty.TabIndex = 20;
+            this.Lbl_LblStampDuty.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblStampDuty.TabIndex = 21;
             this.Lbl_LblStampDuty.Text = "Stamp Duty";
             // 
             // LblStampDuty
@@ -307,10 +328,10 @@
             this.LblStampDuty.BackColor = System.Drawing.Color.Transparent;
             this.LblStampDuty.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblStampDuty.ForeColor = System.Drawing.Color.Black;
-            this.LblStampDuty.Location = new System.Drawing.Point(225, 374);
+            this.LblStampDuty.Location = new System.Drawing.Point(255, 374);
             this.LblStampDuty.Name = "LblStampDuty";
-            this.LblStampDuty.Size = new System.Drawing.Size(220, 20);
-            this.LblStampDuty.TabIndex = 21;
+            this.LblStampDuty.Size = new System.Drawing.Size(180, 20);
+            this.LblStampDuty.TabIndex = 22;
             this.LblStampDuty.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblStampDuty.UseMnemonic = false;
             // 
@@ -321,8 +342,8 @@
             this.Lbl_LblPurchaseConveyancing.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblPurchaseConveyancing.Location = new System.Drawing.Point(19, 404);
             this.Lbl_LblPurchaseConveyancing.Name = "Lbl_LblPurchaseConveyancing";
-            this.Lbl_LblPurchaseConveyancing.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblPurchaseConveyancing.TabIndex = 22;
+            this.Lbl_LblPurchaseConveyancing.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPurchaseConveyancing.TabIndex = 23;
             this.Lbl_LblPurchaseConveyancing.Text = "Purchase Conveyancing Cost";
             // 
             // LblPurchaseConveyancing
@@ -330,10 +351,10 @@
             this.LblPurchaseConveyancing.BackColor = System.Drawing.Color.Transparent;
             this.LblPurchaseConveyancing.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPurchaseConveyancing.ForeColor = System.Drawing.Color.Black;
-            this.LblPurchaseConveyancing.Location = new System.Drawing.Point(225, 404);
+            this.LblPurchaseConveyancing.Location = new System.Drawing.Point(255, 404);
             this.LblPurchaseConveyancing.Name = "LblPurchaseConveyancing";
-            this.LblPurchaseConveyancing.Size = new System.Drawing.Size(220, 20);
-            this.LblPurchaseConveyancing.TabIndex = 23;
+            this.LblPurchaseConveyancing.Size = new System.Drawing.Size(180, 20);
+            this.LblPurchaseConveyancing.TabIndex = 24;
             this.LblPurchaseConveyancing.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblPurchaseConveyancing.UseMnemonic = false;
             // 
@@ -344,8 +365,8 @@
             this.Lbl_LblBACost.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblBACost.Location = new System.Drawing.Point(19, 434);
             this.Lbl_LblBACost.Name = "Lbl_LblBACost";
-            this.Lbl_LblBACost.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblBACost.TabIndex = 24;
+            this.Lbl_LblBACost.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblBACost.TabIndex = 25;
             this.Lbl_LblBACost.Text = "BA Cost";
             // 
             // LblBACost
@@ -353,10 +374,10 @@
             this.LblBACost.BackColor = System.Drawing.Color.Transparent;
             this.LblBACost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblBACost.ForeColor = System.Drawing.Color.Black;
-            this.LblBACost.Location = new System.Drawing.Point(225, 434);
+            this.LblBACost.Location = new System.Drawing.Point(255, 434);
             this.LblBACost.Name = "LblBACost";
-            this.LblBACost.Size = new System.Drawing.Size(220, 20);
-            this.LblBACost.TabIndex = 25;
+            this.LblBACost.Size = new System.Drawing.Size(180, 20);
+            this.LblBACost.TabIndex = 26;
             this.LblBACost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblBACost.UseMnemonic = false;
             // 
@@ -367,8 +388,8 @@
             this.Lbl_LblPurchaseOtherCost.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblPurchaseOtherCost.Location = new System.Drawing.Point(19, 464);
             this.Lbl_LblPurchaseOtherCost.Name = "Lbl_LblPurchaseOtherCost";
-            this.Lbl_LblPurchaseOtherCost.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblPurchaseOtherCost.TabIndex = 26;
+            this.Lbl_LblPurchaseOtherCost.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPurchaseOtherCost.TabIndex = 27;
             this.Lbl_LblPurchaseOtherCost.Text = "Purchase Other Cost";
             // 
             // LblPurchaseOtherCost
@@ -376,10 +397,10 @@
             this.LblPurchaseOtherCost.BackColor = System.Drawing.Color.Transparent;
             this.LblPurchaseOtherCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPurchaseOtherCost.ForeColor = System.Drawing.Color.Black;
-            this.LblPurchaseOtherCost.Location = new System.Drawing.Point(225, 464);
+            this.LblPurchaseOtherCost.Location = new System.Drawing.Point(255, 464);
             this.LblPurchaseOtherCost.Name = "LblPurchaseOtherCost";
-            this.LblPurchaseOtherCost.Size = new System.Drawing.Size(220, 20);
-            this.LblPurchaseOtherCost.TabIndex = 27;
+            this.LblPurchaseOtherCost.Size = new System.Drawing.Size(180, 20);
+            this.LblPurchaseOtherCost.TabIndex = 28;
             this.LblPurchaseOtherCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblPurchaseOtherCost.UseMnemonic = false;
             // 
@@ -390,8 +411,8 @@
             this.Lbl_LblTotalPurchaseCost.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblTotalPurchaseCost.Location = new System.Drawing.Point(19, 494);
             this.Lbl_LblTotalPurchaseCost.Name = "Lbl_LblTotalPurchaseCost";
-            this.Lbl_LblTotalPurchaseCost.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblTotalPurchaseCost.TabIndex = 28;
+            this.Lbl_LblTotalPurchaseCost.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblTotalPurchaseCost.TabIndex = 29;
             this.Lbl_LblTotalPurchaseCost.Text = "Total Purchase Cost";
             // 
             // LblTotalPurchaseCost
@@ -399,10 +420,10 @@
             this.LblTotalPurchaseCost.BackColor = System.Drawing.Color.Transparent;
             this.LblTotalPurchaseCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotalPurchaseCost.ForeColor = System.Drawing.Color.Black;
-            this.LblTotalPurchaseCost.Location = new System.Drawing.Point(225, 494);
+            this.LblTotalPurchaseCost.Location = new System.Drawing.Point(255, 494);
             this.LblTotalPurchaseCost.Name = "LblTotalPurchaseCost";
-            this.LblTotalPurchaseCost.Size = new System.Drawing.Size(220, 20);
-            this.LblTotalPurchaseCost.TabIndex = 29;
+            this.LblTotalPurchaseCost.Size = new System.Drawing.Size(180, 20);
+            this.LblTotalPurchaseCost.TabIndex = 30;
             this.LblTotalPurchaseCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblTotalPurchaseCost.UseMnemonic = false;
             // 
@@ -413,8 +434,8 @@
             this.Lbl_LblDownPayment.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblDownPayment.Location = new System.Drawing.Point(19, 524);
             this.Lbl_LblDownPayment.Name = "Lbl_LblDownPayment";
-            this.Lbl_LblDownPayment.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblDownPayment.TabIndex = 30;
+            this.Lbl_LblDownPayment.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblDownPayment.TabIndex = 31;
             this.Lbl_LblDownPayment.Text = "DP";
             // 
             // LblDownPayment
@@ -422,10 +443,10 @@
             this.LblDownPayment.BackColor = System.Drawing.Color.Transparent;
             this.LblDownPayment.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDownPayment.ForeColor = System.Drawing.Color.Black;
-            this.LblDownPayment.Location = new System.Drawing.Point(225, 524);
+            this.LblDownPayment.Location = new System.Drawing.Point(255, 524);
             this.LblDownPayment.Name = "LblDownPayment";
-            this.LblDownPayment.Size = new System.Drawing.Size(220, 20);
-            this.LblDownPayment.TabIndex = 31;
+            this.LblDownPayment.Size = new System.Drawing.Size(180, 20);
+            this.LblDownPayment.TabIndex = 32;
             this.LblDownPayment.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblDownPayment.UseMnemonic = false;
             // 
@@ -436,8 +457,8 @@
             this.Lbl_LblInitialLoan.ForeColor = System.Drawing.Color.Black;
             this.Lbl_LblInitialLoan.Location = new System.Drawing.Point(19, 554);
             this.Lbl_LblInitialLoan.Name = "Lbl_LblInitialLoan";
-            this.Lbl_LblInitialLoan.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblInitialLoan.TabIndex = 32;
+            this.Lbl_LblInitialLoan.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblInitialLoan.TabIndex = 33;
             this.Lbl_LblInitialLoan.Text = "Initial Loan";
             // 
             // LblInitialLoan
@@ -445,22 +466,114 @@
             this.LblInitialLoan.BackColor = System.Drawing.Color.Transparent;
             this.LblInitialLoan.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblInitialLoan.ForeColor = System.Drawing.Color.Black;
-            this.LblInitialLoan.Location = new System.Drawing.Point(225, 554);
+            this.LblInitialLoan.Location = new System.Drawing.Point(255, 554);
             this.LblInitialLoan.Name = "LblInitialLoan";
-            this.LblInitialLoan.Size = new System.Drawing.Size(220, 20);
-            this.LblInitialLoan.TabIndex = 33;
+            this.LblInitialLoan.Size = new System.Drawing.Size(180, 20);
+            this.LblInitialLoan.TabIndex = 34;
             this.LblInitialLoan.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblInitialLoan.UseMnemonic = false;
+            // 
+            // Lbl_LblOngoingRental
+            // 
+            this.Lbl_LblOngoingRental.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblOngoingRental.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblOngoingRental.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblOngoingRental.Location = new System.Drawing.Point(460, 254);
+            this.Lbl_LblOngoingRental.Name = "Lbl_LblOngoingRental";
+            this.Lbl_LblOngoingRental.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblOngoingRental.TabIndex = 35;
+            this.Lbl_LblOngoingRental.Text = "Ongoing Rental Profit/Loss";
+            // 
+            // LblOngoingRental
+            // 
+            this.LblOngoingRental.BackColor = System.Drawing.Color.Transparent;
+            this.LblOngoingRental.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblOngoingRental.ForeColor = System.Drawing.Color.Black;
+            this.LblOngoingRental.Location = new System.Drawing.Point(696, 254);
+            this.LblOngoingRental.Name = "LblOngoingRental";
+            this.LblOngoingRental.Size = new System.Drawing.Size(180, 20);
+            this.LblOngoingRental.TabIndex = 36;
+            this.LblOngoingRental.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblOngoingRental.UseMnemonic = false;
+            // 
+            // Lbl_LblBankExpense
+            // 
+            this.Lbl_LblBankExpense.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblBankExpense.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblBankExpense.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblBankExpense.Location = new System.Drawing.Point(460, 284);
+            this.Lbl_LblBankExpense.Name = "Lbl_LblBankExpense";
+            this.Lbl_LblBankExpense.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblBankExpense.TabIndex = 37;
+            this.Lbl_LblBankExpense.Text = "Bank Expense";
+            // 
+            // LblBankExpense
+            // 
+            this.LblBankExpense.BackColor = System.Drawing.Color.Transparent;
+            this.LblBankExpense.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblBankExpense.ForeColor = System.Drawing.Color.Black;
+            this.LblBankExpense.Location = new System.Drawing.Point(696, 284);
+            this.LblBankExpense.Name = "LblBankExpense";
+            this.LblBankExpense.Size = new System.Drawing.Size(180, 20);
+            this.LblBankExpense.TabIndex = 38;
+            this.LblBankExpense.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblBankExpense.UseMnemonic = false;
+            // 
+            // Lbl_LblOtherExpense
+            // 
+            this.Lbl_LblOtherExpense.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblOtherExpense.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblOtherExpense.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblOtherExpense.Location = new System.Drawing.Point(460, 314);
+            this.Lbl_LblOtherExpense.Name = "Lbl_LblOtherExpense";
+            this.Lbl_LblOtherExpense.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblOtherExpense.TabIndex = 39;
+            this.Lbl_LblOtherExpense.Text = "Other Expense";
+            // 
+            // LblOtherExpense
+            // 
+            this.LblOtherExpense.BackColor = System.Drawing.Color.Transparent;
+            this.LblOtherExpense.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblOtherExpense.ForeColor = System.Drawing.Color.Black;
+            this.LblOtherExpense.Location = new System.Drawing.Point(696, 314);
+            this.LblOtherExpense.Name = "LblOtherExpense";
+            this.LblOtherExpense.Size = new System.Drawing.Size(180, 20);
+            this.LblOtherExpense.TabIndex = 40;
+            this.LblOtherExpense.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblOtherExpense.UseMnemonic = false;
+            // 
+            // Lbl_LblOngoingTotal
+            // 
+            this.Lbl_LblOngoingTotal.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblOngoingTotal.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblOngoingTotal.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblOngoingTotal.Location = new System.Drawing.Point(460, 344);
+            this.Lbl_LblOngoingTotal.Name = "Lbl_LblOngoingTotal";
+            this.Lbl_LblOngoingTotal.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblOngoingTotal.TabIndex = 41;
+            this.Lbl_LblOngoingTotal.Text = "Grand Total Ongoing Profit/Loss";
+            // 
+            // LblOngoingTotal
+            // 
+            this.LblOngoingTotal.BackColor = System.Drawing.Color.Transparent;
+            this.LblOngoingTotal.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblOngoingTotal.ForeColor = System.Drawing.Color.Black;
+            this.LblOngoingTotal.Location = new System.Drawing.Point(696, 344);
+            this.LblOngoingTotal.Name = "LblOngoingTotal";
+            this.LblOngoingTotal.Size = new System.Drawing.Size(180, 20);
+            this.LblOngoingTotal.TabIndex = 42;
+            this.LblOngoingTotal.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblOngoingTotal.UseMnemonic = false;
             // 
             // Lbl_LblSoldDate
             // 
             this.Lbl_LblSoldDate.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblSoldDate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblSoldDate.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblSoldDate.Location = new System.Drawing.Point(650, 254);
+            this.Lbl_LblSoldDate.Location = new System.Drawing.Point(900, 254);
             this.Lbl_LblSoldDate.Name = "Lbl_LblSoldDate";
-            this.Lbl_LblSoldDate.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblSoldDate.TabIndex = 34;
+            this.Lbl_LblSoldDate.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblSoldDate.TabIndex = 43;
             this.Lbl_LblSoldDate.Text = "Sold Date";
             // 
             // LblSoldDate
@@ -468,10 +581,10 @@
             this.LblSoldDate.BackColor = System.Drawing.Color.Transparent;
             this.LblSoldDate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSoldDate.ForeColor = System.Drawing.Color.Black;
-            this.LblSoldDate.Location = new System.Drawing.Point(856, 254);
+            this.LblSoldDate.Location = new System.Drawing.Point(1136, 254);
             this.LblSoldDate.Name = "LblSoldDate";
-            this.LblSoldDate.Size = new System.Drawing.Size(220, 20);
-            this.LblSoldDate.TabIndex = 35;
+            this.LblSoldDate.Size = new System.Drawing.Size(180, 20);
+            this.LblSoldDate.TabIndex = 44;
             this.LblSoldDate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblSoldDate.UseMnemonic = false;
             // 
@@ -480,10 +593,10 @@
             this.Lbl_LblSaleSettlementDate.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblSaleSettlementDate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblSaleSettlementDate.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblSaleSettlementDate.Location = new System.Drawing.Point(650, 284);
+            this.Lbl_LblSaleSettlementDate.Location = new System.Drawing.Point(900, 284);
             this.Lbl_LblSaleSettlementDate.Name = "Lbl_LblSaleSettlementDate";
-            this.Lbl_LblSaleSettlementDate.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblSaleSettlementDate.TabIndex = 36;
+            this.Lbl_LblSaleSettlementDate.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblSaleSettlementDate.TabIndex = 45;
             this.Lbl_LblSaleSettlementDate.Text = "Sale Settlement Date";
             // 
             // LblSaleSettlementDate
@@ -491,10 +604,10 @@
             this.LblSaleSettlementDate.BackColor = System.Drawing.Color.Transparent;
             this.LblSaleSettlementDate.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSaleSettlementDate.ForeColor = System.Drawing.Color.Black;
-            this.LblSaleSettlementDate.Location = new System.Drawing.Point(856, 284);
+            this.LblSaleSettlementDate.Location = new System.Drawing.Point(1136, 284);
             this.LblSaleSettlementDate.Name = "LblSaleSettlementDate";
-            this.LblSaleSettlementDate.Size = new System.Drawing.Size(220, 20);
-            this.LblSaleSettlementDate.TabIndex = 37;
+            this.LblSaleSettlementDate.Size = new System.Drawing.Size(180, 20);
+            this.LblSaleSettlementDate.TabIndex = 46;
             this.LblSaleSettlementDate.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblSaleSettlementDate.UseMnemonic = false;
             // 
@@ -503,10 +616,10 @@
             this.Lbl_LblSoldPrice.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblSoldPrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblSoldPrice.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblSoldPrice.Location = new System.Drawing.Point(650, 314);
+            this.Lbl_LblSoldPrice.Location = new System.Drawing.Point(900, 314);
             this.Lbl_LblSoldPrice.Name = "Lbl_LblSoldPrice";
-            this.Lbl_LblSoldPrice.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblSoldPrice.TabIndex = 38;
+            this.Lbl_LblSoldPrice.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblSoldPrice.TabIndex = 47;
             this.Lbl_LblSoldPrice.Text = "Sold Price";
             // 
             // LblSoldPrice
@@ -514,10 +627,10 @@
             this.LblSoldPrice.BackColor = System.Drawing.Color.Transparent;
             this.LblSoldPrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSoldPrice.ForeColor = System.Drawing.Color.Black;
-            this.LblSoldPrice.Location = new System.Drawing.Point(856, 314);
+            this.LblSoldPrice.Location = new System.Drawing.Point(1136, 314);
             this.LblSoldPrice.Name = "LblSoldPrice";
-            this.LblSoldPrice.Size = new System.Drawing.Size(220, 20);
-            this.LblSoldPrice.TabIndex = 39;
+            this.LblSoldPrice.Size = new System.Drawing.Size(180, 20);
+            this.LblSoldPrice.TabIndex = 48;
             this.LblSoldPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblSoldPrice.UseMnemonic = false;
             // 
@@ -526,10 +639,10 @@
             this.Lbl_LblSaleConveyancing.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblSaleConveyancing.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblSaleConveyancing.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblSaleConveyancing.Location = new System.Drawing.Point(650, 344);
+            this.Lbl_LblSaleConveyancing.Location = new System.Drawing.Point(900, 344);
             this.Lbl_LblSaleConveyancing.Name = "Lbl_LblSaleConveyancing";
-            this.Lbl_LblSaleConveyancing.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblSaleConveyancing.TabIndex = 40;
+            this.Lbl_LblSaleConveyancing.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblSaleConveyancing.TabIndex = 49;
             this.Lbl_LblSaleConveyancing.Text = "Sale Conveyancing Cost";
             // 
             // LblSaleConveyancing
@@ -537,10 +650,10 @@
             this.LblSaleConveyancing.BackColor = System.Drawing.Color.Transparent;
             this.LblSaleConveyancing.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSaleConveyancing.ForeColor = System.Drawing.Color.Black;
-            this.LblSaleConveyancing.Location = new System.Drawing.Point(856, 344);
+            this.LblSaleConveyancing.Location = new System.Drawing.Point(1136, 344);
             this.LblSaleConveyancing.Name = "LblSaleConveyancing";
-            this.LblSaleConveyancing.Size = new System.Drawing.Size(220, 20);
-            this.LblSaleConveyancing.TabIndex = 41;
+            this.LblSaleConveyancing.Size = new System.Drawing.Size(180, 20);
+            this.LblSaleConveyancing.TabIndex = 50;
             this.LblSaleConveyancing.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblSaleConveyancing.UseMnemonic = false;
             // 
@@ -549,10 +662,10 @@
             this.Lbl_LblSaleAgentCost.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblSaleAgentCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblSaleAgentCost.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblSaleAgentCost.Location = new System.Drawing.Point(650, 374);
+            this.Lbl_LblSaleAgentCost.Location = new System.Drawing.Point(900, 374);
             this.Lbl_LblSaleAgentCost.Name = "Lbl_LblSaleAgentCost";
-            this.Lbl_LblSaleAgentCost.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblSaleAgentCost.TabIndex = 42;
+            this.Lbl_LblSaleAgentCost.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblSaleAgentCost.TabIndex = 51;
             this.Lbl_LblSaleAgentCost.Text = "Sale Agent Cost";
             // 
             // LblSaleAgentCost
@@ -560,10 +673,10 @@
             this.LblSaleAgentCost.BackColor = System.Drawing.Color.Transparent;
             this.LblSaleAgentCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSaleAgentCost.ForeColor = System.Drawing.Color.Black;
-            this.LblSaleAgentCost.Location = new System.Drawing.Point(856, 374);
+            this.LblSaleAgentCost.Location = new System.Drawing.Point(1136, 374);
             this.LblSaleAgentCost.Name = "LblSaleAgentCost";
-            this.LblSaleAgentCost.Size = new System.Drawing.Size(220, 20);
-            this.LblSaleAgentCost.TabIndex = 43;
+            this.LblSaleAgentCost.Size = new System.Drawing.Size(180, 20);
+            this.LblSaleAgentCost.TabIndex = 52;
             this.LblSaleAgentCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblSaleAgentCost.UseMnemonic = false;
             // 
@@ -572,10 +685,10 @@
             this.Lbl_LblSaleOtherCost.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblSaleOtherCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblSaleOtherCost.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblSaleOtherCost.Location = new System.Drawing.Point(650, 404);
+            this.Lbl_LblSaleOtherCost.Location = new System.Drawing.Point(900, 404);
             this.Lbl_LblSaleOtherCost.Name = "Lbl_LblSaleOtherCost";
-            this.Lbl_LblSaleOtherCost.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblSaleOtherCost.TabIndex = 44;
+            this.Lbl_LblSaleOtherCost.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblSaleOtherCost.TabIndex = 53;
             this.Lbl_LblSaleOtherCost.Text = "Sale Other Cost";
             // 
             // LblSaleOtherCost
@@ -583,10 +696,10 @@
             this.LblSaleOtherCost.BackColor = System.Drawing.Color.Transparent;
             this.LblSaleOtherCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblSaleOtherCost.ForeColor = System.Drawing.Color.Black;
-            this.LblSaleOtherCost.Location = new System.Drawing.Point(856, 404);
+            this.LblSaleOtherCost.Location = new System.Drawing.Point(1136, 404);
             this.LblSaleOtherCost.Name = "LblSaleOtherCost";
-            this.LblSaleOtherCost.Size = new System.Drawing.Size(220, 20);
-            this.LblSaleOtherCost.TabIndex = 45;
+            this.LblSaleOtherCost.Size = new System.Drawing.Size(180, 20);
+            this.LblSaleOtherCost.TabIndex = 54;
             this.LblSaleOtherCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblSaleOtherCost.UseMnemonic = false;
             // 
@@ -595,10 +708,10 @@
             this.Lbl_LblTotalSaleCost.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblTotalSaleCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblTotalSaleCost.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblTotalSaleCost.Location = new System.Drawing.Point(650, 434);
+            this.Lbl_LblTotalSaleCost.Location = new System.Drawing.Point(900, 434);
             this.Lbl_LblTotalSaleCost.Name = "Lbl_LblTotalSaleCost";
-            this.Lbl_LblTotalSaleCost.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblTotalSaleCost.TabIndex = 46;
+            this.Lbl_LblTotalSaleCost.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblTotalSaleCost.TabIndex = 55;
             this.Lbl_LblTotalSaleCost.Text = "Total Sale Cost";
             // 
             // LblTotalSaleCost
@@ -606,10 +719,10 @@
             this.LblTotalSaleCost.BackColor = System.Drawing.Color.Transparent;
             this.LblTotalSaleCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotalSaleCost.ForeColor = System.Drawing.Color.Black;
-            this.LblTotalSaleCost.Location = new System.Drawing.Point(856, 434);
+            this.LblTotalSaleCost.Location = new System.Drawing.Point(1136, 434);
             this.LblTotalSaleCost.Name = "LblTotalSaleCost";
-            this.LblTotalSaleCost.Size = new System.Drawing.Size(220, 20);
-            this.LblTotalSaleCost.TabIndex = 47;
+            this.LblTotalSaleCost.Size = new System.Drawing.Size(180, 20);
+            this.LblTotalSaleCost.TabIndex = 56;
             this.LblTotalSaleCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblTotalSaleCost.UseMnemonic = false;
             // 
@@ -618,10 +731,10 @@
             this.Lbl_LblProfitLoss.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblProfitLoss.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblProfitLoss.Location = new System.Drawing.Point(650, 464);
+            this.Lbl_LblProfitLoss.Location = new System.Drawing.Point(900, 464);
             this.Lbl_LblProfitLoss.Name = "Lbl_LblProfitLoss";
-            this.Lbl_LblProfitLoss.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblProfitLoss.TabIndex = 48;
+            this.Lbl_LblProfitLoss.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblProfitLoss.TabIndex = 57;
             this.Lbl_LblProfitLoss.Text = "Profit/Loss";
             // 
             // LblProfitLoss
@@ -629,10 +742,10 @@
             this.LblProfitLoss.BackColor = System.Drawing.Color.Transparent;
             this.LblProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblProfitLoss.ForeColor = System.Drawing.Color.Black;
-            this.LblProfitLoss.Location = new System.Drawing.Point(856, 464);
+            this.LblProfitLoss.Location = new System.Drawing.Point(1136, 464);
             this.LblProfitLoss.Name = "LblProfitLoss";
-            this.LblProfitLoss.Size = new System.Drawing.Size(220, 20);
-            this.LblProfitLoss.TabIndex = 49;
+            this.LblProfitLoss.Size = new System.Drawing.Size(180, 20);
+            this.LblProfitLoss.TabIndex = 58;
             this.LblProfitLoss.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblProfitLoss.UseMnemonic = false;
             // 
@@ -641,10 +754,10 @@
             this.Lbl_LblPctProfitLoss.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblPctProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblPctProfitLoss.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblPctProfitLoss.Location = new System.Drawing.Point(650, 494);
+            this.Lbl_LblPctProfitLoss.Location = new System.Drawing.Point(900, 494);
             this.Lbl_LblPctProfitLoss.Name = "Lbl_LblPctProfitLoss";
-            this.Lbl_LblPctProfitLoss.Size = new System.Drawing.Size(200, 20);
-            this.Lbl_LblPctProfitLoss.TabIndex = 50;
+            this.Lbl_LblPctProfitLoss.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPctProfitLoss.TabIndex = 59;
             this.Lbl_LblPctProfitLoss.Text = "Percentage Profit/Loss";
             // 
             // LblPctProfitLoss
@@ -652,10 +765,10 @@
             this.LblPctProfitLoss.BackColor = System.Drawing.Color.Transparent;
             this.LblPctProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblPctProfitLoss.ForeColor = System.Drawing.Color.Black;
-            this.LblPctProfitLoss.Location = new System.Drawing.Point(856, 494);
+            this.LblPctProfitLoss.Location = new System.Drawing.Point(1136, 494);
             this.LblPctProfitLoss.Name = "LblPctProfitLoss";
-            this.LblPctProfitLoss.Size = new System.Drawing.Size(220, 20);
-            this.LblPctProfitLoss.TabIndex = 51;
+            this.LblPctProfitLoss.Size = new System.Drawing.Size(180, 20);
+            this.LblPctProfitLoss.TabIndex = 60;
             this.LblPctProfitLoss.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblPctProfitLoss.UseMnemonic = false;
             // 
@@ -663,21 +776,21 @@
             // 
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(1134, 610);
+            this.CmdBack.Location = new System.Drawing.Point(1251, 610);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 28);
-            this.CmdBack.TabIndex = 52;
+            this.CmdBack.TabIndex = 61;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
-            //
+            // 
             // Property_Summary
-            //
+            // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1264, 680);
+            this.ClientSize = new System.Drawing.Size(1380, 680);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.LblPctProfitLoss);
@@ -698,6 +811,14 @@
             this.Controls.Add(this.Lbl_LblSaleSettlementDate);
             this.Controls.Add(this.LblSoldDate);
             this.Controls.Add(this.Lbl_LblSoldDate);
+            this.Controls.Add(this.LblOngoingTotal);
+            this.Controls.Add(this.Lbl_LblOngoingTotal);
+            this.Controls.Add(this.LblOtherExpense);
+            this.Controls.Add(this.Lbl_LblOtherExpense);
+            this.Controls.Add(this.LblBankExpense);
+            this.Controls.Add(this.Lbl_LblBankExpense);
+            this.Controls.Add(this.LblOngoingRental);
+            this.Controls.Add(this.Lbl_LblOngoingRental);
             this.Controls.Add(this.LblInitialLoan);
             this.Controls.Add(this.Lbl_LblInitialLoan);
             this.Controls.Add(this.LblDownPayment);
@@ -725,6 +846,7 @@
             this.Controls.Add(this.LblName);
             this.Controls.Add(this.Lbl_LblName);
             this.Controls.Add(this.LblSaleHeader);
+            this.Controls.Add(this.LblOngoingHeader);
             this.Controls.Add(this.LblPurchaseHeader);
             this.Controls.Add(this.LblNote);
             this.Controls.Add(this.LblPropertyName);
@@ -751,6 +873,7 @@
         public System.Windows.Forms.Label LblPropertyName;
         public System.Windows.Forms.Label LblNote;
         public System.Windows.Forms.Label LblPurchaseHeader;
+        public System.Windows.Forms.Label LblOngoingHeader;
         public System.Windows.Forms.Label LblSaleHeader;
         public System.Windows.Forms.Label Lbl_LblName;
         public System.Windows.Forms.Label LblName;
@@ -778,6 +901,14 @@
         public System.Windows.Forms.Label LblDownPayment;
         public System.Windows.Forms.Label Lbl_LblInitialLoan;
         public System.Windows.Forms.Label LblInitialLoan;
+        public System.Windows.Forms.Label Lbl_LblOngoingRental;
+        public System.Windows.Forms.Label LblOngoingRental;
+        public System.Windows.Forms.Label Lbl_LblBankExpense;
+        public System.Windows.Forms.Label LblBankExpense;
+        public System.Windows.Forms.Label Lbl_LblOtherExpense;
+        public System.Windows.Forms.Label LblOtherExpense;
+        public System.Windows.Forms.Label Lbl_LblOngoingTotal;
+        public System.Windows.Forms.Label LblOngoingTotal;
         public System.Windows.Forms.Label Lbl_LblSoldDate;
         public System.Windows.Forms.Label LblSoldDate;
         public System.Windows.Forms.Label Lbl_LblSaleSettlementDate;
