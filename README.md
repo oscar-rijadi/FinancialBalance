@@ -88,7 +88,7 @@ Related pages are collected into submenus rather than sitting flat:
 
 | Menu | Submenu | Contains |
 | --- | --- | --- |
-| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Financial Year Reconciliation |
+| `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
@@ -120,6 +120,7 @@ flowchart LR
     PETFG --> ETS["ETF_Stocks_Sale"]
     PETFG --> ETD["ETF_Stocks_Distribution"]
     PETFG --> ECB["ETF_Stocks_Cost_Base_Adjustment"]
+    PETFG --> ETI2["ETF_Stocks_Tax_Interest"]
     PETFG --> ETR["ETF_Stocks_FY_Reconciliation"]
     MAIN --> PPROPG{{"Property"}}
     PPROPG --> SPROP["Setup_Property"]
@@ -191,6 +192,7 @@ flowchart LR
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
+| `ETF_Stocks_Tax_Interest` | Shown as **ETF/Stock Tax Deductable Interest**. What the borrowing behind the portfolio cost, month by month, with a financial year filter and the total for whichever year is showing. Add, update and delete, one figure per month. |
 | `ETF_Stocks_FY_Reconciliation` | Shown as **ETF/Stock Financial Year Reconciliation**. One financial year's result per portfolio, with an entry section that defaults every figure from the rest of the database. |
 | `Super_Financial_Year` | Shown as **Super**. One financial year's result per super account â what went in, what the fund returned, what it cost, and what came out at the end. |
 | `Super_Balance_Historical` | Shown as **Super Balance & Historical Data**. Read-only, in two parts: where every super account stands, then one account's full year-by-year history. |
@@ -482,6 +484,11 @@ erDiagram
         text Suburb "50 chars"
         text State "3 chars, a code from TblState"
         text Post_Code "4 chars"
+    }
+    TblETFStocksTaxDeductableInterest {
+        text    Month "yyyyMM, one row per month"
+        text    Currency "3 chars, a code from TblCurrCode"
+        decimal Interest "2 dp"
     }
     TblETFStocksDistributionDividend {
         text    Pay_Date "yyyyMMdd"
@@ -1203,6 +1210,63 @@ the middle table from the database and clears the result.
 > dropdowns as the way to read the current figures. That guard is per-selection, not per-record:
 > nothing marks a stored adjustment as having been applied, so re-selecting and pressing again
 > **will** apply it a second time.
+
+---
+
+### Tax deductable interest
+
+`Process` > ETF/Stock > ETF/Stock Tax Deductable Interest records what the borrowing behind
+the portfolio cost, in `TblETFStocksTaxDeductableInterest` - **one row per month**. It joins
+nothing: the interest is a cost of the portfolio as a whole rather than of any one ticker or
+any one holding, so there is no `Full_Ticker` and no `Portfolio_Code` on it.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Month` | Short Text(6) | `yyyyMM` |
+| `Currency` | Short Text(3) | a code from [`TblCurrCode`](#reference-data) |
+| `Interest` | Decimal(22,2) | what that month cost |
+
+`Interest` is **`DECIMAL(22,2)` created through ACE DDL**, not DAO `CreateField`, which
+silently produces a BigInt and would round it to whole dollars - the same reason the other
+money tables are built that way. `Month` matches `TblMonthlyTrans.Trans_Month`, which is the
+shape every other month in the database has.
+
+> **`Month` and `Currency` are both reserved words in Access.** An unbracketed one fails with
+> a bare "syntax error in INSERT INTO statement" that names nothing, so every column here is
+> bracketed rather than only the ones that have to be - the rule `TblProperty` is already
+> written under. A `SELECT` gets away with it; an `INSERT` does not, which is exactly the
+> sort of difference that only shows up once a page is in use.
+
+The list runs **newest month first**, read back as `MMM-yyyy`. `Month` is stored `yyyyMM`, so
+a plain string sort is the same as a date sort. The amount carries a `$` with thousands
+grouped to two places.
+
+#### The financial year filter, and the total
+
+A **Financial Year** dropdown above the list narrows it to one year, newest-closing first
+with `All` at the top, the same shape the [dividend history](#dividend-history) filter has.
+Under the list sits **Total Interest**: the Interest column of whatever is showing, added
+straight down. Picking a year therefore gives the figure the year is actually claimed on.
+
+The year is stored as two `yyyyMMdd` dates and a month here is `yyyyMM`, so the filter is the
+first six characters of each:
+
+```
+where [Month] >= <Start_Date first 6> and [Month] <= <End_Date first 6>
+```
+
+An Australian year running `01-Jul-2025` to `30-Jun-2026` therefore covers `202507` through
+`202606`, **both end months included** - which is the part worth checking, since a year
+boundary that is off by one month moves a whole month of interest into the wrong claim.
+
+A year with **no dates set up** narrows nothing rather than hiding everything, and the note
+line says so. Otherwise the note names the year and the months it spans, so a short list is
+explainable rather than mysterious.
+
+The entry area is a month and a year dropdown opening on **the month just gone**, a currency
+dropdown opening on `AUD`, and the amount. A record is identified by **its month alone**: Add
+refuses a month that already has a figure, Update refuses to move one onto a month that does,
+and Delete asks first.
 
 ---
 
@@ -2073,6 +2137,7 @@ C#.Net/
 â   âââ ETF_Stocks_Distribution.*     # distributions and dividends
 â   âââ ETF_Stocks_Cost_Base_Adjustment.*
 â   âââ ETF_Stocks_FY_Reconciliation.*
+â   âââ ETF_Stocks_Tax_Interest.*          # what the borrowing cost, by month
 â   âââ ETF_Stocks_FY_Historical.*     # read-only view of the above
 â   âââ ETF_Stocks_Portfolio_Summary.*
 â   âââ ETF_Stocks_Portfolio_Diversification.*

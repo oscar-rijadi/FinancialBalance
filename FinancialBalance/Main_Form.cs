@@ -259,6 +259,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksTaxInterest_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Tax_Interest ETF_Stocks_Tax_Interest = new ETF_Stocks_Tax_Interest();
+            ETF_Stocks_Tax_Interest.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksPrice_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Price ETF_Stocks_Price = new ETF_Stocks_Price();

@@ -44,6 +44,7 @@
             this.MnETFStocksDistribution = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvestment = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPrice = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksTaxInterest = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksCostBase = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.Label1 = new System.Windows.Forms.Label();
@@ -172,6 +173,7 @@
             this.MnETFStocksSale,
             this.MnETFStocksDistribution,
             this.MnETFStocksCostBase,
+            this.MnETFStocksTaxInterest,
             this.MnETFStocksFYRecon});
             this.MnETFStockProcessGroup.Name = "MnETFStockProcessGroup";
             this.MnETFStockProcessGroup.Size = new System.Drawing.Size(75, 20);
@@ -272,6 +274,13 @@
             this.MnETFStocksFYRecon.Size = new System.Drawing.Size(104, 20);
             this.MnETFStocksFYRecon.Text = "ETF/Stock Financial &Year Reconciliation";
             this.MnETFStocksFYRecon.Click += new System.EventHandler(this.MnETFStocksFYRecon_Click);
+            // 
+            // MnETFStocksTaxInterest
+            // 
+            this.MnETFStocksTaxInterest.Name = "MnETFStocksTaxInterest";
+            this.MnETFStocksTaxInterest.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksTaxInterest.Text = "ETF/Stock Tax Deductable &Interest";
+            this.MnETFStocksTaxInterest.Click += new System.EventHandler(this.MnETFStocksTaxInterest_Click);
             // 
             // Label1
             // 
@@ -1660,6 +1669,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDistribution;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvestment;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPrice;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksTaxInterest;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksCostBase;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.Label Label1;
