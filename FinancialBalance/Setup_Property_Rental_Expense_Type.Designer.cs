@@ -1,6 +1,6 @@
 ﻿namespace FinancialBalance
 {
-    partial class Setup_State
+    partial class Setup_Property_Rental_Expense_Type
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -17,7 +17,7 @@
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_State));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_Property_Rental_Expense_Type));
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -35,22 +35,21 @@
             this.MnETFStocksDivAllocSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyGroup = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnPropertyRentalExpTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnStateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
+            this.gvType = new System.Windows.Forms.DataGridView();
+            this.Lbl_Type_Name = new System.Windows.Forms.Label();
+            this.Type_Name = new System.Windows.Forms.TextBox();
+            this.LblNote = new System.Windows.Forms.Label();
             this.CmdCreate = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
-            this.Label1 = new System.Windows.Forms.Label();
-            this.State_Code = new System.Windows.Forms.TextBox();
-            this.Label2 = new System.Windows.Forms.Label();
-            this.State_Name = new System.Windows.Forms.TextBox();
-            this.gvState = new System.Windows.Forms.DataGridView();
             this.MainMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvState)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvType)).BeginInit();
             this.SuspendLayout();
             // 
             // MainMenu1
@@ -186,17 +185,17 @@
             // MnPropertyGroup
             // 
             this.MnPropertyGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnPropertyRentalExpTypeSetup});
+            this.MnStateSetup});
             this.MnPropertyGroup.Name = "MnPropertyGroup";
             this.MnPropertyGroup.Size = new System.Drawing.Size(75, 20);
             this.MnPropertyGroup.Text = "&Property";
             // 
-            // MnPropertyRentalExpTypeSetup
+            // MnStateSetup
             // 
-            this.MnPropertyRentalExpTypeSetup.Name = "MnPropertyRentalExpTypeSetup";
-            this.MnPropertyRentalExpTypeSetup.Size = new System.Drawing.Size(216, 22);
-            this.MnPropertyRentalExpTypeSetup.Text = "Property Rental &Expense Type Setup";
-            this.MnPropertyRentalExpTypeSetup.Click += new System.EventHandler(this.MnPropertyRentalExpTypeSetup_Click);
+            this.MnStateSetup.Name = "MnStateSetup";
+            this.MnStateSetup.Size = new System.Drawing.Size(216, 22);
+            this.MnStateSetup.Text = "&State Setup";
+            this.MnStateSetup.Click += new System.EventHandler(this.MnStateSetup_Click);
             // 
             // MnSuperGroup
             // 
@@ -224,28 +223,74 @@
             // Label21
             // 
             this.Label21.BackColor = System.Drawing.Color.Transparent;
-            this.Label21.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Label21.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label21.Font = new System.Drawing.Font("Arial", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(153, 27);
+            this.Label21.Location = new System.Drawing.Point(19, 27);
             this.Label21.Name = "Label21";
-            this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label21.Size = new System.Drawing.Size(310, 44);
+            this.Label21.Size = new System.Drawing.Size(557, 38);
             this.Label21.TabIndex = 2;
-            this.Label21.Text = "STATE SETUP";
+            this.Label21.Text = "PROPERTY RENTAL EXPENSE TYPE SETUP";
             this.Label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.Label21.UseMnemonic = false;
+            // 
+            // gvType
+            // 
+            this.gvType.AllowUserToAddRows = false;
+            this.gvType.AllowUserToDeleteRows = false;
+            this.gvType.AllowUserToResizeRows = false;
+            this.gvType.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvType.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvType.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gvType.Location = new System.Drawing.Point(19, 71);
+            this.gvType.MultiSelect = false;
+            this.gvType.Name = "gvType";
+            this.gvType.ReadOnly = true;
+            this.gvType.RowHeadersVisible = false;
+            this.gvType.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvType.Size = new System.Drawing.Size(557, 190);
+            this.gvType.TabIndex = 3;
+            this.gvType.SelectionChanged += new System.EventHandler(this.gvType_SelectionChanged);
+            // 
+            // Lbl_Type_Name
+            // 
+            this.Lbl_Type_Name.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_Type_Name.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_Type_Name.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_Type_Name.Location = new System.Drawing.Point(19, 272);
+            this.Lbl_Type_Name.Name = "Lbl_Type_Name";
+            this.Lbl_Type_Name.Size = new System.Drawing.Size(100, 22);
+            this.Lbl_Type_Name.TabIndex = 4;
+            this.Lbl_Type_Name.Text = "Name";
+            this.Lbl_Type_Name.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // Type_Name
+            // 
+            this.Type_Name.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Type_Name.Location = new System.Drawing.Point(128, 270);
+            this.Type_Name.MaxLength = 50;
+            this.Type_Name.Name = "Type_Name";
+            this.Type_Name.Size = new System.Drawing.Size(300, 20);
+            this.Type_Name.TabIndex = 5;
+            // 
+            // LblNote
+            // 
+            this.LblNote.BackColor = System.Drawing.Color.Transparent;
+            this.LblNote.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblNote.ForeColor = System.Drawing.Color.Black;
+            this.LblNote.Location = new System.Drawing.Point(19, 298);
+            this.LblNote.Name = "LblNote";
+            this.LblNote.Size = new System.Drawing.Size(557, 22);
+            this.LblNote.TabIndex = 6;
+            this.LblNote.UseMnemonic = false;
             // 
             // CmdCreate
             // 
             this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
-            this.CmdCreate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
             this.CmdCreate.Location = new System.Drawing.Point(216, 326);
             this.CmdCreate.Name = "CmdCreate";
-            this.CmdCreate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
-            this.CmdCreate.TabIndex = 3;
+            this.CmdCreate.TabIndex = 7;
             this.CmdCreate.Text = "&Add";
             this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
@@ -253,14 +298,11 @@
             // CmdUpdate
             // 
             this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
-            this.CmdUpdate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
             this.CmdUpdate.Location = new System.Drawing.Point(311, 326);
             this.CmdUpdate.Name = "CmdUpdate";
-            this.CmdUpdate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
-            this.CmdUpdate.TabIndex = 4;
+            this.CmdUpdate.TabIndex = 8;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -268,14 +310,11 @@
             // CmdDel
             // 
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
-            this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
             this.CmdDel.Location = new System.Drawing.Point(406, 326);
             this.CmdDel.Name = "CmdDel";
-            this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
-            this.CmdDel.TabIndex = 5;
+            this.CmdDel.TabIndex = 9;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -283,117 +322,44 @@
             // CmdBack
             // 
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
-            this.CmdBack.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
             this.CmdBack.Location = new System.Drawing.Point(501, 326);
             this.CmdBack.Name = "CmdBack";
-            this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
-            this.CmdBack.TabIndex = 6;
+            this.CmdBack.TabIndex = 10;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             // 
-            // Label1
+            // Setup_Property_Rental_Expense_Type
             // 
-            this.Label1.BackColor = System.Drawing.Color.Transparent;
-            this.Label1.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label1.ForeColor = System.Drawing.Color.Black;
-            this.Label1.Location = new System.Drawing.Point(16, 270);
-            this.Label1.Name = "Label1";
-            this.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label1.Size = new System.Drawing.Size(100, 25);
-            this.Label1.TabIndex = 7;
-            this.Label1.Text = "State Code";
-            // 
-            // State_Code
-            // 
-            this.State_Code.AcceptsReturn = true;
-            this.State_Code.BackColor = System.Drawing.SystemColors.Window;
-            this.State_Code.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.State_Code.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.State_Code.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.State_Code.Location = new System.Drawing.Point(128, 270);
-            this.State_Code.MaxLength = 3;
-            this.State_Code.Name = "State_Code";
-            this.State_Code.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.State_Code.Size = new System.Drawing.Size(34, 20);
-            this.State_Code.TabIndex = 8;
-            // 
-            // Label2
-            // 
-            this.Label2.BackColor = System.Drawing.Color.Transparent;
-            this.Label2.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label2.ForeColor = System.Drawing.Color.Black;
-            this.Label2.Location = new System.Drawing.Point(16, 294);
-            this.Label2.Name = "Label2";
-            this.Label2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label2.Size = new System.Drawing.Size(100, 25);
-            this.Label2.TabIndex = 9;
-            this.Label2.Text = "State Name";
-            // 
-            // State_Name
-            // 
-            this.State_Name.AcceptsReturn = true;
-            this.State_Name.BackColor = System.Drawing.SystemColors.Window;
-            this.State_Name.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.State_Name.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.State_Name.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.State_Name.Location = new System.Drawing.Point(128, 294);
-            this.State_Name.MaxLength = 50;
-            this.State_Name.Name = "State_Name";
-            this.State_Name.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.State_Name.Size = new System.Drawing.Size(234, 20);
-            this.State_Name.TabIndex = 10;
-            // 
-            // gvState
-            // 
-            this.gvState.AllowUserToAddRows = false;
-            this.gvState.AllowUserToDeleteRows = false;
-            this.gvState.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.gvState.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvState.Location = new System.Drawing.Point(19, 71);
-            this.gvState.MultiSelect = false;
-            this.gvState.Name = "gvState";
-            this.gvState.ReadOnly = true;
-            this.gvState.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvState.Size = new System.Drawing.Size(557, 190);
-            this.gvState.TabIndex = 11;
-            this.gvState.SelectionChanged += new System.EventHandler(this.gvState_SelectionChanged);
-            //
-            // Setup_State
-            //
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(616, 372);
             this.ControlBox = false;
-            this.Controls.Add(this.gvState);
-            this.Controls.Add(this.State_Name);
-            this.Controls.Add(this.Label2);
-            this.Controls.Add(this.State_Code);
-            this.Controls.Add(this.Label1);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.CmdUpdate);
             this.Controls.Add(this.CmdCreate);
+            this.Controls.Add(this.LblNote);
+            this.Controls.Add(this.Type_Name);
+            this.Controls.Add(this.Lbl_Type_Name);
+            this.Controls.Add(this.gvType);
             this.Controls.Add(this.Label21);
             this.Controls.Add(this.MainMenu1);
             this.Font = new System.Drawing.Font("Arial", 8F);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = new System.Drawing.Point(4, 43);
             this.MainMenuStrip = this.MainMenu1;
-            this.Name = "Setup_State";
+            this.Name = "Setup_Property_Rental_Expense_Type";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "State Setup";
-            this.Load += new System.EventHandler(this.Setup_State_Load);
+            this.Text = "Property Rental Expense Type Setup";
+            this.Load += new System.EventHandler(this.Setup_Property_Rental_Expense_Type_Load);
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvState)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvType)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -418,19 +384,18 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivAllocSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanSetup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyGroup;
-        public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalExpTypeSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnStateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperSetup;
         public System.Windows.Forms.Label Label21;
+        public System.Windows.Forms.DataGridView gvType;
+        public System.Windows.Forms.Label Lbl_Type_Name;
+        public System.Windows.Forms.TextBox Type_Name;
+        public System.Windows.Forms.Label LblNote;
         public System.Windows.Forms.Button CmdCreate;
         public System.Windows.Forms.Button CmdUpdate;
         public System.Windows.Forms.Button CmdDel;
         public System.Windows.Forms.Button CmdBack;
-        public System.Windows.Forms.Label Label1;
-        public System.Windows.Forms.TextBox State_Code;
-        public System.Windows.Forms.Label Label2;
-        public System.Windows.Forms.TextBox State_Name;
-        private System.Windows.Forms.DataGridView gvState;
     }
 }

@@ -94,7 +94,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
 | `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense |
 | `Inquiry` | **Property** | Property Summary |
-| `Administration` | **Property** | State Setup |
+| `Administration` | **Property** | State Setup, Property Rental Expense Type Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu â
@@ -163,6 +163,7 @@ flowchart LR
     ETFG --> SIP["Setup_ETF_Stocks_Investment_Plan"]
     ADMIN --> PROPG{{"Property"}}
     PROPG --> SST["Setup_State"]
+    PROPG --> SPRET["Setup_Property_Rental_Expense_Type"]
     ADMIN --> SUPG{{"Super"}}
     SUPG --> SSF["Setup_Super_Fund"]
     SUPG --> SSU["Setup_Super"]
@@ -227,6 +228,7 @@ flowchart LR
 | `Property_Sale` | Shown as **Property Sale**. What one property fetched when it was sold â price, and the costs of selling. One record per property. |
 | `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy â price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
 | `Setup_Property` | Shown as **Property Setup**. Maintains the properties â name and address. What happened to each one lives on its purchase and sale records. |
+| `Setup_Property_Rental_Expense_Type` | Shown as **Property Rental Expense Type Setup**. Maintains the kinds of rental expense a property can carry - insurance, rates, and the rest. One field, the name, which is also what identifies the row. |
 | `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories â a three-character code and its full name. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
 | `Setup_Super` | Shown as **Super Setup**. Maintains super accounts â a code, a name and the fund each belongs to. |
@@ -444,6 +446,9 @@ erDiagram
     TblState {
         text Name PK "3 chars, the state code"
         text Long_Name "50 chars"
+    }
+    TblPropertyRentalExpenseType {
+        text Name "50 chars, and the only field - it identifies the row"
     }
     TblPropertyRentalBankExpense {
         long    Property_Id "joins TblProperty, one row per property per month"
@@ -2133,6 +2138,7 @@ C#.Net/
 â   âââ Compound_Interest_Calculator.*  # savings growth, no database
 â   âââ Dividend_Snowball_Calculator.*  # dividend income growth, no database
 â   âââ Setup_State.*                 # the Australian states and territories
+â   âââ Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
 â   âââ Setup_Property.*              # properties, and whether they are sold
 â   âââ Property_Purchase.*           # what each one cost to buy
 â   âââ Property_Sale.*               # what each one fetched when sold
@@ -3170,6 +3176,38 @@ selection, so Add starts from nothing.
 **Delete refuses while a purchase or sale record still belongs to the property**, and says how
 many, rather than leaving those rows pointing at something that is gone. With none, it asks first,
 naming the property.
+
+---
+
+### Property Rental Expense Type Setup
+
+`Administration` > Property > Property Rental Expense Type Setup maintains
+`TblPropertyRentalExpenseType`: the kinds of expense a rental property can carry, one row
+per kind.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Name` | Short Text(50) | what the kind of expense is called |
+
+It ships with five: `Landlord Insurance`, `Council Rate`, `Water Rate`,
+`Tax Depreciation Report` and `Family Loan Interest`.
+
+**`Name` is the only field, so it is also what identifies a row.** There is no code and no
+id beside it, which is why the page holds on to the name a row had when it was picked: a
+rename would otherwise be indistinguishable from a new type, and Update would have nothing
+to match the old row on. Add refuses a name already on file, Update refuses a rename onto
+one, and Delete asks first. `Name` is a reserved word in Access, so it is bracketed
+wherever it appears, as on [State Setup](#state-setup).
+
+> Nothing joins to this table yet, so a rename carries no dependent rows with it and a
+> delete leaves nothing pointing at a type that has gone. Both will need guarding the day
+> an expense record refers to a type by name - the way [Super Fund Setup](#super) already
+> has to push a rename into `TblSuper`.
+
+> Adding this page changed the shape of one **other** form. State Setup was the Property
+> submenu's only member, so every form omitting itself left that submenu out entirely -
+> `Setup_State` therefore had no Property menu at all. With a second member it grows one
+> back, holding just this page.
 
 ---
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -10,28 +11,29 @@ using System.Data.OleDb;
 
 namespace FinancialBalance
 {
-    public partial class Setup_State : Form
+    public partial class Setup_Property_Rental_Expense_Type : Form
     {
         //true while Get_Data is refilling the grid, so the rows it adds do not fire the selection
-        //handler and type themselves back into the boxes
+        //handler and type themselves back into the box
         bool Filling;
 
-        //The code of the row picked out of the grid, so Update knows which row it is changing -
-        //without it a changed code would be indistinguishable from a new one. Null until a row is
-        //picked, which is what makes Update refuse before Add has anything to work on.
-        string OrgCode;
+        //The name of the row picked out of the grid, so Update knows which row it is changing -
+        //the name is all this table has, so without it a renamed type would be indistinguishable
+        //from a new one. Null until a row is picked, which is what makes Update and Delete refuse
+        //before anything has been chosen.
+        string OrgName;
 
-        //The state codes are the official Australian abbreviations, so three characters is the
-        //widest of them rather than a fixed width: NT, SA and WA are two.
-        public Setup_State()
+        public Setup_Property_Rental_Expense_Type()
         {
             InitializeComponent();
         }
 
-        private void Setup_State_Load(object sender, EventArgs e)
+        private void Setup_Property_Rental_Expense_Type_Load(object sender, EventArgs e)
         {
             Get_Data();
         }
+
+        //---- the menu ---------------------------------------------------------------
 
         private void MnAcctTypeRefSetup_Click(object sender, EventArgs e)
         {
@@ -124,10 +126,10 @@ namespace FinancialBalance
             this.Close();
         }
 
-        private void MnPropertyRentalExpTypeSetup_Click(object sender, EventArgs e)
+        private void MnStateSetup_Click(object sender, EventArgs e)
         {
-            Setup_Property_Rental_Expense_Type Setup_Property_Rental_Expense_Type = new Setup_Property_Rental_Expense_Type();
-            Setup_Property_Rental_Expense_Type.Show();
+            Setup_State Setup_State = new Setup_State();
+            Setup_State.Show();
             this.Close();
         }
 
@@ -145,18 +147,18 @@ namespace FinancialBalance
             this.Close();
         }
 
+        //---- the list ---------------------------------------------------------------
+
         private void Clear_Grid()
         {
-            gvState.Columns.Clear();
-            gvState.ColumnCount = 2;
-            gvState.Columns[0].Name = "State Code";
-            gvState.Columns[0].FillWeight = 25;
-            gvState.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvState.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvState.Columns[1].Name = "State Name";
-            gvState.Columns[1].FillWeight = 75;
-            gvState.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            gvState.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvType.Rows.Clear();
+            gvType.Columns.Clear();
+            gvType.ColumnCount = 1;
+            gvType.Columns[0].Name = "Name";
+            gvType.Columns[0].HeaderText = "Name";
+            gvType.Columns[0].FillWeight = 100;
+            gvType.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvType.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
         }
 
         private void Get_Data()
@@ -165,26 +167,21 @@ namespace FinancialBalance
             {
                 Filling = true;
                 Clear_Grid();
-                OrgCode = null;
-
-                string[] row;
+                OrgName = null;
 
                 //Name is a reserved word in Access, so it is bracketed wherever it appears
-                Mdl1.Ssql = "select [Name], [Long_Name] from TblState order by [Name]";
+                Mdl1.Ssql = "select [Name] from TblPropertyRentalExpenseType order by [Name]";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
-                if (reader.HasRows)
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        row = new string[] { reader["Name"].ToString().Trim(), reader["Long_Name"].ToString().Trim() };
-                        gvState.Rows.Add(row);
-                    }
+                    gvType.Rows.Add(new string[] { Read_Text(reader["Name"]) });
                 }
                 reader.Close();
 
-                gvState.ClearSelection();
+                gvType.ClearSelection();
                 Filling = false;
+                Show_Note();
             }
             catch (Exception ex)
             {
@@ -193,46 +190,70 @@ namespace FinancialBalance
             }
         }
 
-        //Clicking a row copies it into the boxes, so an existing state can be changed or removed
-        //without its code having to be typed back in by hand.
-        private void gvState_SelectionChanged(object sender, EventArgs e)
+        private void Show_Note()
+        {
+            LblNote.Text = gvType.Rows.Count.ToString(CultureInfo.InvariantCulture) + " type(s)";
+        }
+
+        private string Read_Text(object parValue)
+        {
+            return (parValue == null || parValue == DBNull.Value ? "" : parValue.ToString().Trim());
+        }
+
+        //Access takes a single quote as the end of a string, so one typed into a name is doubled
+        //rather than left to break the statement.
+        private string Quote(string parText)
+        {
+            return (parText == null ? "" : parText.Trim().Replace("'", "''"));
+        }
+
+        //Clicking a row copies it into the box, so an existing type can be renamed or removed
+        //without its name having to be typed back in by hand.
+        private void gvType_SelectionChanged(object sender, EventArgs e)
         {
             if (Filling)
             {
                 return;
             }
             DataGridViewRow Row = null;
-            if (gvState.SelectedRows.Count > 0)
+            if (gvType.SelectedRows.Count > 0)
             {
-                Row = gvState.SelectedRows[0];
+                Row = gvType.SelectedRows[0];
             }
             else
             {
-                Row = gvState.CurrentRow;
+                Row = gvType.CurrentRow;
             }
             if (Row == null || Row.Cells[0].Value == null)
             {
                 return;
             }
-            OrgCode = Row.Cells[0].Value.ToString().Trim();
-            State_Code.Text = OrgCode;
-            State_Name.Text = (Row.Cells[1].Value == null ? "" : Row.Cells[1].Value.ToString().Trim());
+            OrgName = Row.Cells[0].Value.ToString().Trim();
+            Type_Name.Text = OrgName;
         }
 
-        //---- add, update, delete --------------------------------------------------
-        //
-        //Add and Update are separate, as on Super Fund Setup: one insists the code is new, the
-        //other insists a row has been picked out of the grid. Nothing joins to TblState yet, so
-        //neither has dependent rows to carry along or guard - unlike Super Fund Setup, where a
-        //rename has to be pushed into TblSuper.
-
-        private bool Exists(string parCode)
+        private void Clear_Entry()
         {
-            bool Found = false;
-            Mdl1.Ssql = "select [Name] from TblState where [Name] = '" + parCode + "'";
+            Filling = true;
+            OrgName = null;
+            Type_Name.Text = "";
+            gvType.ClearSelection();
+            Filling = false;
+        }
+
+        //---- add, update, delete ----------------------------------------------------
+        //
+        //Add and Update are separate, as on State Setup: one insists the name is new, the other
+        //insists a row has been picked out of the grid. Nothing joins to this table yet, so
+        //neither has dependent rows to carry along or guard.
+
+        private bool Exists(string parName)
+        {
+            Mdl1.Ssql = "select [Name] from TblPropertyRentalExpenseType"
+                      + " where [Name] = '" + Quote(parName) + "'";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
-            Found = reader.HasRows;
+            bool Found = reader.Read();
             reader.Close();
             return Found;
         }
@@ -241,26 +262,27 @@ namespace FinancialBalance
         {
             try
             {
-                string TmpCode = State_Code.Text.Trim();
-                string TmpName = State_Name.Text.Trim();
-                if (TmpCode == "")
+                string TmpName = Type_Name.Text.Trim();
+                if (TmpName == "")
                 {
-                    MessageBox.Show("State Code cannot be empty !", "Error Message");
+                    MessageBox.Show("Name cannot be empty !", "Error Message");
                     return;
                 }
-                if (Exists(TmpCode))
+                //the name is all this table has, so it is what makes a row the row it is
+                if (Exists(TmpName))
                 {
-                    MessageBox.Show("State Code already exists : " + TmpCode, "Error Message");
+                    MessageBox.Show("Name already exists : " + TmpName, "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "Insert into TblState ([Name], [Long_Name]) values ('"
-                          + TmpCode + "', '" + TmpName + "')";
+                Mdl1.Ssql = "Insert into TblPropertyRentalExpenseType ([Name]) values ('"
+                          + Quote(TmpName) + "')";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Create successfully for State Code : " + TmpCode, "Success");
+                MessageBox.Show("Create successfully for Name : " + TmpName, "Success");
                 Get_Data();
+                Clear_Entry();
             }
             catch (Exception ex)
             {
@@ -272,43 +294,37 @@ namespace FinancialBalance
         {
             try
             {
-                if (OrgCode == null)
+                if (OrgName == null)
                 {
-                    MessageBox.Show("Please select a state from the list first !", "Error Message");
+                    MessageBox.Show("Please select a type from the list first !", "Error Message");
                     return;
                 }
-                string TmpCode = State_Code.Text.Trim();
-                string TmpName = State_Name.Text.Trim();
-                if (TmpCode == "")
+                string TmpName = Type_Name.Text.Trim();
+                if (TmpName == "")
                 {
-                    MessageBox.Show("State Code cannot be empty !", "Error Message");
+                    MessageBox.Show("Name cannot be empty !", "Error Message");
                     return;
                 }
-
-                //The row is found by the code it was picked under, so a changed code is a rename
-                //of that row rather than a new one - which is the difference between this button
-                //and Add. A code already in use would collide.
-                if (TmpCode != OrgCode && Exists(TmpCode))
+                //renaming onto a name that already exists would make two rows the same
+                if (TmpName != OrgName && Exists(TmpName))
                 {
-                    MessageBox.Show("State Code already exists : " + TmpCode, "Error Message");
+                    MessageBox.Show("Name already exists : " + TmpName, "Error Message");
                     return;
                 }
-                if (TmpCode == OrgCode && TmpName == Org_Long_Name())
+                if (!Exists(OrgName))
                 {
-                    MessageBox.Show("Nothing has been changed.", "Error Message");
+                    MessageBox.Show("Data not found for Name : " + OrgName, "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "Update TblState set [Name] = '" + TmpCode + "',"
-                          + " [Long_Name] = '" + TmpName + "'"
-                          + " where [Name] = '" + OrgCode + "'";
+                Mdl1.Ssql = "Update TblPropertyRentalExpenseType set [Name] = '" + Quote(TmpName)
+                          + "' where [Name] = '" + Quote(OrgName) + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Update successfully for State Code : " + TmpCode, "Success");
+                MessageBox.Show("Update successfully for Name : " + TmpName, "Success");
                 Get_Data();
-                State_Code.Text = "";
-                State_Name.Text = "";
+                Clear_Entry();
             }
             catch (Exception ex)
             {
@@ -316,46 +332,29 @@ namespace FinancialBalance
             }
         }
 
-        //What the picked row's name was, read back so an update that changes nothing can be told
-        //apart from one that changes only the name.
-        private string Org_Long_Name()
-        {
-            string TmpName = "";
-            Mdl1.Ssql = "select [Long_Name] from TblState where [Name] = '" + OrgCode + "'";
-            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
-            OleDbDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                TmpName = reader["Long_Name"].ToString().Trim();
-            }
-            reader.Close();
-            return TmpName;
-        }
-
         private void CmdDel_Click(object sender, EventArgs e)
         {
             try
             {
-                string TmpCode = State_Code.Text.Trim();
-                if (TmpCode == "")
+                if (OrgName == null)
                 {
-                    MessageBox.Show("Please select a state from the list first !", "Error Message");
+                    MessageBox.Show("Please select a type from the list first !", "Error Message");
                     return;
                 }
-                if (!Exists(TmpCode))
+                if (MessageBox.Show("Delete the type " + OrgName + " ?", "Confirmation",
+                        MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {
-                    MessageBox.Show("Data not found for State Code : " + TmpCode, "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "Delete from TblState where [Name] = '" + TmpCode + "'";
+                Mdl1.Ssql = "Delete from TblPropertyRentalExpenseType"
+                          + " where [Name] = '" + Quote(OrgName) + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for State Code : " + TmpCode, "Success");
+                MessageBox.Show("Delete successfully for Name : " + OrgName, "Success");
                 Get_Data();
-                State_Code.Text = "";
-                State_Name.Text = "";
+                Clear_Entry();
             }
             catch (Exception ex)
             {

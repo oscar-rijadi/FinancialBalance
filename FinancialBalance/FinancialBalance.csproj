@@ -318,6 +318,12 @@
     <Compile Include="Property_Rental_Bank_Expense.Designer.cs">
       <DependentUpon>Property_Rental_Bank_Expense.cs</DependentUpon>
     </Compile>
+    <Compile Include="Setup_Property_Rental_Expense_Type.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Setup_Property_Rental_Expense_Type.Designer.cs">
+      <DependentUpon>Setup_Property_Rental_Expense_Type.cs</DependentUpon>
+    </Compile>
     <Compile Include="Property_Summary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -488,6 +494,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Property_Rental_Bank_Expense.resx">
       <DependentUpon>Property_Rental_Bank_Expense.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Setup_Property_Rental_Expense_Type.resx">
+      <DependentUpon>Setup_Property_Rental_Expense_Type.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Property_Summary.resx">
       <DependentUpon>Property_Summary.cs</DependentUpon>

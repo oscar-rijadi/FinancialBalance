@@ -147,6 +147,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnPropertyRentalExpTypeSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Property_Rental_Expense_Type Setup_Property_Rental_Expense_Type = new Setup_Property_Rental_Expense_Type();
+            Setup_Property_Rental_Expense_Type.Show();
+            this.Hide();
+        }
+
         private void MnStateSetup_Click(object sender, EventArgs e)
         {
             Setup_State Setup_State = new Setup_State();
