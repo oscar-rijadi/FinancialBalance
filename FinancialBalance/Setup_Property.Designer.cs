@@ -32,6 +32,7 @@
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyProcessGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyPurchase = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyRentalBankExpense = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyRentalIncome = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertySale = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperProcess = new System.Windows.Forms.ToolStripMenuItem();
@@ -162,7 +163,8 @@
             this.MnPropertyProcessGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnPropertyPurchase,
             this.MnPropertySale,
-            this.MnPropertyRentalIncome});
+            this.MnPropertyRentalIncome,
+            this.MnPropertyRentalBankExpense});
             this.MnPropertyProcessGroup.Name = "MnPropertyProcessGroup";
             this.MnPropertyProcessGroup.Size = new System.Drawing.Size(150, 20);
             this.MnPropertyProcessGroup.Text = "P&roperty";
@@ -187,6 +189,13 @@
             this.MnPropertyRentalIncome.Size = new System.Drawing.Size(216, 22);
             this.MnPropertyRentalIncome.Text = "Property Rental &Income";
             this.MnPropertyRentalIncome.Click += new System.EventHandler(this.MnPropertyRentalIncome_Click);
+            // 
+            // MnPropertyRentalBankExpense
+            // 
+            this.MnPropertyRentalBankExpense.Name = "MnPropertyRentalBankExpense";
+            this.MnPropertyRentalBankExpense.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertyRentalBankExpense.Text = "Property Rental &Bank Expense";
+            this.MnPropertyRentalBankExpense.Click += new System.EventHandler(this.MnPropertyRentalBankExpense_Click);
             // 
             // MnSuperProcess
             // 
@@ -511,6 +520,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyProcessGroup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyPurchase;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalBankExpense;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalIncome;
         public System.Windows.Forms.ToolStripMenuItem MnPropertySale;
         public System.Windows.Forms.ToolStripMenuItem MnSuperProcess;

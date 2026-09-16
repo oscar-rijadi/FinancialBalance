@@ -92,7 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
-| `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income |
+| `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense |
 | `Inquiry` | **Property** | Property Summary |
 | `Administration` | **Property** | State Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
@@ -127,6 +127,7 @@ flowchart LR
     PPROPG --> PPUR["Property_Purchase"]
     PPROPG --> PSAL["Property_Sale"]
     PPROPG --> PRI["Property_Rental_Income"]
+    PPROPG --> PRBE["Property_Rental_Bank_Expense"]
     MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -221,6 +222,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
 | `Property_Summary` | Shown as **Property Summary**. Read-only. One property at a time: what it is, what it cost to buy, and â once it has been sold â what it fetched and what that came to as a profit or a loss. |
+| `Property_Rental_Bank_Expense` | Shown as **Property Rental Bank Expense**. What the borrowing behind one property cost each month - interest, bank fee, and what the two came to. Add, update and delete, one record per property per month. |
 | `Property_Rental_Income` | Shown as **Property Rental Income**. One property at a time: what it let for each month, what that month cost, and what was left. Add, update and delete, one record per property per month. |
 | `Property_Sale` | Shown as **Property Sale**. What one property fetched when it was sold â price, and the costs of selling. One record per property. |
 | `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy â price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
@@ -275,6 +277,7 @@ erDiagram
     TblProperty     ||--o| TblPropertyPurchase : "was bought for"
     TblProperty     ||--o| TblPropertySale : "was sold for"
     TblProperty     ||--o{ TblPropertyRentalIncome : "is let, month by month"
+    TblProperty     ||--o{ TblPropertyRentalBankExpense : "is borrowed against, month by month"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -441,6 +444,15 @@ erDiagram
     TblState {
         text Name PK "3 chars, the state code"
         text Long_Name "50 chars"
+    }
+    TblPropertyRentalBankExpense {
+        long    Property_Id "joins TblProperty, one row per property per month"
+        text    Month "yyyyMM"
+        text    Description "50 chars"
+        text    Currency "3 chars, a code from TblCurrCode"
+        decimal Interest "2 dp"
+        decimal Bank_Fee "2 dp"
+        decimal Total_Expense "2 dp, Interest plus Bank_Fee"
     }
     TblPropertyRentalIncome {
         long    Property_Id "joins TblProperty, one row per property per month"
@@ -2125,6 +2137,7 @@ C#.Net/
 â   âââ Property_Purchase.*           # what each one cost to buy
 â   âââ Property_Sale.*               # what each one fetched when sold
 â   âââ Property_Rental_Income.*      # what it lets for, month by month
+â   âââ Property_Rental_Bank_Expense.*  # what the borrowing on it cost
 â   âââ Property_Summary.*            # one property end to end, read-only
 â   âââ Setup_Super_Fund.*            # the list of super funds
 â   âââ Setup_Super.*                 # super accounts
@@ -2834,6 +2847,54 @@ negative reading `-$1,234.56` rather than `$-1,234.56`. Dates are `dd-MMM-yyyy`,
 stored `yyyyMMdd` by the same `Long_Date` the purchase page uses, and a date that is blank or
 malformed shows as nothing rather than as a placeholder. **Percentage Ownership** and
 **Percentage Profit/Loss** read `62.50 %` â a share rather than an amount, so no dollar sign.
+
+---
+
+### Property Rental Bank Expense
+
+`Process` > Property > Property Rental Bank Expense is the other side of
+[Property Rental Income](#property-rental-income): what the borrowing behind a property cost
+each month, in `TblPropertyRentalBankExpense` - **one row per property per month**, joined to
+[`TblProperty`](#property-setup) by `Property_Id`.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Property_Id` | Number | which property; joins `TblProperty` |
+| `Month` | Short Text(6) | `yyyyMM` |
+| `Description` | Short Text(50) | what the charge was |
+| `Currency` | Short Text(3) | a code from [`TblCurrCode`](#reference-data) |
+| `Interest` | Decimal(22,2) | what the loan cost that month |
+| `Bank_Fee` | Decimal(22,2) | what the bank charged on top |
+| `Total_Expense` | Decimal(22,2) | `Interest` plus `Bank_Fee`, filled in but typeable over |
+
+The money columns are **`DECIMAL(22,2)` created through ACE DDL**, not DAO `CreateField`,
+which silently produces a BigInt and would round each of them to whole dollars.
+
+> **`Month`, `Description` and `Currency` are all reserved words in Access**, so every column
+> here is bracketed rather than only the ones that have to be.
+
+> `Description` is the first free-text field on any of these pages, so it is also the first
+> that can carry an apostrophe. Access reads one as the end of a string, so it is doubled on
+> the way in - a bank statement line reading `Bank's monthly charge` would otherwise cut the
+> statement in half.
+
+The page is built like [Property Rental Income](#property-rental-income) and behaves the same
+way: a **Property Id** dropdown with no blank entry, opening on the first property with its
+name beside it; the list running that property **newest month first**, read back as
+`MMM-yyyy`; and a record identified by **its property and its month together**, so Add
+refuses a month that property already has, Update refuses to move one onto a month that does,
+and Delete asks first. The entry area runs in two columns rather than one, since there are
+seven fields rather than five.
+
+**Total Expense is filled in but typeable over**, exactly as Profit/Loss is on the income
+page: `Interest` plus `Bank_Fee` as those are entered, replaced by anything typed into it,
+and filled in again if either of the other two moves. It is the one box here that accepts a
+minus sign, since a refunded month reads as a credit. Loading a record shows the **stored**
+figure rather than re-deriving it.
+
+Under the entry area sits **Grand Total Expense**, the Total Expense column added straight
+down for whichever property is showing. Unlike Profit/Loss on the income page it is **not
+coloured**: a cost is a cost, and green for a large one would read as good news.
 
 ---
 
