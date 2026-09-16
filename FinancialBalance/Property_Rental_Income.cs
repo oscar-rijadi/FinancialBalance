@@ -356,11 +356,14 @@ namespace FinancialBalance
                 Filling = true;
                 Clear_Grid();
 
+                double TmpTotal = 0;
+
                 int TmpId = Selected_Property();
                 if (TmpId == 0)
                 {
                     Filling = false;
                     Show_Note();
+                    Show_Total(TmpTotal);
                     return;
                 }
 
@@ -385,18 +388,30 @@ namespace FinancialBalance
                     Colour_Cell(TmpRow.Cells[4], TmpProfit);
                     //the stored month is not a column, so it rides along on the row
                     TmpRow.Tag = Read_Text(reader["Rental_Month"]);
+
+                    TmpTotal += TmpProfit;
                 }
                 reader.Close();
 
                 gvRental.ClearSelection();
                 Filling = false;
                 Show_Note();
+                Show_Total(TmpTotal);
             }
             catch (Exception ex)
             {
                 Filling = false;
                 MessageBox.Show(ex.Message, "Error Message");
             }
+        }
+
+        //What the months listed come to. It is the Profit/Loss column added straight
+        //down, so what is under the table and what is in it can never disagree - and it
+        //follows the Property Id dropdown, since that is what decides the rows.
+        private void Show_Total(double parTotal)
+        {
+            LblTotalProfitLoss.Text = Money(parTotal);
+            Colour_Control(LblTotalProfitLoss, parTotal);
         }
 
         private void Show_Note()

@@ -50,6 +50,8 @@
             this.txtExpense = new System.Windows.Forms.TextBox();
             this.Lbl_txtProfitLoss = new System.Windows.Forms.Label();
             this.txtProfitLoss = new System.Windows.Forms.TextBox();
+            this.Lbl_LblTotalProfitLoss = new System.Windows.Forms.Label();
+            this.LblTotalProfitLoss = new System.Windows.Forms.Label();
             this.LblNote = new System.Windows.Forms.Label();
             this.CmdCreate = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
@@ -378,15 +380,39 @@
             this.txtProfitLoss.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Signed_KeyPress);
             this.txtProfitLoss.TextChanged += new System.EventHandler(this.ProfitLoss_Changed);
             // 
+            // Lbl_LblTotalProfitLoss
+            // 
+            this.Lbl_LblTotalProfitLoss.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblTotalProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblTotalProfitLoss.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblTotalProfitLoss.Location = new System.Drawing.Point(19, 506);
+            this.Lbl_LblTotalProfitLoss.Name = "Lbl_LblTotalProfitLoss";
+            this.Lbl_LblTotalProfitLoss.Size = new System.Drawing.Size(140, 22);
+            this.Lbl_LblTotalProfitLoss.TabIndex = 18;
+            this.Lbl_LblTotalProfitLoss.Text = "Total Profit/Loss";
+            this.Lbl_LblTotalProfitLoss.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // LblTotalProfitLoss
+            // 
+            this.LblTotalProfitLoss.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotalProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotalProfitLoss.ForeColor = System.Drawing.Color.Black;
+            this.LblTotalProfitLoss.Location = new System.Drawing.Point(165, 506);
+            this.LblTotalProfitLoss.Name = "LblTotalProfitLoss";
+            this.LblTotalProfitLoss.Size = new System.Drawing.Size(120, 22);
+            this.LblTotalProfitLoss.TabIndex = 19;
+            this.LblTotalProfitLoss.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblTotalProfitLoss.UseMnemonic = false;
+            // 
             // LblNote
             // 
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
             this.LblNote.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblNote.ForeColor = System.Drawing.Color.Black;
-            this.LblNote.Location = new System.Drawing.Point(19, 506);
+            this.LblNote.Location = new System.Drawing.Point(320, 506);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(1062, 22);
-            this.LblNote.TabIndex = 18;
+            this.LblNote.Size = new System.Drawing.Size(761, 22);
+            this.LblNote.TabIndex = 20;
             this.LblNote.UseMnemonic = false;
             // 
             // CmdCreate
@@ -396,7 +422,7 @@
             this.CmdCreate.Location = new System.Drawing.Point(615, 542);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
-            this.CmdCreate.TabIndex = 19;
+            this.CmdCreate.TabIndex = 21;
             this.CmdCreate.Text = "&Add";
             this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
@@ -408,7 +434,7 @@
             this.CmdUpdate.Location = new System.Drawing.Point(710, 542);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
-            this.CmdUpdate.TabIndex = 20;
+            this.CmdUpdate.TabIndex = 22;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -420,7 +446,7 @@
             this.CmdClear.Location = new System.Drawing.Point(805, 542);
             this.CmdClear.Name = "CmdClear";
             this.CmdClear.Size = new System.Drawing.Size(85, 28);
-            this.CmdClear.TabIndex = 21;
+            this.CmdClear.TabIndex = 23;
             this.CmdClear.Text = "&Clear";
             this.CmdClear.UseVisualStyleBackColor = false;
             this.CmdClear.Click += new System.EventHandler(this.CmdClear_Click);
@@ -432,7 +458,7 @@
             this.CmdDel.Location = new System.Drawing.Point(900, 542);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
-            this.CmdDel.TabIndex = 22;
+            this.CmdDel.TabIndex = 24;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -444,7 +470,7 @@
             this.CmdBack.Location = new System.Drawing.Point(995, 542);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
-            this.CmdBack.TabIndex = 23;
+            this.CmdBack.TabIndex = 25;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -463,6 +489,8 @@
             this.Controls.Add(this.CmdUpdate);
             this.Controls.Add(this.CmdCreate);
             this.Controls.Add(this.LblNote);
+            this.Controls.Add(this.LblTotalProfitLoss);
+            this.Controls.Add(this.Lbl_LblTotalProfitLoss);
             this.Controls.Add(this.txtProfitLoss);
             this.Controls.Add(this.Lbl_txtProfitLoss);
             this.Controls.Add(this.txtExpense);
@@ -530,6 +558,8 @@
         public System.Windows.Forms.TextBox txtExpense;
         public System.Windows.Forms.Label Lbl_txtProfitLoss;
         public System.Windows.Forms.TextBox txtProfitLoss;
+        public System.Windows.Forms.Label Lbl_LblTotalProfitLoss;
+        public System.Windows.Forms.Label LblTotalProfitLoss;
         public System.Windows.Forms.Label LblNote;
         public System.Windows.Forms.Button CmdCreate;
         public System.Windows.Forms.Button CmdUpdate;

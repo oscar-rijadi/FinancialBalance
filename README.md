@@ -2835,6 +2835,18 @@ filters through a signed variant that lets a minus through once, and only at the
 Loading a record back shows the **stored** figure rather than re-deriving it, which would
 quietly undo an override the moment the row was looked at again.
 
+#### The total underneath
+
+A single aggregate sits between the entry area and the buttons: **Total Profit/Loss**, the
+Profit/Loss column added straight down, so what is under the table and what is in it can
+never disagree. It follows the **Property Id** dropdown rather than the entry area, since
+that dropdown is what decides which months are listed - picking a different property
+recalculates it, and a property with no months at all reads `$0.00`.
+
+It is coloured the way every other profit figure in the app is: green above zero, red below
+it, plain black at exactly zero. The note saying how many months are showing moves along the
+row to sit beside it rather than under it.
+
 A record is identified by **its property and its month together**. Add refuses a month that
 property already has, Update refuses to move a record onto a month that does, and Delete asks
 first. Changing the Property Id dropdown reloads the list and clears the entry area, so
