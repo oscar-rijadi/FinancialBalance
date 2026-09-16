@@ -117,3 +117,4 @@ C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBal
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Tax_Interest.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Property_Rental_Bank_Expense.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Property_Rental_Expense_Type.resources
+C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Property_Rental_Expense.resources

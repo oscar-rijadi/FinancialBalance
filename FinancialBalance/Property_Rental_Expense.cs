@@ -11,40 +11,44 @@ using System.Data.OleDb;
 
 namespace FinancialBalance
 {
-    public partial class Property_Rental_Bank_Expense : Form
+    public partial class Property_Rental_Expense : Form
     {
         //true while the grid or the dropdowns are being refilled, so the rows and items being
         //added do not fire the handlers and type themselves back into the boxes
         bool Filling;
 
-        //The month whose row was picked out of the list, so Update and Delete know which record
-        //they are working on - a record is identified by its property and its month together,
-        //and the property comes from the dropdown. Empty until a row is picked.
-        string OrgMonth = "";
+        //What identifies the row picked out of the list, so Update and Delete know which record
+        //they are working on. This table has no id of its own, so a record is its property, its
+        //type and the date it was paid together - see the note in the README. Empty until a row
+        //is picked.
+        string OrgType = "";
+        string OrgDate = "";
 
         //index-aligned with CmbPropertyId: the name behind each id, so the label beside the
         //dropdown does not need a query every time the choice changes
         List<string> PropertyNames = new List<string>();
 
-        //Month, Description and Currency are all reserved words in Access - an unbracketed one
+        //Type, Description and Currency are all reserved words in Access - an unbracketed one
         //fails with a bare "syntax error" that names nothing - so every column is bracketed
         //rather than only the ones that have to be.
-        const string Fields = "[Property_Id], [Month], [Description], [Currency],"
-                            + " [Interest], [Bank_Fee], [Total_Expense]";
+        const string Fields = "[Property_Id], [Type], [Description], [Paid_Date],"
+                            + " [Currency], [Expense]";
 
-        public Property_Rental_Bank_Expense()
+        public Property_Rental_Expense()
         {
             InitializeComponent();
         }
 
-        private void Property_Rental_Bank_Expense_Load(object sender, EventArgs e)
+        private void Property_Rental_Expense_Load(object sender, EventArgs e)
         {
             Filling = true;
-            Fill_Months();
+            Fill_Dates();
             Fill_Property();
+            Fill_Type();
             Fill_Currency();
             Filling = false;
 
+            monthCalendar1.Hide();
             Get_Data();
             Clear_Entry();
         }
@@ -121,13 +125,6 @@ namespace FinancialBalance
             this.Close();
         }
 
-        private void MnPropertyRentalExpense_Click(object sender, EventArgs e)
-        {
-            Property_Rental_Expense Property_Rental_Expense = new Property_Rental_Expense();
-            Property_Rental_Expense.Show();
-            this.Close();
-        }
-
         private void MnPropertySetup_Click(object sender, EventArgs e)
         {
             Setup_Property Setup_Property = new Setup_Property();
@@ -156,6 +153,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnPropertyRentalBankExpense_Click(object sender, EventArgs e)
+        {
+            Property_Rental_Bank_Expense Property_Rental_Bank_Expense = new Property_Rental_Bank_Expense();
+            Property_Rental_Bank_Expense.Show();
+            this.Close();
+        }
+
         private void MnSuperProcess_Click(object sender, EventArgs e)
         {
             Super_Financial_Year Super_Financial_Year = new Super_Financial_Year();
@@ -165,36 +169,34 @@ namespace FinancialBalance
 
         //---- the dropdowns ----------------------------------------------------------
 
-        //The shared Mdl1.Fill_Month offers three years, which is no use for a loan running over
-        //a decade, so the year list is opened up the way the other property pages open up
-        //theirs. Next year is offered too, since a charge can be entered in advance.
-        private void Fill_Months()
+        //As on Property Purchase: the shared Mdl1.Fill_Date offers three years, which is no use
+        //for a property held for decades, so the year list is opened up.
+        private void Fill_Dates()
         {
-            CmbMonth.Items.Clear();
+            CmbPaidDD.Items.Clear();
+            CmbPaidDD.Items.Add("");
+            for (int i = 1; i <= 31; i++)
+            {
+                CmbPaidDD.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
+            }
+
+            CmbPaidMM.Items.Clear();
+            CmbPaidMM.Items.Add("");
             for (int i = 1; i <= 12; i++)
             {
-                CmbMonth.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
+                CmbPaidMM.Items.Add(i.ToString("00", CultureInfo.InvariantCulture));
             }
 
-            CmbYear.Items.Clear();
-            for (int i = DateTime.Now.Year + 1; i >= 1990; i--)
+            CmbPaidYear.Items.Clear();
+            CmbPaidYear.Items.Add("");
+            for (int i = DateTime.Now.Year; i >= 1950; i--)
             {
-                CmbYear.Items.Add(i.ToString("0000", CultureInfo.InvariantCulture));
+                CmbPaidYear.Items.Add(i.ToString("0000", CultureInfo.InvariantCulture));
             }
-
-            Default_Month();
         }
 
-        //opens on the month just gone, which is the one usually being entered
-        private void Default_Month()
-        {
-            DateTime TmpLast = DateTime.Now.AddMonths(-1);
-            CmbMonth.Text = TmpLast.ToString("MM", CultureInfo.InvariantCulture);
-            CmbYear.Text = TmpLast.ToString("yyyy", CultureInfo.InvariantCulture);
-        }
-
-        //No blank first item, as on Property Rental Income: this page is a list of one
-        //property's months, so it always has a property selected and opens on the first.
+        //No blank first item, as on the other rental pages: this page is a list of one
+        //property's expenses, so it always has a property selected and opens on the first.
         private void Fill_Property()
         {
             CmbPropertyId.Items.Clear();
@@ -216,6 +218,25 @@ namespace FinancialBalance
             }
         }
 
+        //The kinds of expense come from their own setup page rather than being typed, so a type
+        //cannot be spelled two ways across two records.
+        private void Fill_Type()
+        {
+            CmbType.Items.Clear();
+            CmbType.Items.Add("");
+
+            Mdl1.Ssql = "select [Name] from TblPropertyRentalExpenseType order by [Name]";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                CmbType.Items.Add(Read_Text(reader["Name"]));
+            }
+            reader.Close();
+
+            CmbType.Text = "";
+        }
+
         //Every currency on file is offered, but a property here is an Australian one, so the
         //list opens on AUD rather than on the shared Fill_Curr default of IDR.
         private void Fill_Currency()
@@ -225,15 +246,12 @@ namespace FinancialBalance
         }
 
         //CmbCurrency is a DropDownList, so assigning a code that is not among its items does
-        //nothing at all rather than failing - which is the wanted behaviour: a database with no
-        //AUD set up simply keeps whatever Fill_Curr chose.
+        //nothing at all rather than failing - which is the wanted behaviour here.
         private void Default_Currency()
         {
             CmbCurrency.Text = "AUD";
         }
 
-        //The name beside the dropdown, so an id on its own never has to be recognised. Taken
-        //from the list filled above rather than looked up again.
         private void Show_Property_Name()
         {
             int TmpAt = CmbPropertyId.SelectedIndex;
@@ -265,6 +283,60 @@ namespace FinancialBalance
             return TmpId;
         }
 
+        //---- the calendar -----------------------------------------------------------
+        //
+        //The same arrangement Daily Input has, and the purchase and sale pages: three dropdowns
+        //and a ".." beside them that opens a MonthCalendar, which fills them in and hides again.
+        //Only one date here, so there is nothing to remember about which asked for it.
+
+        private void CmdPaidCal_Click(object sender, EventArgs e)
+        {
+            //Held to the same range the year dropdown carries. Assigning a value that is not in
+            //a DropDownList does nothing at all, silently, so an unbounded calendar could appear
+            //to work while leaving the date unchanged.
+            monthCalendar1.MinDate = new DateTime(1950, 1, 1);
+            monthCalendar1.MaxDate = new DateTime(DateTime.Now.Year, 12, 31);
+
+            //the date may not have been filled in yet, and blank does not parse
+            DateTime TmpStart;
+            string TmpText = CmbPaidDD.Text.Trim() + CmbPaidMM.Text.Trim() + CmbPaidYear.Text.Trim();
+            if (TmpText.Length != 8
+                || !DateTime.TryParseExact(TmpText, "ddMMyyyy", CultureInfo.InvariantCulture,
+                                           DateTimeStyles.None, out TmpStart))
+            {
+                TmpStart = DateTime.Today;
+            }
+            if (TmpStart < monthCalendar1.MinDate) { TmpStart = monthCalendar1.MinDate; }
+            if (TmpStart > monthCalendar1.MaxDate) { TmpStart = monthCalendar1.MaxDate; }
+
+            monthCalendar1.SetDate(TmpStart);
+            monthCalendar1.BringToFront();
+            monthCalendar1.Show();
+        }
+
+        private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            CmbPaidDD.Text = e.Start.Day.ToString("00", CultureInfo.InvariantCulture);
+            CmbPaidMM.Text = e.Start.Month.ToString("00", CultureInfo.InvariantCulture);
+            CmbPaidYear.Text = e.Start.Year.ToString("0000", CultureInfo.InvariantCulture);
+            monthCalendar1.Hide();
+        }
+
+        private void Set_Date(string parYyyyMMdd)
+        {
+            string TmpText = (parYyyyMMdd == null ? "" : parYyyyMMdd.Trim());
+            if (TmpText.Length != 8)
+            {
+                CmbPaidDD.Text = "";
+                CmbPaidMM.Text = "";
+                CmbPaidYear.Text = "";
+                return;
+            }
+            CmbPaidYear.Text = TmpText.Substring(0, 4);
+            CmbPaidMM.Text = TmpText.Substring(4, 2);
+            CmbPaidDD.Text = TmpText.Substring(6, 2);
+        }
+
         //---- reading what comes back ------------------------------------------------
 
         private string Read_Text(object parValue)
@@ -289,8 +361,6 @@ namespace FinancialBalance
 
         //---- formatting -------------------------------------------------------------
 
-        //Every amount on this page is in one currency per row, and the page is an Australian
-        //one, so the sign is not conditional the way it is on the multi-currency pages.
         private string Money(double parValue)
         {
             if (parValue < 0)
@@ -300,22 +370,20 @@ namespace FinancialBalance
             return "$" + Mdl1.FormatAmt(parValue);
         }
 
-        //yyyyMM as stored, read back as MMM-yyyy. Mdl1.toLongMonth gives the full month name;
-        //a list of twelve rows a year reads better abbreviated.
-        private string Month_Text(string parYyyyMM)
+        private string Long_Date(string parYyyyMMdd)
         {
-            string TmpText = (parYyyyMM == null ? "" : parYyyyMM.Trim());
-            if (TmpText.Length != 6)
+            string TmpText = (parYyyyMMdd == null ? "" : parYyyyMMdd.Trim());
+            if (TmpText.Length != 8)
             {
-                return TmpText;
+                return "";
             }
             DateTime TmpDate;
-            if (!DateTime.TryParseExact(TmpText, "yyyyMM", CultureInfo.InvariantCulture,
+            if (!DateTime.TryParseExact(TmpText, "yyyyMMdd", CultureInfo.InvariantCulture,
                                         DateTimeStyles.None, out TmpDate))
             {
-                return TmpText;
+                return "";
             }
-            return TmpDate.ToString("MMM-yyyy", CultureInfo.InvariantCulture);
+            return TmpDate.ToString("dd-MMM-yyyy", CultureInfo.InvariantCulture);
         }
 
         //---- the list ---------------------------------------------------------------
@@ -324,24 +392,24 @@ namespace FinancialBalance
         {
             gvExpense.Rows.Clear();
             gvExpense.Columns.Clear();
-            gvExpense.ColumnCount = 6;
-            string[] names = new string[] { "Month", "Description", "Currency", "Interest",
-                                            "Bank Fee", "Total Expense" };
-            int[] weights = new int[] { 11, 27, 8, 18, 18, 18 };
-            for (int i = 0; i < 6; i++)
+            gvExpense.ColumnCount = 5;
+            string[] names = new string[] { "Paid Date", "Type", "Description", "Currency",
+                                            "Expense" };
+            int[] weights = new int[] { 12, 20, 38, 8, 22 };
+            for (int i = 0; i < 5; i++)
             {
                 gvExpense.Columns[i].Name = names[i];
                 gvExpense.Columns[i].HeaderText = names[i];
                 gvExpense.Columns[i].FillWeight = weights[i];
-                //the month and the currency centred, the description left, every amount right
-                DataGridViewContentAlignment TmpAlign = DataGridViewContentAlignment.MiddleRight;
-                if (i == 0 || i == 2)
+                //the date and the currency centred, the type and description left, the amount right
+                DataGridViewContentAlignment TmpAlign = DataGridViewContentAlignment.MiddleLeft;
+                if (i == 0 || i == 3)
                 {
                     TmpAlign = DataGridViewContentAlignment.MiddleCenter;
                 }
-                else if (i == 1)
+                else if (i == 4)
                 {
-                    TmpAlign = DataGridViewContentAlignment.MiddleLeft;
+                    TmpAlign = DataGridViewContentAlignment.MiddleRight;
                 }
                 gvExpense.Columns[i].HeaderCell.Style.Alignment = TmpAlign;
                 gvExpense.Columns[i].DefaultCellStyle.Alignment = TmpAlign;
@@ -361,31 +429,30 @@ namespace FinancialBalance
                 if (TmpId == 0)
                 {
                     Filling = false;
-                    Show_Note();
-                    Show_Total(TmpTotal);
+                    Show_Note(TmpTotal);
                     return;
                 }
 
-                //newest month first, which is the one usually being looked at. Month is stored
-                //yyyyMM, so a plain string sort is the same as a date sort.
-                Mdl1.Ssql = "select " + Fields + " from TblPropertyRentalBankExpense"
+                //newest first, which is the one usually being looked at. Paid_Date is stored
+                //yyyyMMdd, so a plain string sort is the same as a date sort.
+                Mdl1.Ssql = "select " + Fields + " from TblPropertyRentalExpense"
                           + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " order by [Month] Desc";
+                          + " order by [Paid_Date] Desc, [Type]";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    double TmpExpense = Read_Number(reader["Total_Expense"]);
+                    double TmpExpense = Read_Number(reader["Expense"]);
                     gvExpense.Rows.Add(new string[] {
-                        Month_Text(Read_Text(reader["Month"])),
+                        Long_Date(Read_Text(reader["Paid_Date"])),
+                        Read_Text(reader["Type"]),
                         Read_Text(reader["Description"]),
                         Read_Text(reader["Currency"]),
-                        Money(Read_Number(reader["Interest"])),
-                        Money(Read_Number(reader["Bank_Fee"])),
                         Money(TmpExpense) });
 
-                    //the stored month is not shown as it is stored, so it rides along on the row
-                    gvExpense.Rows[gvExpense.Rows.Count - 1].Tag = Read_Text(reader["Month"]);
+                    //what identifies the row is not shown as it is stored, so it rides along
+                    gvExpense.Rows[gvExpense.Rows.Count - 1].Tag =
+                        Read_Text(reader["Type"]) + "\u0001" + Read_Text(reader["Paid_Date"]);
 
                     TmpTotal += TmpExpense;
                 }
@@ -393,8 +460,7 @@ namespace FinancialBalance
 
                 gvExpense.ClearSelection();
                 Filling = false;
-                Show_Note();
-                Show_Total(TmpTotal);
+                Show_Note(TmpTotal);
             }
             catch (Exception ex)
             {
@@ -403,17 +469,12 @@ namespace FinancialBalance
             }
         }
 
-        //What the months listed come to. It is the Total Expense column added straight down, so
-        //what is under the table and what is in it can never disagree - and it follows the
-        //Property Id dropdown, since that is what decides the rows.
-        private void Show_Total(double parTotal)
+        //How many are listed and what they come to, so the page answers the question the list is
+        //usually opened for without a separate total beside it.
+        private void Show_Note(double parTotal)
         {
-            LblGrandTotal.Text = Money(parTotal);
-        }
-
-        private void Show_Note()
-        {
-            LblNote.Text = gvExpense.Rows.Count.ToString(CultureInfo.InvariantCulture) + " month(s)";
+            LblNote.Text = gvExpense.Rows.Count.ToString(CultureInfo.InvariantCulture)
+                         + " expense(s)   -   total " + Money(parTotal);
             LblNote.ForeColor = System.Drawing.Color.Black;
         }
 
@@ -436,12 +497,17 @@ namespace FinancialBalance
             {
                 return;
             }
-            Load_Record(Row.Tag.ToString());
+            string[] TmpKey = Row.Tag.ToString().Split('\u0001');
+            if (TmpKey.Length != 2)
+            {
+                return;
+            }
+            Load_Record(TmpKey[0], TmpKey[1]);
         }
 
-        //Read back from the table rather than off the grid: the amounts are dressed with a
-        //dollar sign there and the month is the wrong way round to take apart again.
-        private void Load_Record(string parMonth)
+        //Read back from the table rather than off the grid: the amount is dressed with a dollar
+        //sign there and the date is the wrong way round to take apart again.
+        private void Load_Record(string parType, string parDate)
         {
             try
             {
@@ -451,9 +517,8 @@ namespace FinancialBalance
                     return;
                 }
 
-                Mdl1.Ssql = "select " + Fields + " from TblPropertyRentalBankExpense"
-                          + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " and [Month] = '" + parMonth + "'";
+                Mdl1.Ssql = "select " + Fields + " from TblPropertyRentalExpense"
+                          + Where_One(TmpId, parType, parDate);
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 if (!reader.Read())
@@ -463,19 +528,13 @@ namespace FinancialBalance
                 }
 
                 Filling = true;
-                OrgMonth = Read_Text(reader["Month"]);
-                if (OrgMonth.Length == 6)
-                {
-                    CmbYear.Text = OrgMonth.Substring(0, 4);
-                    CmbMonth.Text = OrgMonth.Substring(4, 2);
-                }
+                OrgType = Read_Text(reader["Type"]);
+                OrgDate = Read_Text(reader["Paid_Date"]);
+                CmbType.Text = OrgType;
                 txtDescription.Text = Read_Text(reader["Description"]);
+                Set_Date(OrgDate);
                 CmbCurrency.Text = Read_Text(reader["Currency"]);
-                txtInterest.Text = Box(Read_Number(reader["Interest"]));
-                txtBankFee.Text = Box(Read_Number(reader["Bank_Fee"]));
-                //the stored figure, not the addition - it may have been typed over when the
-                //record was entered, and re-deriving it here would quietly undo that
-                txtTotalExpense.Text = Box(Read_Number(reader["Total_Expense"]));
+                txtExpense.Text = Box(Read_Number(reader["Expense"]));
                 Filling = false;
                 reader.Close();
             }
@@ -488,8 +547,6 @@ namespace FinancialBalance
 
         //---- the entry area ---------------------------------------------------------
 
-        //A box holds a bare figure - no sign, no grouping - since that is what may be typed
-        //back into it.
         private string Box(double parValue)
         {
             return parValue.ToString("0.00", CultureInfo.InvariantCulture);
@@ -506,46 +563,6 @@ namespace FinancialBalance
             }
         }
 
-        //Mdl1.NumericKeyPress admits digits, a point and backspace, which is right for a charge
-        //that cannot be negative. A total that has been typed over can be - a refunded month
-        //reads as a credit - so the minus sign is let through here as well, once and only at
-        //the front, so "1-2" cannot be typed.
-        private void Signed_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            TextBox TmpBox = (TextBox)sender;
-            if (e.KeyChar == '-')
-            {
-                bool TmpAtFront = (TmpBox.SelectionStart == 0);
-                bool TmpHasOne = TmpBox.Text.Contains("-");
-                //a selection that starts at 0 is about to replace whatever it covers, so an
-                //existing sign inside it does not count against this one
-                if (TmpAtFront && TmpBox.SelectionLength > 0)
-                {
-                    TmpHasOne = TmpBox.Text.Substring(TmpBox.SelectionLength).Contains("-");
-                }
-                e.Handled = !(TmpAtFront && !TmpHasOne);
-                return;
-            }
-            Amount_KeyPress(sender, e);
-        }
-
-        private void Amount_Changed(object sender, EventArgs e)
-        {
-            if (Filling)
-            {
-                return;
-            }
-            //changing either side fills the total in again, overwriting a typed one: the
-            //figures it was worked out from have moved, so it is no longer the answer to
-            //anything. Typing in the box afterwards is what makes an override stick.
-            Fill_Total_Expense();
-        }
-
-        //Typed into directly, so the figure is left exactly as entered.
-        private void TotalExpense_Changed(object sender, EventArgs e)
-        {
-        }
-
         private double Amount(TextBox parBox)
         {
             string TmpText = parBox.Text.Trim().Replace("$", "").Replace(",", "");
@@ -557,28 +574,13 @@ namespace FinancialBalance
             return Math.Round(TmpValue, 2);
         }
 
-        //What will be stored: whatever the box holds. Usually that is the addition below, put
-        //there as the other two are typed, but a figure entered by hand stands - a month can
-        //carry a charge that neither column accounts for.
-        private double Total_Expense()
-        {
-            return Amount(txtTotalExpense);
-        }
-
-        //Interest plus bank fee, written into the box for the user to accept or type over.
-        private void Fill_Total_Expense()
-        {
-            double TmpTotal = Math.Round(Amount(txtInterest) + Amount(txtBankFee), 2);
-            txtTotalExpense.Text = Box(TmpTotal);
-        }
-
         private string Num(double parValue)
         {
             return parValue.ToString("0.00", CultureInfo.InvariantCulture);
         }
 
-        //Access takes a single quote as the end of a string, so one typed into the description
-        //is doubled rather than left to break the statement.
+        //Access takes a single quote as the end of a string, so one typed into a description is
+        //doubled rather than left to break the statement.
         private string Quote(string parText)
         {
             return (parText == null ? "" : parText.Trim().Replace("'", "''"));
@@ -587,16 +589,17 @@ namespace FinancialBalance
         private void Clear_Entry()
         {
             Filling = true;
-            OrgMonth = "";
-            Default_Month();
+            OrgType = "";
+            OrgDate = "";
+            CmbType.Text = "";
             txtDescription.Text = "";
+            Set_Date("");
             Default_Currency();
-            txtInterest.Text = "";
-            txtBankFee.Text = "";
-            txtTotalExpense.Text = "";
+            txtExpense.Text = "";
+            monthCalendar1.Hide();
             //ClearSelection fires SelectionChanged, and the handler falls back to CurrentRow
             //when nothing is selected - so clearing outside the guard loads straight back the
-            //record it was clearing, leaving OrgMonth set.
+            //record it was clearing, leaving the key set.
             gvExpense.ClearSelection();
             Filling = false;
         }
@@ -608,10 +611,21 @@ namespace FinancialBalance
 
         //---- add, update, delete ----------------------------------------------------
 
-        private bool Read_Entry(out int parId, out string parMonth, out string parWhy)
+        //A record is its property, its type and the date it was paid. The table carries no id
+        //of its own, so that triple is what Update and Delete have to match on.
+        private string Where_One(int parId, string parType, string parDate)
+        {
+            return " where [Property_Id] = " + parId.ToString(CultureInfo.InvariantCulture)
+                 + " and [Type] = '" + Quote(parType) + "'"
+                 + " and [Paid_Date] = '" + Quote(parDate) + "'";
+        }
+
+        private bool Read_Entry(out int parId, out string parType, out string parDate,
+                                out string parWhy)
         {
             parId = 0;
-            parMonth = "";
+            parType = "";
+            parDate = "";
             parWhy = "";
 
             parId = Selected_Property();
@@ -621,14 +635,27 @@ namespace FinancialBalance
                 return false;
             }
 
-            string TmpMM = CmbMonth.Text.Trim();
-            string TmpYear = CmbYear.Text.Trim();
-            if (TmpMM == "" || TmpYear == "")
+            parType = CmbType.Text.Trim();
+            if (parType == "")
             {
-                parWhy = "Month needs a month and a year.";
+                parWhy = "Please choose a Type.";
                 return false;
             }
-            parMonth = TmpYear + TmpMM;
+
+            string TmpDD = CmbPaidDD.Text.Trim();
+            string TmpMM = CmbPaidMM.Text.Trim();
+            string TmpYear = CmbPaidYear.Text.Trim();
+            if (TmpDD == "" || TmpMM == "" || TmpYear == "")
+            {
+                parWhy = "Paid Date needs a day, a month and a year.";
+                return false;
+            }
+            if (!Mdl1.k_Date(TmpDD + TmpMM + TmpYear))
+            {
+                parWhy = "Paid Date is not a real date.";
+                return false;
+            }
+            parDate = TmpYear + TmpMM + TmpDD;
 
             if (CmbCurrency.Text.Trim() == "")
             {
@@ -638,11 +665,10 @@ namespace FinancialBalance
             return true;
         }
 
-        private bool Exists(int parId, string parMonth)
+        private bool Exists(int parId, string parType, string parDate)
         {
-            Mdl1.Ssql = "select [Month] from TblPropertyRentalBankExpense"
-                      + " where [Property_Id] = " + parId.ToString(CultureInfo.InvariantCulture)
-                      + " and [Month] = '" + parMonth + "'";
+            Mdl1.Ssql = "select [Type] from TblPropertyRentalExpense"
+                      + Where_One(parId, parType, parDate);
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             bool Found = reader.Read();
@@ -655,34 +681,35 @@ namespace FinancialBalance
             try
             {
                 int TmpId;
-                string TmpMonth;
+                string TmpType;
+                string TmpDate;
                 string TmpWhy;
-                if (!Read_Entry(out TmpId, out TmpMonth, out TmpWhy))
+                if (!Read_Entry(out TmpId, out TmpType, out TmpDate, out TmpWhy))
                 {
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
                 }
 
-                //one record per property per month, so a second is an update rather than a row
-                if (Exists(TmpId, TmpMonth))
+                //the triple is what makes a record the record it is, so a second one of the same
+                //type on the same day is an update rather than another row
+                if (Exists(TmpId, TmpType, TmpDate))
                 {
-                    MessageBox.Show("Property Id " + TmpId.ToString(CultureInfo.InvariantCulture)
-                        + " already has a record for " + Month_Text(TmpMonth) + "."
-                        + Environment.NewLine + "Pick it from the list and use Update.",
-                        "Error Message");
+                    MessageBox.Show(TmpType + " on " + Long_Date(TmpDate)
+                        + " is already recorded for this property." + Environment.NewLine
+                        + "Pick it from the list and use Update.", "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "Insert into TblPropertyRentalBankExpense (" + Fields + ") values ("
+                Mdl1.Ssql = "Insert into TblPropertyRentalExpense (" + Fields + ") values ("
                           + TmpId.ToString(CultureInfo.InvariantCulture) + ", '"
-                          + TmpMonth + "', '" + Quote(txtDescription.Text) + "', '"
-                          + CmbCurrency.Text.Trim() + "', "
-                          + Num(Amount(txtInterest)) + ", " + Num(Amount(txtBankFee)) + ", "
-                          + Num(Total_Expense()) + ")";
+                          + Quote(TmpType) + "', '" + Quote(txtDescription.Text) + "', '"
+                          + TmpDate + "', '" + CmbCurrency.Text.Trim() + "', "
+                          + Num(Amount(txtExpense)) + ")";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Create successfully for " + Month_Text(TmpMonth), "Success");
+                MessageBox.Show("Create successfully for " + TmpType + " on "
+                    + Long_Date(TmpDate), "Success");
                 Get_Data();
                 Clear_Entry();
             }
@@ -696,46 +723,48 @@ namespace FinancialBalance
         {
             try
             {
-                if (OrgMonth == "")
+                if (OrgType == "" || OrgDate == "")
                 {
-                    MessageBox.Show("Please select a month from the list first !", "Error Message");
+                    MessageBox.Show("Please select an expense from the list first !", "Error Message");
                     return;
                 }
 
                 int TmpId;
-                string TmpMonth;
+                string TmpType;
+                string TmpDate;
                 string TmpWhy;
-                if (!Read_Entry(out TmpId, out TmpMonth, out TmpWhy))
+                if (!Read_Entry(out TmpId, out TmpType, out TmpDate, out TmpWhy))
                 {
                     MessageBox.Show(TmpWhy, "Error Message");
                     return;
                 }
-                //moving the record onto a month that already has one would make two
-                if (TmpMonth != OrgMonth && Exists(TmpId, TmpMonth))
+                //moving the record onto a type and date that already has one would make two
+                bool TmpMoved = (TmpType != OrgType || TmpDate != OrgDate);
+                if (TmpMoved && Exists(TmpId, TmpType, TmpDate))
                 {
-                    MessageBox.Show("Property Id " + TmpId.ToString(CultureInfo.InvariantCulture)
-                        + " already has a record for " + Month_Text(TmpMonth) + ".", "Error Message");
+                    MessageBox.Show(TmpType + " on " + Long_Date(TmpDate)
+                        + " is already recorded for this property.", "Error Message");
                     return;
                 }
-                if (!Exists(TmpId, OrgMonth))
+                if (!Exists(TmpId, OrgType, OrgDate))
                 {
-                    MessageBox.Show("Data not found for " + Month_Text(OrgMonth), "Error Message");
+                    MessageBox.Show("Data not found for " + OrgType + " on "
+                        + Long_Date(OrgDate), "Error Message");
                     return;
                 }
 
-                Mdl1.Ssql = "Update TblPropertyRentalBankExpense set"
-                          + " [Month] = '" + TmpMonth + "',"
+                Mdl1.Ssql = "Update TblPropertyRentalExpense set"
+                          + " [Type] = '" + Quote(TmpType) + "',"
                           + " [Description] = '" + Quote(txtDescription.Text) + "',"
+                          + " [Paid_Date] = '" + TmpDate + "',"
                           + " [Currency] = '" + CmbCurrency.Text.Trim() + "',"
-                          + " [Interest] = " + Num(Amount(txtInterest)) + ","
-                          + " [Bank_Fee] = " + Num(Amount(txtBankFee)) + ","
-                          + " [Total_Expense] = " + Num(Total_Expense())
-                          + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " and [Month] = '" + OrgMonth + "'";
+                          + " [Expense] = " + Num(Amount(txtExpense))
+                          + Where_One(TmpId, OrgType, OrgDate);
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Update successfully for " + Month_Text(TmpMonth), "Success");
+                MessageBox.Show("Update successfully for " + TmpType + " on "
+                    + Long_Date(TmpDate), "Success");
                 Get_Data();
                 Clear_Entry();
             }
@@ -749,9 +778,9 @@ namespace FinancialBalance
         {
             try
             {
-                if (OrgMonth == "")
+                if (OrgType == "" || OrgDate == "")
                 {
-                    MessageBox.Show("Please select a month from the list first !", "Error Message");
+                    MessageBox.Show("Please select an expense from the list first !", "Error Message");
                     return;
                 }
 
@@ -760,19 +789,19 @@ namespace FinancialBalance
                 {
                     return;
                 }
-                if (MessageBox.Show("Delete the record for " + Month_Text(OrgMonth) + " ?",
+                if (MessageBox.Show("Delete " + OrgType + " on " + Long_Date(OrgDate) + " ?",
                         "Confirmation", MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {
                     return;
                 }
 
-                Mdl1.Ssql = "Delete from TblPropertyRentalBankExpense"
-                          + " where [Property_Id] = " + TmpId.ToString(CultureInfo.InvariantCulture)
-                          + " and [Month] = '" + OrgMonth + "'";
+                Mdl1.Ssql = "Delete from TblPropertyRentalExpense"
+                          + Where_One(TmpId, OrgType, OrgDate);
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                MessageBox.Show("Delete successfully for " + Month_Text(OrgMonth), "Success");
+                MessageBox.Show("Delete successfully for " + OrgType + " on "
+                    + Long_Date(OrgDate), "Success");
                 Get_Data();
                 Clear_Entry();
             }

@@ -92,7 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
-| `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense |
+| `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense, Property Rental Expense |
 | `Inquiry` | **Property** | Property Summary |
 | `Administration` | **Property** | State Setup, Property Rental Expense Type Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
@@ -128,6 +128,7 @@ flowchart LR
     PPROPG --> PSAL["Property_Sale"]
     PPROPG --> PRI["Property_Rental_Income"]
     PPROPG --> PRBE["Property_Rental_Bank_Expense"]
+    PPROPG --> PRE["Property_Rental_Expense"]
     MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
     MAIN --> YT["Yearly_Statistic"]
@@ -223,6 +224,7 @@ flowchart LR
 | `Setup_ETF_Stocks_Div_Alloc` | Splits a ticker across one diversification type's values. Refuses to save unless the type totals 100. |
 | `Setup_ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan Setup**. Named investment plans, the percentage of each that a ticker is meant to take, and the diversification splits that implies. |
 | `Property_Summary` | Shown as **Property Summary**. Read-only. One property at a time: what it is, what it cost to buy, and â once it has been sold â what it fetched and what that came to as a profit or a loss. |
+| `Property_Rental_Expense` | Shown as **Property Rental Expense**. What one property cost to hold, expense by expense - rates, insurance and the rest, each with the date it was paid. Add, update and delete. |
 | `Property_Rental_Bank_Expense` | Shown as **Property Rental Bank Expense**. What the borrowing behind one property cost each month - interest, bank fee, and what the two came to. Add, update and delete, one record per property per month. |
 | `Property_Rental_Income` | Shown as **Property Rental Income**. One property at a time: what it let for each month, what that month cost, and what was left. Add, update and delete, one record per property per month. |
 | `Property_Sale` | Shown as **Property Sale**. What one property fetched when it was sold â price, and the costs of selling. One record per property. |
@@ -280,6 +282,7 @@ erDiagram
     TblProperty     ||--o| TblPropertySale : "was sold for"
     TblProperty     ||--o{ TblPropertyRentalIncome : "is let, month by month"
     TblProperty     ||--o{ TblPropertyRentalBankExpense : "is borrowed against, month by month"
+    TblProperty     ||--o{ TblPropertyRentalExpense : "costs money to hold"
 
     TblAcctTypeRef {
         text Acct_Type PK "1 char: 1-4"
@@ -446,6 +449,14 @@ erDiagram
     TblState {
         text Name PK "3 chars, the state code"
         text Long_Name "50 chars"
+    }
+    TblPropertyRentalExpense {
+        long    Property_Id "joins TblProperty"
+        text    Type "50 chars, a Name from TblPropertyRentalExpenseType"
+        text    Description "100 chars"
+        text    Paid_Date "yyyyMMdd"
+        text    Currency "3 chars, a code from TblCurrCode"
+        decimal Expense "2 dp"
     }
     TblPropertyRentalExpenseType {
         text Name "50 chars, and the only field - it identifies the row"
@@ -2144,6 +2155,7 @@ C#.Net/
 â   âââ Property_Sale.*               # what each one fetched when sold
 â   âââ Property_Rental_Income.*      # what it lets for, month by month
 â   âââ Property_Rental_Bank_Expense.*  # what the borrowing on it cost
+â   âââ Property_Rental_Expense.*       # rates, insurance and the rest
 â   âââ Property_Summary.*            # one property end to end, read-only
 â   âââ Setup_Super_Fund.*            # the list of super funds
 â   âââ Setup_Super.*                 # super accounts
@@ -2853,6 +2865,53 @@ negative reading `-$1,234.56` rather than `$-1,234.56`. Dates are `dd-MMM-yyyy`,
 stored `yyyyMMdd` by the same `Long_Date` the purchase page uses, and a date that is blank or
 malformed shows as nothing rather than as a placeholder. **Percentage Ownership** and
 **Percentage Profit/Loss** read `62.50 %` â a share rather than an amount, so no dollar sign.
+
+---
+
+### Property Rental Expense
+
+`Process` > Property > Property Rental Expense records what a property cost to hold, one row
+per expense, in `TblPropertyRentalExpense` - joined to [`TblProperty`](#property-setup) by
+`Property_Id`.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Property_Id` | Number | which property; joins `TblProperty` |
+| `Type` | Short Text(50) | a `Name` from [`TblPropertyRentalExpenseType`](#property-rental-expense-type-setup) |
+| `Description` | Short Text(100) | what the charge was |
+| `Paid_Date` | Short Text(8) | `yyyyMMdd` |
+| `Currency` | Short Text(3) | a code from [`TblCurrCode`](#reference-data) |
+| `Expense` | Decimal(22,2) | what it cost |
+
+`Expense` is **`DECIMAL(22,2)` created through ACE DDL**, and `Type`, `Description` and
+`Currency` are all reserved words in Access, so every column is bracketed.
+
+**Type is a dropdown, not a box.** It is filled from
+[`TblPropertyRentalExpenseType`](#property-rental-expense-type-setup), so a type cannot be
+spelled two ways across two records and a new kind of expense is added on its setup page
+rather than by typing it here. The type is stored **by name**, which is why that setup
+page's rename has no dependents to carry yet but will once rows here refer to one.
+
+**Paid Date** uses the same arrangement as Daily Input and the purchase and sale pages:
+three dropdowns and a `..` beside them that opens a `MonthCalendar`, bounded to the years
+the year dropdown carries, opening on the date already entered or on today when there is
+none. Picking a day fills the three dropdowns and hides the calendar again. It is stored
+`yyyyMMdd` and listed as `dd-MMM-yyyy`, newest first - a plain string sort being the same as
+a date sort.
+
+> **What identifies a record.** This table has no id of its own, so a record is its
+> `Property_Id`, its `Type` and its `Paid_Date` together - that triple is what Update and
+> Delete match on, and Add refuses a second row with the same one. Two expenses of the same
+> type on the same day for the same property therefore cannot both be recorded; they have to
+> go in as one line, or a day apart. If that ever needs to change the table wants an
+> AutoNumber key, and the page wants to carry it on the row rather than the triple.
+
+Descriptions are free text, so an apostrophe in one is doubled on the way in rather than
+left to cut the statement in half - as on
+[Property Rental Bank Expense](#property-rental-bank-expense).
+
+The note line under the list carries both the count and what the listed expenses come to, so
+the page answers the question it is usually opened for without a separate total beside it.
 
 ---
 

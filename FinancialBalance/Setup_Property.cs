@@ -130,6 +130,13 @@ namespace FinancialBalance
             this.Close();
         }
 
+        private void MnPropertyRentalExpense_Click(object sender, EventArgs e)
+        {
+            Property_Rental_Expense Property_Rental_Expense = new Property_Rental_Expense();
+            Property_Rental_Expense.Show();
+            this.Close();
+        }
+
         private void MnPropertyPurchase_Click(object sender, EventArgs e)
         {
             Property_Purchase Property_Purchase = new Property_Purchase();
