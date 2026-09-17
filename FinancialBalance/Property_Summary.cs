@@ -500,9 +500,10 @@ namespace FinancialBalance
         }
 
         //The profit is what the sale brought in, less what getting out of it cost and less
-        //what getting into it cost, plus what the property made while it was held - so it
-        //needs the purchase and the ongoing figures as well. Without a purchase record there
-        //is nothing to subtract and a figure would only mislead, so it is left blank.
+        //what getting into it cost, plus what the property made while it was held, and all
+        //of it taken at the share of the property owned - so it needs the purchase and the
+        //ongoing figures as well. Without a purchase record there is neither a share nor
+        //anything to subtract, and a figure would only mislead, so it is left blank.
         private void Show_Sale(Sale parSale, Purchase parPurchase, Ongoing parOngoing)
         {
             Show_Sale_Block(true);
@@ -545,23 +546,28 @@ namespace FinancialBalance
             LblPctSoldProfitLoss.Text = Percent(TmpSoldPercent);
             Colour_Label(LblPctSoldProfitLoss, TmpSoldPercent);
 
-            //What the property made overall: what selling it returned over what buying it
-            //cost, plus what holding it made or lost along the way.
-            double TmpProfit = parSale.Price
-                             - parSale.TotalCost
-                             - parPurchase.Price
-                             - parPurchase.TotalCost
-                             + parOngoing.Total;
+            //What the property made overall, taken at the share of it owned: what selling
+            //it returned over what buying it cost, plus what holding it made along the way.
+            //Only the share of the property actually owned is counted on the buying and
+            //selling sides - a half-owned property returns half of what it sold for over
+            //half of what it cost. The ongoing figures are already this owner's own, so
+            //they come in whole rather than being halved a second time.
+            double TmpShare = parPurchase.Percentage / 100;
+            double TmpProfit = (TmpShare * (parSale.Price - parSale.TotalCost))
+                             + parOngoing.Total
+                             - (TmpShare * (parPurchase.Price + parPurchase.TotalCost));
             LblNetProfitLoss.Text = Money(TmpProfit);
             Colour_Label(LblNetProfitLoss, TmpProfit);
 
-            //Against the price paid for the property rather than the whole outlay, so it
-            //reads as the return on the purchase itself. Nothing can be divided by a
-            //purchase price of zero, so that case is shown as flat.
+            //Against this owner's share of the price paid, not the whole of it, so it
+            //reads as the return on what this owner actually put in. Nothing can be
+            //divided by zero, and the share is zero when either the price or the
+            //ownership percentage is, so both cases are shown as flat.
+            double TmpSharePrice = TmpShare * parPurchase.Price;
             double TmpPercent = 0;
-            if (parPurchase.Price > 0)
+            if (TmpSharePrice > 0)
             {
-                TmpPercent = (TmpProfit / parPurchase.Price) * 100;
+                TmpPercent = (TmpProfit / TmpSharePrice) * 100;
             }
             LblPctNetProfitLoss.Text = Percent(TmpPercent);
             Colour_Label(LblPctNetProfitLoss, TmpPercent);

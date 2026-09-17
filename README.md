@@ -2850,16 +2850,17 @@ Twelve of the figures are not columns anywhere — they are added up as the page
 | **Bank Expense** | `Total_Expense` on [`TblPropertyRentalBankExpense`](#property-rental-bank-expense), added up |
 | **Other Expense** | `Expense` on [`TblPropertyRentalExpense`](#property-rental-expense), added up |
 | **Grand Total Ongoing Profit/Loss** | **Ongoing Rental Profit/Loss** − **Bank Expense** − **Other Expense** — what holding the property has made or cost so far |
-| **Net Profit/Loss** | **Sold Price** − **Total Sale Cost** − **Purchase Price** − **Total Purchase Cost** **+ Grand Total Ongoing Profit/Loss** — what the property made overall: what selling it returned over what buying it cost, plus what holding it made along the way |
-| **Percentage Net Profit/Loss** | **Net Profit/Loss** ÷ **Purchase Price**, as a percentage — against the price paid rather than the whole outlay, so it reads as the return on the purchase itself. `0.00 %` when the purchase price is zero, since nothing can be divided by it |
+| **Net Profit/Loss per Percentage Ownership** | (**Percentage Ownership** ÷ 100 × (**Sold Price** − **Total Sale Cost**)) + **Grand Total Ongoing Profit/Loss** − (**Percentage Ownership** ÷ 100 × (**Purchase Price** + **Total Purchase Cost**)) — what this owner made on the property: their share of what selling it returned and of what buying it cost, plus what holding it made along the way |
+| **Percentage Net Profit/Loss per Percentage Ownership** | **Net Profit/Loss per Percentage Ownership** ÷ (**Percentage Ownership** ÷ 100 × **Purchase Price**), as a percentage — against this owner's share of the price paid, so it reads as the return on what this owner actually put in. `0.00 %` when that share is zero, which it is when either the price or the ownership percentage is |
 
-All four — **Sold Profit/Loss**, **Percentage Sold Profit/Loss**, **Net Profit/Loss** and
-**Percentage Net Profit/Loss** — are coloured the way every other profit figure in the app is
+All four — **Sold Profit/Loss**, **Percentage Sold Profit/Loss**, **Net Profit/Loss per
+Percentage Ownership** and **Percentage Net Profit/Loss per Percentage Ownership** — are
+coloured the way every other profit figure in the app is
 — red below zero, green above it, plain black at exactly zero — through the same
 `Colour_Label` shape the [portfolio summary](#portfolio-summary) uses.
 
 **The two sit next to each other deliberately.** **Sold Profit/Loss** is the pair of prices and
-nothing else, which is the figure most people mean by "what did we make on it". **Net Profit/Loss**
+nothing else, which is the figure most people mean by "what did we make on it". **Net Profit/Loss per Percentage Ownership**
 is that same sale carrying both sets of costs and every year of rent, interest and rates. Read
 together they say how much of the headline gain the costs and the holding actually accounted for;
 either one alone is a partial answer.
@@ -2879,11 +2880,25 @@ sign like the rest. They are costs: a large one is not good news the way a large
 profit is, and green against it would read as though it were. The rental result and the
 ongoing total keep the usual rule - green above zero, red below it, black at exactly zero.
 
+> **The share applies to buying and selling, not to the ongoing figures.** A half-owned
+> property returns half of what it sold for over half of what it cost, so both of those
+> sides are taken at **Percentage Ownership**. The ongoing rent, interest and expenses are
+> already only this owner's own - they are entered as what was received and paid, not as
+> the whole property's - so they come in whole rather than being halved a second time. At
+> 100 % ownership the figure is exactly what it was before the share was introduced, which
+> is the cheapest way to see that nothing else moved.
+
+> **The percentage divides by the share too, not by the whole price.** Both halves of it
+> are this owner's: their share of what the property made, over their share of what it
+> cost. On a half-owned property the amount halves but the percentage does not - it is
+> the return on what this owner put in, which is the question the figure is there to
+> answer. At 100 % ownership it reads exactly as it did before the share existed.
+
 > **Net Profit/Loss carries the ongoing total, and is named for it.** It used to be called
 > **Profit/Loss** and was the sale against the purchase alone, which answered "what did buying
 > and selling it come to" rather than "what did this property make" — years of rent, interest
 > and rates sat outside it. Adding them in was the right figure under the wrong name, so it is
-> now **Net Profit/Loss**, with **Percentage Net Profit/Loss** beneath it dividing that figure by
+> now **Net Profit/Loss per Percentage Ownership**, with the percentage beneath it dividing that figure by
 > the purchase price. The older, simpler reading has not been lost: it is **Sold Profit/Loss**,
 > shown in its own right directly under **Sold Price**.
 
@@ -2904,7 +2919,7 @@ Money carries a `$` with thousands grouped to two places through the shared `Mdl
 negative reading `-$1,234.56` rather than `$-1,234.56`. Dates are `dd-MMM-yyyy`, parsed out of the
 stored `yyyyMMdd` by the same `Long_Date` the purchase page uses, and a date that is blank or
 malformed shows as nothing rather than as a placeholder. **Percentage Ownership**,
-**Percentage Sold Profit/Loss** and **Percentage Net Profit/Loss** read `62.50 %` — a share rather than an amount, so no dollar sign.
+**Percentage Sold Profit/Loss** and **Percentage Net Profit/Loss per Percentage Ownership** read `62.50 %` — a share rather than an amount, so no dollar sign.
 
 ---
 

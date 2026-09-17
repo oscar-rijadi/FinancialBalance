@@ -781,11 +781,12 @@
             this.Lbl_LblNetProfitLoss.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblNetProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblNetProfitLoss.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblNetProfitLoss.Location = new System.Drawing.Point(861, 524);
+            this.Lbl_LblNetProfitLoss.Location = new System.Drawing.Point(430, 524);
             this.Lbl_LblNetProfitLoss.Name = "Lbl_LblNetProfitLoss";
-            this.Lbl_LblNetProfitLoss.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblNetProfitLoss.Size = new System.Drawing.Size(661, 20);
             this.Lbl_LblNetProfitLoss.TabIndex = 57;
-            this.Lbl_LblNetProfitLoss.Text = "Net Profit/Loss";
+            this.Lbl_LblNetProfitLoss.Text = "Net Profit/Loss per Percentage Ownership";
+            this.Lbl_LblNetProfitLoss.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // LblNetProfitLoss
             // 
@@ -804,11 +805,12 @@
             this.Lbl_LblPctNetProfitLoss.BackColor = System.Drawing.Color.Transparent;
             this.Lbl_LblPctNetProfitLoss.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Lbl_LblPctNetProfitLoss.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_LblPctNetProfitLoss.Location = new System.Drawing.Point(861, 554);
+            this.Lbl_LblPctNetProfitLoss.Location = new System.Drawing.Point(430, 554);
             this.Lbl_LblPctNetProfitLoss.Name = "Lbl_LblPctNetProfitLoss";
-            this.Lbl_LblPctNetProfitLoss.Size = new System.Drawing.Size(230, 20);
+            this.Lbl_LblPctNetProfitLoss.Size = new System.Drawing.Size(661, 20);
             this.Lbl_LblPctNetProfitLoss.TabIndex = 59;
-            this.Lbl_LblPctNetProfitLoss.Text = "Percentage Net Profit/Loss";
+            this.Lbl_LblPctNetProfitLoss.Text = "Percentage Net Profit/Loss per Percentage Ownership";
+            this.Lbl_LblPctNetProfitLoss.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // LblPctNetProfitLoss
             // 
