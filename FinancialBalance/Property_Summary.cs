@@ -239,12 +239,14 @@ namespace FinancialBalance
                 Lbl_LblSoldDate, LblSoldDate,
                 Lbl_LblSaleSettlementDate, LblSaleSettlementDate,
                 Lbl_LblSoldPrice, LblSoldPrice,
+                Lbl_LblSoldProfitLoss, LblSoldProfitLoss,
+                Lbl_LblPctSoldProfitLoss, LblPctSoldProfitLoss,
                 Lbl_LblSaleConveyancing, LblSaleConveyancing,
                 Lbl_LblSaleAgentCost, LblSaleAgentCost,
                 Lbl_LblSaleOtherCost, LblSaleOtherCost,
                 Lbl_LblTotalSaleCost, LblTotalSaleCost,
-                Lbl_LblProfitLoss, LblProfitLoss,
-                Lbl_LblPctProfitLoss, LblPctProfitLoss };
+                Lbl_LblNetProfitLoss, LblNetProfitLoss,
+                Lbl_LblPctNetProfitLoss, LblPctNetProfitLoss };
             foreach (Label TmpLabel in TmpLabels)
             {
                 TmpLabel.Visible = parVisible;
@@ -515,14 +517,33 @@ namespace FinancialBalance
 
             if (parPurchase == null)
             {
-                LblProfitLoss.Text = "-";
-                LblProfitLoss.ForeColor = System.Drawing.Color.Black;
-                LblPctProfitLoss.Text = "-";
-                LblPctProfitLoss.ForeColor = System.Drawing.Color.Black;
+                foreach (Label TmpLabel in new Label[] { LblSoldProfitLoss, LblPctSoldProfitLoss,
+                                                         LblNetProfitLoss, LblPctNetProfitLoss })
+                {
+                    TmpLabel.Text = "-";
+                    TmpLabel.ForeColor = System.Drawing.Color.Black;
+                }
                 Note("No purchase record for this property, so the profit-loss cannot be worked out.",
                      true);
                 return;
             }
+
+            //What the sale alone returned: the two prices against each other, with none of
+            //the costs on either side and nothing of what the property made while it was held.
+            //That is what separates it from the net figure below.
+            double TmpSoldProfit = parSale.Price - parPurchase.Price;
+            LblSoldProfitLoss.Text = Money(TmpSoldProfit);
+            Colour_Label(LblSoldProfitLoss, TmpSoldProfit);
+
+            //Against the price paid, so it reads as the return on the purchase itself. Nothing
+            //can be divided by a purchase price of zero, so that case is shown as flat.
+            double TmpSoldPercent = 0;
+            if (parPurchase.Price > 0)
+            {
+                TmpSoldPercent = (TmpSoldProfit / parPurchase.Price) * 100;
+            }
+            LblPctSoldProfitLoss.Text = Percent(TmpSoldPercent);
+            Colour_Label(LblPctSoldProfitLoss, TmpSoldPercent);
 
             //What the property made overall: what selling it returned over what buying it
             //cost, plus what holding it made or lost along the way.
@@ -531,8 +552,8 @@ namespace FinancialBalance
                              - parPurchase.Price
                              - parPurchase.TotalCost
                              + parOngoing.Total;
-            LblProfitLoss.Text = Money(TmpProfit);
-            Colour_Label(LblProfitLoss, TmpProfit);
+            LblNetProfitLoss.Text = Money(TmpProfit);
+            Colour_Label(LblNetProfitLoss, TmpProfit);
 
             //Against the price paid for the property rather than the whole outlay, so it
             //reads as the return on the purchase itself. Nothing can be divided by a
@@ -542,8 +563,8 @@ namespace FinancialBalance
             {
                 TmpPercent = (TmpProfit / parPurchase.Price) * 100;
             }
-            LblPctProfitLoss.Text = Percent(TmpPercent);
-            Colour_Label(LblPctProfitLoss, TmpPercent);
+            LblPctNetProfitLoss.Text = Percent(TmpPercent);
+            Colour_Label(LblPctNetProfitLoss, TmpPercent);
         }
 
         private void CmdBack_Click(object sender, EventArgs e)

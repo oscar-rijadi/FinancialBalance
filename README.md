@@ -239,7 +239,7 @@ flowchart LR
 
 ## Data model
 
-Thirty-two tables. **No foreign keys or relationships are defined in the database** — the links below are
+Thirty-seven tables. **No foreign keys or relationships are defined in the database** — the links below are
 conventions the application enforces in code, not constraints Access enforces for you.
 
 ```mermaid
@@ -2204,8 +2204,8 @@ and the two posting routines.
 ### A note on page sizes
 
 The widest pages are **1264×620 to 1264×720**: ETF/Stock Financial Year Reconciliation, ETF/Stock
-Cost Base Adjustment, ETF/Stock Financial Year Historical, Super, and Super Balance & Historical
-Data. Everything else is narrower, down to 361×226 for Monthly Closing. Each page is sized to its
+Cost Base Adjustment, ETF/Stock Financial Year Historical, Super, Super Balance & Historical
+Data, and Property Summary. Everything else is narrower, down to 361×226 for Monthly Closing. Each page is sized to its
 content, and the ones with a wide grid or several columns of entry boxes sit at the 1264 ceiling
 described under [Conventions](#conventions).
 
@@ -2836,7 +2836,7 @@ read with a hole in it.
 
 #### What is worked out rather than stored
 
-Ten of the figures are not columns anywhere — they are added up as the page is drawn:
+Twelve of the figures are not columns anywhere — they are added up as the page is drawn:
 
 | Shown as | Worked out from |
 | --- | --- |
@@ -2844,16 +2844,25 @@ Ten of the figures are not columns anywhere — they are added up as the page is
 | **Total Purchase Cost** | **Stamp Duty** + **Purchase Conveyancing Cost** + **BA Cost** + **Purchase Other Cost** — what the purchase cost *on top of* the price itself, so the price is not counted twice when the profit subtracts both |
 | **Sale Other Cost** | `Settlement_Cost` + `Other_Cost`, from the sale row |
 | **Total Sale Cost** | **Sale Conveyancing Cost** + **Sale Agent Cost** + **Sale Other Cost** — which comes to `Conveyancing_Cost` + `Sale_Agent_Cost` + `Settlement_Cost` + `Other_Cost`. What selling cost, the price it fetched aside |
+| **Sold Profit/Loss** | **Sold Price** − **Purchase Price** — what the sale alone returned, with none of the costs on either side and nothing of what the property made while it was held. That is what separates it from the net figure below |
+| **Percentage Sold Profit/Loss** | **Sold Profit/Loss** ÷ **Purchase Price**, as a percentage, so it reads as the return on the purchase itself. `0.00 %` when the purchase price is zero |
 | **Ongoing Rental Profit/Loss** | `Profit_Loss` on [`TblPropertyRentalIncome`](#property-rental-income), added up for this property |
 | **Bank Expense** | `Total_Expense` on [`TblPropertyRentalBankExpense`](#property-rental-bank-expense), added up |
 | **Other Expense** | `Expense` on [`TblPropertyRentalExpense`](#property-rental-expense), added up |
 | **Grand Total Ongoing Profit/Loss** | **Ongoing Rental Profit/Loss** − **Bank Expense** − **Other Expense** — what holding the property has made or cost so far |
-| **Profit/Loss** | **Sold Price** − **Total Sale Cost** − **Purchase Price** − **Total Purchase Cost** **+ Grand Total Ongoing Profit/Loss** — what the property made overall: what selling it returned over what buying it cost, plus what holding it made along the way |
-| **Percentage Profit/Loss** | **Profit/Loss** ÷ **Purchase Price**, as a percentage — against the price paid rather than the whole outlay, so it reads as the return on the purchase itself. `0.00 %` when the purchase price is zero, since nothing can be divided by it |
+| **Net Profit/Loss** | **Sold Price** − **Total Sale Cost** − **Purchase Price** − **Total Purchase Cost** **+ Grand Total Ongoing Profit/Loss** — what the property made overall: what selling it returned over what buying it cost, plus what holding it made along the way |
+| **Percentage Net Profit/Loss** | **Net Profit/Loss** ÷ **Purchase Price**, as a percentage — against the price paid rather than the whole outlay, so it reads as the return on the purchase itself. `0.00 %` when the purchase price is zero, since nothing can be divided by it |
 
-**Profit/Loss** and **Percentage Profit/Loss** are coloured the way every other profit figure in
-the app is — red below zero, green above it, plain black at exactly zero — through the same
+All four — **Sold Profit/Loss**, **Percentage Sold Profit/Loss**, **Net Profit/Loss** and
+**Percentage Net Profit/Loss** — are coloured the way every other profit figure in the app is
+— red below zero, green above it, plain black at exactly zero — through the same
 `Colour_Label` shape the [portfolio summary](#portfolio-summary) uses.
+
+**The two sit next to each other deliberately.** **Sold Profit/Loss** is the pair of prices and
+nothing else, which is the figure most people mean by "what did we make on it". **Net Profit/Loss**
+is that same sale carrying both sets of costs and every year of rent, interest and rates. Read
+together they say how much of the headline gain the costs and the holding actually accounted for;
+either one alone is a partial answer.
 
 #### The ongoing half
 
@@ -2870,30 +2879,32 @@ sign like the rest. They are costs: a large one is not good news the way a large
 profit is, and green against it would read as though it were. The rental result and the
 ongoing total keep the usual rule - green above zero, red below it, black at exactly zero.
 
-> **Profit/Loss under Sale now carries the ongoing total.** It used to be the sale against
-> the purchase alone, which answered "what did buying and selling it come to" rather than
-> "what did this property make". Years of rent, interest and rates sat outside it. The
-> **Percentage Profit/Loss** beneath it divides the new figure by the purchase price, so it
-> moves with it.
+> **Net Profit/Loss carries the ongoing total, and is named for it.** It used to be called
+> **Profit/Loss** and was the sale against the purchase alone, which answered "what did buying
+> and selling it come to" rather than "what did this property make" — years of rent, interest
+> and rates sat outside it. Adding them in was the right figure under the wrong name, so it is
+> now **Net Profit/Loss**, with **Percentage Net Profit/Loss** beneath it dividing that figure by
+> the purchase price. The older, simpler reading has not been lost: it is **Sold Profit/Loss**,
+> shown in its own right directly under **Sold Price**.
 
 #### The sale half
 
-The sale block — its header and all nine rows — is **hidden outright until the property has been
+The sale block — its header and all eleven rows — is **hidden outright until the property has been
 sold**, rather than standing empty. Whether it is sold is the presence of a `TblPropertySale` row
 and nothing else, the same rule [Property Sale](#property-sale) sets out.
 
 A property can also carry a sale row with no purchase row, which neither entry page prevents.
 There is then nothing to subtract, and a profit worked out against zero would read as the whole
-sale price earned. Both profit figures show `-` and the note says why, rather than printing a
-number that is arithmetically true and factually nonsense.
+sale price earned. All four profit figures show `-` and the note says why, rather than printing
+numbers that are arithmetically true and factually nonsense.
 
 #### Formatting
 
 Money carries a `$` with thousands grouped to two places through the shared `Mdl1.FormatAmt`, a
 negative reading `-$1,234.56` rather than `$-1,234.56`. Dates are `dd-MMM-yyyy`, parsed out of the
 stored `yyyyMMdd` by the same `Long_Date` the purchase page uses, and a date that is blank or
-malformed shows as nothing rather than as a placeholder. **Percentage Ownership** and
-**Percentage Profit/Loss** read `62.50 %` — a share rather than an amount, so no dollar sign.
+malformed shows as nothing rather than as a placeholder. **Percentage Ownership**,
+**Percentage Sold Profit/Loss** and **Percentage Net Profit/Loss** read `62.50 %` — a share rather than an amount, so no dollar sign.
 
 ---
 
