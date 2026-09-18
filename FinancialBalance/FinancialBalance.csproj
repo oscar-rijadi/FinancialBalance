@@ -330,6 +330,12 @@
     <Compile Include="Setup_Property_Rental_Expense_Type.Designer.cs">
       <DependentUpon>Setup_Property_Rental_Expense_Type.cs</DependentUpon>
     </Compile>
+    <Compile Include="ETF_Stocks_Investment_Plan_By_Amount.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ETF_Stocks_Investment_Plan_By_Amount.Designer.cs">
+      <DependentUpon>ETF_Stocks_Investment_Plan_By_Amount.cs</DependentUpon>
+    </Compile>
     <Compile Include="Property_Summary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -506,6 +512,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_Property_Rental_Expense_Type.resx">
       <DependentUpon>Setup_Property_Rental_Expense_Type.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ETF_Stocks_Investment_Plan_By_Amount.resx">
+      <DependentUpon>ETF_Stocks_Investment_Plan_By_Amount.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Property_Summary.resx">
       <DependentUpon>Property_Summary.cs</DependentUpon>

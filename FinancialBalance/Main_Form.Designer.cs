@@ -57,6 +57,7 @@
             this.MnYearSumm = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockPortfolioGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlan = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksInvPlanByAmount = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyInqGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertySummary = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperBalance = new System.Windows.Forms.ToolStripMenuItem();
@@ -336,7 +337,8 @@
             this.MnETFStocksDividendHistory,
             this.MnETFStocksPriceChart,
             this.MnETFStocksFYHistorical,
-            this.MnETFStocksInvPlan});
+            this.MnETFStocksInvPlan,
+            this.MnETFStocksInvPlanByAmount});
             this.MnETFStockPortfolioGroup.Name = "MnETFStockPortfolioGroup";
             this.MnETFStockPortfolioGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockPortfolioGroup.Text = "&ETF/Stock";
@@ -347,6 +349,13 @@
             this.MnETFStocksInvPlan.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksInvPlan.Text = "ETF/Stock In&vestment Plan";
             this.MnETFStocksInvPlan.Click += new System.EventHandler(this.MnETFStocksInvPlan_Click);
+            // 
+            // MnETFStocksInvPlanByAmount
+            // 
+            this.MnETFStocksInvPlanByAmount.Name = "MnETFStocksInvPlanByAmount";
+            this.MnETFStocksInvPlanByAmount.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksInvPlanByAmount.Text = "ETF/Stock Investment Plan by &Amount";
+            this.MnETFStocksInvPlanByAmount.Click += new System.EventHandler(this.MnETFStocksInvPlanByAmount_Click);
             // 
             // MnPropertyInqGroup
             // 
@@ -1074,6 +1083,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnYearSumm;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockPortfolioGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlan;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanByAmount;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyInqGroup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertySummary;
         public System.Windows.Forms.ToolStripMenuItem MnSuperBalance;

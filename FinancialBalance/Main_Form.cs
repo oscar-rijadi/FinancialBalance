@@ -182,6 +182,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksInvPlanByAmount_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Investment_Plan_By_Amount ETF_Stocks_Investment_Plan_By_Amount = new ETF_Stocks_Investment_Plan_By_Amount();
+            ETF_Stocks_Investment_Plan_By_Amount.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksInvPlan_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Investment_Plan ETF_Stocks_Investment_Plan = new ETF_Stocks_Investment_Plan();
