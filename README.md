@@ -200,7 +200,7 @@ flowchart LR
 | `Super_Financial_Year` | Shown as **Super**. One financial year's result per super account — what went in, what the fund returned, what it cost, and what came out at the end. |
 | `Super_Balance_Historical` | Shown as **Super Balance & Historical Data**. Read-only, in two parts: where every super account stands, then one account's full year-by-year history. |
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
-| `Yearly_Summary` | Full-year income and expense breakdown with totals. |
+| `Yearly_Summary` | Full-year income, expense, asset and liability breakdown with totals. Exports every year at once — see [Yearly summary](#yearly-summary). |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
@@ -1858,46 +1858,123 @@ which is the default the transaction page selects.
 
 ---
 
+### Yearly summary
+
+`Yearly_Summary` is one calendar year on one page: **Income** and **Expense** side by side,
+then **Asset** and **Liability** full width, each table with its own totals underneath and a
+**Grand Total Differences (AUD)** at the foot. A **Year** dropdown carries `All` and the last ten
+years. The December exchange rates for the chosen year sit bottom left — for `All`, the current
+year's.
+
+#### Generate Excel
+
+The button sits **beside the Year dropdown** rather than down with **Back**, because it is the
+one control on the page the dropdown does not govern: it exports **every year at once**,
+whatever is on screen.
+
+| Tab | Holds |
+| --- | --- |
+| `All` | the `All` view — always first |
+| `2026`, `2025`, … | one per year on the dropdown, **newest first** |
+
+The order is sorted rather than taken from the dropdown's own. `Mdl1.Fill_Year` happens to add
+them newest-first already, but the workbook was asked for in that order, and a later change to
+how the list is filled should not quietly reorder the tabs.
+
+Each tab is the page **put into that year and read back**, not a second set of queries written
+for the purpose — `Get_Data` is nine hundred lines of totalling, and a second copy of it would
+drift. The Year dropdown is moved directly, with the page's own handler held off by a `Filling`
+flag so each year is fetched once rather than twice; that this page's `Get_Data` is the most
+expensive in the application is why the flag is there at all. The dropdown and both tables are
+put back as they were found before the workbook is written.
+
+> Assigning `Text` on a `DropDownList` does nothing at all when the value is not among its items,
+> and it fails silently — which would leave a tab headed with one year sitting over another
+> year's figures. The years come from the dropdown's own items so it cannot happen; it is checked
+> anyway, because the cost of being wrong is a plausible-looking sheet of the wrong numbers.
+
+**Within a tab the four tables are stacked, not laid out as the page is.** Income and Expense sit
+side by side on screen; putting them side by side in a spreadsheet would mean offsetting one into
+columns 7 onwards and leaving the two ten-column tables below straddling both. Each is written as
+a section instead — heading, column headings, rows, then its totals — and every tab is ten
+columns wide, the width of the Asset and Liability tables. The narrower Income and Expense tables
+are padded out, so Excel is handed one rectangle.
+
+Section headings, the column headings and every total line are bold; the column headings also
+carry the grey fill the other exports use. Which rows those are is carried with the sheet rather
+than recorded as three fixed row numbers — with four tables and ten separate totals there is no
+single "the totals are here".
+
+**Nothing is refused for being empty.** The other three export pages send one view and stop if it
+has no rows. This one sends every year, and a year with nothing recorded in it is a fact about
+that year rather than a reason to withhold the other ten.
+
+#### Generate to Google Drive
+
+Beside it sits **Generate to Google Drive**, which builds **the same tabs** — the one
+`Build_Tabs`, so `All` first and the years newest-first either way — and uploads the workbook as
+a Google Sheet instead of saving it locally. The mechanics are the ones set out under
+[Generate to Google Drive](#generate-to-google-drive).
+
+The Sheet is called **Financial Balance Yearly Summary**, from `YearlySummaryGoogleSheetName` in
+`app.config`. **One file for the lot**, unlike
+[Financial year historical](#financial-year-historical), whose setting is a prefix: every year is
+already in this workbook a tab apiece, so there is nothing for the name to vary by.
+
+**The title bar carries the progress**, where the other three pages use their note line — this
+page has none. Building eleven tabs takes a moment and the sign-in then waits on a browser window
+that opens behind this one, so a wait cursor on its own would leave nothing to read. It says
+*building the workbook*, then *waiting for you to sign in to Google in your browser*, then
+*uploading to Google Drive*, and is put back afterwards.
+
+While either button is working, **both of them, Back and the Year dropdown are all disabled** —
+the export moves the dropdown itself, so leaving it live would let a click land in the middle of
+a tab being built.
+
+---
+
 ### Excel exports
 
-Three pages export: [Portfolio summary](#portfolio-summary),
-[Dividend history](#dividend-history) and
-[Financial year historical](#financial-year-historical). They share these rules.
+Four pages export: [Portfolio summary](#portfolio-summary),
+[Dividend history](#dividend-history),
+[Financial year historical](#financial-year-historical) and
+[Yearly summary](#yearly-summary). They share these rules.
 
 - **The form's name leads the file name**, so an export says which page produced it before
   anything else — `ETF_Stocks_Portfolio_Summary_...`, `ETF_Stocks_Dividend_History_...`,
-  `ETF_Stocks_FY_Historical_...`. It is taken from the form's own `Name` property rather than
-  typed out, so it cannot drift from the form it belongs to. The timestamp follows the prefix,
-  then that page's own filters.
+  `ETF_Stocks_FY_Historical_...`, `Yearly_Summary_...`. It is taken from the form's own `Name`
+  property rather than typed out, so it cannot drift from the form it belongs to. The timestamp
+  follows the prefix, then that page's own filters — except on
+  [Yearly summary](#yearly-summary), whose name stops at the timestamp, since every year is in
+  the one workbook and no filter narrows it.
 - **Every cell is written as text**, for the reason set out under Portfolio summary.
-- **An empty table is refused** rather than exported as headings with nothing under them.
+- **An empty table is refused** rather than exported as headings with nothing under them — again
+  except on [Yearly summary](#yearly-summary), which exports every year including the empty ones.
 - The name is only what the Save dialog is *pre-filled* with; the reader can change it, and the
   dialog opens in Documents but remembers wherever it was last pointed.
 
-[Portfolio summary](#portfolio-summary), [Dividend history](#dividend-history) and
-[Financial year historical](#financial-year-historical) also export
-[to Google Drive](#generate-to-google-drive), which builds the same workbook and uploads it as a
-Google Sheet instead of saving it locally.
+All four also export [to Google Drive](#generate-to-google-drive), which builds the same
+workbook and uploads it as a Google Sheet instead of saving it locally.
 
 ---
 
 ### Generate to Google Drive
 
-[Portfolio summary](#portfolio-summary), [Dividend history](#dividend-history) and
-[Financial year historical](#financial-year-historical) each have a button beside their
-**Generate Excel**. It builds **the same workbook**, uploads it to the
+[Portfolio summary](#portfolio-summary), [Dividend history](#dividend-history),
+[Financial year historical](#financial-year-historical) and [Yearly summary](#yearly-summary)
+each have a button beside their **Generate Excel**. It builds **the same workbook**, uploads it to the
 signed-in user's Google Drive, and asks Drive to convert it into a Google Sheet on the way in.
 The workbook itself is written to the temporary directory and deleted afterwards — it is only a
 carrier. Nothing is saved locally; that is what the Excel button is for.
 
 On each page both buttons go through one `Build_Sheet`, so the workbook and the Sheet are the
 same sheet by construction rather than by two lots of layout code happening to agree.
-`Write_Workbook` takes where to write it; only the caller differs. On the two pages that can
+`Write_Workbook` takes where to write it; only the caller differs. On the three pages that can
 produce several tabs it takes a list of them, and on
 [Financial year historical](#financial-year-historical), which cannot, it takes the one sheet.
 
-The three pages keep their own copies of that shape rather than sharing a base class — what they
-lay out differs enough (different filters, different headings, one grid or two) that the common
+The four pages keep their own copies of that shape rather than sharing a base class — what they
+lay out differs enough (different filters, different headings, one grid or four) that the common
 part would be thinner than the plumbing to share it.
 
 Everything below applies to both, except where a page is named.
@@ -1920,6 +1997,7 @@ differs between them.
 | [Portfolio summary](#portfolio-summary) | `PortfolioGoogleSheetName` | *Financial Balance ETFs or Stocks Portfolio Investments* | one |
 | [Dividend history](#dividend-history) | `DividendHistoryGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History* | one |
 | [Financial year historical](#financial-year-historical) | `FinancialHistoricalYearPrefixGoogleSheetName` | *Financial Balance ETFs or Stocks Financial Year Historical* | **a prefix** — one per financial year |
+| [Yearly summary](#yearly-summary) | `YearlySummaryGoogleSheetName` | *Financial Balance Yearly Summary* | one |
 
 The settings are named for the page rather than for Drive, which is what let the later pages take
 names of their own instead of quietly sharing the first's. Sharing would have meant one page's
@@ -1931,9 +2009,11 @@ year at a time, and a closed year is a record rather than a running figure, so t
 is joined to the prefix and each year keeps a Sheet of its own. See
 [that page](#financial-year-historical) for what that means in practice.
 
-`Google_Drive` exposes them as `Portfolio_Sheet_Name()`, `Dividend_History_Sheet_Name()` and
-`FY_Historical_Sheet_Name(year)` rather than taking the setting key as an argument, so a call
-site cannot ask for a key that does not exist and silently get somebody else's default.
+`Google_Drive` exposes them as `Portfolio_Sheet_Name()`, `Dividend_History_Sheet_Name()`,
+`FY_Historical_Sheet_Name(year)` and `Yearly_Summary_Sheet_Name()` rather than taking the setting
+key as an argument, so a call site cannot ask for a key that does not exist and silently get
+somebody else's default. Only the prefixed one takes anything, which is the signature saying
+which of them varies.
 
 Neither name carries a timestamp, deliberately — a timestamp would make every run a different
 file, which is the behaviour this replaces.
@@ -2000,10 +2080,15 @@ the filters being wide enough that per-tab detail says something the first tab d
 | [Portfolio summary](#portfolio-summary) | **Full Ticker** is `All` | holding |
 | [Dividend history](#dividend-history) | **Full Ticker** *and* **Financial Year** are both `All` | financial year |
 | [Financial year historical](#financial-year-historical) | never | — it is always one tab |
+| [Yearly summary](#yearly-summary) | **always** | year, `All` first — see [that page](#yearly-summary) |
 
 Narrow either dropdown and it is that one view, one tab. Financial year historical has no `All`
 on its year dropdown at all — it is always showing one year, which is also why its Sheet is named
-after that year rather than accumulating tabs. On Dividend history **both** have to be
+after that year rather than accumulating tabs.
+
+[Yearly summary](#yearly-summary) is the other way about: its dropdown narrows the **screen** but
+never the export, which is always every year. That is also why its Drive button, unlike the other
+three, has nothing to check before it starts — there is no "current view" for it to find empty. On Dividend history **both** have to be
 `All`: per-year tabs of a single ticker would not be the page the user is looking at, and
 per-year tabs when one year is already chosen would be that same year twice.
 
@@ -2377,10 +2462,11 @@ The `appSettings` entries, however, **are** read:
 | `PortfolioGoogleSheetName` | what [Portfolio summary](#portfolio-summary)'s Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Portfolio Investments* |
 | `DividendHistoryGoogleSheetName` | what [Dividend history](#dividend-history)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History* |
 | `FinancialHistoricalYearPrefixGoogleSheetName` | the **prefix** of [Financial year historical](#financial-year-historical)'s Sheets — the financial year on screen is added to the end, so each year keeps its own; empty means *Financial Balance ETFs or Stocks Financial Year Historical* |
+| `YearlySummaryGoogleSheetName` | what [Yearly summary](#yearly-summary)'s Sheet is called; empty means *Financial Balance Yearly Summary* |
 
-All five ship empty. Until the id and secret are filled in,
+All six ship empty. Until the id and secret are filled in,
 [Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else
-on any of the three pages. The Sheet names are optional and have defaults; each page reads only
+on any of the four pages. The Sheet names are optional and have defaults; each page reads only
 its own, so setting one does not affect the others.
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so

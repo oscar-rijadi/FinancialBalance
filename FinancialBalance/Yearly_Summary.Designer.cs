@@ -33,6 +33,8 @@
             this.Label21 = new System.Windows.Forms.Label();
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbYear = new System.Windows.Forms.ComboBox();
+            this.CmdExcel = new System.Windows.Forms.Button();
+            this.CmdDrive = new System.Windows.Forms.Button();
             this.Label11 = new System.Windows.Forms.Label();
             this.Label14 = new System.Windows.Forms.Label();
             this.gvIncome = new System.Windows.Forms.DataGridView();
@@ -126,6 +128,36 @@
             this.CmbYear.Size = new System.Drawing.Size(57, 22);
             this.CmbYear.TabIndex = 12;
             this.CmbYear.SelectedIndexChanged += new System.EventHandler(this.CmbYear_SelectedIndexChanged);
+            // 
+            // CmdExcel
+            // 
+            this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdExcel.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdExcel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdExcel.Location = new System.Drawing.Point(619, 36);
+            this.CmdExcel.Name = "CmdExcel";
+            this.CmdExcel.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdExcel.Size = new System.Drawing.Size(110, 25);
+            this.CmdExcel.TabIndex = 13;
+            this.CmdExcel.Text = "Generate Excel";
+            this.CmdExcel.UseVisualStyleBackColor = false;
+            this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
+            // 
+            // CmdDrive
+            // 
+            this.CmdDrive.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdDrive.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdDrive.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdDrive.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdDrive.Location = new System.Drawing.Point(739, 36);
+            this.CmdDrive.Name = "CmdDrive";
+            this.CmdDrive.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdDrive.Size = new System.Drawing.Size(170, 25);
+            this.CmdDrive.TabIndex = 14;
+            this.CmdDrive.Text = "Generate to Google &Drive";
+            this.CmdDrive.UseVisualStyleBackColor = false;
+            this.CmdDrive.Click += new System.EventHandler(this.CmdDrive_Click);
             // 
             // Label11
             // 
@@ -595,6 +627,8 @@
             this.Controls.Add(this.gvIncome);
             this.Controls.Add(this.Label14);
             this.Controls.Add(this.Label11);
+            this.Controls.Add(this.CmdDrive);
+            this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.CmbYear);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.Label21);
@@ -620,6 +654,8 @@
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbYear;
+        public System.Windows.Forms.Button CmdExcel;
+        public System.Windows.Forms.Button CmdDrive;
         public System.Windows.Forms.Label Label11;
         public System.Windows.Forms.Label Label14;
         private System.Windows.Forms.DataGridView gvIncome;

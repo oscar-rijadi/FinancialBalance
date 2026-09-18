@@ -61,6 +61,10 @@ namespace FinancialBalance
         const string DefaultFYHistoricalSheetPrefix =
             "Financial Balance ETFs or Stocks Financial Year Historical";
 
+        //A whole name, not a prefix : Yearly Summary sends every year in the one workbook, a tab
+        //each, so there is nothing for a name to vary by.
+        const string DefaultYearlySummarySheetName = "Financial Balance Yearly Summary";
+
         //Named per page rather than taking the key as a parameter, so a call site cannot ask for
         //a setting that does not exist and silently get the fallback.
         public static string Portfolio_Sheet_Name()
@@ -83,6 +87,11 @@ namespace FinancialBalance
                                            DefaultFYHistoricalSheetPrefix);
             string TmpYear = (parYear == null ? "" : parYear.Trim());
             return (TmpYear == "" ? TmpPrefix : TmpPrefix + " " + TmpYear);
+        }
+
+        public static string Yearly_Summary_Sheet_Name()
+        {
+            return Named_Sheet("YearlySummaryGoogleSheetName", DefaultYearlySummarySheetName);
         }
 
         //An unset or blank setting falls back rather than uploading a Sheet called nothing.
