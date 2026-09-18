@@ -859,36 +859,31 @@ namespace FinancialBalance
             return Line(parCols, "", "");
         }
 
-        private void CmdExcel_Click(object sender, EventArgs e)
+        //The form's own Name leads the file name, so an export says which page it came from
+        //before anything else.  Taken from this.Name rather than typed out, so it cannot drift
+        //from the form it belongs to.  parExtension carries the dot.
+        private string Export_Name(string parExtension)
+        {
+            return Safe_Name(this.Name)
+                 + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
+                 + "_" + Safe_Name(CmbPortfolio.Text)
+                 + "_" + (chkMainOnly.Checked ? "Yes" : "No")
+                 + "_" + Safe_Name(CmbTicker.Text)
+                 + "_" + Safe_Name(CmbFinYear.Text) + parExtension;
+        }
+
+        //The whole sheet as a rectangle of strings, laid out before anything is asked to write
+        //it.  Both exports go through here, so the workbook and the Google Sheet are the same
+        //sheet by construction rather than by two lots of layout code agreeing.
+        //
+        //parTicker and parYear are what the sheet says it is for.  They are passed in rather
+        //than read off the dropdowns so a per-year tab is headed with its own year, whatever
+        //the dropdowns say by the time it is written.
+        private List<string[]> Build_Sheet(string parTicker, string parYear, out int parCols,
+                                           out int parTotalsFrom, out int parTotalsTo,
+                                           out int parHeadRow)
         {
             DataGridView grid = Active_Grid();
-            if (grid.Rows.Count == 0)
-            {
-                MessageBox.Show("There is nothing on screen to export.", "Error Message");
-                return;
-            }
-
-            //The form's own Name leads the file name, so an export says which page it
-            //came from before anything else.  Taken from this.Name rather than typed out,
-            //so it cannot drift from the form it belongs to.
-            string TmpName = Safe_Name(this.Name)
-                           + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
-                           + "_" + Safe_Name(CmbPortfolio.Text)
-                           + "_" + (chkMainOnly.Checked ? "Yes" : "No")
-                           + "_" + Safe_Name(CmbTicker.Text)
-                           + "_" + Safe_Name(CmbFinYear.Text) + ".xlsx";
-
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Title = "Generate Excel";
-            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
-            dlg.FileName = TmpName;
-            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            if (dlg.ShowDialog() != DialogResult.OK)
-            {
-                return;
-            }
-
-            //lay the whole sheet out first, so Excel is only asked to do one write
             List<string> Caps;
             List<string> Vals;
             Active_Totals(out Caps, out Vals);
@@ -904,8 +899,8 @@ namespace FinancialBalance
             Sheet.Add(Line(Cols));
             Sheet.Add(Line(Cols, "Portfolio", CmbPortfolio.Text.Trim()));
             Sheet.Add(Line(Cols, "Main Only", (chkMainOnly.Checked ? "Yes" : "No")));
-            Sheet.Add(Line(Cols, "Full Ticker", CmbTicker.Text.Trim()));
-            Sheet.Add(Line(Cols, "Financial Year", CmbFinYear.Text.Trim()));
+            Sheet.Add(Line(Cols, "Full Ticker", parTicker));
+            Sheet.Add(Line(Cols, "Financial Year", parYear));
             Sheet.Add(Line(Cols, "Generated", DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss")));
             if (LblNote.Text.Trim() != "")
             {
@@ -914,18 +909,18 @@ namespace FinancialBalance
             Sheet.Add(Line(Cols));
 
             //the aggregates sit above the table
-            int TotalsFrom = Sheet.Count + 1;
+            parTotalsFrom = Sheet.Count + 1;
             for (int i = 0; i < Caps.Count; i++)
             {
                 Sheet.Add(Line(Cols, Caps[i], Vals[i]));
             }
-            int TotalsTo = Sheet.Count;
+            parTotalsTo = Sheet.Count;
             if (Caps.Count > 0)
             {
                 Sheet.Add(Line(Cols));
             }
 
-            int HeadRow = Sheet.Count + 1;
+            parHeadRow = Sheet.Count + 1;
             string[] head = new string[Cols];
             for (int c = 0; c < grid.Columns.Count; c++)
             {
@@ -944,18 +939,131 @@ namespace FinancialBalance
                 Sheet.Add(line);
             }
 
-            object[,] Data = new object[Sheet.Count, Cols];
-            for (int r = 0; r < Sheet.Count; r++)
+            parCols = Cols;
+            return Sheet;
+        }
+
+        //One laid-out sheet and the tab it belongs on.
+        private class Tab
+        {
+            public string Name;
+            public List<string[]> Rows;
+            public int Cols;
+            public int TotalsFrom;
+            public int TotalsTo;
+            public int HeadRow;
+        }
+
+        //Excel will not take a tab name longer than 31 characters, and refuses : \ / ? * [ ]
+        //outright.  Names are made unique as well, since two that differ only in a rejected
+        //character would otherwise collide and Excel would refuse the workbook.
+        private string Tab_Name(string parWanted, List<string> parTaken)
+        {
+            string TmpName = (parWanted == null ? "" : parWanted.Trim());
+            foreach (char Bad in new char[] { ':', '\\', '/', '?', '*', '[', ']' })
             {
-                for (int c = 0; c < Cols; c++)
+                TmpName = TmpName.Replace(Bad, '-');
+            }
+            if (TmpName.Length > 31)
+            {
+                TmpName = TmpName.Substring(0, 31);
+            }
+            if (TmpName == "")
+            {
+                TmpName = "Sheet";
+            }
+
+            string TmpTry = TmpName;
+            int TmpNext = 2;
+            while (parTaken.Contains(TmpTry.ToUpper()))
+            {
+                string TmpSuffix = " (" + TmpNext.ToString() + ")";
+                int TmpRoom = 31 - TmpSuffix.Length;
+                TmpTry = (TmpName.Length > TmpRoom ? TmpName.Substring(0, TmpRoom) : TmpName) + TmpSuffix;
+                TmpNext = TmpNext + 1;
+            }
+            parTaken.Add(TmpTry.ToUpper());
+            return TmpTry;
+        }
+
+        private Tab One_Tab(string parName, string parTicker, string parYear)
+        {
+            Tab Made = new Tab();
+            Made.Name = parName;
+            Made.Rows = Build_Sheet(parTicker, parYear, out Made.Cols, out Made.TotalsFrom,
+                                    out Made.TotalsTo, out Made.HeadRow);
+            return Made;
+        }
+
+        //What goes into the workbook.  Whatever is on screen is always the first tab; when the
+        //ticker and the year are both All, every financial year follows as a tab of its own.
+        //
+        //Each of those is produced by putting the page into that year and reading it back,
+        //rather than by a second query written for the purpose - so a tab shows exactly what
+        //the user would see having chosen that year, and there is no second copy of the logic
+        //to drift.  The page is put back as it was found before this returns.
+        private List<Tab> Build_Tabs(bool parPerYear)
+        {
+            List<Tab> Tabs = new List<Tab>();
+            List<string> Taken = new List<string>();
+            Tabs.Add(One_Tab(Tab_Name("Dividend History", Taken), CmbTicker.Text.Trim(),
+                             CmbFinYear.Text.Trim()));
+
+            if (!parPerYear)
+            {
+                return Tabs;
+            }
+
+            //Taken from the dropdown's own items, so a tab can only be built for a year the
+            //page could actually have been put into.  All is left out: it is the first tab.
+            List<string> Years = new List<string>();
+            foreach (object Item in CmbFinYear.Items)
+            {
+                string Year = (Item == null ? "" : Item.ToString().Trim());
+                if (Year != "" && Year != "All")
                 {
-                    Data[r, c] = Sheet[r][c];
+                    Years.Add(Year);
                 }
             }
 
-            Cursor.Current = Cursors.WaitCursor;
-            CmdExcel.Enabled = false;
+            string TmpWas = CmbFinYear.Text;
+            try
+            {
+                foreach (string Year in Years)
+                {
+                    //Filling keeps the dropdown's own handler out of it, so the page is
+                    //refreshed once here rather than twice.
+                    Filling = true;
+                    CmbFinYear.Text = Year;
+                    Filling = false;
 
+                    //Assigning Text on a DropDownList does nothing at all when the value is not
+                    //among its items, and it fails silently - which would leave a tab headed
+                    //with one year sitting over another year's rows.  The years came from the
+                    //items, so this cannot happen; it is checked because the cost of being
+                    //wrong is a plausible-looking sheet of the wrong figures.
+                    if (CmbFinYear.Text.Trim() != Year)
+                    {
+                        throw new Exception("The page could not be put into financial year "
+                                            + Year + ".");
+                    }
+
+                    Get_Data();
+                    Tabs.Add(One_Tab(Tab_Name(Year, Taken), CmbTicker.Text.Trim(), Year));
+                }
+            }
+            finally
+            {
+                Filling = true;
+                CmbFinYear.Text = TmpWas;
+                Filling = false;
+                Get_Data();
+            }
+            return Tabs;
+        }
+
+        private void Write_Workbook(List<Tab> parTabs, string parPath)
+        {
             Excel.Application app = null;
             Excel.Workbooks books = null;
             Excel.Workbook wb = null;
@@ -976,50 +1084,87 @@ namespace FinancialBalance
                 books = app.Workbooks;
                 wb = books.Add();
                 sheets = wb.Worksheets;
-                ws = (Excel.Worksheet)sheets[1];
-                ws.Name = "Dividend History";
 
-                all = ws.Range[ws.Cells[1, 1], ws.Cells[Sheet.Count, Cols]];
-                //Written as text on purpose.  Left to itself Excel re-reads every value and
-                //throws away the formatting the screen is showing : "-$76.05" comes back as
-                //red "($76.05)", "4.10 %" turns into a fraction, and what is recognised as a
-                //number at all depends on the machine's locale.  The export is meant to be
-                //what the user is looking at, so the cells are kept exactly as displayed.
-                all.NumberFormat = "@";
-                all.Value2 = Data;
-
-                one = ws.Range[ws.Cells[1, 1], ws.Cells[1, 1]];
-                one.Font.Bold = true;
-                one.Font.Size = 14;
-                Marshal.ReleaseComObject(one);
-                one = null;
-
-                if (TotalsTo >= TotalsFrom)
+                for (int i = 0; i < parTabs.Count; i++)
                 {
-                    one = ws.Range[ws.Cells[TotalsFrom, 1], ws.Cells[TotalsTo, 2]];
+                    Tab This = parTabs[i];
+                    List<string[]> Sheet = This.Rows;
+                    int Cols = This.Cols;
+                    int TotalsFrom = This.TotalsFrom;
+                    int TotalsTo = This.TotalsTo;
+                    int HeadRow = This.HeadRow;
+
+                    object[,] Data = new object[Sheet.Count, Cols];
+                    for (int r = 0; r < Sheet.Count; r++)
+                    {
+                        for (int c = 0; c < Cols; c++)
+                        {
+                            Data[r, c] = Sheet[r][c];
+                        }
+                    }
+
+                    //a new workbook opens with one sheet; the rest are added after it, in order
+                    if (i == 0)
+                    {
+                        ws = (Excel.Worksheet)sheets[1];
+                    }
+                    else
+                    {
+                        ws = (Excel.Worksheet)sheets.Add(Type.Missing, sheets[sheets.Count],
+                                                         Type.Missing, Type.Missing);
+                    }
+                    ws.Name = This.Name;
+
+                    all = ws.Range[ws.Cells[1, 1], ws.Cells[Sheet.Count, Cols]];
+                    //Written as text on purpose.  Left to itself Excel re-reads every value and
+                    //throws away the formatting the screen is showing : "-$76.05" comes back as
+                    //red "($76.05)", "4.10 %" turns into a fraction, and what is recognised as a
+                    //number at all depends on the machine's locale.  The export is meant to be
+                    //what the user is looking at, so the cells are kept exactly as displayed.
+                    all.NumberFormat = "@";
+                    all.Value2 = Data;
+
+                    one = ws.Range[ws.Cells[1, 1], ws.Cells[1, 1]];
                     one.Font.Bold = true;
+                    one.Font.Size = 14;
                     Marshal.ReleaseComObject(one);
                     one = null;
+
+                    if (TotalsTo >= TotalsFrom)
+                    {
+                        one = ws.Range[ws.Cells[TotalsFrom, 1], ws.Cells[TotalsTo, 2]];
+                        one.Font.Bold = true;
+                        Marshal.ReleaseComObject(one);
+                        one = null;
+                    }
+
+                    one = ws.Range[ws.Cells[HeadRow, 1], ws.Cells[HeadRow, Cols]];
+                    one.Font.Bold = true;
+                    one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
+                    Marshal.ReleaseComObject(one);
+                    one = null;
+
+                    cols = ws.Columns;
+                    cols.AutoFit();
+
+                    //every tab creates its own COM objects, and one left behind keeps an
+                    //invisible EXCEL.EXE alive - so they are released here rather than only
+                    //at the end
+                    Marshal.ReleaseComObject(cols);
+                    cols = null;
+                    Marshal.ReleaseComObject(all);
+                    all = null;
+                    Marshal.ReleaseComObject(ws);
+                    ws = null;
                 }
 
-                one = ws.Range[ws.Cells[HeadRow, 1], ws.Cells[HeadRow, Cols]];
-                one.Font.Bold = true;
-                one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
-                Marshal.ReleaseComObject(one);
-                one = null;
+                //the first tab is the one showing when it opens
+                ws = (Excel.Worksheet)sheets[1];
+                ws.Activate();
 
-                cols = ws.Columns;
-                cols.AutoFit();
-
-                wb.SaveAs(dlg.FileName, Excel.XlFileFormat.xlOpenXMLWorkbook);
+                wb.SaveAs(parPath, Excel.XlFileFormat.xlOpenXMLWorkbook);
                 wb.Close(false);
                 app.Quit();
-
-                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
             }
             finally
             {
@@ -1034,8 +1179,203 @@ namespace FinancialBalance
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 Kill_Excel(ExcelPid);
-                Cursor.Current = Cursors.Default;
-                CmdExcel.Enabled = true;
+            }
+        }
+
+        //---- the two export buttons -----------------------------------------------
+        //
+        //Both build the same sheet. Excel asks where to put it and stops there; Drive writes it
+        //to a temporary file and sends that on. Busy state is handled here rather than in
+        //Write_Workbook because the two buttons disable different things.
+
+        private void Busy(bool parBusy)
+        {
+            Cursor.Current = (parBusy ? Cursors.WaitCursor : Cursors.Default);
+            CmdExcel.Enabled = !parBusy;
+            CmdDrive.Enabled = !parBusy;
+            CmdBack.Enabled = !parBusy;
+        }
+
+        private bool Anything_To_Export()
+        {
+            if (Active_Grid().Rows.Count == 0)
+            {
+                MessageBox.Show("There is nothing on screen to export.", "Error Message");
+                return false;
+            }
+            return true;
+        }
+
+        private void CmdExcel_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Title = "Generate Excel";
+            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+            dlg.FileName = Export_Name(".xlsx");
+            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            //the workbook is what is on screen and nothing more - the per-year tabs are a
+            //Google Drive thing, since that file is meant to stand on its own
+            List<Tab> Tabs = Build_Tabs(false);
+            Busy(true);
+            try
+            {
+                Write_Workbook(Tabs, dlg.FileName);
+                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                Busy(false);
+            }
+        }
+
+        //Names the tabs in the success dialog, so it is obvious whether the per-year ones went
+        //in without having to open the Sheet to find out.
+        private string Tabs_Said(List<Tab> parTabs)
+        {
+            if (parTabs == null || parTabs.Count == 0)
+            {
+                return "";
+            }
+            if (parTabs.Count == 1)
+            {
+                return "One tab : " + parTabs[0].Name;
+            }
+            List<string> Names = new List<string>();
+            foreach (Tab One in parTabs)
+            {
+                Names.Add(One.Name);
+            }
+            return parTabs.Count.ToString() + " tabs : " + string.Join(", ", Names.ToArray());
+        }
+
+        //With both dropdowns on All the Sheet carries the whole history and then each financial
+        //year on a tab of its own.  Narrowed by either one it is that view alone: per-year tabs
+        //of a single ticker would not be the page the user is looking at, and per-year tabs of
+        //one chosen year would be that same year twice.
+        private bool Per_Year_Tabs()
+        {
+            bool TmpAllTickers = (CmbTicker.Text.Trim() == "" || CmbTicker.Text.Trim() == "All");
+            bool TmpAllYears = (CmbFinYear.Text.Trim() == "" || CmbFinYear.Text.Trim() == "All");
+            return (TmpAllTickers && TmpAllYears);
+        }
+
+        //Builds the same workbook into a temporary file, signs in, uploads it as a Google Sheet
+        //and throws the temporary file away. The user is never asked where to put it - that is
+        //what the Excel button is for.
+        private void CmdDrive_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+            if (!Google_Drive.Configured)
+            {
+                MessageBox.Show("Google Drive is not set up yet." + Environment.NewLine
+                    + Environment.NewLine + Google_Drive.Setup_Hint(), "Error Message");
+                return;
+            }
+
+            //The same file every time, so the link keeps working and whoever it is shared with
+            //sees the latest figures rather than collecting a new file per export.  A different
+            //file from the portfolio page's, since the two are different shapes.
+            string TmpTitle = Google_Drive.Dividend_History_Sheet_Name();
+            string TmpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                                                    Export_Name("") + ".xlsx");
+            string TmpOldNote = LblNote.Text;
+
+            List<Tab> Tabs = null;
+            Busy(true);
+            try
+            {
+                LblNote.Text = "Building the workbook ...";
+                LblNote.Refresh();
+                Tabs = Build_Tabs(Per_Year_Tabs());
+                Write_Workbook(Tabs, TmpPath);
+
+                LblNote.Text = "Waiting for you to sign in to Google in your browser ...";
+                LblNote.Refresh();
+                string TmpWhy;
+                string TmpToken = Google_Drive.Sign_In(out TmpWhy);
+                if (TmpToken == null)
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                LblNote.Text = "Uploading to Google Drive ...";
+                LblNote.Refresh();
+                string TmpLink;
+                bool TmpReplaced;
+                int TmpDuplicates;
+                string TmpHow;
+                if (!Google_Drive.Upload(TmpToken, TmpPath, TmpTitle, out TmpLink, out TmpReplaced,
+                                         out TmpDuplicates, out TmpHow, out TmpWhy))
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                //only one of a set of same-named Sheets is being kept up to date; saying so
+                //beats letting the others quietly go stale
+                string TmpWarning = "";
+                if (TmpDuplicates > 1)
+                {
+                    TmpWarning = Environment.NewLine + Environment.NewLine
+                               + TmpDuplicates.ToString() + " Sheets carry this name."
+                               + Environment.NewLine
+                               + "The most recently changed one was updated; the rest were left"
+                               + " alone and will now be out of date.";
+                }
+
+                DialogResult Response = MessageBox.Show(
+                    (TmpReplaced ? "Google Sheet updated :" : "Google Sheet created :")
+                    + Environment.NewLine + TmpTitle
+                    + Environment.NewLine + "(" + TmpHow + ")"
+                    + Environment.NewLine + Environment.NewLine
+                    + Tabs_Said(Tabs)
+                    + TmpWarning
+                    + Environment.NewLine + Environment.NewLine + TmpLink
+                    + Environment.NewLine + Environment.NewLine + "Open it now ?",
+                    "Success", MessageBoxButtons.YesNo);
+                if (Response == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(TmpLink);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate to Google Drive : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                //the workbook was only ever a carrier for the upload
+                try
+                {
+                    if (System.IO.File.Exists(TmpPath))
+                    {
+                        System.IO.File.Delete(TmpPath);
+                    }
+                }
+                catch
+                {
+                    //a temp file left behind is not worth a second error on top of the first
+                }
+                LblNote.Text = TmpOldNote;
+                Busy(false);
             }
         }
 

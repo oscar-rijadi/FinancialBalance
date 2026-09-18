@@ -1621,6 +1621,21 @@ up invisible copies.
 
 The button refuses an empty table rather than producing a sheet with nothing under the headings.
 
+#### Generate to Google Drive
+
+Beside it sits **Generate to Google Drive**, which builds the same workbook and uploads it as a
+Google Sheet instead of saving it locally. It works exactly as it does on
+[Portfolio summary](#portfolio-summary) — one Sheet reused by name, signed in from scratch each
+click — and all of that is set out under [Generate to Google Drive](#generate-to-google-drive).
+Two things are this page's own:
+
+- **The Sheet is a different file.** It is called **Financial Balance ETFs or Stocks Dividend
+  History**, from `DividendHistoryGoogleSheetName` in `app.config`. The two pages produce
+  different shapes — a holding per row against a payment per row — so they do not share one.
+- **The extra tabs are financial years, not holdings.** With **Full Ticker** *and* **Financial
+  Year** both on `All`, the Sheet carries the whole history first and then one tab per financial
+  year.
+
 ### Price chart
 
 `ETF_Stocks_Price_Chart`, shown as **ETF/Stock Price Chart** under `Inquiry` ▸ ETF/Stock, plots
@@ -1828,7 +1843,7 @@ Three pages export: [Portfolio summary](#portfolio-summary),
 - The name is only what the Save dialog is *pre-filled* with; the reader can change it, and the
   dialog opens in Documents but remembers wherever it was last pointed.
 
-[Portfolio summary](#portfolio-summary) also exports
+[Portfolio summary](#portfolio-summary) and [Dividend history](#dividend-history) also export
 [to Google Drive](#generate-to-google-drive), which builds the same workbook and uploads it as a
 Google Sheet instead of saving it locally.
 
@@ -1836,15 +1851,20 @@ Google Sheet instead of saving it locally.
 
 ### Generate to Google Drive
 
-[Portfolio summary](#portfolio-summary) has a third button beside **Generate Excel**. It builds
-**the same workbook**, uploads it to the signed-in user's Google Drive, and asks Drive to convert
-it into a Google Sheet on the way in. The workbook itself is written to the temporary directory
-and deleted afterwards — it is only a carrier. Nothing is saved locally; that is what the Excel
-button is for.
+[Portfolio summary](#portfolio-summary) and [Dividend history](#dividend-history) each have a
+button beside their **Generate Excel**. It builds **the same workbook**, uploads it to the
+signed-in user's Google Drive, and asks Drive to convert it into a Google Sheet on the way in.
+The workbook itself is written to the temporary directory and deleted afterwards — it is only a
+carrier. Nothing is saved locally; that is what the Excel button is for.
 
-Both buttons go through one `Build_Sheet`, so the workbook and the Sheet are the same sheet by
-construction rather than by two lots of layout code happening to agree. `Write_Workbook` takes
-the tabs and where to write them; only the caller differs.
+On each page both buttons go through one `Build_Sheet`, so the workbook and the Sheet are the
+same sheet by construction rather than by two lots of layout code happening to agree.
+`Write_Workbook` takes the tabs and where to write them; only the caller differs. The two pages
+keep their own copies of that shape rather than sharing a base class — what they lay out differs
+enough (one has a second dropdown, and they head their sheets differently) that the common part
+would be thinner than the plumbing to share it.
+
+Everything below applies to both, except where a page is named.
 
 #### One file, reused
 
@@ -1853,16 +1873,30 @@ by name**, creating it the first time and replacing its contents after that — 
 working and anyone it has been shared with sees the current figures rather than collecting a
 fresh file per export. The success dialog says whether it created or updated.
 
-The name comes from `PortfolioGoogleSheetName` in `app.config`; empty or missing falls back to
-**Financial Balance ETFs or Stocks Portfolio Investments**. The setting is named for the page
-rather than for Drive, so a second page exporting this way later gets its own rather than quietly
-sharing this one. The name carries no timestamp, deliberately — a timestamp would make every run
-a different file, which is the behaviour this replaces.
+**One Sheet per page**, not one for the application. Each name comes from its own setting in
+`app.config`:
+
+| Page | Setting | Falls back to |
+| --- | --- | --- |
+| [Portfolio summary](#portfolio-summary) | `PortfolioGoogleSheetName` | *Financial Balance ETFs or Stocks Portfolio Investments* |
+| [Dividend history](#dividend-history) | `DividendHistoryGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History* |
+
+The settings are named for the page rather than for Drive, which is what let the second page take
+one of its own instead of quietly sharing the first's. Sharing would have meant one page's tabs
+overwriting the other's on every export, since the two lay out different shapes — and separate
+files can be shared with different people.
+
+`Google_Drive` exposes them as `Portfolio_Sheet_Name()` and `Dividend_History_Sheet_Name()`
+rather than taking the setting key as an argument, so a call site cannot ask for a key that does
+not exist and silently get somebody else's default.
+
+Neither name carries a timestamp, deliberately — a timestamp would make every run a different
+file, which is the behaviour this replaces.
 
 **Changing the name starts a new Sheet.** Both the search and the remembered id are keyed by
 name, so after a rename the next run finds nothing under the new name and creates a file, leaving
 the old Sheet in Drive untouched and no longer updated. To carry on with an existing Sheet,
-either rename it in Drive to match or set `PortfolioGoogleSheetName` to what it is already
+either rename it in Drive to match or set that page's setting to what it is already
 called.
 
 Every run **looks first**, and writes to the file it finds. Replacing the contents is a `PATCH`
@@ -1911,26 +1945,49 @@ rather than left to whatever order Drive answers in. The others are left alone; 
 of the user's on a guess is not this button's business. The success dialog says how many were
 found, since only one of them is being kept current and the rest will go stale.
 
-#### A tab per holding
+#### The extra tabs
 
-When **Full Ticker** is `All`, the Sheet gets the summary as its first tab and then **one tab per
-holding**, each carrying what the page would show had that ticker been chosen. With a single
-ticker chosen it is that ticker alone, one tab. The Excel button is unchanged — it exports what
-is on screen and nothing more, since that file is a snapshot rather than something shared.
+Whatever is on screen is always the **first tab**. What follows it depends on the page, and on
+the filters being wide enough that per-tab detail says something the first tab does not:
 
-Each per-ticker tab is produced by putting the page into that ticker's view and reading it back,
-not by a second query written for the purpose — so a tab shows exactly what the user would see,
-and there is no second copy of the logic to drift. The page is put back as it was found.
+| Page | Extra tabs when | One tab per |
+| --- | --- | --- |
+| [Portfolio summary](#portfolio-summary) | **Full Ticker** is `All` | holding |
+| [Dividend history](#dividend-history) | **Full Ticker** *and* **Financial Year** are both `All` | financial year |
 
-The detail view is driven by setting which grid is visible and calling `Get_Detail` directly,
-**not** by assigning to the dropdown's `Text`. `CmbTicker` is a `DropDownList`, and assigning a
-value that is not among its items does nothing at all — silently — which would leave a tab
-headed with one ticker sitting over another ticker's rows. `Build_Sheet` is told which ticker the
-sheet is for rather than reading the dropdown, for the same reason.
+Narrow either dropdown and it is that one view, one tab. On Dividend history **both** have to be
+`All`: per-year tabs of a single ticker would not be the page the user is looking at, and
+per-year tabs when one year is already chosen would be that same year twice.
 
-Tab names are the ticker, put through Excel's rules: 31 characters at most, `: \ / ? * [ ]`
-replaced, and made unique with a `(2)` suffix if two would collide — Excel refuses a workbook
-with two tabs alike. `Full_Ticker` is 31 characters in the database, so it only just fits.
+The Excel button is unchanged on both pages — it exports what is on screen and nothing more,
+since that file is a snapshot rather than something shared.
+
+Each extra tab is produced by **putting the page into that view and reading it back**, not by a
+second query written for the purpose — so a tab shows exactly what the user would see, and there
+is no second copy of the logic to drift. The page is put back as it was found: the dropdown
+returns to where it was and the table is redrawn, so the export leaves no trace on screen.
+
+> **The `DropDownList` trap decides how each page drives itself.** Assigning a value that is not
+> among a `DropDownList`'s items does nothing at all — silently — which would leave a tab headed
+> with one thing sitting over another thing's rows.
+>
+> Portfolio summary sidesteps it: the ticker view is driven by setting which grid is visible and
+> calling `Get_Detail` directly, never through `CmbTicker`. Dividend history cannot, because the
+> year is a filter rather than a view — so it assigns `CmbFinYear.Text` from the dropdown's
+> **own items**, where the value is present by construction, and then checks that it landed
+> before building anything. The check is a tripwire, not an expected path: the cost of being
+> wrong is a plausible-looking sheet of the wrong figures.
+>
+> `Build_Sheet` is told which ticker and which year the sheet is for rather than reading the
+> dropdowns, for the same reason.
+
+Tab names are the ticker or the year, put through Excel's rules: 31 characters at most,
+`: \ / ? * [ ]` replaced, and made unique with a `(2)` suffix if two would collide — Excel
+refuses a workbook with two tabs alike. `Full_Ticker` is 31 characters in the database, so it
+only just fits.
+
+The success dialog **names the tabs it wrote**, so it is obvious whether the extra ones went in
+without having to open the Sheet to find out.
 
 #### No new dependencies
 
@@ -2269,11 +2326,13 @@ The `appSettings` entries, however, **are** read:
 | --- | --- |
 | `GoogleClientId` | OAuth client id for a Google Cloud *Desktop app* client |
 | `GoogleClientSecret` | its secret |
-| `PortfolioGoogleSheetName` | what the Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Portfolio Investments* |
+| `PortfolioGoogleSheetName` | what [Portfolio summary](#portfolio-summary)'s Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Portfolio Investments* |
+| `DividendHistoryGoogleSheetName` | what [Dividend history](#dividend-history)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History* |
 
-All three ship empty. Until the id and secret are filled in,
-[Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else;
-`PortfolioGoogleSheetName` is optional and has a default.
+All four ship empty. Until the id and secret are filled in,
+[Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else
+on either page. The two Sheet names are optional and have defaults; each page reads only its own,
+so setting one does not affect the other.
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so
 treat the database as obfuscated rather than protected. **The same goes for the Google client

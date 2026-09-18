@@ -1068,7 +1068,7 @@ namespace FinancialBalance
 
             //The same file every time, so the link keeps working and whoever it is shared with
             //sees the latest figures rather than collecting a new file per export.
-            string TmpTitle = Google_Drive.Sheet_Name();
+            string TmpTitle = Google_Drive.Portfolio_Sheet_Name();
             string TmpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
                                                     Export_Name("") + ".xlsx");
             string TmpOldNote = LblNote.Text;

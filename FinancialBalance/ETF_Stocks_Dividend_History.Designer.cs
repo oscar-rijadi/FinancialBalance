@@ -51,6 +51,7 @@
             this.LblAgg5Cap = new System.Windows.Forms.Label();
             this.LblAgg5 = new System.Windows.Forms.Label();
             this.CmdExcel = new System.Windows.Forms.Button();
+            this.CmdDrive = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvSummary)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvDetail)).BeginInit();
@@ -300,13 +301,26 @@
             //
             this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdExcel.Location = new System.Drawing.Point(714, 600);
+            this.CmdExcel.Location = new System.Drawing.Point(534, 600);
             this.CmdExcel.Name = "CmdExcel";
             this.CmdExcel.Size = new System.Drawing.Size(110, 27);
             this.CmdExcel.TabIndex = 21;
             this.CmdExcel.Text = "Generate Excel";
             this.CmdExcel.UseVisualStyleBackColor = false;
             this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
+            //
+            // CmdDrive
+            //
+            this.CmdDrive.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdDrive.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdDrive.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdDrive.Location = new System.Drawing.Point(654, 600);
+            this.CmdDrive.Name = "CmdDrive";
+            this.CmdDrive.Size = new System.Drawing.Size(170, 27);
+            this.CmdDrive.TabIndex = 22;
+            this.CmdDrive.Text = "Generate to Google &Drive";
+            this.CmdDrive.UseVisualStyleBackColor = false;
+            this.CmdDrive.Click += new System.EventHandler(this.CmdDrive_Click);
             //
             // CmdBack
             //
@@ -331,6 +345,7 @@
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdExcel);
+            this.Controls.Add(this.CmdDrive);
             this.Controls.Add(this.LblAgg1);
             this.Controls.Add(this.LblAgg1Cap);
             this.Controls.Add(this.LblAgg2);
@@ -389,6 +404,7 @@
         public System.Windows.Forms.Label LblAgg5Cap;
         public System.Windows.Forms.Label LblAgg5;
         public System.Windows.Forms.Button CmdExcel;
+        public System.Windows.Forms.Button CmdDrive;
         public System.Windows.Forms.Button CmdBack;
     }
 }

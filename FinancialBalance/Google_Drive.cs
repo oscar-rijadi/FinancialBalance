@@ -42,15 +42,36 @@ namespace FinancialBalance
             "https://www.googleapis.com/upload/drive/v3/files/{0}?uploadType=multipart&fields=id,webViewLink";
         const string FindEndpoint = "https://www.googleapis.com/drive/v3/files";
 
-        //What the Sheet in Drive is called. One file, reused, so the link keeps working and
-        //anyone it has been shared with sees the latest figures instead of collecting a new
-        //file per export.
-        const string DefaultSheetName = "Financial Balance ETFs or Stocks Portfolio Investments";
+        //What the Sheets in Drive are called. One file per page, reused, so a link keeps
+        //working and anyone it has been shared with sees the latest figures instead of
+        //collecting a new file per export.
+        //
+        //One page, one Sheet: the two exports are different shapes - a portfolio holding per
+        //row against a payment per row - and putting them in one file would mean either
+        //overwriting one page's tabs with the other's or working out which tabs belong to whom.
+        //Separate files also mean they can be shared with different people.
+        const string DefaultPortfolioSheetName =
+            "Financial Balance ETFs or Stocks Portfolio Investments";
+        const string DefaultDividendHistorySheetName =
+            "Financial Balance ETFs or Stocks Dividend History";
 
-        public static string Sheet_Name()
+        //Named per page rather than taking the key as a parameter, so a call site cannot ask for
+        //a setting that does not exist and silently get the fallback.
+        public static string Portfolio_Sheet_Name()
         {
-            string TmpName = (ConfigurationManager.AppSettings["PortfolioGoogleSheetName"] ?? "").Trim();
-            return (TmpName == "" ? DefaultSheetName : TmpName);
+            return Named_Sheet("PortfolioGoogleSheetName", DefaultPortfolioSheetName);
+        }
+
+        public static string Dividend_History_Sheet_Name()
+        {
+            return Named_Sheet("DividendHistoryGoogleSheetName", DefaultDividendHistorySheetName);
+        }
+
+        //An unset or blank setting falls back rather than uploading a Sheet called nothing.
+        private static string Named_Sheet(string parKey, string parFallback)
+        {
+            string TmpName = (ConfigurationManager.AppSettings[parKey] ?? "").Trim();
+            return (TmpName == "" ? parFallback : TmpName);
         }
 
         //Only the files this application creates.  It cannot see anything else in the Drive,
