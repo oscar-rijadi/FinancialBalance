@@ -55,6 +55,12 @@ namespace FinancialBalance
         const string DefaultDividendHistorySheetName =
             "Financial Balance ETFs or Stocks Dividend History";
 
+        //A prefix rather than a whole name : the financial year the page is showing is put on
+        //the end of it, so each year keeps its own Sheet and an old one is never rewritten with
+        //a later year's figures.
+        const string DefaultFYHistoricalSheetPrefix =
+            "Financial Balance ETFs or Stocks Financial Year Historical";
+
         //Named per page rather than taking the key as a parameter, so a call site cannot ask for
         //a setting that does not exist and silently get the fallback.
         public static string Portfolio_Sheet_Name()
@@ -65,6 +71,18 @@ namespace FinancialBalance
         public static string Dividend_History_Sheet_Name()
         {
             return Named_Sheet("DividendHistoryGoogleSheetName", DefaultDividendHistorySheetName);
+        }
+
+        //The year is joined on with a single space.  The setting holds the prefix alone, so
+        //whatever is set is trimmed first and a name cannot come out with a double space or run
+        //straight into the year.  A blank year would give the prefix on its own, which would be
+        //one file for every year - the caller refuses that case before it gets here.
+        public static string FY_Historical_Sheet_Name(string parYear)
+        {
+            string TmpPrefix = Named_Sheet("FinancialHistoricalYearPrefixGoogleSheetName",
+                                           DefaultFYHistoricalSheetPrefix);
+            string TmpYear = (parYear == null ? "" : parYear.Trim());
+            return (TmpYear == "" ? TmpPrefix : TmpPrefix + " " + TmpYear);
         }
 
         //An unset or blank setting falls back rather than uploading a Sheet called nothing.

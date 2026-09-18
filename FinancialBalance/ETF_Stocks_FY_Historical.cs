@@ -567,34 +567,24 @@ namespace FinancialBalance
             return Line(parCols, "", "");
         }
 
-        private void CmdExcel_Click(object sender, EventArgs e)
+        //The form's own Name leads the file name, so an export says which page it came from
+        //before anything else.  Taken from this.Name rather than typed out, so it cannot drift
+        //from the form it belongs to.  parExtension carries the dot.
+        private string Export_Name(string parExtension)
         {
-            if (gvHist.Rows.Count == 0)
-            {
-                MessageBox.Show("There is nothing on screen to export.", "Error Message");
-                return;
-            }
+            return Safe_Name(this.Name)
+                 + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
+                 + "_" + Safe_Name(CmbFinYear.Text)
+                 + "_" + Safe_Name(CmbPortfolio.Text)
+                 + "_" + (chkMainOnly.Checked ? "Yes" : "No") + parExtension;
+        }
 
-            //The form's own Name leads the file name, so an export says which page it
-            //came from before anything else.  Taken from this.Name rather than typed out,
-            //so it cannot drift from the form it belongs to.
-            string TmpName = Safe_Name(this.Name)
-                           + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
-                           + "_" + Safe_Name(CmbFinYear.Text)
-                           + "_" + Safe_Name(CmbPortfolio.Text)
-                           + "_" + (chkMainOnly.Checked ? "Yes" : "No") + ".xlsx";
-
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Title = "Generate Excel";
-            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
-            dlg.FileName = TmpName;
-            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            if (dlg.ShowDialog() != DialogResult.OK)
-            {
-                return;
-            }
-
-            //lay the whole sheet out first, so Excel is only asked to do one write
+        //The whole sheet as a rectangle of strings, laid out before anything is asked to write
+        //it.  Both exports go through here, so the workbook and the Google Sheet are the same
+        //sheet by construction rather than by two lots of layout code agreeing.
+        private List<string[]> Build_Sheet(out int parCols, out int parTotalsFrom,
+                                           out int parTotalsTo, out int parHeadRow)
+        {
             int Cols = gvHist.Columns.Count;
             if (Cols < 2)
             {
@@ -615,19 +605,19 @@ namespace FinancialBalance
             Sheet.Add(Line(Cols));
 
             //the aggregates sit above the table, and only when they are on screen
-            int TotalsFrom = Sheet.Count + 1;
-            int TotalsTo = Sheet.Count;
+            parTotalsFrom = Sheet.Count + 1;
+            parTotalsTo = Sheet.Count;
             if (Totals_Wanted())
             {
                 for (int i = 0; i < AggCaps.Count; i++)
                 {
                     Sheet.Add(Line(Cols, AggCaps[i], AggVals[i]));
                 }
-                TotalsTo = Sheet.Count;
+                parTotalsTo = Sheet.Count;
                 Sheet.Add(Line(Cols));
             }
 
-            int HeadRow = Sheet.Count + 1;
+            parHeadRow = Sheet.Count + 1;
             string[] head = new string[Cols];
             for (int c = 0; c < gvHist.Columns.Count; c++)
             {
@@ -646,17 +636,27 @@ namespace FinancialBalance
                 Sheet.Add(line);
             }
 
-            object[,] Data = new object[Sheet.Count, Cols];
-            for (int r = 0; r < Sheet.Count; r++)
+            parCols = Cols;
+            return Sheet;
+        }
+
+        //Everything from here down is the Excel half, taking where to write as a parameter so the
+        //Drive button can send it to a temporary file instead of one the user chose.  Throws
+        //rather than reporting: the callers differ in what they say afterwards.
+        //
+        //One sheet, not a list of them.  This page shows one financial year at a time and there
+        //is no second view of it to put on a tab of its own.
+        private void Write_Workbook(List<string[]> parSheet, int parCols, int parTotalsFrom,
+                                    int parTotalsTo, int parHeadRow, string parPath)
+        {
+            object[,] Data = new object[parSheet.Count, parCols];
+            for (int r = 0; r < parSheet.Count; r++)
             {
-                for (int c = 0; c < Cols; c++)
+                for (int c = 0; c < parCols; c++)
                 {
-                    Data[r, c] = Sheet[r][c];
+                    Data[r, c] = parSheet[r][c];
                 }
             }
-
-            Cursor.Current = Cursors.WaitCursor;
-            CmdExcel.Enabled = false;
 
             Excel.Application app = null;
             Excel.Workbooks books = null;
@@ -681,7 +681,7 @@ namespace FinancialBalance
                 ws = (Excel.Worksheet)sheets[1];
                 ws.Name = "FY Historical";
 
-                all = ws.Range[ws.Cells[1, 1], ws.Cells[Sheet.Count, Cols]];
+                all = ws.Range[ws.Cells[1, 1], ws.Cells[parSheet.Count, parCols]];
                 //Written as text on purpose.  Left to itself Excel re-reads every value and
                 //throws away the formatting the screen is showing : "-$76.05" comes back as
                 //red "($76.05)", "12.34 %" turns into a fraction, and what is recognised as a
@@ -696,15 +696,15 @@ namespace FinancialBalance
                 Marshal.ReleaseComObject(one);
                 one = null;
 
-                if (TotalsTo >= TotalsFrom)
+                if (parTotalsTo >= parTotalsFrom)
                 {
-                    one = ws.Range[ws.Cells[TotalsFrom, 1], ws.Cells[TotalsTo, 2]];
+                    one = ws.Range[ws.Cells[parTotalsFrom, 1], ws.Cells[parTotalsTo, 2]];
                     one.Font.Bold = true;
                     Marshal.ReleaseComObject(one);
                     one = null;
                 }
 
-                one = ws.Range[ws.Cells[HeadRow, 1], ws.Cells[HeadRow, Cols]];
+                one = ws.Range[ws.Cells[parHeadRow, 1], ws.Cells[parHeadRow, parCols]];
                 one.Font.Bold = true;
                 one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
                 Marshal.ReleaseComObject(one);
@@ -713,15 +713,9 @@ namespace FinancialBalance
                 cols = ws.Columns;
                 cols.AutoFit();
 
-                wb.SaveAs(dlg.FileName, Excel.XlFileFormat.xlOpenXMLWorkbook);
+                wb.SaveAs(parPath, Excel.XlFileFormat.xlOpenXMLWorkbook);
                 wb.Close(false);
                 app.Quit();
-
-                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
             }
             finally
             {
@@ -736,8 +730,189 @@ namespace FinancialBalance
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 Kill_Excel(ExcelPid);
-                Cursor.Current = Cursors.Default;
-                CmdExcel.Enabled = true;
+            }
+        }
+
+        //---- the two export buttons -----------------------------------------------
+        //
+        //Both build the same sheet. Excel asks where to put it and stops there; Drive writes it
+        //to a temporary file and sends that on. Busy state is handled here rather than in
+        //Write_Workbook because the two buttons disable different things.
+
+        private void Busy(bool parBusy)
+        {
+            Cursor.Current = (parBusy ? Cursors.WaitCursor : Cursors.Default);
+            CmdExcel.Enabled = !parBusy;
+            CmdDrive.Enabled = !parBusy;
+            CmdBack.Enabled = !parBusy;
+        }
+
+        private bool Anything_To_Export()
+        {
+            if (gvHist.Rows.Count == 0)
+            {
+                MessageBox.Show("There is nothing on screen to export.", "Error Message");
+                return false;
+            }
+            return true;
+        }
+
+        private void CmdExcel_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Title = "Generate Excel";
+            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+            dlg.FileName = Export_Name(".xlsx");
+            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            int TmpCols;
+            int TmpFrom;
+            int TmpTo;
+            int TmpHead;
+            List<string[]> TmpSheet = Build_Sheet(out TmpCols, out TmpFrom, out TmpTo, out TmpHead);
+
+            Busy(true);
+            try
+            {
+                Write_Workbook(TmpSheet, TmpCols, TmpFrom, TmpTo, TmpHead, dlg.FileName);
+                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                Busy(false);
+            }
+        }
+
+        //Builds the same workbook into a temporary file, signs in, uploads it as a Google Sheet
+        //and throws the temporary file away. The user is never asked where to put it - that is
+        //what the Excel button is for.
+        private void CmdDrive_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+            if (!Google_Drive.Configured)
+            {
+                MessageBox.Show("Google Drive is not set up yet." + Environment.NewLine
+                    + Environment.NewLine + Google_Drive.Setup_Hint(), "Error Message");
+                return;
+            }
+
+            //The year is half the Sheet's name, so without one there is nothing to name the file
+            //after.  Uploading anyway would put every year into a single Sheet called after the
+            //prefix alone, each run overwriting the last.
+            string TmpYear = CmbFinYear.Text.Trim();
+            if (TmpYear == "")
+            {
+                MessageBox.Show("Choose a financial year first - it names the Google Sheet.",
+                                "Error Message");
+                return;
+            }
+
+            //One Sheet per financial year, reused: the prefix with the year on the end.  The
+            //other two pages keep a single file each because what they show changes as figures
+            //are entered; a closed year is a record, and rewriting last year's Sheet with this
+            //year's figures would destroy it.
+            string TmpTitle = Google_Drive.FY_Historical_Sheet_Name(TmpYear);
+            string TmpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                                                    Export_Name("") + ".xlsx");
+            string TmpOldNote = LblNote.Text;
+
+            Busy(true);
+            try
+            {
+                LblNote.Text = "Building the workbook ...";
+                LblNote.Refresh();
+                int TmpCols;
+                int TmpFrom;
+                int TmpTo;
+                int TmpHead;
+                List<string[]> TmpSheet = Build_Sheet(out TmpCols, out TmpFrom, out TmpTo,
+                                                      out TmpHead);
+                Write_Workbook(TmpSheet, TmpCols, TmpFrom, TmpTo, TmpHead, TmpPath);
+
+                LblNote.Text = "Waiting for you to sign in to Google in your browser ...";
+                LblNote.Refresh();
+                string TmpWhy;
+                string TmpToken = Google_Drive.Sign_In(out TmpWhy);
+                if (TmpToken == null)
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                LblNote.Text = "Uploading to Google Drive ...";
+                LblNote.Refresh();
+                string TmpLink;
+                bool TmpReplaced;
+                int TmpDuplicates;
+                string TmpHow;
+                if (!Google_Drive.Upload(TmpToken, TmpPath, TmpTitle, out TmpLink, out TmpReplaced,
+                                         out TmpDuplicates, out TmpHow, out TmpWhy))
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                //only one of a set of same-named Sheets is being kept up to date; saying so
+                //beats letting the others quietly go stale
+                string TmpWarning = "";
+                if (TmpDuplicates > 1)
+                {
+                    TmpWarning = Environment.NewLine + Environment.NewLine
+                               + TmpDuplicates.ToString() + " Sheets carry this name."
+                               + Environment.NewLine
+                               + "The most recently changed one was updated; the rest were left"
+                               + " alone and will now be out of date.";
+                }
+
+                DialogResult Response = MessageBox.Show(
+                    (TmpReplaced ? "Google Sheet updated :" : "Google Sheet created :")
+                    + Environment.NewLine + TmpTitle
+                    + Environment.NewLine + "(" + TmpHow + ")"
+                    + TmpWarning
+                    + Environment.NewLine + Environment.NewLine + TmpLink
+                    + Environment.NewLine + Environment.NewLine + "Open it now ?",
+                    "Success", MessageBoxButtons.YesNo);
+                if (Response == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(TmpLink);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate to Google Drive : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                //the workbook was only ever a carrier for the upload
+                try
+                {
+                    if (System.IO.File.Exists(TmpPath))
+                    {
+                        System.IO.File.Delete(TmpPath);
+                    }
+                }
+                catch
+                {
+                    //a temp file left behind is not worth a second error on top of the first
+                }
+                LblNote.Text = TmpOldNote;
+                Busy(false);
             }
         }
 

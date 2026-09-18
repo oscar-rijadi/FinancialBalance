@@ -1470,6 +1470,37 @@ given under [Portfolio summary](#portfolio-summary): left to itself Excel re-rea
 throws away the formatting on screen, so `-$489.75` comes back as a red `($489.75)` and
 `4.10 %` turns into a fraction.
 
+#### Generate to Google Drive
+
+Beside it sits **Generate to Google Drive**, which builds the same workbook and uploads it as a
+Google Sheet instead of saving it locally. The mechanics are the ones set out under
+[Generate to Google Drive](#generate-to-google-drive) — signed in from scratch each click, the
+named Sheet looked up and rewritten rather than duplicated. What is this page's own is **how the
+Sheet is named**:
+
+```
+<FinancialHistoricalYearPrefixGoogleSheetName> + " " + <Financial Year>
+```
+
+so with the setting left empty and `2025-2026` on screen the Sheet is **Financial Balance ETFs or
+Stocks Financial Year Historical 2025-2026**. The setting holds the **prefix only**; the year on
+screen is joined to it with a single space, and the prefix is trimmed first so a setting typed
+with a trailing space cannot produce a double one.
+
+**One Sheet per financial year, not one for the page.** The other two exporting pages keep a
+single file each and rewrite it, because what they show moves as figures are entered. A closed
+financial year is a record: rewriting last year's Sheet with this year's figures would destroy
+it. Changing the dropdown therefore changes which Sheet is written — the page's own
+[remembered ids](#one-sheet-per-name-reused) are keyed by name, so each year gets its own line and its own
+file without anything extra.
+
+The export is **one tab**, named `FY Historical`. There is no second view of a financial year to
+put on a tab of its own, so the per-tab behaviour the other two pages have does not arise here.
+
+**A year has to be chosen.** With no financial year set up the dropdown is empty, and the button
+says so rather than uploading to a Sheet named after the prefix alone — which would be one file
+collecting every year in turn, each run overwriting the last.
+
 ---
 
 ### Dividend history
@@ -1843,7 +1874,8 @@ Three pages export: [Portfolio summary](#portfolio-summary),
 - The name is only what the Save dialog is *pre-filled* with; the reader can change it, and the
   dialog opens in Documents but remembers wherever it was last pointed.
 
-[Portfolio summary](#portfolio-summary) and [Dividend history](#dividend-history) also export
+[Portfolio summary](#portfolio-summary), [Dividend history](#dividend-history) and
+[Financial year historical](#financial-year-historical) also export
 [to Google Drive](#generate-to-google-drive), which builds the same workbook and uploads it as a
 Google Sheet instead of saving it locally.
 
@@ -1851,44 +1883,57 @@ Google Sheet instead of saving it locally.
 
 ### Generate to Google Drive
 
-[Portfolio summary](#portfolio-summary) and [Dividend history](#dividend-history) each have a
-button beside their **Generate Excel**. It builds **the same workbook**, uploads it to the
+[Portfolio summary](#portfolio-summary), [Dividend history](#dividend-history) and
+[Financial year historical](#financial-year-historical) each have a button beside their
+**Generate Excel**. It builds **the same workbook**, uploads it to the
 signed-in user's Google Drive, and asks Drive to convert it into a Google Sheet on the way in.
 The workbook itself is written to the temporary directory and deleted afterwards — it is only a
 carrier. Nothing is saved locally; that is what the Excel button is for.
 
 On each page both buttons go through one `Build_Sheet`, so the workbook and the Sheet are the
 same sheet by construction rather than by two lots of layout code happening to agree.
-`Write_Workbook` takes the tabs and where to write them; only the caller differs. The two pages
-keep their own copies of that shape rather than sharing a base class — what they lay out differs
-enough (one has a second dropdown, and they head their sheets differently) that the common part
-would be thinner than the plumbing to share it.
+`Write_Workbook` takes where to write it; only the caller differs. On the two pages that can
+produce several tabs it takes a list of them, and on
+[Financial year historical](#financial-year-historical), which cannot, it takes the one sheet.
+
+The three pages keep their own copies of that shape rather than sharing a base class — what they
+lay out differs enough (different filters, different headings, one grid or two) that the common
+part would be thinner than the plumbing to share it.
 
 Everything below applies to both, except where a page is named.
 
-#### One file, reused
+#### One Sheet per name, reused
 
-Unlike the Excel export, this does **not** make a new file each time. It writes to **one Sheet,
-by name**, creating it the first time and replacing its contents after that — so the link keeps
-working and anyone it has been shared with sees the current figures rather than collecting a
-fresh file per export. The success dialog says whether it created or updated.
+Unlike the Excel export, this does **not** make a new file each time. It writes to **the Sheet
+of that name**, creating it the first time and replacing its contents after that — so the link
+keeps working and anyone it has been shared with sees the current figures rather than collecting
+a fresh file per export. The success dialog says whether it created or updated.
+
+Everything below turns on **the name**, and how each page arrives at one is the only thing that
+differs between them.
 
 **One Sheet per page**, not one for the application. Each name comes from its own setting in
 `app.config`:
 
-| Page | Setting | Falls back to |
-| --- | --- | --- |
-| [Portfolio summary](#portfolio-summary) | `PortfolioGoogleSheetName` | *Financial Balance ETFs or Stocks Portfolio Investments* |
-| [Dividend history](#dividend-history) | `DividendHistoryGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History* |
+| Page | Setting | Falls back to | Files |
+| --- | --- | --- | --- |
+| [Portfolio summary](#portfolio-summary) | `PortfolioGoogleSheetName` | *Financial Balance ETFs or Stocks Portfolio Investments* | one |
+| [Dividend history](#dividend-history) | `DividendHistoryGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History* | one |
+| [Financial year historical](#financial-year-historical) | `FinancialHistoricalYearPrefixGoogleSheetName` | *Financial Balance ETFs or Stocks Financial Year Historical* | **a prefix** — one per financial year |
 
-The settings are named for the page rather than for Drive, which is what let the second page take
-one of its own instead of quietly sharing the first's. Sharing would have meant one page's tabs
-overwriting the other's on every export, since the two lay out different shapes — and separate
-files can be shared with different people.
+The settings are named for the page rather than for Drive, which is what let the later pages take
+names of their own instead of quietly sharing the first's. Sharing would have meant one page's
+tabs overwriting another's on every export, since the three lay out different shapes — and
+separate files can be shared with different people.
 
-`Google_Drive` exposes them as `Portfolio_Sheet_Name()` and `Dividend_History_Sheet_Name()`
-rather than taking the setting key as an argument, so a call site cannot ask for a key that does
-not exist and silently get somebody else's default.
+**The third is a prefix, not a whole name.** Financial year historical shows exactly one closed
+year at a time, and a closed year is a record rather than a running figure, so the year on screen
+is joined to the prefix and each year keeps a Sheet of its own. See
+[that page](#financial-year-historical) for what that means in practice.
+
+`Google_Drive` exposes them as `Portfolio_Sheet_Name()`, `Dividend_History_Sheet_Name()` and
+`FY_Historical_Sheet_Name(year)` rather than taking the setting key as an argument, so a call
+site cannot ask for a key that does not exist and silently get somebody else's default.
 
 Neither name carries a timestamp, deliberately — a timestamp would make every run a different
 file, which is the behaviour this replaces.
@@ -1954,8 +1999,11 @@ the filters being wide enough that per-tab detail says something the first tab d
 | --- | --- | --- |
 | [Portfolio summary](#portfolio-summary) | **Full Ticker** is `All` | holding |
 | [Dividend history](#dividend-history) | **Full Ticker** *and* **Financial Year** are both `All` | financial year |
+| [Financial year historical](#financial-year-historical) | never | — it is always one tab |
 
-Narrow either dropdown and it is that one view, one tab. On Dividend history **both** have to be
+Narrow either dropdown and it is that one view, one tab. Financial year historical has no `All`
+on its year dropdown at all — it is always showing one year, which is also why its Sheet is named
+after that year rather than accumulating tabs. On Dividend history **both** have to be
 `All`: per-year tabs of a single ticker would not be the page the user is looking at, and
 per-year tabs when one year is already chosen would be that same year twice.
 
@@ -2328,11 +2376,12 @@ The `appSettings` entries, however, **are** read:
 | `GoogleClientSecret` | its secret |
 | `PortfolioGoogleSheetName` | what [Portfolio summary](#portfolio-summary)'s Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Portfolio Investments* |
 | `DividendHistoryGoogleSheetName` | what [Dividend history](#dividend-history)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History* |
+| `FinancialHistoricalYearPrefixGoogleSheetName` | the **prefix** of [Financial year historical](#financial-year-historical)'s Sheets — the financial year on screen is added to the end, so each year keeps its own; empty means *Financial Balance ETFs or Stocks Financial Year Historical* |
 
-All four ship empty. Until the id and secret are filled in,
+All five ship empty. Until the id and secret are filled in,
 [Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else
-on either page. The two Sheet names are optional and have defaults; each page reads only its own,
-so setting one does not affect the other.
+on any of the three pages. The Sheet names are optional and have defaults; each page reads only
+its own, so setting one does not affect the others.
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so
 treat the database as obfuscated rather than protected. **The same goes for the Google client
