@@ -40,6 +40,7 @@
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnFinancialYearSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnIntervalSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
@@ -126,6 +127,7 @@
             this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
             this.MnFinancialYearSetup,
+            this.MnIntervalSetup,
             this.MnETFStockGroup,
             this.MnSuperGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
@@ -176,6 +178,13 @@
             this.MnFinancialYearSetup.Size = new System.Drawing.Size(119, 20);
             this.MnFinancialYearSetup.Text = "&Financial Year Setup";
             this.MnFinancialYearSetup.Click += new System.EventHandler(this.MnFinancialYearSetup_Click);
+            // 
+            // MnIntervalSetup
+            // 
+            this.MnIntervalSetup.Name = "MnIntervalSetup";
+            this.MnIntervalSetup.Size = new System.Drawing.Size(110, 20);
+            this.MnIntervalSetup.Text = "&Interval Setup";
+            this.MnIntervalSetup.Click += new System.EventHandler(this.MnIntervalSetup_Click);
             //
             // MnSuperGroup
             //
@@ -377,6 +386,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnFinancialYearSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnIntervalSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;

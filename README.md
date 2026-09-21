@@ -155,6 +155,7 @@ flowchart LR
     CURG --> SCR["Setup_Curr_Rate"]
     ADMIN --> SAP["Setup_Activa_Passiva"]
     ADMIN --> SFY["Setup_Financial_Year"]
+    ADMIN --> SIV["Setup_Interval"]
     ADMIN --> ETFG{{"ETF/Stock"}}
     ETFG --> SES["Setup_ETF_Stocks_Suffix"]
     ETFG --> SET["Setup_ETF_Stocks"]
@@ -218,8 +219,9 @@ flowchart LR
 | `Setup_Curr_Rate` | Dated exchange rates. |
 | `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
 | `Setup_Financial_Year` | Shown as **Financial Year Setup**. Names a financial year and the dates it runs between. |
+| `Setup_Interval` | Shown as **Interval Setup**. Maintains the intervals a distribution or dividend can be paid at. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
-| `Setup_ETF_Stocks` | Maintains ETF/stock tickers. `Full_Ticker` is derived, not typed. |
+| `Setup_ETF_Stocks` | Maintains ETF/stock tickers, with the yield each pays and how often. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
@@ -254,6 +256,7 @@ erDiagram
     TblAcctRef      ||--o| TblLiability    : "balance of (type 2)"
     TblAcctRef      ||--o{ TblMonthlyTrans : "bucketed by"
     TblETFStocksExchangeSuffix ||--o{ TblETFStocks : "suffixes"
+    TblInterval     ||--o{ TblETFStocks     : "paid how often"
     TblETFStocks    ||--o{ TblETFStocksPurchase : "bought"
     TblETFStocks    ||--o{ TblETFStocksSale : "sold"
     TblCurrCode     ||--o{ TblETFStocksPurchase : "denominates"
@@ -337,6 +340,11 @@ erDiagram
         text Exchange_Suffix "from the suffix list"
         text Full_Ticker PK "derived, never typed"
         bool In_YahooFinance
+        decimal Distribution_Dividend_Yield "2 dp, a percentage"
+        text Distribution_Dividend_Interval "20 chars, from TblInterval, may be blank"
+    }
+    TblInterval {
+        text Name PK "20 chars"
     }
     TblETFStocksPurchase {
         text    Trans_Date "yyyyMMdd"
@@ -580,6 +588,28 @@ otherwise                  ->  Full_Ticker = Ticker + "." + Exchange_Suffix
 
 So suffixes are stored **without** a leading dot — `AX`, not `.AX` — since the dot is added
 by the rule. `Full_Ticker` is the table's primary key.
+
+The same table also carries what the holding **pays**: `Distribution_Dividend_Yield`, a
+`DECIMAL(22,2)` read as a percentage, and `Distribution_Dividend_Interval`, the name of an
+interval from `TblInterval`. Both are descriptive — nothing calculates from them yet, and
+both may be left at nothing (`0.00` and blank) for a ticker that pays neither.
+
+#### Intervals
+
+`TblInterval` is a single `Name` of up to 20 characters, maintained by
+[Interval Setup](#interval-setup) and read by the **Distribution/Dividend Interval** dropdown
+on ETF/Stock Setup. It ships with four:
+
+| `Name` |
+| --- |
+| `Monthly` |
+| `Quarterly` |
+| `Half Yearly` |
+| `Yearly` |
+
+The list is read alphabetically, so it shows as Half Yearly, Monthly, Quarterly, Yearly rather
+than shortest-period-first. `Name` is a reserved word in Access and is bracketed everywhere it
+appears, the same treatment `TblState`, `TblSuper` and `TblFinancialYear` need.
 
 #### Financial years
 
@@ -2331,6 +2361,7 @@ C#.Net/
 │   ├── Setup_Curr_Rate.*
 │   ├── Setup_Activa_Passiva.*
 │   ├── Setup_Financial_Year.*
+│   ├── Setup_Interval.*              # distribution/dividend intervals
 │   ├── Setup_ETF_Stocks_Suffix.*
 │   ├── Setup_ETF_Stocks.*
 │   ├── Setup_ETF_Stocks_Flag.*       # portfolio codes
@@ -3551,6 +3582,36 @@ naming the property.
 
 ---
 
+### Interval Setup
+
+`Administration` ▸ Interval Setup maintains `TblInterval`: how often a distribution or dividend
+is paid, one row per interval.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Name` | Short Text(20) | what the interval is called |
+
+It ships with `Monthly`, `Quarterly`, `Half Yearly` and `Yearly`.
+
+The page is [Property Rental Expense Type Setup](#property-rental-expense-type-setup) exactly:
+a read-only grid, one `Name` box, a count underneath, and **Add** / **Update** / **Delete** /
+**Back**. `Name` is the only field, so it is also what identifies a row — the page holds on to
+the name a row had when it was picked, since a rename would otherwise be indistinguishable from
+a new interval. Add refuses a name already on file, Update refuses a rename onto one, and
+Delete asks first.
+
+**It sits directly under `Administration`, not in a submenu** — beside Financial Year Setup
+rather than inside the ETF/Stock group. Intervals are not an ETF/stock idea in themselves;
+`TblETFStocks` is simply the first table to name one.
+
+> `TblETFStocks.Distribution_Dividend_Interval` stores the **name**, not a key, so a rename
+> here does not follow it — the ticker is left naming an interval that no longer exists, and
+> its dropdown comes up blank. The same holds for a delete. That is the guarding
+> [Super Fund Setup](#super) already does and this page does not, and it is what will need
+> adding the day anything calculates from the interval rather than just displaying it.
+
+---
+
 ### Property Rental Expense Type Setup
 
 `Administration` > Property > Property Rental Expense Type Setup maintains
@@ -3650,19 +3711,58 @@ page never lists itself, so the group would be an empty dead end — the entry a
 *other* Administration page's menu, and on `Main_Form`. Adding a second Property page means giving
 this one the group back, with that page in it.
 
+---
+
+### ETF/Stock Setup
+
+`Administration` ▸ ETF/Stock ▸ ETF/Stock Setup maintains `TblETFStocks`. The entry area takes
+six fields, of which one is never typed:
+
+| Field | Control | Holds |
+| --- | --- | --- |
+| Ticker | text | the ticker as the exchange writes it |
+| Exchange Suffix | dropdown from `TblETFStocksExchangeSuffix` | `AX`, or `None` |
+| Full Ticker | read-only | derived from the two above |
+| In Yahoo Finance | `Y` / `N` | whether prices can be pulled for it |
+| Distribution/Dividend Yield | text, digits and a point | a percentage, 2 dp |
+| Distribution/Dividend Interval | dropdown, blank plus `TblInterval` | how often it pays |
+
+**Both of the last two may be left empty.** A ticker that pays nothing has a yield of `0.00`
+and a blank interval, which is what the blank first entry in the dropdown is for — the list is
+`CmbInterval.Items.Add("")` followed by `TblInterval` in name order, so blank is always
+reachable and is what a new ticker starts on. The yield box takes digits and a decimal point
+only, through `Mdl1.NumericKeyPress`: a yield cannot be negative, so no minus sign is let
+through. Anything unparseable reads as `0`.
+
+The yield is stored as typed and shown back with two places and a per-cent sign — `4.25 %` in
+the grid, `4.25` in the box, since the box is what may be typed over. **It is a percentage
+figure, not a fraction**: `4.25` means 4.25 %, and nothing divides it by a hundred, because
+nothing calculates from it yet.
+
+`Full_Ticker` is the key, so the single **Setup** button is an upsert on it — see
+[Reference data](#reference-data) for how it is derived. The grid lists both new columns as
+**Yield** and **Interval** rather than repeating the full captions: at 557px six columns do not
+leave room for two headings that wide, and the entry labels below spell them out. Rebalancing
+the fill weights to fit them also fixed *Exchange Suffix* and *In Yahoo Finance*, which had
+been clipped since the fourth column was added.
+
+---
+
 #### A menu bar that was already too narrow
 
 Worth knowing before adding more Administration pages: on the narrower Setup pages the menu bar
-**silently clips** the entries that do not fit. A 616px bar holds four of them, and a Form's main
+**silently clips** the entries that do not fit. A 616px bar holds five of them, and a Form's main
 `MenuStrip` does not overflow — setting `CanOverflow` changes nothing, the surplus entries simply
 land nowhere and are unreachable. Ten pages were already in that state before Property existed
 (`Super` and `ETF/Stock` among the casualties); Property makes it one entry worse on each of them,
-and `Setup_State` inherits it by matching its siblings' width.
+and `Setup_State` inherits it by matching its siblings' width. **Interval Setup makes it one
+worse again** — the five that fit end at Financial Year Setup, so Interval Setup itself lands
+nowhere on any of the sixteen peer pages and is reachable only from `Main_Form`.
 
 `Main_Form` is unaffected — its Administration list is a dropdown under one bar entry, so
 `Administration` ▸ `Property` ▸ `State Setup` is always reachable there. Fixing the peer pages
 means either widening them or nesting their entries under one `Administration` heading the way
-`Main_Form` does, across fifteen forms.
+`Main_Form` does, across sixteen forms.
 
 ---
 

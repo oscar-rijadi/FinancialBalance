@@ -125,3 +125,4 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBal
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Setup_Property_Rental_Expense_Type.resources
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Debug\FinancialBalance.Property_Summary.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Debug\FinancialBalance.ETF_Stocks_Investment_Plan_By_Amount.resources
+C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Debug\FinancialBalance.Setup_Interval.resources

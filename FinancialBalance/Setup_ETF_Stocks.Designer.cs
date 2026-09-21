@@ -41,6 +41,7 @@
             this.MnCurrRateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnFinancialYearSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnIntervalSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnStateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyRentalExpTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,6 +59,10 @@
             this.CmbExchangeSuffix = new System.Windows.Forms.ComboBox();
             this.Full_Ticker = new System.Windows.Forms.TextBox();
             this.CmbInYahooFinance = new System.Windows.Forms.ComboBox();
+            this.Label5 = new System.Windows.Forms.Label();
+            this.txtYield = new System.Windows.Forms.TextBox();
+            this.Label6 = new System.Windows.Forms.Label();
+            this.CmbInterval = new System.Windows.Forms.ComboBox();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
@@ -74,7 +79,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(320, 380);
+            this.CmdBack.Location = new System.Drawing.Point(320, 436);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -91,6 +96,7 @@
             this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
             this.MnFinancialYearSetup,
+            this.MnIntervalSetup,
             this.MnETFStockGroup,
             this.MnPropertyGroup,
             this.MnSuperGroup});
@@ -149,6 +155,13 @@
             this.MnFinancialYearSetup.Size = new System.Drawing.Size(119, 20);
             this.MnFinancialYearSetup.Text = "&Financial Year Setup";
             this.MnFinancialYearSetup.Click += new System.EventHandler(this.MnFinancialYearSetup_Click);
+            // 
+            // MnIntervalSetup
+            // 
+            this.MnIntervalSetup.Name = "MnIntervalSetup";
+            this.MnIntervalSetup.Size = new System.Drawing.Size(110, 20);
+            this.MnIntervalSetup.Text = "&Interval Setup";
+            this.MnIntervalSetup.Click += new System.EventHandler(this.MnIntervalSetup_Click);
             //
             // MnSuperGroup
             //
@@ -270,7 +283,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(232, 380);
+            this.CmdDel.Location = new System.Drawing.Point(232, 436);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -278,6 +291,49 @@
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
+            // 
+            // Label5
+            // 
+            this.Label5.BackColor = System.Drawing.Color.Transparent;
+            this.Label5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label5.ForeColor = System.Drawing.Color.Black;
+            this.Label5.Location = new System.Drawing.Point(16, 380);
+            this.Label5.Name = "Label5";
+            this.Label5.Size = new System.Drawing.Size(200, 20);
+            this.Label5.TabIndex = 23;
+            this.Label5.Text = "Distribution/Dividend Yield";
+            // 
+            // txtYield
+            // 
+            this.txtYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtYield.Location = new System.Drawing.Point(224, 378);
+            this.txtYield.MaxLength = 10;
+            this.txtYield.Name = "txtYield";
+            this.txtYield.Size = new System.Drawing.Size(140, 20);
+            this.txtYield.TabIndex = 17;
+            this.txtYield.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtYield.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
+            // 
+            // Label6
+            // 
+            this.Label6.BackColor = System.Drawing.Color.Transparent;
+            this.Label6.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label6.ForeColor = System.Drawing.Color.Black;
+            this.Label6.Location = new System.Drawing.Point(16, 406);
+            this.Label6.Name = "Label6";
+            this.Label6.Size = new System.Drawing.Size(200, 20);
+            this.Label6.TabIndex = 24;
+            this.Label6.Text = "Distribution/Dividend Interval";
+            // 
+            // CmbInterval
+            // 
+            this.CmbInterval.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbInterval.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbInterval.FormattingEnabled = true;
+            this.CmbInterval.Location = new System.Drawing.Point(224, 404);
+            this.CmbInterval.Name = "CmbInterval";
+            this.CmbInterval.Size = new System.Drawing.Size(140, 22);
+            this.CmbInterval.TabIndex = 18;
             //
             // CmdSetup
             //
@@ -285,7 +341,7 @@
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(144, 380);
+            this.CmdSetup.Location = new System.Drawing.Point(144, 436);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -301,7 +357,7 @@
             this.Ticker.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.Ticker.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Ticker.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.Ticker.Location = new System.Drawing.Point(150, 278);
+            this.Ticker.Location = new System.Drawing.Point(224, 278);
             this.Ticker.MaxLength = 20;
             this.Ticker.Name = "Ticker";
             this.Ticker.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -314,7 +370,7 @@
             this.CmbExchangeSuffix.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbExchangeSuffix.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbExchangeSuffix.FormattingEnabled = true;
-            this.CmbExchangeSuffix.Location = new System.Drawing.Point(150, 302);
+            this.CmbExchangeSuffix.Location = new System.Drawing.Point(224, 302);
             this.CmbExchangeSuffix.Name = "CmbExchangeSuffix";
             this.CmbExchangeSuffix.Size = new System.Drawing.Size(140, 22);
             this.CmbExchangeSuffix.TabIndex = 14;
@@ -325,7 +381,7 @@
             this.Full_Ticker.BackColor = System.Drawing.SystemColors.Control;
             this.Full_Ticker.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Full_Ticker.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.Full_Ticker.Location = new System.Drawing.Point(150, 328);
+            this.Full_Ticker.Location = new System.Drawing.Point(224, 328);
             this.Full_Ticker.MaxLength = 31;
             this.Full_Ticker.Name = "Full_Ticker";
             this.Full_Ticker.ReadOnly = true;
@@ -339,7 +395,7 @@
             this.CmbInYahooFinance.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbInYahooFinance.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbInYahooFinance.FormattingEnabled = true;
-            this.CmbInYahooFinance.Location = new System.Drawing.Point(150, 352);
+            this.CmbInYahooFinance.Location = new System.Drawing.Point(224, 352);
             this.CmbInYahooFinance.Name = "CmbInYahooFinance";
             this.CmbInYahooFinance.Size = new System.Drawing.Size(48, 22);
             this.CmbInYahooFinance.TabIndex = 16;
@@ -353,8 +409,8 @@
             this.Label1.Location = new System.Drawing.Point(16, 278);
             this.Label1.Name = "Label1";
             this.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label1.Size = new System.Drawing.Size(120, 25);
-            this.Label1.TabIndex = 17;
+            this.Label1.Size = new System.Drawing.Size(200, 20);
+            this.Label1.TabIndex = 19;
             this.Label1.Text = "Ticker";
             //
             // Label2
@@ -366,8 +422,8 @@
             this.Label2.Location = new System.Drawing.Point(16, 304);
             this.Label2.Name = "Label2";
             this.Label2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label2.Size = new System.Drawing.Size(120, 25);
-            this.Label2.TabIndex = 18;
+            this.Label2.Size = new System.Drawing.Size(200, 20);
+            this.Label2.TabIndex = 20;
             this.Label2.Text = "Exchange Suffix";
             //
             // Label3
@@ -379,8 +435,8 @@
             this.Label3.Location = new System.Drawing.Point(16, 330);
             this.Label3.Name = "Label3";
             this.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label3.Size = new System.Drawing.Size(120, 25);
-            this.Label3.TabIndex = 19;
+            this.Label3.Size = new System.Drawing.Size(200, 20);
+            this.Label3.TabIndex = 21;
             this.Label3.Text = "Full Ticker";
             //
             // Label4
@@ -392,8 +448,8 @@
             this.Label4.Location = new System.Drawing.Point(16, 354);
             this.Label4.Name = "Label4";
             this.Label4.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label4.Size = new System.Drawing.Size(130, 25);
-            this.Label4.TabIndex = 20;
+            this.Label4.Size = new System.Drawing.Size(200, 20);
+            this.Label4.TabIndex = 22;
             this.Label4.Text = "In Yahoo Finance";
             //
             // gvETFStocks
@@ -407,7 +463,7 @@
             this.gvETFStocks.Name = "gvETFStocks";
             this.gvETFStocks.ReadOnly = true;
             this.gvETFStocks.Size = new System.Drawing.Size(557, 190);
-            this.gvETFStocks.TabIndex = 21;
+            this.gvETFStocks.TabIndex = 25;
             this.gvETFStocks.SelectionChanged += new System.EventHandler(this.gvETFStocks_SelectionChanged);
             //
             // Setup_ETF_Stocks
@@ -416,13 +472,17 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 426);
+            this.ClientSize = new System.Drawing.Size(616, 482);
             this.ControlBox = false;
             this.Controls.Add(this.gvETFStocks);
             this.Controls.Add(this.Label4);
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
+            this.Controls.Add(this.CmbInterval);
+            this.Controls.Add(this.Label6);
+            this.Controls.Add(this.txtYield);
+            this.Controls.Add(this.Label5);
             this.Controls.Add(this.CmbInYahooFinance);
             this.Controls.Add(this.Full_Ticker);
             this.Controls.Add(this.CmbExchangeSuffix);
@@ -462,6 +522,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnCurrRateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnFinancialYearSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnIntervalSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
         public System.Windows.Forms.ToolStripMenuItem MnStateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalExpTypeSetup;
@@ -479,6 +540,10 @@
         public System.Windows.Forms.ComboBox CmbExchangeSuffix;
         public System.Windows.Forms.TextBox Full_Ticker;
         public System.Windows.Forms.ComboBox CmbInYahooFinance;
+        public System.Windows.Forms.Label Label5;
+        public System.Windows.Forms.TextBox txtYield;
+        public System.Windows.Forms.Label Label6;
+        public System.Windows.Forms.ComboBox CmbInterval;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;

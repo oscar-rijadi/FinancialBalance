@@ -24,6 +24,7 @@
             this.MnCurrencyGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnActivaPassivaSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnFinancialYearSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnIntervalSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnStateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyRentalExpTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,6 +79,7 @@
             this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
             this.MnFinancialYearSetup,
+            this.MnIntervalSetup,
             this.MnETFStockGroup,
             this.MnPropertyGroup,
             this.MnSuperGroup});
@@ -122,6 +124,13 @@
             this.MnFinancialYearSetup.Size = new System.Drawing.Size(110, 20);
             this.MnFinancialYearSetup.Text = "&Financial Year Setup";
             this.MnFinancialYearSetup.Click += new System.EventHandler(this.MnFinancialYearSetup_Click);
+            // 
+            // MnIntervalSetup
+            // 
+            this.MnIntervalSetup.Name = "MnIntervalSetup";
+            this.MnIntervalSetup.Size = new System.Drawing.Size(110, 20);
+            this.MnIntervalSetup.Text = "&Interval Setup";
+            this.MnIntervalSetup.Click += new System.EventHandler(this.MnIntervalSetup_Click);
             //
             // MnETFStockGroup
             //
@@ -606,6 +615,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnCurrencyGroup;
         public System.Windows.Forms.ToolStripMenuItem MnActivaPassivaSetup;
         public System.Windows.Forms.ToolStripMenuItem MnFinancialYearSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnIntervalSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockGroup;
         public System.Windows.Forms.ToolStripMenuItem MnStateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalExpTypeSetup;
