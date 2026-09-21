@@ -221,7 +221,7 @@ flowchart LR
 | `Setup_Financial_Year` | Shown as **Financial Year Setup**. Names a financial year and the dates it runs between. |
 | `Setup_Interval` | Shown as **Interval Setup**. Maintains the intervals a distribution or dividend can be paid at. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
-| `Setup_ETF_Stocks` | Maintains ETF/stock tickers, with the yield each pays and how often. `Full_Ticker` is derived, not typed. |
+| `Setup_ETF_Stocks` | Maintains ETF/stock tickers, with the yield each pays and how often. The yield can be fetched from Yahoo Finance. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
@@ -2527,10 +2527,13 @@ Things worth knowing before changing this code.
 - **`decimal` columns are read through `double`**, which introduces rounding on large IDR figures.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
-- **`ETF_Stocks_Price` reaches the network** on either sync button, the only outbound calls in
-  the app. It forces TLS 1.2, sets a `User-Agent`, and runs on the UI thread — the form freezes
-  for the duration. **Sync all** makes one request per flagged ticker in sequence, so the freeze
-  scales with how many you track. Yahoo's endpoint is undocumented and can change without notice.
+- **Two pages reach the network**, and only these two: `ETF_Stocks_Price` on either sync button,
+  and `Setup_ETF_Stocks` on **Get Dividend Yield from Yahoo Finance**. Both force TLS 1.2, set a
+  `User-Agent`, and run on the UI thread — the form freezes for the duration. **Sync all** makes
+  one request per flagged ticker in sequence, so that freeze scales with how many you track; the
+  yield button makes one. Yahoo's endpoint is undocumented and can change without notice — the
+  `quote` and `quoteSummary` endpoints already have, which is why the yield is computed from
+  dividend events rather than read from a field.
 - **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
   `Setup_ETF_Stocks_Flag` is displayed as **ETF/Stock Portfolio Code Setup**, and on
   `ETF_Stocks_Purchase` and `ETF_Stocks_Sale` the dropdown is labelled **Portfolio** and the grid column
@@ -3738,6 +3741,57 @@ The yield is stored as typed and shown back with two places and a per-cent sign 
 the grid, `4.25` in the box, since the box is what may be typed over. **It is a percentage
 figure, not a fraction**: `4.25` means 4.25 %, and nothing divides it by a hundred, because
 nothing calculates from it yet.
+
+#### Get Dividend Yield from Yahoo Finance
+
+The button before **Setup** fills the yield box from Yahoo Finance. **It fills the box and
+stops there** — nothing is written until Setup is pressed, so the figure can be overtyped
+like any other. Yahoo's number is a starting point, not the last word.
+
+It is refused unless the ticker resolves and **In Yahoo Finance** is `Y` — the same gate
+[ETF/Stock Price](#etfstock-price-rules) puts on its sync, except that this page reads the
+flag off the dropdown in front of you rather than out of `TblETFStocks`, so it also answers
+for a ticker not saved yet.
+
+**Yahoo has no free endpoint that simply states a yield.** The `quote` and `quoteSummary`
+endpoints that used to carry one now answer `401` without a crumb. The chart endpoint the
+price page already uses still answers plainly, and asked for dividend events it returns
+everything the figure is made of — so the yield is **worked out here rather than read off**:
+
+```
+https://query1.finance.yahoo.com/v8/finance/chart/{Full_Ticker}?interval=1d&range=1y&events=div
+  regularMarketPrice        ->  the price to measure against
+  currency                  ->  what that price is quoted in (display only)
+  events.dividends[].amount ->  summed over the trailing 12 months
+
+  yield = (sum of dividends / price) x 100,  rounded to 2 dp
+```
+
+That is a **trailing twelve month** yield over the current price, which is what Yahoo's own
+figure means. Each dividend event is an `amount` against the `date` it went ex; the pair is
+unique to those events — a split carries a ratio, not an amount — so they are read straight
+out of the payload with a regular expression, the same way the price page avoids taking a
+JSON dependency. Events older than a year are dropped even though `range=1y` should not
+return any.
+
+The dialog afterwards says what the figure was made of — how many distributions, what they
+totalled, and against what price — so an unexpected number can be judged rather than just
+accepted:
+
+> 4 distribution(s) totalling AUD 4.8499 in the last 12 months against a price of AUD 147.00
+> gives A200.AX a yield of 3.30 %. Change it if you need to, then press Setup to save it.
+
+**A ticker that paid nothing is an answer, not a failure.** It sets `0.00` and says so,
+rather than reporting an error — plenty of holdings pay no distribution at all. A genuine
+failure is different: an unknown ticker returns HTTP 404 and is named as such, a network
+problem reports the underlying error, and in both cases **the yield box is left exactly as
+it was**.
+
+Like the price page's sync, the call runs on the UI thread and the form freezes for its
+duration — one request, so briefly. The button disables while it runs and comes back in a
+`finally`, so a failure cannot leave it dead.
+
+#### The rest of the page
 
 `Full_Ticker` is the key, so the single **Setup** button is an upsert on it — see
 [Reference data](#reference-data) for how it is derived. The grid lists both new columns as

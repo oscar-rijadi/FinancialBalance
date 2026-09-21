@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data.OleDb;
 using System.Globalization;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace FinancialBalance
 {
@@ -243,6 +245,170 @@ namespace FinancialBalance
                 return TmpValue;
             }
             return 0;
+        }
+
+        //Yahoo has no free endpoint that simply states a yield - the quote and quoteSummary
+        //ones now answer 401 without a crumb. The chart endpoint still answers plainly, and
+        //asked for dividend events it carries everything the figure is made of: what was
+        //paid over the window, and the price to measure it against. So the yield is worked
+        //out here rather than read off - trailing twelve months over the current price,
+        //which is what Yahoo's own figure means.
+        private bool Fetch_Yahoo_Yield(string parTicker, out double parYield, out int parCount,
+                                       out double parTotal, out double parPrice,
+                                       out string parCurrency, out string parError)
+        {
+            parYield = 0;
+            parCount = 0;
+            parTotal = 0;
+            parPrice = 0;
+            parCurrency = "";
+            parError = "";
+
+            try
+            {
+                ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol | SecurityProtocolType.Tls12;
+
+                string Url = "https://query1.finance.yahoo.com/v8/finance/chart/"
+                           + Uri.EscapeDataString(parTicker) + "?interval=1d&range=1y&events=div";
+
+                string Json;
+                using (WebClient Client = new WebClient())
+                {
+                    Client.Headers.Add("User-Agent", "Mozilla/5.0");
+                    Json = Client.DownloadString(Url);
+                }
+
+                Match PriceMatch = Regex.Match(Json, "\"regularMarketPrice\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
+                if (!PriceMatch.Success
+                    || !double.TryParse(PriceMatch.Groups[1].Value, NumberStyles.Number,
+                                        CultureInfo.InvariantCulture, out parPrice)
+                    || parPrice <= 0)
+                {
+                    parError = "Yahoo Finance did not return a price for " + parTicker
+                             + ", so a yield cannot be worked out.";
+                    return false;
+                }
+
+                Match CurrMatch = Regex.Match(Json, "\"currency\"\\s*:\\s*\"([A-Za-z]{2,5})\"");
+                if (CurrMatch.Success)
+                {
+                    parCurrency = CurrMatch.Groups[1].Value.Trim();
+                }
+
+                //Each dividend event is an amount against the date it went ex.  The pair is
+                //unique to those events - a split carries a ratio, not an amount - so they can
+                //be read straight out of the payload without walking into the events block.
+                long CutOff = DateTimeOffset.UtcNow.AddYears(-1).ToUnixTimeSeconds();
+                foreach (Match Div in Regex.Matches(Json,
+                             "\"amount\"\\s*:\\s*(-?[0-9]+(?:\\.[0-9]+)?)\\s*,\\s*\"date\"\\s*:\\s*([0-9]+)"))
+                {
+                    double TmpAmount;
+                    long TmpWhen;
+                    if (!double.TryParse(Div.Groups[1].Value, NumberStyles.Number,
+                                         CultureInfo.InvariantCulture, out TmpAmount))
+                    {
+                        continue;
+                    }
+                    if (!long.TryParse(Div.Groups[2].Value, out TmpWhen) || TmpWhen < CutOff)
+                    {
+                        continue;
+                    }
+                    parTotal += TmpAmount;
+                    parCount++;
+                }
+
+                parTotal = Math.Round(parTotal, 4);
+                parYield = Math.Round((parTotal / parPrice) * 100, 2);
+                return true;
+            }
+            catch (WebException ex)
+            {
+                HttpWebResponse Response = ex.Response as HttpWebResponse;
+                if (Response != null && Response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    parError = "Yahoo Finance does not recognise the ticker " + parTicker + ".";
+                }
+                else
+                {
+                    parError = "Could not reach Yahoo Finance : " + ex.Message;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                parError = ex.Message;
+                return false;
+            }
+        }
+
+        //Fills the yield box and stops there.  Nothing is written, so the figure can be
+        //overtyped like any other before Setup is pressed - Yahoo's number is a starting
+        //point, not the last word.
+        private void CmdGetYield_Click(object sender, EventArgs e)
+        {
+            double TmpYield;
+            int TmpCount;
+            double TmpTotal;
+            double TmpPrice;
+            string TmpCurrency;
+            string TmpError;
+
+            Calculate_Full_Ticker();
+            string TmpTicker = Full_Ticker.Text.Trim();
+            if (TmpTicker == "")
+            {
+                MessageBox.Show("Ticker cannot be empty !", "Error Message");
+                return;
+            }
+            //the same gate the price page puts on its sync, read off the form rather than
+            //the table so it also answers for a ticker not saved yet
+            if (CmbInYahooFinance.Text.Trim() != "Y")
+            {
+                MessageBox.Show(TmpTicker + " is not flagged as In Yahoo Finance.", "Error Message");
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            CmdGetYield.Enabled = false;
+            try
+            {
+                if (!Fetch_Yahoo_Yield(TmpTicker, out TmpYield, out TmpCount, out TmpTotal,
+                                       out TmpPrice, out TmpCurrency, out TmpError))
+                {
+                    MessageBox.Show(TmpError, "Error Message");
+                    return;
+                }
+
+                txtYield.Text = TmpYield.ToString("0.00", CultureInfo.InvariantCulture);
+
+                string TmpMoney = (TmpCurrency == "" ? "" : TmpCurrency + " ");
+                if (TmpCount == 0)
+                {
+                    //a real answer rather than a failure: plenty of tickers pay nothing
+                    MessageBox.Show("Yahoo Finance shows no distribution or dividend for "
+                        + TmpTicker + " in the last 12 months, so the yield is 0.00 %."
+                        + " Press Setup to save it.", "Success");
+                }
+                else
+                {
+                    MessageBox.Show(TmpCount.ToString() + " distribution(s) totalling "
+                        + TmpMoney + TmpTotal.ToString("#,##0.0000", CultureInfo.InvariantCulture)
+                        + " in the last 12 months against a price of "
+                        + TmpMoney + TmpPrice.ToString("#,##0.00", CultureInfo.InvariantCulture)
+                        + " gives " + TmpTicker + " a yield of "
+                        + TmpYield.ToString("0.00", CultureInfo.InvariantCulture) + " %."
+                        + " Change it if you need to, then press Setup to save it.", "Success");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+                CmdGetYield.Enabled = true;
+            }
         }
 
         private void Clear_Grid()

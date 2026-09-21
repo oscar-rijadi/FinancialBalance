@@ -63,6 +63,7 @@
             this.txtYield = new System.Windows.Forms.TextBox();
             this.Label6 = new System.Windows.Forms.Label();
             this.CmbInterval = new System.Windows.Forms.ComboBox();
+            this.CmdGetYield = new System.Windows.Forms.Button();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
@@ -79,7 +80,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(320, 436);
+            this.CmdBack.Location = new System.Drawing.Point(484, 436);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -283,7 +284,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(232, 436);
+            this.CmdDel.Location = new System.Drawing.Point(396, 436);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -334,6 +335,21 @@
             this.CmbInterval.Name = "CmbInterval";
             this.CmbInterval.Size = new System.Drawing.Size(140, 22);
             this.CmbInterval.TabIndex = 18;
+            // 
+            // CmdGetYield
+            // 
+            this.CmdGetYield.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdGetYield.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdGetYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdGetYield.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdGetYield.Location = new System.Drawing.Point(43, 436);
+            this.CmdGetYield.Name = "CmdGetYield";
+            this.CmdGetYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdGetYield.Size = new System.Drawing.Size(250, 27);
+            this.CmdGetYield.TabIndex = 7;
+            this.CmdGetYield.Text = "&Get Dividend Yield from Yahoo Finance";
+            this.CmdGetYield.UseVisualStyleBackColor = false;
+            this.CmdGetYield.Click += new System.EventHandler(this.CmdGetYield_Click);
             //
             // CmdSetup
             //
@@ -341,7 +357,7 @@
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(144, 436);
+            this.CmdSetup.Location = new System.Drawing.Point(308, 436);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -479,6 +495,7 @@
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
+            this.Controls.Add(this.CmdGetYield);
             this.Controls.Add(this.CmbInterval);
             this.Controls.Add(this.Label6);
             this.Controls.Add(this.txtYield);
@@ -544,6 +561,7 @@
         public System.Windows.Forms.TextBox txtYield;
         public System.Windows.Forms.Label Label6;
         public System.Windows.Forms.ComboBox CmbInterval;
+        public System.Windows.Forms.Button CmdGetYield;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;
