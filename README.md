@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
 | `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense, Property Rental Expense |
@@ -142,6 +142,7 @@ flowchart LR
     PORTG --> PIVP["ETF_Stocks_Investment_Plan"]
     PORTG --> PIVA["ETF_Stocks_Investment_Plan_By_Amount"]
     PORTG --> PFDC["ETF_Stocks_Forecast_Dividend_Calendar"]
+    PORTG --> PFDA["ETF_Stocks_Forecast_Dividend_Allocation"]
     MAIN --> IPROPG{{"Property"}}
     IPROPG --> PSMY["Property_Summary"]
     MAIN --> SBH["Super_Balance_Historical"]
@@ -212,6 +213,7 @@ flowchart LR
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads and writes nothing. |
+| `ETF_Stocks_Forecast_Dividend_Allocation` | Shown as **ETF/Stock Forecast Dividend Allocation**. Build a list of tickers and amounts, and see what that money would pay: each ticker's yield, its yearly distribution and its share of the whole, with the totals per year, per month and as one yield. Reads `TblETFStocks` and writes nothing. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
@@ -2434,6 +2436,7 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
 │   ├── Setup_ETF_Stocks_Investment_Plan_By_Amount.*  # the same, from amounts typed in
 │   ├── ETF_Stocks_Forecast_Dividend_Calendar.*  # twelve months of expected income
+│   ├── ETF_Stocks_Forecast_Dividend_Allocation.*  # what a mix of amounts would pay
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
@@ -2914,6 +2917,70 @@ together, and its update and delete match on all three of a row's original value
 The entry section's plan dropdown **follows the one above the table**, so an allocation is added
 to the plan being looked at rather than to whichever was last left selected. It can still be
 changed by hand to file a row against a different plan.
+
+---
+
+### Forecast dividend allocation
+
+`Inquiry` ▸ ETF/Stock ▸ ETF/Stock Forecast Dividend Allocation asks the question the
+[calendar](#forecast-dividend-calendar) does not: **not what the portfolio will pay, but what
+a given amount of money would.** Build a list of tickers and amounts, and it says what that
+mix yields.
+
+**Nothing is stored.** The list lives only while the page is open, the way
+[Investment plan by amount](#investment-plan-by-amount) and the two calculator pages work —
+it is a question about money not yet invested, so there is nothing yet to record. It reads
+`TblETFStocks` and writes nothing.
+
+#### Building the list
+
+A **Full Ticker** dropdown from `TblETFStocks`, an **Investment Amount** box, and
+**Add** / **Delete** / **Clear All**. **Add doubles as Update**: a ticker can only be in the
+list once, so naming it again changes its amount rather than adding a second line for it.
+Clicking a line copies it back into the boxes, so an amount can be corrected or the line
+removed without finding the ticker in the dropdown again. Clear All asks first.
+
+A line with no ticker, a zero amount or an empty amount is refused rather than added — the
+amount box takes digits and a decimal point only, through `Mdl1.NumericKeyPress`.
+
+#### What the table says
+
+| Column | Derivation |
+| --- | --- |
+| `Full Ticker` | as picked |
+| `Investment Amount` | as typed |
+| `Yield` | `TblETFStocks.Distribution_Dividend_Yield` for that ticker |
+| `Distribution/Dividend per year` | `Investment Amount x Yield / 100` |
+| `Percentage from Whole` | `Investment Amount / Total Investment Amount x 100` |
+
+**The yield is held as a percentage figure** — `4.25` means 4.25 % — so it is divided by a
+hundred before it multiplies the money, exactly as
+[the calendar](#forecast-dividend-calendar) reads it. Taken literally as a multiplier it
+would report a 3.30 % holding as returning 330 times what was put in.
+
+The yields are read **once per redraw, not once per line**, and read afresh each time — so a
+yield changed in [ETF/Stock Setup](#etfstock-setup) shows here without reopening the page. A
+ticker with no yield on record counts as paying nothing rather than being left out, and the
+note says how many such lines are in the list: the money is still allocated, so it still
+belongs in the shares and in the total.
+
+#### The four totals
+
+| Total | Derivation |
+| --- | --- |
+| `Total Investment Amount` | sum of `Investment Amount` |
+| `Total Distribution/Dividend per year` | sum of `Distribution/Dividend per year` |
+| `Total Distribution/Dividend per month` | `Total Distribution/Dividend per year / 12` |
+| `Yield` | `Total Distribution/Dividend per year / Total Investment Amount x 100` |
+
+The last is the **weighted average** of the yields above it — a ticker pulls the figure
+towards itself in proportion to the money put into it, which a plain average of the column
+would not do.
+
+> **`per month` is a year spread evenly, not what any month will actually pay.** A quarterly
+> payer contributes nothing in two months of three and three months' worth in the third.
+> When each ticker pays is [the calendar](#forecast-dividend-calendar)'s question; this page
+> answers how much, not when.
 
 ---
 

@@ -7,14 +7,14 @@
     <framework targetVersion="4.8" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="FinancialBalance.exe.manifest" size="3900">
+    <dependentAssembly dependencyType="install" codebase="FinancialBalance.exe.manifest" size="3901">
       <assemblyIdentity name="FinancialBalance.exe" version="1.0.0.8" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="x86" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>2W9c/ZxeFdxXPBzucQ7lgCu1Zv11arvPW7yaqxeQcak=</dsig:DigestValue>
+        <dsig:DigestValue>M3hX1Gy9I+MZd45AzBp98+f1im4fw4MuCELRmvR/H7k=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

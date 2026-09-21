@@ -182,6 +182,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksForecastDivAllocation_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Forecast_Dividend_Allocation ETF_Stocks_Forecast_Dividend_Allocation = new ETF_Stocks_Forecast_Dividend_Allocation();
+            ETF_Stocks_Forecast_Dividend_Allocation.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksForecastDivCalendar_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Forecast_Dividend_Calendar ETF_Stocks_Forecast_Dividend_Calendar = new ETF_Stocks_Forecast_Dividend_Calendar();
