@@ -156,6 +156,12 @@ namespace FinancialBalance
             LblDGrandTCB.Visible = !ShowAll;
             LblDGrandTRCBCap.Visible = !ShowAll;
             LblDGrandTRCB.Visible = !ShowAll;
+            LblDAvgCostCap.Visible = !ShowAll;
+            LblDAvgCost.Visible = !ShowAll;
+            LblDCurPriceCap.Visible = !ShowAll;
+            LblDCurPrice.Visible = !ShowAll;
+            LblDPriceDiffCap.Visible = !ShowAll;
+            LblDPriceDiff.Visible = !ShowAll;
             LblDTotPLCap.Visible = !ShowAll;
             LblDTotPL.Visible = !ShowAll;
             LblDTotPctCap.Visible = !ShowAll;
@@ -171,13 +177,18 @@ namespace FinancialBalance
         {
             gvSummary.Rows.Clear();
             gvSummary.Columns.Clear();
-            gvSummary.ColumnCount = 8;
-            string[] names = new string[] { "Full Ticker", "Total Unit", "Total Investment", "Current Price",
-                                            "Total Current Amount", "Current Real Profit/Loss",
+            gvSummary.ColumnCount = 10;
+            string[] names = new string[] { "Full Ticker", "Total Unit", "Total Investment",
+                                            "Avg Cost Base per Unit", "Current Price",
+                                            "Price Differences", "Total Current Amount",
+                                            "Current Real Profit/Loss",
                                             "Percentage Current Real Profit/Loss",
                                             "Percentage from whole portfolio" };
-            int[] weights = new int[] { 10, 10, 12, 11, 14, 15, 16, 16 };
-            for (int i = 0; i < 8; i++)
+            //A tenth column is what took this page past 900px wide.  Headings wrap at spaces
+            //but not within a word, so the widest single word sets the floor : "Differences"
+            //wants 89 and "Profit/Loss" 84, and ten columns of those do not fit.
+            int[] weights = new int[] { 10, 9, 10, 11, 10, 11, 11, 12, 8, 8 };
+            for (int i = 0; i < 10; i++)
             {
                 gvSummary.Columns[i].Name = names[i];
                 gvSummary.Columns[i].FillWeight = weights[i];
@@ -287,9 +298,15 @@ namespace FinancialBalance
                 List<string> Currs = new List<string>();
                 List<double> TotUnits = new List<double>();
                 List<double> TotInvs = new List<double>();
+                List<double> AvgCosts = new List<double>();
 
                 //a ticker is bought in one currency, so Max picks that one value
-                Mdl1.Ssql = "select Full_Ticker, Max([Currency]) as Curr, Sum(Unit) as TotUnit, Sum(Real_Total_Cost_Base) as TotInv"
+                //Cost_Base is already per unit, so what it cost in total is Unit times it.
+                //Summing that and dividing by the units gives the weighted average, which is
+                //what "per unit" has to mean across lots bought at different prices - a plain
+                //average of the lots would count a one-unit lot as heavily as a hundred.
+                Mdl1.Ssql = "select Full_Ticker, Max([Currency]) as Curr, Sum(Unit) as TotUnit,"
+                          + " Sum(Real_Total_Cost_Base) as TotInv, Sum(Unit * Cost_Base) as TotUnitCost"
                           + " from TblETFStocksPurchase" + TmpWhere
                           + " group by Full_Ticker order by Full_Ticker";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
@@ -300,6 +317,10 @@ namespace FinancialBalance
                     Currs.Add(reader["Curr"] == DBNull.Value ? "" : reader["Curr"].ToString().Trim());
                     TotUnits.Add(Read_Double(reader["TotUnit"]));
                     TotInvs.Add(Read_Double(reader["TotInv"]));
+                    double TmpUnits = Read_Double(reader["TotUnit"]);
+                    AvgCosts.Add(TmpUnits > 0
+                                 ? Math.Round(Read_Double(reader["TotUnitCost"]) / TmpUnits, 4)
+                                 : 0);
                 }
                 reader.Close();
 
@@ -356,11 +377,18 @@ namespace FinancialBalance
                     if (!PricedList[i])
                     {
                         //no price on record - the derived figures are unknown, not zero
+                        //what a unit cost is known whether or not there is a price to compare it to
                         row = new string[] { Tickers[i], TotUnits[i].ToString("#,##0.0000"),
-                                             Money(TotInvs[i], Currs[i]), "-", "-", "-", "-", "-" };
+                                             Money(TotInvs[i], Currs[i]),
+                                             Money(AvgCosts[i], Currs[i]),
+                                             "-", "-", "-", "-", "-", "-" };
                         gvSummary.Rows.Add(row);
                         continue;
                     }
+
+                    //what a unit has gained or lost since it was bought, the same figure the
+                    //single-ticker view puts under its own grid
+                    double TmpDiff = Math.Round(Prices[i] - AvgCosts[i], 4);
 
                     double TmpShare = 0;
                     if (TotalCurrent > 0)
@@ -372,7 +400,9 @@ namespace FinancialBalance
                         Tickers[i],
                         TotUnits[i].ToString("#,##0.0000"),
                         Money(TotInvs[i], Currs[i]),
+                        Money(AvgCosts[i], Currs[i]),
                         Money(Prices[i], Currs[i]),
+                        Money(TmpDiff, Currs[i]),
                         Money(Currents[i], Currs[i]),
                         Money(Profits[i], Currs[i]),
                         Percents[i].ToString("#,##0.00") + " %",
@@ -382,8 +412,9 @@ namespace FinancialBalance
 
                     //gain green, loss red, break-even left alone
                     int RowIdx = gvSummary.Rows.Count - 1;
-                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[5], Profits[i]);
-                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[6], Percents[i]);
+                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[5], TmpDiff);
+                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[7], Profits[i]);
+                    Colour_Cell(gvSummary.Rows[RowIdx].Cells[8], Percents[i]);
                 }
 
                 Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced,
@@ -515,6 +546,7 @@ namespace FinancialBalance
 
 
                 double TotUnit = 0;
+                double TotUnitCost = 0;
                 double TotCostBase = 0;
                 double TotRealCostBase = 0;
                 double TotProfit = 0;
@@ -563,6 +595,7 @@ namespace FinancialBalance
                     Profits.Add(TmpProfit);
 
                     TotUnit += TmpUnit;
+                    TotUnitCost += TmpUnit * TmpCostBase;
                     TotCostBase += TmpTotal;
                     TotRealCostBase += TmpRealTotal;
                 }
@@ -587,6 +620,35 @@ namespace FinancialBalance
                 string TmpTotCurr = (RowCount > 0 && AllDollar ? "AUD" : "");
 
                 LblDTotUnit.Text = TotUnit.ToString("#,##0.0000");
+
+                //the same weighted average the All view shows in its own column, so the two
+                //views agree on what a unit of this holding cost
+                double TmpAvgCost = 0;
+                if (TotUnit > 0)
+                {
+                    TmpAvgCost = Math.Round(TotUnitCost / TotUnit, 4);
+                }
+                LblDAvgCost.Text = Money(TmpAvgCost, TmpTotCurr);
+
+                //the price the average is worth comparing against.  Already fetched at the top
+                //of this method for the per-lot profit, so it is the same figure the rows use.
+                LblDCurPrice.Text = (Priced ? Money(TmpPrice, TmpTotCurr) : "-");
+
+                //What a unit has gained or lost since it was bought, per unit.  The profit
+                //totals below say the same thing in money across the whole holding; this says
+                //it in the units the two figures above are quoted in, so the three read
+                //together.  Without a price there is nothing to take the average from.
+                if (Priced)
+                {
+                    double TmpDiff = Math.Round(TmpPrice - TmpAvgCost, 4);
+                    LblDPriceDiff.Text = Money(TmpDiff, TmpTotCurr);
+                    Colour_Label(LblDPriceDiff, TmpDiff);
+                }
+                else
+                {
+                    LblDPriceDiff.Text = "-";
+                    Colour_Label(LblDPriceDiff, 0);
+                }
                 LblDGrandTCB.Text = Money(TotCostBase, TmpTotCurr);
                 LblDGrandTRCB.Text = Money(TotRealCostBase, TmpTotCurr);
                 if (Priced)
@@ -662,6 +724,9 @@ namespace FinancialBalance
             else
             {
                 parCaptions.Add(LblDTotUnitCap.Text); parValues.Add(LblDTotUnit.Text);
+                parCaptions.Add(LblDAvgCostCap.Text); parValues.Add(LblDAvgCost.Text);
+                parCaptions.Add(LblDCurPriceCap.Text); parValues.Add(LblDCurPrice.Text);
+                parCaptions.Add(LblDPriceDiffCap.Text); parValues.Add(LblDPriceDiff.Text);
                 parCaptions.Add(LblDGrandTCBCap.Text); parValues.Add(LblDGrandTCB.Text);
                 parCaptions.Add(LblDGrandTRCBCap.Text); parValues.Add(LblDGrandTRCB.Text);
                 parCaptions.Add(LblDTotPLCap.Text); parValues.Add(LblDTotPL.Text);

@@ -54,6 +54,12 @@
             this.LblDGrandTRCBCap = new System.Windows.Forms.Label();
             this.LblDTotPL = new System.Windows.Forms.Label();
             this.LblDTotPLCap = new System.Windows.Forms.Label();
+            this.LblDAvgCostCap = new System.Windows.Forms.Label();
+            this.LblDAvgCost = new System.Windows.Forms.Label();
+            this.LblDCurPriceCap = new System.Windows.Forms.Label();
+            this.LblDCurPrice = new System.Windows.Forms.Label();
+            this.LblDPriceDiffCap = new System.Windows.Forms.Label();
+            this.LblDPriceDiff = new System.Windows.Forms.Label();
             this.LblDTotPct = new System.Windows.Forms.Label();
             this.LblDTotPctCap = new System.Windows.Forms.Label();
             this.CmdExcel = new System.Windows.Forms.Button();
@@ -69,7 +75,7 @@
             this.Label21.Cursor = System.Windows.Forms.Cursors.Default;
             this.Label21.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
-            this.Label21.Location = new System.Drawing.Point(140, 20);
+            this.Label21.Location = new System.Drawing.Point(200, 20);
             this.Label21.Name = "Label21";
             this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label21.Size = new System.Drawing.Size(660, 41);
@@ -105,7 +111,7 @@
             this.LblNote.ForeColor = System.Drawing.Color.DimGray;
             this.LblNote.Location = new System.Drawing.Point(492, 78);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(425, 20);
+            this.LblNote.Size = new System.Drawing.Size(549, 20);
             this.LblNote.TabIndex = 3;
             this.LblNote.Text = "Unsold holdings only";
             //
@@ -121,7 +127,7 @@
             this.gvSummary.ReadOnly = true;
             this.gvSummary.RowHeadersVisible = false;
             this.gvSummary.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvSummary.Size = new System.Drawing.Size(900, 300);
+            this.gvSummary.Size = new System.Drawing.Size(1020, 300);
             this.gvSummary.TabIndex = 4;
             //
             // LblTotInvCap
@@ -129,7 +135,7 @@
             this.LblTotInvCap.BackColor = System.Drawing.Color.Transparent;
             this.LblTotInvCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotInvCap.ForeColor = System.Drawing.Color.Black;
-            this.LblTotInvCap.Location = new System.Drawing.Point(360, 444);
+            this.LblTotInvCap.Location = new System.Drawing.Point(480, 444);
             this.LblTotInvCap.Name = "LblTotInvCap";
             this.LblTotInvCap.Size = new System.Drawing.Size(320, 20);
             this.LblTotInvCap.TabIndex = 10;
@@ -141,7 +147,7 @@
             this.LblTotInv.BackColor = System.Drawing.Color.Transparent;
             this.LblTotInv.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotInv.ForeColor = System.Drawing.Color.Black;
-            this.LblTotInv.Location = new System.Drawing.Point(690, 444);
+            this.LblTotInv.Location = new System.Drawing.Point(810, 444);
             this.LblTotInv.Name = "LblTotInv";
             this.LblTotInv.Size = new System.Drawing.Size(210, 20);
             this.LblTotInv.TabIndex = 11;
@@ -153,7 +159,7 @@
             this.LblTotCurCap.BackColor = System.Drawing.Color.Transparent;
             this.LblTotCurCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotCurCap.ForeColor = System.Drawing.Color.Black;
-            this.LblTotCurCap.Location = new System.Drawing.Point(360, 468);
+            this.LblTotCurCap.Location = new System.Drawing.Point(480, 468);
             this.LblTotCurCap.Name = "LblTotCurCap";
             this.LblTotCurCap.Size = new System.Drawing.Size(320, 20);
             this.LblTotCurCap.TabIndex = 12;
@@ -165,7 +171,7 @@
             this.LblTotCur.BackColor = System.Drawing.Color.Transparent;
             this.LblTotCur.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotCur.ForeColor = System.Drawing.Color.Black;
-            this.LblTotCur.Location = new System.Drawing.Point(690, 468);
+            this.LblTotCur.Location = new System.Drawing.Point(810, 468);
             this.LblTotCur.Name = "LblTotCur";
             this.LblTotCur.Size = new System.Drawing.Size(210, 20);
             this.LblTotCur.TabIndex = 13;
@@ -177,7 +183,7 @@
             this.LblTotPLCap.BackColor = System.Drawing.Color.Transparent;
             this.LblTotPLCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotPLCap.ForeColor = System.Drawing.Color.Black;
-            this.LblTotPLCap.Location = new System.Drawing.Point(360, 492);
+            this.LblTotPLCap.Location = new System.Drawing.Point(480, 492);
             this.LblTotPLCap.Name = "LblTotPLCap";
             this.LblTotPLCap.Size = new System.Drawing.Size(320, 20);
             this.LblTotPLCap.TabIndex = 14;
@@ -189,7 +195,7 @@
             this.LblTotPL.BackColor = System.Drawing.Color.Transparent;
             this.LblTotPL.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotPL.ForeColor = System.Drawing.Color.Black;
-            this.LblTotPL.Location = new System.Drawing.Point(690, 492);
+            this.LblTotPL.Location = new System.Drawing.Point(810, 492);
             this.LblTotPL.Name = "LblTotPL";
             this.LblTotPL.Size = new System.Drawing.Size(210, 20);
             this.LblTotPL.TabIndex = 15;
@@ -201,7 +207,7 @@
             this.LblTotPctCap.BackColor = System.Drawing.Color.Transparent;
             this.LblTotPctCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotPctCap.ForeColor = System.Drawing.Color.Black;
-            this.LblTotPctCap.Location = new System.Drawing.Point(360, 516);
+            this.LblTotPctCap.Location = new System.Drawing.Point(480, 516);
             this.LblTotPctCap.Name = "LblTotPctCap";
             this.LblTotPctCap.Size = new System.Drawing.Size(320, 20);
             this.LblTotPctCap.TabIndex = 16;
@@ -213,7 +219,7 @@
             this.LblTotPct.BackColor = System.Drawing.Color.Transparent;
             this.LblTotPct.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTotPct.ForeColor = System.Drawing.Color.Black;
-            this.LblTotPct.Location = new System.Drawing.Point(690, 516);
+            this.LblTotPct.Location = new System.Drawing.Point(810, 516);
             this.LblTotPct.Name = "LblTotPct";
             this.LblTotPct.Size = new System.Drawing.Size(210, 20);
             this.LblTotPct.TabIndex = 17;
@@ -268,7 +274,7 @@
             this.gvDetail.ReadOnly = true;
             this.gvDetail.RowHeadersVisible = false;
             this.gvDetail.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvDetail.Size = new System.Drawing.Size(900, 300);
+            this.gvDetail.Size = new System.Drawing.Size(1020, 300);
             this.gvDetail.TabIndex = 32;
             this.gvDetail.Visible = false;
             //
@@ -277,7 +283,7 @@
             this.LblDTotUnitCap.BackColor = System.Drawing.Color.Transparent;
             this.LblDTotUnitCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDTotUnitCap.ForeColor = System.Drawing.Color.Black;
-            this.LblDTotUnitCap.Location = new System.Drawing.Point(360, 444);
+            this.LblDTotUnitCap.Location = new System.Drawing.Point(480, 444);
             this.LblDTotUnitCap.Name = "LblDTotUnitCap";
             this.LblDTotUnitCap.Size = new System.Drawing.Size(320, 20);
             this.LblDTotUnitCap.TabIndex = 33;
@@ -289,7 +295,7 @@
             this.LblDTotUnit.BackColor = System.Drawing.Color.Transparent;
             this.LblDTotUnit.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDTotUnit.ForeColor = System.Drawing.Color.Black;
-            this.LblDTotUnit.Location = new System.Drawing.Point(690, 444);
+            this.LblDTotUnit.Location = new System.Drawing.Point(810, 444);
             this.LblDTotUnit.Name = "LblDTotUnit";
             this.LblDTotUnit.Size = new System.Drawing.Size(210, 20);
             this.LblDTotUnit.TabIndex = 34;
@@ -301,7 +307,7 @@
             this.LblDGrandTCBCap.BackColor = System.Drawing.Color.Transparent;
             this.LblDGrandTCBCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDGrandTCBCap.ForeColor = System.Drawing.Color.Black;
-            this.LblDGrandTCBCap.Location = new System.Drawing.Point(360, 468);
+            this.LblDGrandTCBCap.Location = new System.Drawing.Point(480, 540);
             this.LblDGrandTCBCap.Name = "LblDGrandTCBCap";
             this.LblDGrandTCBCap.Size = new System.Drawing.Size(320, 20);
             this.LblDGrandTCBCap.TabIndex = 35;
@@ -313,7 +319,7 @@
             this.LblDGrandTCB.BackColor = System.Drawing.Color.Transparent;
             this.LblDGrandTCB.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDGrandTCB.ForeColor = System.Drawing.Color.Black;
-            this.LblDGrandTCB.Location = new System.Drawing.Point(690, 468);
+            this.LblDGrandTCB.Location = new System.Drawing.Point(810, 540);
             this.LblDGrandTCB.Name = "LblDGrandTCB";
             this.LblDGrandTCB.Size = new System.Drawing.Size(210, 20);
             this.LblDGrandTCB.TabIndex = 36;
@@ -325,7 +331,7 @@
             this.LblDGrandTRCBCap.BackColor = System.Drawing.Color.Transparent;
             this.LblDGrandTRCBCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDGrandTRCBCap.ForeColor = System.Drawing.Color.Black;
-            this.LblDGrandTRCBCap.Location = new System.Drawing.Point(360, 492);
+            this.LblDGrandTRCBCap.Location = new System.Drawing.Point(480, 564);
             this.LblDGrandTRCBCap.Name = "LblDGrandTRCBCap";
             this.LblDGrandTRCBCap.Size = new System.Drawing.Size(320, 20);
             this.LblDGrandTRCBCap.TabIndex = 37;
@@ -337,7 +343,7 @@
             this.LblDGrandTRCB.BackColor = System.Drawing.Color.Transparent;
             this.LblDGrandTRCB.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDGrandTRCB.ForeColor = System.Drawing.Color.Black;
-            this.LblDGrandTRCB.Location = new System.Drawing.Point(690, 492);
+            this.LblDGrandTRCB.Location = new System.Drawing.Point(810, 564);
             this.LblDGrandTRCB.Name = "LblDGrandTRCB";
             this.LblDGrandTRCB.Size = new System.Drawing.Size(210, 20);
             this.LblDGrandTRCB.TabIndex = 38;
@@ -349,7 +355,7 @@
             this.LblDTotPLCap.BackColor = System.Drawing.Color.Transparent;
             this.LblDTotPLCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDTotPLCap.ForeColor = System.Drawing.Color.Black;
-            this.LblDTotPLCap.Location = new System.Drawing.Point(360, 516);
+            this.LblDTotPLCap.Location = new System.Drawing.Point(480, 588);
             this.LblDTotPLCap.Name = "LblDTotPLCap";
             this.LblDTotPLCap.Size = new System.Drawing.Size(320, 20);
             this.LblDTotPLCap.TabIndex = 39;
@@ -361,7 +367,7 @@
             this.LblDTotPL.BackColor = System.Drawing.Color.Transparent;
             this.LblDTotPL.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDTotPL.ForeColor = System.Drawing.Color.Black;
-            this.LblDTotPL.Location = new System.Drawing.Point(690, 516);
+            this.LblDTotPL.Location = new System.Drawing.Point(810, 588);
             this.LblDTotPL.Name = "LblDTotPL";
             this.LblDTotPL.Size = new System.Drawing.Size(210, 20);
             this.LblDTotPL.TabIndex = 40;
@@ -373,7 +379,7 @@
             this.LblDTotPctCap.BackColor = System.Drawing.Color.Transparent;
             this.LblDTotPctCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDTotPctCap.ForeColor = System.Drawing.Color.Black;
-            this.LblDTotPctCap.Location = new System.Drawing.Point(360, 540);
+            this.LblDTotPctCap.Location = new System.Drawing.Point(480, 612);
             this.LblDTotPctCap.Name = "LblDTotPctCap";
             this.LblDTotPctCap.Size = new System.Drawing.Size(320, 20);
             this.LblDTotPctCap.TabIndex = 41;
@@ -385,7 +391,7 @@
             this.LblDTotPct.BackColor = System.Drawing.Color.Transparent;
             this.LblDTotPct.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDTotPct.ForeColor = System.Drawing.Color.Black;
-            this.LblDTotPct.Location = new System.Drawing.Point(690, 540);
+            this.LblDTotPct.Location = new System.Drawing.Point(810, 612);
             this.LblDTotPct.Name = "LblDTotPct";
             this.LblDTotPct.Size = new System.Drawing.Size(210, 20);
             this.LblDTotPct.TabIndex = 42;
@@ -397,7 +403,7 @@
             this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdExcel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdExcel.Location = new System.Drawing.Point(160, 578);
+            this.CmdExcel.Location = new System.Drawing.Point(330, 650);
             this.CmdExcel.Name = "CmdExcel";
             this.CmdExcel.Size = new System.Drawing.Size(120, 27);
             this.CmdExcel.TabIndex = 25;
@@ -410,7 +416,7 @@
             this.CmdDrive.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDrive.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDrive.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDrive.Location = new System.Drawing.Point(290, 578);
+            this.CmdDrive.Location = new System.Drawing.Point(460, 650);
             this.CmdDrive.Name = "CmdDrive";
             this.CmdDrive.Size = new System.Drawing.Size(170, 27);
             this.CmdDrive.TabIndex = 25;
@@ -425,7 +431,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(470, 578);
+            this.CmdBack.Location = new System.Drawing.Point(640, 650);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -433,6 +439,78 @@
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
+            // 
+            // LblDPriceDiffCap
+            // 
+            this.LblDPriceDiffCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblDPriceDiffCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDPriceDiffCap.ForeColor = System.Drawing.Color.Black;
+            this.LblDPriceDiffCap.Location = new System.Drawing.Point(480, 516);
+            this.LblDPriceDiffCap.Name = "LblDPriceDiffCap";
+            this.LblDPriceDiffCap.Size = new System.Drawing.Size(320, 20);
+            this.LblDPriceDiffCap.TabIndex = 64;
+            this.LblDPriceDiffCap.Text = "Price Differences";
+            this.LblDPriceDiffCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // LblDPriceDiff
+            // 
+            this.LblDPriceDiff.BackColor = System.Drawing.Color.Transparent;
+            this.LblDPriceDiff.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDPriceDiff.ForeColor = System.Drawing.Color.Black;
+            this.LblDPriceDiff.Location = new System.Drawing.Point(810, 516);
+            this.LblDPriceDiff.Name = "LblDPriceDiff";
+            this.LblDPriceDiff.Size = new System.Drawing.Size(210, 20);
+            this.LblDPriceDiff.TabIndex = 65;
+            this.LblDPriceDiff.Text = "0.00";
+            this.LblDPriceDiff.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // LblDAvgCostCap
+            // 
+            this.LblDAvgCostCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblDAvgCostCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDAvgCostCap.ForeColor = System.Drawing.Color.Black;
+            this.LblDAvgCostCap.Location = new System.Drawing.Point(480, 468);
+            this.LblDAvgCostCap.Name = "LblDAvgCostCap";
+            this.LblDAvgCostCap.Size = new System.Drawing.Size(320, 20);
+            this.LblDAvgCostCap.TabIndex = 60;
+            this.LblDAvgCostCap.Text = "Avg Cost Base per Unit";
+            this.LblDAvgCostCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // LblDAvgCost
+            // 
+            this.LblDAvgCost.BackColor = System.Drawing.Color.Transparent;
+            this.LblDAvgCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDAvgCost.ForeColor = System.Drawing.Color.Black;
+            this.LblDAvgCost.Location = new System.Drawing.Point(810, 468);
+            this.LblDAvgCost.Name = "LblDAvgCost";
+            this.LblDAvgCost.Size = new System.Drawing.Size(210, 20);
+            this.LblDAvgCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblDAvgCost.TabIndex = 61;
+            this.LblDAvgCost.Text = "0.00";
+            // 
+            // LblDCurPriceCap
+            // 
+            this.LblDCurPriceCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblDCurPriceCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDCurPriceCap.ForeColor = System.Drawing.Color.Black;
+            this.LblDCurPriceCap.Location = new System.Drawing.Point(480, 492);
+            this.LblDCurPriceCap.Name = "LblDCurPriceCap";
+            this.LblDCurPriceCap.Size = new System.Drawing.Size(320, 20);
+            this.LblDCurPriceCap.TabIndex = 62;
+            this.LblDCurPriceCap.Text = "Current Price";
+            this.LblDCurPriceCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // LblDCurPrice
+            // 
+            this.LblDCurPrice.BackColor = System.Drawing.Color.Transparent;
+            this.LblDCurPrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblDCurPrice.ForeColor = System.Drawing.Color.Black;
+            this.LblDCurPrice.Location = new System.Drawing.Point(810, 492);
+            this.LblDCurPrice.Name = "LblDCurPrice";
+            this.LblDCurPrice.Size = new System.Drawing.Size(210, 20);
+            this.LblDCurPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblDCurPrice.TabIndex = 63;
+            this.LblDCurPrice.Text = "0.00";
             //
             // ETF_Stocks_Portfolio_Summary
             //
@@ -440,7 +518,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(940, 625);
+            this.ClientSize = new System.Drawing.Size(1060, 698);
             this.ControlBox = false;
             this.Controls.Add(this.LblTotInv);
             this.Controls.Add(this.LblTotInvCap);
@@ -458,6 +536,12 @@
             this.Controls.Add(this.LblDGrandTRCBCap);
             this.Controls.Add(this.LblDTotPL);
             this.Controls.Add(this.LblDTotPLCap);
+            this.Controls.Add(this.LblDAvgCost);
+            this.Controls.Add(this.LblDAvgCostCap);
+            this.Controls.Add(this.LblDCurPrice);
+            this.Controls.Add(this.LblDCurPriceCap);
+            this.Controls.Add(this.LblDPriceDiff);
+            this.Controls.Add(this.LblDPriceDiffCap);
             this.Controls.Add(this.LblDTotPct);
             this.Controls.Add(this.LblDTotPctCap);
             this.Controls.Add(this.gvDetail);
@@ -512,6 +596,12 @@
         public System.Windows.Forms.Label LblDGrandTRCBCap;
         public System.Windows.Forms.Label LblDTotPL;
         public System.Windows.Forms.Label LblDTotPLCap;
+        public System.Windows.Forms.Label LblDAvgCostCap;
+        public System.Windows.Forms.Label LblDAvgCost;
+        public System.Windows.Forms.Label LblDCurPriceCap;
+        public System.Windows.Forms.Label LblDCurPrice;
+        public System.Windows.Forms.Label LblDPriceDiffCap;
+        public System.Windows.Forms.Label LblDPriceDiff;
         public System.Windows.Forms.Label LblDTotPct;
         public System.Windows.Forms.Label LblDTotPctCap;
         public System.Windows.Forms.Button CmdExcel;

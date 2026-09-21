@@ -1790,22 +1790,49 @@ so the two views cannot disagree — and resets to `All` whenever the portfolio 
 | Full Ticker | View |
 | --- | --- |
 | `All` | The per-ticker summary below, with its four totals. |
-| a ticker | That ticker's individual unsold purchases, with its own five totals. Summary and its totals are hidden. |
+| a ticker | That ticker's individual unsold purchases, with its own eight totals. Summary and its totals are hidden. |
 
 | Column | Derivation |
 | --- | --- |
 | `Full Ticker` | Grouping key. |
 | `Total Unit` | `SUM(Unit)` |
 | `Total Investment` | `SUM(Real_Total_Cost_Base)` — so DRIP lots add units but no cost. |
+| `Avg Cost Base per Unit` | `SUM(Unit x Cost_Base) / SUM(Unit)` — see below. |
 | `Current Price` | Latest `TblETFStocksPrice` row for the ticker, by `Price_Date`. |
+| `Price Differences` | `Current Price - Avg Cost Base per Unit`. **Green** above zero, **red** below. |
 | `Total Current Amount` | `round(Total Unit x Current Price, 2)` |
 | `Current Real Profit/Loss` | `Total Current Amount - Total Investment`. **Green** above zero, **red** below. |
 | `Percentage Current Real Profit/Loss` | `Profit / Total Investment x 100` when investment is above zero, otherwise `0`. Same colouring. |
 | `Percentage from whole portfolio` | `Total Current Amount / Total Portfolio Current Amount x 100` when that total is above zero, otherwise `0`. Not coloured. |
 
-> **A ticker with no price row shows `-`** in the five price-derived columns rather than
+**`Avg Cost Base per Unit` is a weighted average, not an average of the lots.** `Cost_Base`
+is already per unit, so what a lot cost in total is `Unit x Cost_Base`; summing that across
+the lots and dividing by the units gives what a unit of the holding cost on average. Taking
+a plain average of the per-lot figures instead would count a lot of one unit as heavily as a
+lot of a hundred — and with DRIP and fractional purchases the lots on this page differ in
+size by two orders of magnitude, so the two answers are not close.
+
+It sits **beside `Current Price` on purpose**, with `Price Differences` completing the trio:
+what a unit cost, what it is worth now, and the gap between them. The columns to the right
+are that same comparison multiplied out across the holding — which is why the trio comes
+first. It is the same three figures the single-ticker view puts under its own grid, in the
+same order.
+
+`Avg Cost Base per Unit` is also **the one price-shaped column that does not need a price**,
+so an unpriced holding still shows it. `Price Differences` does need one, and reads `-`
+without it.
+
+> **A ticker with no price row shows `-`** in the six price-derived columns rather than
 > computing against a price of zero, which would misreport the holding as a total loss. It is
 > left out of the portfolio total as well, so the remaining shares still add up to 100 %.
+
+> A ninth column was absorbed by rebalancing, taking room from
+> `Percentage Current Real Profit/Loss` and `Percentage from whole portfolio`, whose headings
+> wrap and whose values never exceed `12.34 %`. **A tenth is what took the page past 900px**,
+> to 1060. A heading wraps at spaces but never within a word, so the widest single word sets
+> a column's floor — `Differences` wants 89px and `Profit/Loss` 84 — and ten columns of those
+> plus their values do not fit 900. The two grids, the note, both sets of aggregates and the
+> button row moved with it; the buttons, which had sat left of centre, are now centred.
 
 `Percentage from whole portfolio` divides by a figure that is only known once every row has been
 priced, so the grid is built in **two passes** — the first works out each row and the running
@@ -1840,14 +1867,42 @@ Picking a ticker lists every unsold purchase behind it, under the same portfolio
 | `Real Current Profit/Loss` | `Unit x latest price - Real_Total_Cost_Base`. **Green** above zero, **red** below. |
 | `Portfolio Code` | `Portfolio_Code` |
 
-Its five totals: `Total Unit`, `Grand Total Cost Base`, `Grand Total Real Cost Base`,
-`Total Real Current Profit/Loss` (coloured), and `Percentage Total Real Current Profit/Loss` —
-the profit over the **real** cost base when that is above zero, otherwise `0`.
+Its eight totals, in order:
+
+| Total | Derivation |
+| --- | --- |
+| `Total Unit` | `SUM(Unit)` across the lots listed |
+| `Avg Cost Base per Unit` | `SUM(Unit x Cost Base Per Unit) / Total Unit` |
+| `Current Price` | Latest `TblETFStocksPrice` row for the ticker, by `Price_Date` |
+| `Price Differences` | `Current Price - Avg Cost Base per Unit`. **Green** above zero, **red** below |
+| `Grand Total Cost Base` | `SUM(Total_Cost_Base)` |
+| `Grand Total Real Cost Base` | `SUM(Real_Total_Cost_Base)` |
+| `Total Real Current Profit/Loss` | `SUM` of the profit column. Same colouring |
+| `Percentage Total Real Current Profit/Loss` | the profit over the **real** cost base when that is above zero, otherwise `0`. Same colouring |
+
+**The first four read as one story** — how many units, what a unit cost, what a unit is worth,
+and the gap between the last two — before the cost-base and profit totals restate it in money
+across the whole holding. That is why the per-unit trio sits directly under `Total Unit`
+rather than after the cost bases: each line answers the one above it.
+
+`Price Differences` is **per unit, not for the holding**. `Total Real Current Profit/Loss`
+already says what the position is worth in total, and the two do not simply scale into each
+other — the profit measures against `Real_Total_Cost_Base`, which a DRIP lot adds nothing to,
+while the average measures against `Cost_Base`, which it does. A holding can therefore show a
+negative price difference and a positive profit at once, and that is not a contradiction.
+
+**`Avg Cost Base per Unit` is worked out from the rows above it** — each lot's `Unit` times
+its `Cost Base Per Unit`, summed, over `Total Unit` — so it can be checked against what is on
+screen, and it agrees with the `All` view by construction rather than by two calculations
+happening to match. `Current Price` is the price already fetched for the profit column, not a
+second lookup.
 
 A DRIP purchase is where the two cost-base totals separate: it has a `Total_Cost_Base` but a
 `Real_Total_Cost_Base` of `0`, so its whole current value counts as profit, and the percentage
 divides by the smaller real figure. If the ticker has no price at all, the profit column and
-both profit totals read `-`, while the unit and cost-base totals still compute.
+both profit totals read `-`, and so do `Current Price` and `Price Differences` — there is
+nothing to take the average from — while the unit and cost-base totals, `Avg Cost Base per
+Unit` among them, still compute.
 
 #### Generate Excel
 
