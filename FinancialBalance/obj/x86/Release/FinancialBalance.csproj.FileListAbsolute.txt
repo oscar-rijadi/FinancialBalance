@@ -126,3 +126,4 @@ C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialB
 C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Property_Summary.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Investment_Plan_By_Amount.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Interval.resources
+C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Forecast_Dividend_Calendar.resources

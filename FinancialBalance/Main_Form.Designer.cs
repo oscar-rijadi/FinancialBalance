@@ -58,6 +58,7 @@
             this.MnETFStockPortfolioGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlan = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanByAmount = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksForecastDivCalendar = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyInqGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertySummary = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperBalance = new System.Windows.Forms.ToolStripMenuItem();
@@ -339,7 +340,8 @@
             this.MnETFStocksPriceChart,
             this.MnETFStocksFYHistorical,
             this.MnETFStocksInvPlan,
-            this.MnETFStocksInvPlanByAmount});
+            this.MnETFStocksInvPlanByAmount,
+            this.MnETFStocksForecastDivCalendar});
             this.MnETFStockPortfolioGroup.Name = "MnETFStockPortfolioGroup";
             this.MnETFStockPortfolioGroup.Size = new System.Drawing.Size(216, 22);
             this.MnETFStockPortfolioGroup.Text = "&ETF/Stock";
@@ -357,6 +359,13 @@
             this.MnETFStocksInvPlanByAmount.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksInvPlanByAmount.Text = "ETF/Stock Investment Plan by &Amount";
             this.MnETFStocksInvPlanByAmount.Click += new System.EventHandler(this.MnETFStocksInvPlanByAmount_Click);
+            // 
+            // MnETFStocksForecastDivCalendar
+            // 
+            this.MnETFStocksForecastDivCalendar.Name = "MnETFStocksForecastDivCalendar";
+            this.MnETFStocksForecastDivCalendar.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksForecastDivCalendar.Text = "ETF/Stock &Forecast Dividend Calendar";
+            this.MnETFStocksForecastDivCalendar.Click += new System.EventHandler(this.MnETFStocksForecastDivCalendar_Click);
             // 
             // MnPropertyInqGroup
             // 
@@ -1093,6 +1102,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStockPortfolioGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlan;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanByAmount;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksForecastDivCalendar;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyInqGroup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertySummary;
         public System.Windows.Forms.ToolStripMenuItem MnSuperBalance;

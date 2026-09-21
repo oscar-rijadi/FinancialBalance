@@ -342,6 +342,12 @@
     <Compile Include="Setup_Interval.Designer.cs">
       <DependentUpon>Setup_Interval.cs</DependentUpon>
     </Compile>
+    <Compile Include="ETF_Stocks_Forecast_Dividend_Calendar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ETF_Stocks_Forecast_Dividend_Calendar.Designer.cs">
+      <DependentUpon>ETF_Stocks_Forecast_Dividend_Calendar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Property_Summary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -524,6 +530,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Setup_Interval.resx">
       <DependentUpon>Setup_Interval.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ETF_Stocks_Forecast_Dividend_Calendar.resx">
+      <DependentUpon>ETF_Stocks_Forecast_Dividend_Calendar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Property_Summary.resx">
       <DependentUpon>Property_Summary.cs</DependentUpon>

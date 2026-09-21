@@ -89,7 +89,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
 | `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense, Property Rental Expense |
@@ -141,6 +141,7 @@ flowchart LR
     PORTG --> PFYH["ETF_Stocks_FY_Historical"]
     PORTG --> PIVP["ETF_Stocks_Investment_Plan"]
     PORTG --> PIVA["ETF_Stocks_Investment_Plan_By_Amount"]
+    PORTG --> PFDC["ETF_Stocks_Forecast_Dividend_Calendar"]
     MAIN --> IPROPG{{"Property"}}
     IPROPG --> PSMY["Property_Summary"]
     MAIN --> SBH["Super_Balance_Historical"]
@@ -210,6 +211,7 @@ flowchart LR
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads and writes nothing. |
+| `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Reads and writes nothing. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
@@ -2370,6 +2372,7 @@ C#.Net/
 │   ├── Setup_ETF_Stocks_Div_Alloc.*
 │   ├── Setup_ETF_Stocks_Investment_Plan.*  # plans and their target allocations
 │   ├── Setup_ETF_Stocks_Investment_Plan_By_Amount.*  # the same, from amounts typed in
+│   ├── ETF_Stocks_Forecast_Dividend_Calendar.*  # twelve months of expected income
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
@@ -2849,6 +2852,159 @@ together, and its update and delete match on all three of a row's original value
 The entry section's plan dropdown **follows the one above the table**, so an allocation is added
 to the plan being looked at rather than to whichever was last left selected. It can still be
 changed by hand to file a row against a different plan.
+
+---
+
+### Forecast dividend calendar
+
+`Inquiry` ▸ ETF/Stock ▸ ETF/Stock Forecast Dividend Calendar answers one question: **what is
+this portfolio due to pay me, and when.** One row per holding — its **Current Amount** and
+**Yield**, then one column per month for the next twelve, then that holding's total — with a
+totals row along the bottom.
+
+Current Amount and Yield sit in front of the months they produce, so a row that pays an
+unexpected amount can be traced back to the two figures behind it without leaving the row.
+
+**It reads `TblETFStocksPurchase`, `TblETFStocksPrice`, `TblETFStocks`,
+`TblETFStocksDistributionDividend` and `TblETFStocksPortfolioCode`, and writes nothing.**
+
+#### Which holdings are in view
+
+The **Portfolio** dropdown and the **Main Only** checkbox are
+[Portfolio Summary](#portfolio-summary)'s, doing exactly what they do there — the same
+`Is_Sold = False` rule, the same `Portfolio_Code` filter, and the same
+`In (select … where [Is_Main] = True)` subquery behind Main Only, which excludes a purchase
+with no portfolio at all since it belongs to no main one. There is no **Full Ticker**
+dropdown: this page is always the whole portfolio broken down by ticker.
+
+Holdings come from one grouped read, and **Total Unit** and **Total Investment** underneath
+are the sums of those two columns. **Total Current Amount** is beside them, being what the
+forecast is actually derived from:
+
+```sql
+select Full_Ticker, Max([Currency]) as Curr, Sum(Unit) as TotUnit,
+       Sum(Real_Total_Cost_Base) as TotInv
+  from TblETFStocksPurchase
+ where Is_Sold = False  …  group by Full_Ticker order by Full_Ticker
+```
+
+#### How a month's figure is arrived at
+
+Four steps, per holding:
+
+```
+current amount =  Sum(Unit)  x  latest Price on record
+yearly amount  =  current amount  x  Distribution_Dividend_Yield / 100
+per payment    =  yearly amount  /  payments per year
+placed by      =  stepping forward from the last payment actually received
+```
+
+`Distribution_Dividend_Interval` decides both the step and how many payments a year there
+are — `Monthly` 1 and 12, `Quarterly` 3 and 4, `Half Yearly` 6 and 2, `Yearly` 12 and 1.
+
+**The yield is applied to what the holding is worth today, not to what it cost.** That is
+the basis the yield itself is quoted on — [Get Dividend Yield from Yahoo Finance](#get-dividend-yield-from-yahoo-finance)
+divides a year of distributions by the *current price* — so applying it to the current value
+is what makes the two agree. Applying it to the cost base instead would give a *yield on
+cost*, which reads low for any holding that has risen since it was bought.
+
+The price is the latest row in `TblETFStocksPrice` for that ticker, the same
+`select top 1 … order by Price_Date Desc` read [Portfolio Summary](#portfolio-summary)
+makes. Prices are per ticker rather than per portfolio, so the same figure serves whichever
+portfolio the holding sits in.
+
+#### The calendar part
+
+What makes this a calendar rather than a flat twelfth of the year is where each payment
+lands. The last `Pay_Date` on record for the ticker is the anchor, and the run steps forward
+from there by the interval until it reaches the window:
+
+> A quarterly payer that last paid in July is due again in October, then January, April and
+> July — not in the month the page happens to be opened.
+
+The anchor is taken across **all** portfolios, not just the one in view, because when a
+holding pays is a property of the holding rather than of the bucket it sits in.
+
+The window opens on the **current** month, not the one after.
+
+#### What is already on record beats what is worked out
+
+A distribution is usually entered **when it is declared, not when the cash lands**, so the
+window routinely already holds real figures for this month and the next. Those are read
+straight out of `TblETFStocksDistributionDividend` — summed per month, narrowed by the same
+portfolio filter as everything else — and a month that has one **shows it instead of a
+forecast**. Recorded months are drawn in blue and counted in the note, because when the
+question is why a month reads the way it does, the difference between a figure that is
+known and one that is worked out is the whole answer.
+
+> Without this the page stepped straight past its own data. A monthly payer recorded as
+> paying on the 10th of this month anchored the run to this month, so the projection began
+> next month and *this* month came out blank — with the payment sitting in the database all
+> along. One recorded next month left both months empty.
+
+#### When there is nothing to anchor to
+
+A holding that has never paid has no month to step forward from. Rather than start the run
+at whichever month the page happens to be opened, it falls on the **January cycle** —
+January and every step from it:
+
+| Interval | Months |
+| --- | --- |
+| `Monthly` | every month |
+| `Quarterly` | January, April, July, October |
+| `Half Yearly` | January, July |
+| `Yearly` | January |
+
+That is the cycle every holding that *does* have a history actually pays on, which is what
+makes it the right default rather than a guess: an Australian ETF distributing for quarters
+ending March, June, September and December pays the month after each. So a holding with no
+history now lines up with its peers instead of sitting a month or two out from all of them.
+
+#### What cannot be forecast
+
+Two things leave a holding shown as `-` right across rather than as a forecast of zero —
+nothing to go on is not the same as nothing to expect:
+
+| | Why |
+| --- | --- |
+| **No price on record** | there is nothing for the yield to be a percentage *of* |
+| **No yield or no interval** in [ETF/Stock Setup](#etfstock-setup) | there is no rate, or no schedule to spread it over |
+
+Either way **what is known is still shown**: the row keeps its Current Amount and its Yield,
+and only the months read `-`. A holding with a yield but no price shows `-` for Current
+Amount as well, since that is the figure that is missing.
+
+An unpriced holding still counts towards **Total Unit** and **Total Investment**, but not
+towards **Total Current Amount** — the same treatment, and the same caveat, that
+[Portfolio Summary](#portfolio-summary) applies to its own current-value total.
+
+Separately, a holding that has **never paid** has no month to anchor to, so its run is
+assumed to start this month. It is still forecast; only its timing is a guess.
+
+The note under the grid counts all three cases, alongside a standing reminder of what the
+figures rest on.
+
+#### The totals
+
+The per-month totals are a **row inside the grid**, bold on a grey band, rather than twelve
+labels underneath. There is one figure per month and only the grid knows where each month's
+column has ended up, so anything else would have to be kept in step with the column widths
+by hand. It is the one grid in the app that carries its own totals row; every other page
+has few enough totals to put them in labels. **Grand Total Dividend (Next 12 Months)** is
+both the last cell of that row and a label below, and equals the sum of the twelve monthly
+totals. The totals row carries the Current Amount total too, but leaves **Yield** blank:
+a yield is a rate, not something a column of them adds up into.
+
+**Grand Total Yield** is the last of the five labels:
+
+```
+Grand Total Yield  =  Grand Total Dividend  /  Total Investment  x  100
+```
+
+Note the denominator: **this one is measured against cost, not against current value**, so
+it is a yield *on cost* and normally reads lower than the per-ticker Yield column beside it,
+which is quoted on today's price. The two answer different questions — what the money you
+put in is returning, against what the holding yields today.
 
 ---
 
