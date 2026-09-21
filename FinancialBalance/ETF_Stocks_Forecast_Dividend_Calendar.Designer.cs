@@ -46,6 +46,8 @@
             this.LblGrandYieldCap = new System.Windows.Forms.Label();
             this.LblGrandYield = new System.Windows.Forms.Label();
             this.LblBasis = new System.Windows.Forms.Label();
+            this.CmdExcel = new System.Windows.Forms.Button();
+            this.CmdDrive = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvForecast)).BeginInit();
             this.SuspendLayout();
@@ -252,6 +254,36 @@
             this.LblBasis.TabIndex = 16;
             this.LblBasis.Text = "";
             //
+            // CmdExcel
+            //
+            this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdExcel.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdExcel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdExcel.Location = new System.Drawing.Point(540, 650);
+            this.CmdExcel.Name = "CmdExcel";
+            this.CmdExcel.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdExcel.Size = new System.Drawing.Size(120, 27);
+            this.CmdExcel.TabIndex = 17;
+            this.CmdExcel.Text = "&Generate Excel";
+            this.CmdExcel.UseVisualStyleBackColor = false;
+            this.CmdExcel.Click += new System.EventHandler(this.CmdExcel_Click);
+            //
+            // CmdDrive
+            //
+            this.CmdDrive.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdDrive.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdDrive.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdDrive.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdDrive.Location = new System.Drawing.Point(670, 650);
+            this.CmdDrive.Name = "CmdDrive";
+            this.CmdDrive.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdDrive.Size = new System.Drawing.Size(170, 27);
+            this.CmdDrive.TabIndex = 18;
+            this.CmdDrive.Text = "Generate to Google &Drive";
+            this.CmdDrive.UseVisualStyleBackColor = false;
+            this.CmdDrive.Click += new System.EventHandler(this.CmdDrive_Click);
+            //
             // CmdBack
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
@@ -259,11 +291,11 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(695, 650);
+            this.CmdBack.Location = new System.Drawing.Point(850, 650);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
-            this.CmdBack.TabIndex = 17;
+            this.CmdBack.TabIndex = 19;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -275,6 +307,8 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(1480, 688);
+            this.Controls.Add(this.CmdDrive);
+            this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.LblBasis);
             this.Controls.Add(this.LblGrandYield);
@@ -324,6 +358,8 @@
         public System.Windows.Forms.Label LblGrandYieldCap;
         public System.Windows.Forms.Label LblGrandYield;
         public System.Windows.Forms.Label LblBasis;
+        public System.Windows.Forms.Button CmdExcel;
+        public System.Windows.Forms.Button CmdDrive;
         public System.Windows.Forms.Button CmdBack;
     }
 }

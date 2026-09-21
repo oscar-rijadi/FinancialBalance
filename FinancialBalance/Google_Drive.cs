@@ -61,6 +61,12 @@ namespace FinancialBalance
         const string DefaultFYHistoricalSheetPrefix =
             "Financial Balance ETFs or Stocks Financial Year Historical";
 
+        //A whole name, like the two above and for the same reason : the forecast is of the
+        //portfolio as it stands, so there is nothing for the name to vary by, and each run
+        //should replace the last rather than pile up a file per day.
+        const string DefaultForecastDividendCalendarSheetName =
+            "Financial Balance ETFs or Stocks Forecast Dividend Calendar";
+
         //A whole name, not a prefix : Yearly Summary sends every year in the one workbook, a tab
         //each, so there is nothing for a name to vary by.
         const string DefaultYearlySummarySheetName = "Financial Balance Yearly Summary";
@@ -87,6 +93,12 @@ namespace FinancialBalance
                                            DefaultFYHistoricalSheetPrefix);
             string TmpYear = (parYear == null ? "" : parYear.Trim());
             return (TmpYear == "" ? TmpPrefix : TmpPrefix + " " + TmpYear);
+        }
+
+        public static string Forecast_Dividend_Calendar_Sheet_Name()
+        {
+            return Named_Sheet("ForecastDividendCalendarGoogleSheetName",
+                               DefaultForecastDividendCalendarSheetName);
         }
 
         public static string Yearly_Summary_Sheet_Name()

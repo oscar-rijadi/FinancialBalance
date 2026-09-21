@@ -211,7 +211,7 @@ flowchart LR
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads and writes nothing. |
-| `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Reads and writes nothing. |
+| `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads and writes nothing. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
@@ -1969,14 +1969,16 @@ a tab being built.
 
 ### Excel exports
 
-Four pages export: [Portfolio summary](#portfolio-summary),
+Five pages export: [Portfolio summary](#portfolio-summary),
 [Dividend history](#dividend-history),
-[Financial year historical](#financial-year-historical) and
-[Yearly summary](#yearly-summary). They share these rules.
+[Financial year historical](#financial-year-historical),
+[Yearly summary](#yearly-summary) and
+[Forecast dividend calendar](#forecast-dividend-calendar). They share these rules.
 
 - **The form's name leads the file name**, so an export says which page produced it before
   anything else — `ETF_Stocks_Portfolio_Summary_...`, `ETF_Stocks_Dividend_History_...`,
-  `ETF_Stocks_FY_Historical_...`, `Yearly_Summary_...`. It is taken from the form's own `Name`
+  `ETF_Stocks_FY_Historical_...`, `Yearly_Summary_...`,
+  `ETF_Stocks_Forecast_Dividend_Calendar_...`. It is taken from the form's own `Name`
   property rather than typed out, so it cannot drift from the form it belongs to. The timestamp
   follows the prefix, then that page's own filters — except on
   [Yearly summary](#yearly-summary), whose name stops at the timestamp, since every year is in
@@ -1987,7 +1989,7 @@ Four pages export: [Portfolio summary](#portfolio-summary),
 - The name is only what the Save dialog is *pre-filled* with; the reader can change it, and the
   dialog opens in Documents but remembers wherever it was last pointed.
 
-All four also export [to Google Drive](#generate-to-google-drive), which builds the same
+All five also export [to Google Drive](#generate-to-google-drive), which builds the same
 workbook and uploads it as a Google Sheet instead of saving it locally.
 
 ---
@@ -1995,8 +1997,9 @@ workbook and uploads it as a Google Sheet instead of saving it locally.
 ### Generate to Google Drive
 
 [Portfolio summary](#portfolio-summary), [Dividend history](#dividend-history),
-[Financial year historical](#financial-year-historical) and [Yearly summary](#yearly-summary)
-each have a button beside their **Generate Excel**. It builds **the same workbook**, uploads it to the
+[Financial year historical](#financial-year-historical), [Yearly summary](#yearly-summary)
+and [Forecast dividend calendar](#forecast-dividend-calendar) each have a button beside their
+**Generate Excel**. It builds **the same workbook**, uploads it to the
 signed-in user's Google Drive, and asks Drive to convert it into a Google Sheet on the way in.
 The workbook itself is written to the temporary directory and deleted afterwards — it is only a
 carrier. Nothing is saved locally; that is what the Excel button is for.
@@ -2005,9 +2008,10 @@ On each page both buttons go through one `Build_Sheet`, so the workbook and the 
 same sheet by construction rather than by two lots of layout code happening to agree.
 `Write_Workbook` takes where to write it; only the caller differs. On the three pages that can
 produce several tabs it takes a list of them, and on
-[Financial year historical](#financial-year-historical), which cannot, it takes the one sheet.
+[Financial year historical](#financial-year-historical) and
+[Forecast dividend calendar](#forecast-dividend-calendar), which cannot, it takes the one sheet.
 
-The four pages keep their own copies of that shape rather than sharing a base class — what they
+The five pages keep their own copies of that shape rather than sharing a base class — what they
 lay out differs enough (different filters, different headings, one grid or four) that the common
 part would be thinner than the plumbing to share it.
 
@@ -2032,6 +2036,7 @@ differs between them.
 | [Dividend history](#dividend-history) | `DividendHistoryGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History* | one |
 | [Financial year historical](#financial-year-historical) | `FinancialHistoricalYearPrefixGoogleSheetName` | *Financial Balance ETFs or Stocks Financial Year Historical* | **a prefix** — one per financial year |
 | [Yearly summary](#yearly-summary) | `YearlySummaryGoogleSheetName` | *Financial Balance Yearly Summary* | one |
+| [Forecast dividend calendar](#forecast-dividend-calendar) | `ForecastDividendCalendarGoogleSheetName` | *Financial Balance ETFs or Stocks Forecast Dividend Calendar* | one |
 
 The settings are named for the page rather than for Drive, which is what let the later pages take
 names of their own instead of quietly sharing the first's. Sharing would have meant one page's
@@ -2044,7 +2049,8 @@ is joined to the prefix and each year keeps a Sheet of its own. See
 [that page](#financial-year-historical) for what that means in practice.
 
 `Google_Drive` exposes them as `Portfolio_Sheet_Name()`, `Dividend_History_Sheet_Name()`,
-`FY_Historical_Sheet_Name(year)` and `Yearly_Summary_Sheet_Name()` rather than taking the setting
+`FY_Historical_Sheet_Name(year)`, `Yearly_Summary_Sheet_Name()` and
+`Forecast_Dividend_Calendar_Sheet_Name()` rather than taking the setting
 key as an argument, so a call site cannot ask for a key that does not exist and silently get
 somebody else's default. Only the prefixed one takes anything, which is the signature saying
 which of them varies.
@@ -2500,10 +2506,11 @@ The `appSettings` entries, however, **are** read:
 | `DividendHistoryGoogleSheetName` | what [Dividend history](#dividend-history)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History* |
 | `FinancialHistoricalYearPrefixGoogleSheetName` | the **prefix** of [Financial year historical](#financial-year-historical)'s Sheets — the financial year on screen is added to the end, so each year keeps its own; empty means *Financial Balance ETFs or Stocks Financial Year Historical* |
 | `YearlySummaryGoogleSheetName` | what [Yearly summary](#yearly-summary)'s Sheet is called; empty means *Financial Balance Yearly Summary* |
+| `ForecastDividendCalendarGoogleSheetName` | what [Forecast dividend calendar](#forecast-dividend-calendar)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Forecast Dividend Calendar* |
 
-All six ship empty. Until the id and secret are filled in,
+All seven ship empty. Until the id and secret are filled in,
 [Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else
-on any of the four pages. The Sheet names are optional and have defaults; each page reads only
+on any of the five pages. The Sheet names are optional and have defaults; each page reads only
 its own, so setting one does not affect the others.
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so
@@ -3005,6 +3012,25 @@ Note the denominator: **this one is measured against cost, not against current v
 it is a yield *on cost* and normally reads lower than the per-ticker Yield column beside it,
 which is quoted on today's price. The two answer different questions — what the money you
 put in is returning, against what the holding yields today.
+
+#### Generate Excel and Generate to Google Drive
+
+Both buttons sit before **Back** and follow
+[the rules every export shares](#excel-exports): one `Build_Sheet` behind both, every cell
+written as text, an empty table refused, and the form's own name leading the file name —
+`ETF_Stocks_Forecast_Dividend_Calendar_<timestamp>_<portfolio>_<main only>.xlsx`.
+
+The sheet carries the portfolio, the Main Only setting, when it was generated, the note, the
+five aggregates, and then the grid exactly as displayed — including its own totals row, which
+comes across as the last line and is banded like the header. **The basis note travels with
+it**: a forecast read on its own, away from the screen that says what it rests on, is easily
+mistaken for a statement of fact.
+
+The Drive button writes to **one Sheet, reused** — named by
+`ForecastDividendCalendarGoogleSheetName`, falling back to *Financial Balance ETFs or Stocks
+Forecast Dividend Calendar*. Unlike [Financial year historical](#financial-year-historical)
+there is no prefix and nothing to vary by: the forecast is of the portfolio as it stands, so
+each run should replace the last rather than leave a file per day behind.
 
 ---
 

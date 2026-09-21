@@ -8,6 +8,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data.OleDb;
 using System.Globalization;
+using System.IO;
+using System.Runtime.InteropServices;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace FinancialBalance
 {
@@ -595,6 +598,438 @@ namespace FinancialBalance
                     + " Distribution/Dividend, not forecast.";
             }
             LblBasis.Text = TmpText;
+        }
+
+        //---- the exports ----------------------------------------------------------
+
+        //The captions and figures under the grid, read back off the labels themselves so
+        //the export says what the screen says rather than working any of it out again.
+        private void Aggregates(out List<string> parCaptions, out List<string> parValues)
+        {
+            parCaptions = new List<string>();
+            parValues = new List<string>();
+
+            Label[] Caps = new Label[] { LblTotUnitCap, LblTotInvCap, LblTotCurCap,
+                                         LblGrandCap, LblGrandYieldCap };
+            Label[] Vals = new Label[] { LblTotUnit, LblTotInv, LblTotCur,
+                                         LblGrand, LblGrandYield };
+            for (int i = 0; i < Caps.Length; i++)
+            {
+                parCaptions.Add(Caps[i].Text.Trim());
+                parValues.Add(Vals[i].Text.Trim());
+            }
+        }
+
+        private string Safe_Name(string parText)
+        {
+            string s = (parText == null ? "" : parText.Trim());
+            if (s == "")
+            {
+                s = "none";
+            }
+            char[] bad = Path.GetInvalidFileNameChars();
+            for (int i = 0; i < bad.Length; i++)
+            {
+                s = s.Replace(bad[i].ToString(), "");
+            }
+            return s;
+        }
+
+        private string[] Line(int parCols, string parA, string parB)
+        {
+            string[] r = new string[parCols];
+            for (int i = 0; i < parCols; i++)
+            {
+                r[i] = "";
+            }
+            r[0] = parA;
+            if (parCols > 1)
+            {
+                r[1] = parB;
+            }
+            return r;
+        }
+
+        private string[] Line(int parCols, string parA)
+        {
+            return Line(parCols, parA, "");
+        }
+
+        private string[] Line(int parCols)
+        {
+            return Line(parCols, "", "");
+        }
+
+        //The form's own Name leads the file name, so an export says which page it came from
+        //before anything else.  Taken from this.Name rather than typed out, so it cannot
+        //drift from the form it belongs to.  parExtension carries the dot.
+        private string Export_Name(string parExtension)
+        {
+            return Safe_Name(this.Name)
+                 + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
+                 + "_" + Safe_Name(CmbPortfolio.Text)
+                 + "_" + (chkMainOnly.Checked ? "Yes" : "No") + parExtension;
+        }
+
+        //The whole sheet as a rectangle of strings, laid out before anything is asked to
+        //write it.  Both exports go through here, so the workbook and the Google Sheet are
+        //the same sheet by construction rather than by two lots of layout code agreeing.
+        private List<string[]> Build_Sheet(out int parCols, out int parTotalsFrom,
+                                           out int parTotalsTo, out int parHeadRow)
+        {
+            int Cols = gvForecast.Columns.Count;
+            if (Cols < 2)
+            {
+                Cols = 2;
+            }
+
+            List<string[]> Sheet = new List<string[]>();
+            Sheet.Add(Line(Cols, "ETF/Stock Forecast Dividend Calendar"));
+            Sheet.Add(Line(Cols));
+            Sheet.Add(Line(Cols, "Portfolio", CmbPortfolio.Text.Trim()));
+            Sheet.Add(Line(Cols, "Main Only", (chkMainOnly.Checked ? "Yes" : "No")));
+            Sheet.Add(Line(Cols, "Generated", DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss")));
+            if (LblNote.Text.Trim() != "")
+            {
+                Sheet.Add(Line(Cols, "Note", LblNote.Text.Trim()));
+            }
+            //what the figures rest on travels with them : a forecast read without it is
+            //easily mistaken for a statement of fact
+            if (LblBasis.Text.Trim() != "")
+            {
+                Sheet.Add(Line(Cols, "Basis", LblBasis.Text.Trim()));
+            }
+            Sheet.Add(Line(Cols));
+
+            //the aggregates sit above the table
+            List<string> TmpCaps;
+            List<string> TmpVals;
+            Aggregates(out TmpCaps, out TmpVals);
+            parTotalsFrom = Sheet.Count + 1;
+            for (int i = 0; i < TmpCaps.Count; i++)
+            {
+                Sheet.Add(Line(Cols, TmpCaps[i], TmpVals[i]));
+            }
+            parTotalsTo = Sheet.Count;
+            Sheet.Add(Line(Cols));
+
+            parHeadRow = Sheet.Count + 1;
+            string[] head = new string[Cols];
+            for (int cc = 0; cc < gvForecast.Columns.Count; cc++)
+            {
+                head[cc] = gvForecast.Columns[cc].Name;
+            }
+            Sheet.Add(head);
+
+            //the grid already carries its own totals row, so it comes across with the rest
+            for (int r = 0; r < gvForecast.Rows.Count; r++)
+            {
+                string[] line = new string[Cols];
+                for (int cc = 0; cc < gvForecast.Columns.Count; cc++)
+                {
+                    object v = gvForecast.Rows[r].Cells[cc].Value;
+                    line[cc] = (v == null ? "" : v.ToString());
+                }
+                Sheet.Add(line);
+            }
+
+            parCols = Cols;
+            return Sheet;
+        }
+
+        //---- Excel ---------------------------------------------------------------
+
+        [DllImport("user32.dll")]
+        private static extern int GetWindowThreadProcessId(IntPtr parHwnd, out int parProcessId);
+
+        //Takes where to write as a parameter so the Drive button can send it to a temporary
+        //file instead of one the user chose.  Throws rather than reporting: the callers
+        //differ in what they say afterwards.
+        private void Write_Workbook(List<string[]> parSheet, int parCols, int parTotalsFrom,
+                                    int parTotalsTo, int parHeadRow, string parPath)
+        {
+            object[,] Data = new object[parSheet.Count, parCols];
+            for (int r = 0; r < parSheet.Count; r++)
+            {
+                for (int cc = 0; cc < parCols; cc++)
+                {
+                    Data[r, cc] = parSheet[r][cc];
+                }
+            }
+
+            Excel.Application app = null;
+            Excel.Workbooks books = null;
+            Excel.Workbook wb = null;
+            Excel.Sheets sheets = null;
+            Excel.Worksheet ws = null;
+            Excel.Range all = null;
+            Excel.Range one = null;
+            Excel.Range cols = null;
+            int ExcelPid = 0;
+
+            try
+            {
+                app = new Excel.Application();
+                app.Visible = false;
+                app.DisplayAlerts = false;
+                GetWindowThreadProcessId(new IntPtr(app.Hwnd), out ExcelPid);
+
+                books = app.Workbooks;
+                wb = books.Add();
+                sheets = wb.Worksheets;
+                ws = (Excel.Worksheet)sheets[1];
+                ws.Name = "Forecast Dividend Calendar";
+
+                all = ws.Range[ws.Cells[1, 1], ws.Cells[parSheet.Count, parCols]];
+                //Written as text on purpose.  Left to itself Excel re-reads every value and
+                //throws away the formatting the screen is showing : "-$76.05" comes back as
+                //red "($76.05)", "12.34 %" turns into a fraction, and what is recognised as
+                //a number at all depends on the machine's locale.  The export is meant to be
+                //what the user is looking at, so the cells are kept exactly as displayed.
+                all.NumberFormat = "@";
+                all.Value2 = Data;
+
+                one = ws.Range[ws.Cells[1, 1], ws.Cells[1, 1]];
+                one.Font.Bold = true;
+                one.Font.Size = 14;
+                Marshal.ReleaseComObject(one);
+                one = null;
+
+                if (parTotalsTo >= parTotalsFrom)
+                {
+                    one = ws.Range[ws.Cells[parTotalsFrom, 1], ws.Cells[parTotalsTo, 2]];
+                    one.Font.Bold = true;
+                    Marshal.ReleaseComObject(one);
+                    one = null;
+                }
+
+                one = ws.Range[ws.Cells[parHeadRow, 1], ws.Cells[parHeadRow, parCols]];
+                one.Font.Bold = true;
+                one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
+                Marshal.ReleaseComObject(one);
+                one = null;
+
+                //the grid's own totals row is the last line of the sheet
+                if (parSheet.Count > parHeadRow)
+                {
+                    one = ws.Range[ws.Cells[parSheet.Count, 1], ws.Cells[parSheet.Count, parCols]];
+                    one.Font.Bold = true;
+                    one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
+                    Marshal.ReleaseComObject(one);
+                    one = null;
+                }
+
+                cols = ws.Columns;
+                cols.AutoFit();
+
+                wb.SaveAs(parPath, Excel.XlFileFormat.xlOpenXMLWorkbook);
+                wb.Close(false);
+                app.Quit();
+            }
+            finally
+            {
+                if (one != null) { Marshal.ReleaseComObject(one); }
+                if (cols != null) { Marshal.ReleaseComObject(cols); }
+                if (all != null) { Marshal.ReleaseComObject(all); }
+                if (ws != null) { Marshal.ReleaseComObject(ws); }
+                if (sheets != null) { Marshal.ReleaseComObject(sheets); }
+                if (wb != null) { Marshal.ReleaseComObject(wb); }
+                if (books != null) { Marshal.ReleaseComObject(books); }
+                if (app != null) { Marshal.ReleaseComObject(app); }
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Kill_Excel(ExcelPid);
+            }
+        }
+
+        //---- the two export buttons -----------------------------------------------
+
+        private void Busy(bool parBusy)
+        {
+            Cursor.Current = (parBusy ? Cursors.WaitCursor : Cursors.Default);
+            CmdExcel.Enabled = !parBusy;
+            CmdDrive.Enabled = !parBusy;
+            CmdBack.Enabled = !parBusy;
+        }
+
+        private bool Anything_To_Export()
+        {
+            if (gvForecast.Rows.Count == 0)
+            {
+                MessageBox.Show("There is nothing on screen to export.", "Error Message");
+                return false;
+            }
+            return true;
+        }
+
+        private void CmdExcel_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Title = "Generate Excel";
+            dlg.Filter = "Excel Workbook (*.xlsx)|*.xlsx";
+            dlg.FileName = Export_Name(".xlsx");
+            dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            int TmpCols;
+            int TmpFrom;
+            int TmpTo;
+            int TmpHead;
+            List<string[]> TmpSheet = Build_Sheet(out TmpCols, out TmpFrom, out TmpTo, out TmpHead);
+
+            Busy(true);
+            try
+            {
+                Write_Workbook(TmpSheet, TmpCols, TmpFrom, TmpTo, TmpHead, dlg.FileName);
+                MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate the Excel file : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                Busy(false);
+            }
+        }
+
+        //Builds the same workbook into a temporary file, signs in, uploads it as a Google
+        //Sheet and throws the temporary file away. The user is never asked where to put it -
+        //that is what the Excel button is for.
+        private void CmdDrive_Click(object sender, EventArgs e)
+        {
+            if (!Anything_To_Export())
+            {
+                return;
+            }
+            if (!Google_Drive.Configured)
+            {
+                MessageBox.Show("Google Drive is not set up yet." + Environment.NewLine
+                    + Environment.NewLine + Google_Drive.Setup_Hint(), "Error Message");
+                return;
+            }
+
+            //One Sheet, reused : the forecast is of the portfolio as it stands, so there is
+            //nothing for the name to vary by and each run should replace the last rather
+            //than leave a file per day behind.
+            string TmpTitle = Google_Drive.Forecast_Dividend_Calendar_Sheet_Name();
+            string TmpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                                                    Export_Name("") + ".xlsx");
+            string TmpOldNote = LblNote.Text;
+
+            Busy(true);
+            try
+            {
+                LblNote.Text = "Building the workbook ...";
+                LblNote.Refresh();
+                int TmpCols;
+                int TmpFrom;
+                int TmpTo;
+                int TmpHead;
+                List<string[]> TmpSheet = Build_Sheet(out TmpCols, out TmpFrom, out TmpTo,
+                                                      out TmpHead);
+                Write_Workbook(TmpSheet, TmpCols, TmpFrom, TmpTo, TmpHead, TmpPath);
+
+                LblNote.Text = "Waiting for you to sign in to Google in your browser ...";
+                LblNote.Refresh();
+                string TmpWhy;
+                string TmpToken = Google_Drive.Sign_In(out TmpWhy);
+                if (TmpToken == null)
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                LblNote.Text = "Uploading to Google Drive ...";
+                LblNote.Refresh();
+                string TmpLink;
+                bool TmpReplaced;
+                int TmpDuplicates;
+                string TmpHow;
+                if (!Google_Drive.Upload(TmpToken, TmpPath, TmpTitle, out TmpLink, out TmpReplaced,
+                                         out TmpDuplicates, out TmpHow, out TmpWhy))
+                {
+                    MessageBox.Show(TmpWhy, "Error Message");
+                    return;
+                }
+
+                //only one of a set of same-named Sheets is being kept up to date; saying so
+                //beats letting the others quietly go stale
+                string TmpWarning = "";
+                if (TmpDuplicates > 1)
+                {
+                    TmpWarning = Environment.NewLine + Environment.NewLine
+                               + TmpDuplicates.ToString() + " Sheets carry this name."
+                               + Environment.NewLine
+                               + "The most recently changed one was updated; the rest were left"
+                               + " alone and will now be out of date.";
+                }
+
+                DialogResult Response = MessageBox.Show(
+                    (TmpReplaced ? "Google Sheet updated :" : "Google Sheet created :")
+                    + Environment.NewLine + TmpTitle
+                    + Environment.NewLine + "(" + TmpHow + ")"
+                    + TmpWarning
+                    + Environment.NewLine + Environment.NewLine + TmpLink
+                    + Environment.NewLine + Environment.NewLine + "Open it now ?",
+                    "Success", MessageBoxButtons.YesNo);
+                if (Response == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(TmpLink);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate to Google Drive : " + ex.Message, "Error Message");
+            }
+            finally
+            {
+                //the workbook was only ever a carrier for the upload
+                try
+                {
+                    if (System.IO.File.Exists(TmpPath))
+                    {
+                        System.IO.File.Delete(TmpPath);
+                    }
+                }
+                catch
+                {
+                    //a temp file left behind is not worth a second error on top of the first
+                }
+                LblNote.Text = TmpOldNote;
+                Busy(false);
+            }
+        }
+
+        //Quit does not always end the process; this is the backstop so exports cannot
+        //pile up invisible copies of Excel.
+        private void Kill_Excel(int parPid)
+        {
+            if (parPid <= 0)
+            {
+                return;
+            }
+            try
+            {
+                System.Diagnostics.Process proc = System.Diagnostics.Process.GetProcessById(parPid);
+                if (!proc.HasExited)
+                {
+                    proc.Kill();
+                }
+                proc.Dispose();
+            }
+            catch (Exception)
+            {
+                //already gone, which is the outcome we wanted anyway
+            }
         }
 
         private void CmdBack_Click(object sender, EventArgs e)
