@@ -71,6 +71,7 @@
             this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCompoundInterest = new System.Windows.Forms.ToolStripMenuItem();
             this.MnDividendSnowball = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnTaxDeductableInterest = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCalculator = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
@@ -437,7 +438,8 @@
             // 
             this.MnCalculator.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnCompoundInterest,
-            this.MnDividendSnowball});
+            this.MnDividendSnowball,
+            this.MnTaxDeductableInterest});
             this.MnCalculator.Name = "MnCalculator";
             this.MnCalculator.Size = new System.Drawing.Size(72, 20);
             this.MnCalculator.Text = "&Calculator";
@@ -455,6 +457,13 @@
             this.MnDividendSnowball.Size = new System.Drawing.Size(260, 22);
             this.MnDividendSnowball.Text = "&Dividend Snowball Calculator";
             this.MnDividendSnowball.Click += new System.EventHandler(this.MnDividendSnowball_Click);
+            // 
+            // MnTaxDeductableInterest
+            // 
+            this.MnTaxDeductableInterest.Name = "MnTaxDeductableInterest";
+            this.MnTaxDeductableInterest.Size = new System.Drawing.Size(260, 22);
+            this.MnTaxDeductableInterest.Text = "&Tax Deductable Interest Calculator";
+            this.MnTaxDeductableInterest.Click += new System.EventHandler(this.MnTaxDeductableInterest_Click);
             // 
             // MnAdmin
             // 
@@ -1124,6 +1133,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnAdmin;
         public System.Windows.Forms.ToolStripMenuItem MnCompoundInterest;
         public System.Windows.Forms.ToolStripMenuItem MnDividendSnowball;
+        public System.Windows.Forms.ToolStripMenuItem MnTaxDeductableInterest;
         public System.Windows.Forms.ToolStripMenuItem MnCalculator;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;

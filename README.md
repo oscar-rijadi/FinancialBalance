@@ -99,8 +99,9 @@ Related pages are collected into submenus rather than sitting flat:
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
 one page rather than a group. `Inquiry` likewise carries **Super Balance & Historical Data**
-after its own ETF/Stock submenu. `Calculator` holds both its pages — **Compound Interest
-Calculator** and **Dividend Snowball Calculator** — directly, with no submenu between.
+after its own ETF/Stock submenu. `Calculator` holds all three of its pages — **Compound
+Interest Calculator**, **Dividend Snowball Calculator** and **Tax Deductable Interest
+Calculator** — directly, with no submenu between.
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -148,6 +149,7 @@ flowchart LR
     MAIN --> SBH["Super_Balance_Historical"]
     MAIN --> CIC["Compound_Interest_Calculator"]
     MAIN --> DSC["Dividend_Snowball_Calculator"]
+    MAIN --> TDI["Tax_Deductable_Interest_Calculator"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -217,6 +219,7 @@ flowchart LR
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
+| `Tax_Deductable_Interest_Calculator` | Shown as **Tax Deductable Interest Calculator**. Splits an interest *rate* into bands, taxes each at its own rate, and says what rate is left. Percentages throughout, no money. Reads and writes nothing. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -2440,6 +2443,7 @@ C#.Net/
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
+│   ├── Tax_Deductable_Interest_Calculator.*  # interest rate after tax, no database
 │   ├── Setup_State.*                 # the Australian states and territories
 │   ├── Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
 │   ├── Setup_Property.*              # properties, and whether they are sold
@@ -3249,6 +3253,90 @@ out, so it cannot drift from the form it belongs to. The date and time are separ
 underscore here, unlike the other exports' unbroken `yyyyMMddHHmmss`. An export with nothing on
 screen is refused rather than writing an empty workbook, and every cell is written as **text** for
 the reason given under [Excel exports](#excel-exports).
+
+---
+
+### The tax deductable interest calculator
+
+`Calculator` ▸ Tax Deductable Interest Calculator answers: **an interest rate on paper, taxed
+how, leaves what rate.** It reads and writes nothing — like the other two calculators, it
+works entirely from what is typed into it.
+
+**Every figure on this page is a percentage.** There is no money anywhere on it, and that is
+deliberate: what these rates are worth in currency depends on the balance behind them, which
+the page does not ask for and cannot know. Ask it what 5.50 % becomes after tax and it
+answers 3.9187 %, which holds whatever the balance is.
+
+#### Bands, not one rate
+
+Interest is rarely all taxed alike. Part of it can fall in one bracket and part in the next,
+or part be held in one name and part in another — so the page takes a **list of bands**
+rather than a single rate. Each band is a **Tax Percentage** and the **Allocation** of the
+interest taxed at it:
+
+```
+Allocated Interest  =  On Paper Interest  x  Allocation / 100
+Tax                 =  Allocated Interest x  Tax Percentage / 100
+
+Real Interest       =  On Paper Interest  -  sum of every band's Tax
+```
+
+So **5.50 %** with 60 % of it at 32.5 %, 25 % at 37 % and 15 % untaxed:
+
+| Tax Percentage | Allocation | Allocated Interest | Tax |
+| --- | --- | --- | --- |
+| 32.50 % | 60.00 % | 3.3000 % | 1.0725 % |
+| 37.00 % | 25.00 % | 1.3750 % | 0.5088 % |
+| 0.00 % | 15.00 % | 0.8250 % | 0.0000 % |
+
+1.5813 % in tax, leaving **3.9187 %**.
+
+#### Two places for what is typed, four for what is worked out
+
+`Tax Percentage` and `Allocation` show the two places they were typed at. Everything derived
+shows **four**, because each of those figures is a rate multiplied by two more rates and two
+places would throw away most of what is left: a 5.50 % rate with 15 % of it taxed at 32.5 %
+comes to 0.2681 %, which two places would round to 0.27 and a list of bands would then fail to
+add up.
+
+Each band's tax is rounded to four places **before** it is summed, so `Total Tax` is exactly
+the sum of the column above it rather than close to it — the same rule every total in this
+application follows.
+
+#### Up to a hundred, and no further
+
+The bands divide up one lot of interest, so **their allocations cannot come to more than
+100 %**. An Add that would push the total past it is refused, and the message says how much
+is left to allocate rather than just that it will not fit.
+
+The check ignores the band being changed, which is what lets a band be *enlarged*: without
+that, taking a 15 % band to 20 % would be measured against a total that already counted its
+own 15 %, and refused.
+
+**Less than 100 % is allowed**, and means what it says: the unallocated share is taxed at
+nothing, so Real Interest comes out higher than a fully allocated list would give. The note
+under the entry area says how much is unallocated, because an unfinished list still produces
+a Real Interest and it would otherwise look like an answer rather than a part-worked sum.
+
+#### Working the list
+
+**Add doubles as Update**, keyed on the rate: a rate can only be in the list once, so naming
+it again changes how much of the interest is taxed at it rather than adding a second line.
+Two lines at the same rate would only ever be one line at the sum of their allocations.
+Clicking a line copies it back into the boxes, so an allocation can be corrected or the line
+removed without the rate having to be retyped exactly. Clear All asks first.
+
+A rate outside 0 to 100, an allocation of zero, and an empty box in either are refused. **A
+rate of zero is not** — a tax-free threshold is a real band, and leaving it out would drop
+its share from the allocation total.
+
+Changing **On Paper Interest** redraws the whole page rather than waiting for a button: it
+is the figure every other number is a share of, so nothing on screen survives a change to it.
+
+The four totals are **On Paper Interest**, **Total Allocation**, **Total Tax** (red) and
+**Real Interest** (green, and set larger — it is the answer the page exists for). All but
+`Total Allocation` are rates; that one is a share of the interest, which is what makes it the
+one percentage on the page that is not measured in interest.
 
 ---
 

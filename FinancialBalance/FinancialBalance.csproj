@@ -354,6 +354,12 @@
     <Compile Include="ETF_Stocks_Forecast_Dividend_Allocation.Designer.cs">
       <DependentUpon>ETF_Stocks_Forecast_Dividend_Allocation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tax_Deductable_Interest_Calculator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tax_Deductable_Interest_Calculator.Designer.cs">
+      <DependentUpon>Tax_Deductable_Interest_Calculator.cs</DependentUpon>
+    </Compile>
     <Compile Include="Property_Summary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -542,6 +548,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Forecast_Dividend_Allocation.resx">
       <DependentUpon>ETF_Stocks_Forecast_Dividend_Allocation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tax_Deductable_Interest_Calculator.resx">
+      <DependentUpon>Tax_Deductable_Interest_Calculator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Property_Summary.resx">
       <DependentUpon>Property_Summary.cs</DependentUpon>
