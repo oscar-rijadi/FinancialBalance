@@ -99,9 +99,9 @@ Related pages are collected into submenus rather than sitting flat:
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
 one page rather than a group. `Inquiry` likewise carries **Super Balance & Historical Data**
-after its own ETF/Stock submenu. `Calculator` holds all three of its pages — **Compound
-Interest Calculator**, **Dividend Snowball Calculator** and **Tax Deductable Interest
-Calculator** — directly, with no submenu between.
+after its own ETF/Stock submenu. `Calculator` holds all four of its pages — **Compound
+Interest Calculator**, **Dividend Snowball Calculator**, **Tax Deductable Interest
+Calculator** and **Before Tax Interest Calculator** — directly, with no submenu between.
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -150,6 +150,7 @@ flowchart LR
     MAIN --> CIC["Compound_Interest_Calculator"]
     MAIN --> DSC["Dividend_Snowball_Calculator"]
     MAIN --> TDI["Tax_Deductable_Interest_Calculator"]
+    MAIN --> BTI["Before_Tax_Interest_Calculator"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -220,6 +221,7 @@ flowchart LR
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
 | `Tax_Deductable_Interest_Calculator` | Shown as **Tax Deductable Interest Calculator**. Splits an interest *rate* into bands, taxes each at its own rate, and says what rate is left. Percentages throughout, no money. Reads and writes nothing. |
+| `Before_Tax_Interest_Calculator` | Shown as **Before Tax Interest Calculator**. The same question as the one above, asked backwards: given the rate left after tax and how it is taxed, what rate has to be earned. Reads and writes nothing. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -2444,6 +2446,7 @@ C#.Net/
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
 │   ├── Tax_Deductable_Interest_Calculator.*  # interest rate after tax, no database
+│   ├── Before_Tax_Interest_Calculator.*  # the same sum backwards, no database
 │   ├── Setup_State.*                 # the Australian states and territories
 │   ├── Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
 │   ├── Setup_Property.*              # properties, and whether they are sold
@@ -3337,6 +3340,59 @@ The four totals are **On Paper Interest**, **Total Allocation**, **Total Tax** (
 **Real Interest** (green, and set larger — it is the answer the page exists for). All but
 `Total Allocation` are rates; that one is a share of the interest, which is what makes it the
 one percentage on the page that is not measured in interest.
+
+---
+
+### The before tax interest calculator
+
+`Calculator` ▸ Before Tax Interest Calculator is
+[the page above](#the-tax-deductable-interest-calculator) asked backwards: **a rate left
+after tax, taxed how, needs what rate to start with.** Same bands, same entry area, same
+refusals, same percentages-throughout rule — only the direction differs, which is why the
+two pages are laid out identically.
+
+#### Why it inverts at all
+
+What the bands take does not depend on the rate. Each band takes its allocation of whatever
+the rate is and is taxed at its own percentage, so the share they take together is a
+constant — and a sum that only multiplies by a constant can be divided back:
+
+```
+after   =  before - sum(before x Allocation x Tax Percentage)
+        =  before x (1 - K)        where K = sum(Allocation x Tax Percentage)
+
+before  =  after / (1 - K)
+```
+
+`K` is what the note under the entry area calls *the bands take n % of the whole*. With the
+60 / 25 / 15 split of the page above it is 28.75 %, so **3.9187 % after tax needs 5.4999 %
+before it** — which is the rate that page started from.
+
+With no bands at all `K` is zero and the answer is the rate typed in, which is right: no tax,
+nothing to gross up.
+
+#### When there is no answer
+
+If **the whole of the interest is allocated at 100 %**, `K` is 1 and the division is by zero.
+That is not a defect to guard against but a real answer: everything is taxed away whatever
+the rate before tax was, so no rate produces the one asked for. Before Tax Interest, Total
+Tax and the two computed columns all read `-`, and the note says why.
+
+Anything short of that is fine — 100 % tax on *half* of it just means the other half has to
+carry the whole result, and the answer doubles.
+
+#### Which figure gets rounded
+
+The answer is rounded to four places **once**, and every band is worked off the rounded
+figure — so the `Allocated Interest` column adds to exactly the Before Tax Interest shown
+beneath it. Carrying full precision into the bands instead left that column summing to
+5.5000 against an answer of 5.4999, which reads as a bug in the page rather than as rounding.
+
+> The cost lands at the other end: taking the tax back off the answer can come out a
+> ten-thousandth from the rate that was typed in — 3.9186 against 3.9187 above. That is
+> unavoidable once a rate is shown to four places at all, and it is the less visible of the
+> two, since it takes a subtraction to notice where a column that does not add up is there on
+> the face of it.
 
 ---
 

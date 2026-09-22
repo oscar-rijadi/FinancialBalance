@@ -175,6 +175,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnBeforeTaxInterest_Click(object sender, EventArgs e)
+        {
+            Before_Tax_Interest_Calculator Before_Tax_Interest_Calculator = new Before_Tax_Interest_Calculator();
+            Before_Tax_Interest_Calculator.Show();
+            this.Hide();
+        }
+
         private void MnTaxDeductableInterest_Click(object sender, EventArgs e)
         {
             Tax_Deductable_Interest_Calculator Tax_Deductable_Interest_Calculator = new Tax_Deductable_Interest_Calculator();

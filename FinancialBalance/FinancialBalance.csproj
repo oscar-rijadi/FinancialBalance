@@ -360,6 +360,12 @@
     <Compile Include="Tax_Deductable_Interest_Calculator.Designer.cs">
       <DependentUpon>Tax_Deductable_Interest_Calculator.cs</DependentUpon>
     </Compile>
+    <Compile Include="Before_Tax_Interest_Calculator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Before_Tax_Interest_Calculator.Designer.cs">
+      <DependentUpon>Before_Tax_Interest_Calculator.cs</DependentUpon>
+    </Compile>
     <Compile Include="Property_Summary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -551,6 +557,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Tax_Deductable_Interest_Calculator.resx">
       <DependentUpon>Tax_Deductable_Interest_Calculator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Before_Tax_Interest_Calculator.resx">
+      <DependentUpon>Before_Tax_Interest_Calculator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Property_Summary.resx">
       <DependentUpon>Property_Summary.cs</DependentUpon>
