@@ -34,6 +34,12 @@
             this.CmdSetup = new System.Windows.Forms.Button();
             this.Label21 = new System.Windows.Forms.Label();
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
+            this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnTaxGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnTaxAllocationSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnStateSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyRentalExpTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrencyGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCurrSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -123,17 +129,65 @@
             // MainMenu1
             // 
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnAdmin});
+            this.MainMenu1.Location = new System.Drawing.Point(0, 0);
+            this.MainMenu1.Name = "MainMenu1";
+            this.MainMenu1.Size = new System.Drawing.Size(576, 24);
+            this.MainMenu1.TabIndex = 9;
+            // 
+            // MnAdmin
+            // 
+            this.MnAdmin.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnAcctRefSetup,
             this.MnCurrencyGroup,
             this.MnActivaPassivaSetup,
             this.MnFinancialYearSetup,
             this.MnIntervalSetup,
             this.MnETFStockGroup,
+            this.MnPropertyGroup,
+            this.MnTaxGroup,
             this.MnSuperGroup});
-            this.MainMenu1.Location = new System.Drawing.Point(0, 0);
-            this.MainMenu1.Name = "MainMenu1";
-            this.MainMenu1.Size = new System.Drawing.Size(576, 24);
-            this.MainMenu1.TabIndex = 9;
+            this.MnAdmin.Name = "MnAdmin";
+            this.MnAdmin.Size = new System.Drawing.Size(87, 20);
+            this.MnAdmin.Text = "&Administration";
+            // 
+            // MnTaxGroup
+            // 
+            this.MnTaxGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnTaxAllocationSetup});
+            this.MnTaxGroup.Name = "MnTaxGroup";
+            this.MnTaxGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnTaxGroup.Text = "Ta&x";
+            // 
+            // MnTaxAllocationSetup
+            // 
+            this.MnTaxAllocationSetup.Name = "MnTaxAllocationSetup";
+            this.MnTaxAllocationSetup.Size = new System.Drawing.Size(216, 22);
+            this.MnTaxAllocationSetup.Text = "Tax &Allocation Setup";
+            this.MnTaxAllocationSetup.Click += new System.EventHandler(this.MnTaxAllocationSetup_Click);
+            // 
+            // MnPropertyGroup
+            // 
+            this.MnPropertyGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnStateSetup,
+            this.MnPropertyRentalExpTypeSetup});
+            this.MnPropertyGroup.Name = "MnPropertyGroup";
+            this.MnPropertyGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnPropertyGroup.Text = "&Property";
+            // 
+            // MnStateSetup
+            // 
+            this.MnStateSetup.Name = "MnStateSetup";
+            this.MnStateSetup.Size = new System.Drawing.Size(140, 20);
+            this.MnStateSetup.Text = "&State Setup";
+            this.MnStateSetup.Click += new System.EventHandler(this.MnStateSetup_Click);
+            // 
+            // MnPropertyRentalExpTypeSetup
+            // 
+            this.MnPropertyRentalExpTypeSetup.Name = "MnPropertyRentalExpTypeSetup";
+            this.MnPropertyRentalExpTypeSetup.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertyRentalExpTypeSetup.Text = "Property Rental &Expense Type Setup";
+            this.MnPropertyRentalExpTypeSetup.Click += new System.EventHandler(this.MnPropertyRentalExpTypeSetup_Click);
             // 
             // MnAcctRefSetup
             // 
@@ -380,6 +434,12 @@
         public System.Windows.Forms.Button CmdSetup;
         public System.Windows.Forms.Label Label21;
         public System.Windows.Forms.MenuStrip MainMenu1;
+        public System.Windows.Forms.ToolStripMenuItem MnAdmin;
+        public System.Windows.Forms.ToolStripMenuItem MnTaxGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnTaxAllocationSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnStateSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalExpTypeSetup;
         public System.Windows.Forms.ToolStripMenuItem MnAcctRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrencyGroup;
         public System.Windows.Forms.ToolStripMenuItem MnCurrSetup;

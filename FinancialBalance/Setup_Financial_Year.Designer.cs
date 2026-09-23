@@ -30,6 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_Financial_Year));
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
+            this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnIntervalSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,18 +80,34 @@
             // MainMenu1
             //
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnAcctTypeRefSetup,
-            this.MnAcctRefSetup,
-            this.MnCurrencyGroup,
-            this.MnActivaPassivaSetup,
-            this.MnETFStockGroup,
-            this.MnPropertyGroup,
-            this.MnTaxGroup,
-            this.MnSuperGroup});
+            this.MnAdmin});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(700, 24);
             this.MainMenu1.TabIndex = 0;
+            // 
+            // MnAdmin
+            // 
+            this.MnAdmin.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnAcctTypeRefSetup,
+            this.MnAcctRefSetup,
+            this.MnCurrencyGroup,
+            this.MnActivaPassivaSetup,
+            this.MnIntervalSetup,
+            this.MnETFStockGroup,
+            this.MnPropertyGroup,
+            this.MnTaxGroup,
+            this.MnSuperGroup});
+            this.MnAdmin.Name = "MnAdmin";
+            this.MnAdmin.Size = new System.Drawing.Size(87, 20);
+            this.MnAdmin.Text = "&Administration";
+            // 
+            // MnIntervalSetup
+            // 
+            this.MnIntervalSetup.Name = "MnIntervalSetup";
+            this.MnIntervalSetup.Size = new System.Drawing.Size(110, 20);
+            this.MnIntervalSetup.Text = "&Interval Setup";
+            this.MnIntervalSetup.Click += new System.EventHandler(this.MnIntervalSetup_Click);
             //
             // MnAcctTypeRefSetup
             //
@@ -525,6 +543,8 @@
         #endregion
 
         public System.Windows.Forms.MenuStrip MainMenu1;
+        public System.Windows.Forms.ToolStripMenuItem MnAdmin;
+        public System.Windows.Forms.ToolStripMenuItem MnIntervalSetup;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;

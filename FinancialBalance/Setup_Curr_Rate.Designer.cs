@@ -32,6 +32,7 @@
             this.CmdBack = new System.Windows.Forms.Button();
             this.CmdSetup = new System.Windows.Forms.Button();
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
+            this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -109,6 +110,15 @@
             // MainMenu1
             // 
             this.MainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnAdmin});
+            this.MainMenu1.Location = new System.Drawing.Point(0, 0);
+            this.MainMenu1.Name = "MainMenu1";
+            this.MainMenu1.Size = new System.Drawing.Size(574, 24);
+            this.MainMenu1.TabIndex = 17;
+            // 
+            // MnAdmin
+            // 
+            this.MnAdmin.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnAcctTypeRefSetup,
             this.MnAcctRefSetup,
             this.MnCurrencyGroup,
@@ -119,10 +129,9 @@
             this.MnPropertyGroup,
             this.MnTaxGroup,
             this.MnSuperGroup});
-            this.MainMenu1.Location = new System.Drawing.Point(0, 0);
-            this.MainMenu1.Name = "MainMenu1";
-            this.MainMenu1.Size = new System.Drawing.Size(574, 24);
-            this.MainMenu1.TabIndex = 17;
+            this.MnAdmin.Name = "MnAdmin";
+            this.MnAdmin.Size = new System.Drawing.Size(87, 20);
+            this.MnAdmin.Text = "&Administration";
             // 
             // MnAcctTypeRefSetup
             // 
@@ -559,6 +568,7 @@
         public System.Windows.Forms.Button CmdBack;
         public System.Windows.Forms.Button CmdSetup;
         public System.Windows.Forms.MenuStrip MainMenu1;
+        public System.Windows.Forms.ToolStripMenuItem MnAdmin;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;

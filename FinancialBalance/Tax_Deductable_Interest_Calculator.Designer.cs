@@ -41,6 +41,7 @@
             this.CmdAdd = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdClear = new System.Windows.Forms.Button();
+            this.CmdReload = new System.Windows.Forms.Button();
             this.LblNote = new System.Windows.Forms.Label();
             this.gvTax = new System.Windows.Forms.DataGridView();
             this.Lbl_LblOnPaper = new System.Windows.Forms.Label();
@@ -203,6 +204,21 @@
             this.CmdClear.UseVisualStyleBackColor = false;
             this.CmdClear.Click += new System.EventHandler(this.CmdClear_Click);
             //
+            // CmdReload
+            //
+            this.CmdReload.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdReload.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdReload.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdReload.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdReload.Location = new System.Drawing.Point(650, 139);
+            this.CmdReload.Name = "CmdReload";
+            this.CmdReload.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdReload.Size = new System.Drawing.Size(85, 24);
+            this.CmdReload.TabIndex = 23;
+            this.CmdReload.Text = "&Reload";
+            this.CmdReload.UseVisualStyleBackColor = false;
+            this.CmdReload.Click += new System.EventHandler(this.CmdReload_Click);
+            //
             // LblNote
             //
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
@@ -352,6 +368,7 @@
             this.Controls.Add(this.Lbl_LblOnPaper);
             this.Controls.Add(this.gvTax);
             this.Controls.Add(this.LblNote);
+            this.Controls.Add(this.CmdReload);
             this.Controls.Add(this.CmdClear);
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.CmdAdd);
@@ -391,6 +408,7 @@
         public System.Windows.Forms.Button CmdAdd;
         public System.Windows.Forms.Button CmdDel;
         public System.Windows.Forms.Button CmdClear;
+        public System.Windows.Forms.Button CmdReload;
         public System.Windows.Forms.Label LblNote;
         private System.Windows.Forms.DataGridView gvTax;
         public System.Windows.Forms.Label Lbl_LblOnPaper;

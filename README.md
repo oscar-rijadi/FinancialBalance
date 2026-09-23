@@ -205,7 +205,7 @@ flowchart LR
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
-| `ETF_Stocks_Tax_Interest` | Shown as **ETF/Stock Tax Deductable Interest**. What the borrowing behind the portfolio cost, month by month, with a financial year filter and the total for whichever year is showing. Add, update and delete, one figure per month. |
+| `ETF_Stocks_Tax_Interest` | Shown as **ETF/Stock Tax Deductable Interest**. What the borrowing behind the portfolio cost, month by month, with a financial year filter, the total for whichever year is showing, what the deduction on it is worth, and what it therefore really cost. Add, update and delete, one figure per month. |
 | `ETF_Stocks_FY_Reconciliation` | Shown as **ETF/Stock Financial Year Reconciliation**. One financial year's result per portfolio, with an entry section that defaults every figure from the rest of the database. |
 | `Super_Financial_Year` | Shown as **Super**. One financial year's result per super account — what went in, what the fund returned, what it cost, and what came out at the end. |
 | `Super_Balance_Historical` | Shown as **Super Balance & Historical Data**. Read-only, in two parts: where every super account stands, then one account's full year-by-year history. |
@@ -217,14 +217,14 @@ flowchart LR
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
-| `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads and writes nothing. |
-| `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads and writes nothing. |
+| `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads `TblETFStocks` and the diversification tables, and writes nothing. |
+| `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads five ETF/stock tables and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Allocation` | Shown as **ETF/Stock Forecast Dividend Allocation**. Build a list of tickers and amounts, and see what that money would pay: each ticker's yield, its yearly distribution and its share of the whole, with the totals per year, per month and as one yield. Reads `TblETFStocks` and writes nothing. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
-| `Tax_Deductable_Interest_Calculator` | Shown as **Tax Deductable Interest Calculator**. Splits an interest *rate* into bands, taxes each at its own rate, and says what rate is left. Percentages throughout, no money. Reads and writes nothing. |
-| `Before_Tax_Interest_Calculator` | Shown as **Before Tax Interest Calculator**. The same question as the one above, asked backwards: given the rate left after tax and how it is taxed, what rate has to be earned. Reads and writes nothing. |
+| `Tax_Deductable_Interest_Calculator` | Shown as **Tax Deductable Interest Calculator**. Splits an interest *rate* into bands, taxes each at its own rate, and says what rate is left. Percentages throughout, no money. Reads `TblTaxAllocation` and writes nothing. |
+| `Before_Tax_Interest_Calculator` | Shown as **Before Tax Interest Calculator**. The same question as the one above, asked backwards: given the rate left after tax and how it is taxed, what rate has to be earned. Reads `TblTaxAllocation` and writes nothing. |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -1319,12 +1319,56 @@ The list runs **newest month first**, read back as `MMM-yyyy`. `Month` is stored
 a plain string sort is the same as a date sort. The amount carries a `$` with thousands
 grouped to two places.
 
-#### The financial year filter, and the total
+#### The financial year filter, and the three totals
 
 A **Financial Year** dropdown above the list narrows it to one year, newest-closing first
 with `All` at the top, the same shape the [dividend history](#dividend-history) filter has.
-Under the list sits **Total Interest**: the Interest column of whatever is showing, added
-straight down. Picking a year therefore gives the figure the year is actually claimed on.
+Under the list sit three totals. **Total Interest** is the Interest column of whatever is
+showing, added straight down — so picking a year gives the figure the year is actually
+claimed on.
+
+**Total Tax Deductable Interest** is what the deduction on it is worth. Deductible interest
+comes off income before tax, so it saves whatever that income would have been taxed at:
+
+```
+Total Tax Deductable Interest  =  Total Interest  x  sum(Allocation x Tax_Rate)
+```
+
+over the bands in `TblTaxAllocation`. That multiplier is the same one the
+[before tax calculator](#the-before-tax-interest-calculator) inverts and the
+[tax deductable calculator](#the-tax-deductable-interest-calculator) subtracts — one figure
+standing for the whole split, because what the bands take between them does not depend on
+the amount. The bands come from [Tax Allocation Setup](#tax-allocation-setup) and are read
+afresh each time the list is drawn, so a rate changed there shows here without reopening.
+
+The note beside the totals says what the multiplier came to — *the deduction is worth 28.75 %
+of it, from Tax Allocation Setup* — since a figure derived from a table on another page is
+otherwise impossible to check from here.
+
+> **With no bands on file it reads `-`, not zero.** An empty `TblTaxAllocation` means nobody
+> has said what the income is taxed at, which is not the same as saying the deduction is
+> worth nothing, and the note says which it is.
+
+> A band taxed at **0 %** contributes nothing to the multiplier, so removing it changes the
+> figure not at all — while shrinking a *taxed* band lowers it. That is the arithmetic
+> working, not a filter being applied: an untaxed slice of income saves no tax when a
+> deduction is set against it.
+
+**Total Real Interest** is the third, and the one the page is really for:
+
+```
+Total Real Interest  =  Total Interest  -  Total Tax Deductable Interest
+```
+
+What the borrowing cost, less what the deduction gives back — so what it cost after tax. The
+three read down as one sentence: paid, reclaimed, borne. On the figures above, $1,000.00 paid
+with the deduction worth $287.50 really cost **$712.50**; drop the first band's allocation
+from 60 % to 40 % and the same $1,000.00 costs $777.50 instead, because less of it is being
+set against taxed income.
+
+It reads `-` whenever the deduction does. An empty `TblTaxAllocation` leaves the relief
+unknown, and showing the interest unchanged would be the positive claim that there is no
+relief, which is not what an empty table says.
 
 The year is stored as two `yyyyMMdd` dates and a month here is `yyyyMM`, so the filter is the
 first six characters of each:
@@ -2453,8 +2497,8 @@ C#.Net/
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
-│   ├── Tax_Deductable_Interest_Calculator.*  # interest rate after tax, no database
-│   ├── Before_Tax_Interest_Calculator.*  # the same sum backwards, no database
+│   ├── Tax_Deductable_Interest_Calculator.*  # interest rate after tax, reads TblTaxAllocation
+│   ├── Before_Tax_Interest_Calculator.*  # the same sum backwards, reads TblTaxAllocation
 │   ├── Setup_State.*                 # the Australian states and territories
 │   ├── Setup_Tax_Allocation.*        # tax rates and the share taxed at each
 │   ├── Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
@@ -3271,8 +3315,8 @@ the reason given under [Excel exports](#excel-exports).
 ### The tax deductable interest calculator
 
 `Calculator` ▸ Tax Deductable Interest Calculator answers: **an interest rate on paper, taxed
-how, leaves what rate.** It reads and writes nothing — like the other two calculators, it
-works entirely from what is typed into it.
+how, leaves what rate.** It reads its bands from `TblTaxAllocation` and writes nothing;
+everything else comes from what is typed into it.
 
 **Every figure on this page is a percentage.** There is no money anywhere on it, and that is
 deliberate: what these rates are worth in currency depends on the balance behind them, which
@@ -3330,6 +3374,22 @@ nothing, so Real Interest comes out higher than a fully allocated list would giv
 under the entry area says how much is unallocated, because an unfinished list still produces
 a Real Interest and it would otherwise look like an answer rather than a part-worked sum.
 
+#### Where the bands come from
+
+The list is **loaded from `TblTaxAllocation` when the page opens**, so it starts on the real
+split rather than on an empty grid that has to be retyped every time. That table is
+maintained by [Tax Allocation Setup](#tax-allocation-setup), which is the only place the
+bands are kept.
+
+**Nothing typed on this page is written back.** The loaded list can still be added to,
+changed and cleared — trying something is what a calculator is for — but those edits live
+only as long as the page does. **Reload** puts the stored bands back after a what-if, which
+is the way out of a Clear All that was not meant. The note under the entry area says so on
+every redraw: the figures are only as good as the bands behind them, and neither where they
+came from nor the fact that they are not being saved is otherwise visible.
+
+With the table empty the page opens empty, exactly as it did before it had a source.
+
 #### Working the list
 
 **Add doubles as Update**, keyed on the rate: a rate can only be in the list once, so naming
@@ -3359,6 +3419,10 @@ one percentage on the page that is not measured in interest.
 after tax, taxed how, needs what rate to start with.** Same bands, same entry area, same
 refusals, same percentages-throughout rule — only the direction differs, which is why the
 two pages are laid out identically.
+
+It loads its bands from `TblTaxAllocation` the same way, carries the same **Reload**, and
+writes back no more than the other one does — see
+[where the bands come from](#where-the-bands-come-from).
 
 #### Why it inverts at all
 
@@ -4114,11 +4178,11 @@ the share of interest taxed at it, one row per rate.
 | `Tax_Rate` | Decimal(22,2) | the rate, as a percentage |
 | `Allocation` | Decimal(22,2) | the share of the interest taxed at it, as a percentage |
 
-It ships empty. This is the stored form of the bands the two tax calculators take by hand —
-see [Tax deductable interest](#the-tax-deductable-interest-calculator) and
-[Before tax interest](#the-before-tax-interest-calculator) for what they are for and how they
-are used. **Neither calculator reads this table yet**; they still take their bands from what
-is typed into them.
+It ships empty. This is where the bands the two tax calculators work from are kept —
+[Tax deductable interest](#the-tax-deductable-interest-calculator) and
+[Before tax interest](#the-before-tax-interest-calculator) both **load this table when they
+open**, and neither writes to it. A rate changed here shows on both the next time either is
+opened; edits made on a calculator go nowhere near it.
 
 #### The rate identifies the row
 
@@ -4153,8 +4217,9 @@ table is not finished.
 > Tax page means giving this one the group back, with that page in it. State Setup was in
 > exactly this position until Property Rental Expense Type Setup joined it.
 
-> And it makes [the menu bar](#a-menu-bar-that-was-already-too-narrow) one entry worse again
-> on the seventeen 616px peer pages, where the surplus already lands nowhere.
+> Adding it was what finally tipped [the menu bar](#the-menu-bar-and-why-it-is-one-entry-wide)
+> into being fixed: the Tax group landed nowhere on fourteen of the twenty forms that carry
+> the Administration menu. Those bars now hold a single `Administration` entry instead.
 
 ---
 
@@ -4313,21 +4378,40 @@ been clipped since the fourth column was added.
 
 ---
 
-#### A menu bar that was already too narrow
+#### The menu bar, and why it is one entry wide
 
-Worth knowing before adding more Administration pages: on the narrower Setup pages the menu bar
-**silently clips** the entries that do not fit. A 616px bar holds five of them, and a Form's main
-`MenuStrip` does not overflow — setting `CanOverflow` changes nothing, the surplus entries simply
-land nowhere and are unreachable. Ten pages were already in that state before Property existed
-(`Super` and `ETF/Stock` among the casualties); Property makes it one entry worse on each of them,
-and `Setup_State` inherits it by matching its siblings' width. **Interval Setup makes it one
-worse again** — the five that fit end at Financial Year Setup, so Interval Setup itself lands
-nowhere on any of the sixteen peer pages and is reachable only from `Main_Form`.
+**Every Setup form's bar carries exactly one entry, `Administration`, with the whole menu
+nested under it** — the shape `Main_Form` has always had. It is worth knowing why, because
+the obvious alternative does not work.
 
-`Main_Form` is unaffected — its Administration list is a dropdown under one bar entry, so
-`Administration` ▸ `Property` ▸ `State Setup` is always reachable there. Fixing the peer pages
-means either widening them or nesting their entries under one `Administration` heading the way
-`Main_Form` does, across sixteen forms.
+A Form's main `MenuStrip` **does not overflow**. Whatever does not fit the bar is silently
+dropped: no chevron, no error, the entry simply lands nowhere and is unreachable. Setting
+`CanOverflow` changes nothing — it is a `ToolStrip` property that a main menu ignores.
+
+The Setup forms used to lay the whole Administration menu flat across the bar, seven to ten
+entries wide, and **eighteen of the nineteen were losing entries** — between one and six
+each. It was never only the 616px pages: 574, 576, 640, 700 and even the 840px Super page
+lost something, because what fits depends on the running width of the captions rather than
+on any round number. A page omits its own entry, which shortens its bar by exactly that much,
+so two bars of the same width lost different amounts.
+
+Nesting was chosen over widening because **one item cannot overflow a bar**: the fix holds
+however many Setup pages are added later, where widening would have to be revisited each
+time — and it would have meant resizing eighteen forms whose layouts are otherwise settled.
+Nothing moved on the forms: each strip kept its size and position, and every entry kept its
+name, caption, order and handler. Only the level it sits at changed.
+
+> Three forms were also missing entries outright, which no amount of room would have fixed.
+> `Setup_Acct_Type_Ref` had no Property group and so never got the Tax group either;
+> `Setup_Activa_Passiva` had no Financial Year Setup and so never got Interval Setup;
+> `Setup_Financial_Year` had no Interval Setup. Each is the same mistake: **a script that
+> adds a menu entry to every form anchors on a sibling entry, and a form omits its own** — so
+> whichever form is the exception gets silently skipped, and the next script anchoring on the
+> skipped entry skips it again. Anchor on something every form has.
+
+Every Setup form now reaches all eighteen of the others, and no form with a menu clips
+anything — measured by opening all thirty-seven of them and reading back each item's
+`Placement`.
 
 ---
 

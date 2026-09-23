@@ -248,5 +248,23 @@ namespace FinancialBalance
             Main_Form.Show();
             this.Close();
         }
+        private void MnStateSetup_Click(object sender, EventArgs e)
+        {
+            Setup_State Setup_State = new Setup_State();
+            Setup_State.Show();
+            this.Close();
+        }
+        private void MnPropertyRentalExpTypeSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Property_Rental_Expense_Type Setup_Property_Rental_Expense_Type = new Setup_Property_Rental_Expense_Type();
+            Setup_Property_Rental_Expense_Type.Show();
+            this.Close();
+        }
+        private void MnTaxAllocationSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Tax_Allocation Setup_Tax_Allocation = new Setup_Tax_Allocation();
+            Setup_Tax_Allocation.Show();
+            this.Close();
+        }
     }
 }

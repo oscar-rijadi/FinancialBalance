@@ -43,6 +43,10 @@
             this.gvInterest = new System.Windows.Forms.DataGridView();
             this.Lbl_LblTotalInterest = new System.Windows.Forms.Label();
             this.LblTotalInterest = new System.Windows.Forms.Label();
+            this.Lbl_LblTaxDeductable = new System.Windows.Forms.Label();
+            this.LblTaxDeductable = new System.Windows.Forms.Label();
+            this.Lbl_LblRealInterest = new System.Windows.Forms.Label();
+            this.LblRealInterest = new System.Windows.Forms.Label();
             this.Lbl_Month = new System.Windows.Forms.Label();
             this.CmbMonth = new System.Windows.Forms.ComboBox();
             this.CmbYear = new System.Windows.Forms.ComboBox();
@@ -368,6 +372,52 @@
             this.LblTotalInterest.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.LblTotalInterest.UseMnemonic = false;
             // 
+            // Lbl_LblTaxDeductable
+            // 
+            this.Lbl_LblTaxDeductable.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblTaxDeductable.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblTaxDeductable.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblTaxDeductable.Location = new System.Drawing.Point(19, 536);
+            this.Lbl_LblTaxDeductable.Name = "Lbl_LblTaxDeductable";
+            this.Lbl_LblTaxDeductable.Size = new System.Drawing.Size(180, 22);
+            this.Lbl_LblTaxDeductable.TabIndex = 40;
+            this.Lbl_LblTaxDeductable.Text = "Total Tax Deductable Interest";
+            // 
+            // LblTaxDeductable
+            // 
+            this.LblTaxDeductable.BackColor = System.Drawing.Color.Transparent;
+            this.LblTaxDeductable.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTaxDeductable.ForeColor = System.Drawing.Color.Green;
+            this.LblTaxDeductable.Location = new System.Drawing.Point(205, 536);
+            this.LblTaxDeductable.Name = "LblTaxDeductable";
+            this.LblTaxDeductable.Size = new System.Drawing.Size(120, 22);
+            this.LblTaxDeductable.TabIndex = 41;
+            this.LblTaxDeductable.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblTaxDeductable.UseMnemonic = false;
+            // 
+            // Lbl_LblRealInterest
+            // 
+            this.Lbl_LblRealInterest.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblRealInterest.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblRealInterest.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblRealInterest.Location = new System.Drawing.Point(19, 566);
+            this.Lbl_LblRealInterest.Name = "Lbl_LblRealInterest";
+            this.Lbl_LblRealInterest.Size = new System.Drawing.Size(180, 22);
+            this.Lbl_LblRealInterest.TabIndex = 42;
+            this.Lbl_LblRealInterest.Text = "Total Real Interest";
+            // 
+            // LblRealInterest
+            // 
+            this.LblRealInterest.BackColor = System.Drawing.Color.Transparent;
+            this.LblRealInterest.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblRealInterest.ForeColor = System.Drawing.Color.Black;
+            this.LblRealInterest.Location = new System.Drawing.Point(205, 566);
+            this.LblRealInterest.Name = "LblRealInterest";
+            this.LblRealInterest.Size = new System.Drawing.Size(120, 22);
+            this.LblRealInterest.TabIndex = 43;
+            this.LblRealInterest.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.LblRealInterest.UseMnemonic = false;
+            // 
             // LblNote
             // 
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
@@ -383,7 +433,7 @@
             // 
             this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdCreate.Location = new System.Drawing.Point(615, 542);
+            this.CmdCreate.Location = new System.Drawing.Point(615, 602);
             this.CmdCreate.Name = "CmdCreate";
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
             this.CmdCreate.TabIndex = 16;
@@ -395,7 +445,7 @@
             // 
             this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdUpdate.Location = new System.Drawing.Point(710, 542);
+            this.CmdUpdate.Location = new System.Drawing.Point(710, 602);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
             this.CmdUpdate.TabIndex = 17;
@@ -407,7 +457,7 @@
             // 
             this.CmdClear.BackColor = System.Drawing.SystemColors.Control;
             this.CmdClear.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdClear.Location = new System.Drawing.Point(805, 542);
+            this.CmdClear.Location = new System.Drawing.Point(805, 602);
             this.CmdClear.Name = "CmdClear";
             this.CmdClear.Size = new System.Drawing.Size(85, 28);
             this.CmdClear.TabIndex = 18;
@@ -419,7 +469,7 @@
             // 
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdDel.Location = new System.Drawing.Point(900, 542);
+            this.CmdDel.Location = new System.Drawing.Point(900, 602);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
             this.CmdDel.TabIndex = 19;
@@ -431,7 +481,7 @@
             // 
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(995, 542);
+            this.CmdBack.Location = new System.Drawing.Point(995, 602);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
             this.CmdBack.TabIndex = 20;
@@ -445,7 +495,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1100, 600);
+            this.ClientSize = new System.Drawing.Size(1100, 660);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
@@ -460,6 +510,10 @@
             this.Controls.Add(this.CmbYear);
             this.Controls.Add(this.CmbMonth);
             this.Controls.Add(this.Lbl_Month);
+            this.Controls.Add(this.LblRealInterest);
+            this.Controls.Add(this.Lbl_LblRealInterest);
+            this.Controls.Add(this.LblTaxDeductable);
+            this.Controls.Add(this.Lbl_LblTaxDeductable);
             this.Controls.Add(this.LblTotalInterest);
             this.Controls.Add(this.Lbl_LblTotalInterest);
             this.Controls.Add(this.CmbFinYear);
@@ -510,6 +564,10 @@
         public System.Windows.Forms.DataGridView gvInterest;
         public System.Windows.Forms.Label Lbl_LblTotalInterest;
         public System.Windows.Forms.Label LblTotalInterest;
+        public System.Windows.Forms.Label Lbl_LblTaxDeductable;
+        public System.Windows.Forms.Label LblTaxDeductable;
+        public System.Windows.Forms.Label Lbl_LblRealInterest;
+        public System.Windows.Forms.Label LblRealInterest;
         public System.Windows.Forms.Label Lbl_Month;
         public System.Windows.Forms.ComboBox CmbMonth;
         public System.Windows.Forms.ComboBox CmbYear;

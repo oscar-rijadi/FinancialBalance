@@ -433,5 +433,17 @@ namespace FinancialBalance
             Main_Form.Show();
             this.Close();
         }
+        private void MnFinancialYearSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Financial_Year Setup_Financial_Year = new Setup_Financial_Year();
+            Setup_Financial_Year.Show();
+            this.Close();
+        }
+        private void MnIntervalSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Interval Setup_Interval = new Setup_Interval();
+            Setup_Interval.Show();
+            this.Close();
+        }
     }
 }

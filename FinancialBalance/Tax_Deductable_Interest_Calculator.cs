@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Data.OleDb;
 using System.Globalization;
 
 namespace FinancialBalance
@@ -41,6 +42,64 @@ namespace FinancialBalance
 
         private void Tax_Deductable_Interest_Calculator_Load(object sender, EventArgs e)
         {
+            Load_Bands();
+            Show_Data();
+        }
+
+        //The bands as Tax Allocation Setup holds them.  Read on the way in rather than
+        //asked for line by line, so the page opens on the real split instead of on an
+        //empty list that has to be retyped every time.
+        //
+        //Nothing here is written back.  The list can still be added to, changed and
+        //cleared, because trying something is what a calculator is for - but the stored
+        //bands are only ever read, and Tax Allocation Setup stays the one place they are
+        //kept.  Reload puts them back after a what-if.
+        private void Load_Bands()
+        {
+            try
+            {
+                Bands.Clear();
+
+                Mdl1.Ssql = "select [Tax_Rate], [Allocation] from TblTaxAllocation"
+                          + " order by [Tax_Rate]";
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Band TmpBand = new Band();
+                    TmpBand.Rate = Math.Round(Read_Stored(reader["Tax_Rate"]), 2);
+                    TmpBand.Allocation = Math.Round(Read_Stored(reader["Allocation"]), 2);
+                    Bands.Add(TmpBand);
+                }
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+        }
+
+        private double Read_Stored(object parValue)
+        {
+            if (parValue == null || parValue == DBNull.Value)
+            {
+                return 0;
+            }
+            double TmpValue;
+            if (double.TryParse(parValue.ToString(), NumberStyles.Any,
+                                CultureInfo.InvariantCulture, out TmpValue))
+            {
+                return TmpValue;
+            }
+            return 0;
+        }
+
+        //Back to what is on file, which is the way out of a what-if that went nowhere.
+        private void CmdReload_Click(object sender, EventArgs e)
+        {
+            Load_Bands();
+            txtTax.Text = "";
+            txtAlloc.Text = "";
             Show_Data();
         }
 
@@ -335,7 +394,15 @@ namespace FinancialBalance
             {
                 TmpText = TmpText + "   -   the whole of the interest is allocated.";
             }
-            LblNote.Text = TmpText;
+            LblNote.Text = TmpText + Source();
+        }
+
+        //Said every time, because the figures are only as good as the bands behind them
+        //and neither where they came from nor the fact that they are not being saved is
+        //otherwise visible on the page.
+        private string Source()
+        {
+            return "   -   bands from Tax Allocation Setup, not saved here";
         }
 
         private void CmdBack_Click(object sender, EventArgs e)

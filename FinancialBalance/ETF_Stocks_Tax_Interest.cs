@@ -391,8 +391,25 @@ namespace FinancialBalance
 
                 gvInterest.ClearSelection();
                 Filling = false;
-                Show_Note();
+
                 LblTotalInterest.Text = Money(TmpTotal);
+
+                //What the deduction is worth, rather than what was paid.  Interest that is
+                //deductible comes off income before tax, so it is worth whatever that income
+                //would have been taxed at - which is the share the bands in TblTaxAllocation
+                //take between them, the same factor both tax calculators work from.
+                bool TmpKnown;
+                double TmpTaken = Taken(out TmpKnown);
+                double TmpDeductable = Math.Round(TmpTotal * TmpTaken, 2);
+                LblTaxDeductable.Text = (TmpKnown ? Money(TmpDeductable) : "-");
+
+                //What the borrowing actually costs: what was paid, less what the deduction
+                //gives back.  Without bands on file the deduction is unknown rather than
+                //nothing, so the net is unknown too - saying it equals the interest would
+                //read as "no relief", which is a different claim.
+                LblRealInterest.Text = (TmpKnown ? Money(Math.Round(TmpTotal - TmpDeductable, 2)) : "-");
+
+                Show_Note(TmpTaken, TmpKnown);
             }
             catch (Exception ex)
             {
@@ -401,8 +418,34 @@ namespace FinancialBalance
             }
         }
 
-        //Says which year is narrowing the list, so a short one is explainable
-        private void Show_Note()
+        //The share of income the bands in TblTaxAllocation take between them, as a fraction.
+        //Each band covers its allocation of the income and is taxed at its own rate, so what
+        //they take together does not depend on the amount - which is what lets one figure
+        //stand for the lot.  parKnown is false when the table is empty, because nothing on
+        //file is not the same as a rate of nothing.
+        private double Taken(out bool parKnown)
+        {
+            double TmpTaken = 0;
+            int TmpRows = 0;
+
+            Mdl1.Ssql = "select [Tax_Rate], [Allocation] from TblTaxAllocation";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                TmpTaken += (Read_Number(reader["Allocation"]) / 100)
+                          * (Read_Number(reader["Tax_Rate"]) / 100);
+                TmpRows++;
+            }
+            reader.Close();
+
+            parKnown = (TmpRows > 0);
+            return TmpTaken;
+        }
+
+        //Says which year is narrowing the list, so a short one is explainable, and what the
+        //deduction is being valued at
+        private void Show_Note(double parTaken, bool parKnown)
         {
             string TmpText = gvInterest.Rows.Count.ToString(CultureInfo.InvariantCulture) + " month(s)";
             string TmpYear = CmbFinYear.Text.Trim();
@@ -421,6 +464,20 @@ namespace FinancialBalance
                             + "  (no dates set up, so no filter applied)";
                 }
             }
+
+            //what the second total is being valued at, and why it is blank when it is
+            if (parKnown)
+            {
+                TmpText = TmpText + "   -   the deduction is worth "
+                        + (parTaken * 100).ToString("#,##0.00", CultureInfo.InvariantCulture)
+                        + " % of it, from Tax Allocation Setup";
+            }
+            else
+            {
+                TmpText = TmpText + "   -   Tax Allocation Setup holds no bands, so what the"
+                        + " deduction is worth cannot be said";
+            }
+
             LblNote.Text = TmpText;
             LblNote.ForeColor = System.Drawing.Color.Black;
         }
