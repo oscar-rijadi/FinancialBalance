@@ -95,6 +95,7 @@ Related pages are collected into submenus rather than sitting flat:
 | `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense, Property Rental Expense |
 | `Inquiry` | **Property** | Property Summary |
 | `Administration` | **Property** | State Setup, Property Rental Expense Type Setup |
+| `Administration` | **Tax** | Tax Allocation Setup |
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
@@ -172,6 +173,8 @@ flowchart LR
     ADMIN --> PROPG{{"Property"}}
     PROPG --> SST["Setup_State"]
     PROPG --> SPRET["Setup_Property_Rental_Expense_Type"]
+    ADMIN --> TAXG{{"Tax"}}
+    TAXG --> STA["Setup_Tax_Allocation"]
     ADMIN --> SUPG{{"Super"}}
     SUPG --> SSF["Setup_Super_Fund"]
     SUPG --> SSU["Setup_Super"]
@@ -244,6 +247,7 @@ flowchart LR
 | `Property_Purchase` | Shown as **Property Purchase**. What one property cost to buy — price, stamp duty and the costs around it, the deposit and the loan it started with. One record per property. |
 | `Setup_Property` | Shown as **Property Setup**. Maintains the properties — name and address. What happened to each one lives on its purchase and sale records. |
 | `Setup_Property_Rental_Expense_Type` | Shown as **Property Rental Expense Type Setup**. Maintains the kinds of rental expense a property can carry - insurance, rates, and the rest. One field, the name, which is also what identifies the row. |
+| `Setup_Tax_Allocation` | Shown as **Tax Allocation Setup**. Maintains `TblTaxAllocation`: a tax rate and the share of interest taxed at it. |
 | `Setup_State` | Shown as **State Setup**. Maintains the Australian states and territories — a three-character code and its full name. |
 | `Setup_Super_Fund` | Shown as **Super Fund Setup**. Maintains the list of super funds. |
 | `Setup_Super` | Shown as **Super Setup**. Maintains super accounts — a code, a name and the fund each belongs to. |
@@ -464,6 +468,10 @@ erDiagram
         text Name PK "9 chars"
         text Start_Date "yyyyMMdd"
         text End_Date "yyyyMMdd"
+    }
+    TblTaxAllocation {
+        decimal Tax_Rate PK "2 dp, a percentage"
+        decimal Allocation "2 dp, a percentage"
     }
     TblState {
         text Name PK "3 chars, the state code"
@@ -2448,6 +2456,7 @@ C#.Net/
 │   ├── Tax_Deductable_Interest_Calculator.*  # interest rate after tax, no database
 │   ├── Before_Tax_Interest_Calculator.*  # the same sum backwards, no database
 │   ├── Setup_State.*                 # the Australian states and territories
+│   ├── Setup_Tax_Allocation.*        # tax rates and the share taxed at each
 │   ├── Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
 │   ├── Setup_Property.*              # properties, and whether they are sold
 │   ├── Property_Purchase.*           # what each one cost to buy
@@ -4092,6 +4101,60 @@ wherever it appears, as on [State Setup](#state-setup).
 > submenu's only member, so every form omitting itself left that submenu out entirely -
 > `Setup_State` therefore had no Property menu at all. With a second member it grows one
 > back, holding just this page.
+
+---
+
+### Tax Allocation Setup
+
+`Administration` ▸ Tax ▸ Tax Allocation Setup maintains `TblTaxAllocation`: a tax rate and
+the share of interest taxed at it, one row per rate.
+
+| Field | Type | Holds |
+| --- | --- | --- |
+| `Tax_Rate` | Decimal(22,2) | the rate, as a percentage |
+| `Allocation` | Decimal(22,2) | the share of the interest taxed at it, as a percentage |
+
+It ships empty. This is the stored form of the bands the two tax calculators take by hand —
+see [Tax deductable interest](#the-tax-deductable-interest-calculator) and
+[Before tax interest](#the-before-tax-interest-calculator) for what they are for and how they
+are used. **Neither calculator reads this table yet**; they still take their bands from what
+is typed into them.
+
+#### The rate identifies the row
+
+There is no id beside the two figures, so `Tax_Rate` is what identifies a row — and two rows
+at the same rate would only ever be one row at the sum of their allocations. The page holds
+on to the rate a row was picked under, so a changed rate *moves* that row rather than leaving
+the old one behind, which is the difference between **Update** and **Add**: one insists the
+rate is new, the other insists a row has been picked from the grid.
+
+**Both figures go into the statement as bare numbers, not quoted text**, written from the
+parsed value with an invariant format. A machine set to a comma decimal separator would
+otherwise send `32,50` and Access would read two arguments where one was meant.
+
+#### Up to a hundred, and the total says so
+
+The rows divide up one lot of interest, so **their allocations cannot come to more than
+100 %**. An Add or Update that would push the total past it is refused, and the message says
+how much is left to allocate. The check ignores the row being changed, which is what lets a
+row be enlarged: without it, taking a 15 % row to 20 % would be measured against a total that
+already counted its own 15 %.
+
+That is the same rule both calculators apply to the bands typed into them, and the same one
+[ETF/Stock Diversification Allocation](#allocation) applies to its own allocations.
+
+A **Total Allocation** under the entry area says where it stands: green at 100 %, and red
+with *n % still to allocate* below it. Short of a hundred is allowed — it just means the
+table is not finished.
+
+> **The page carries no Tax entry of its own.** Tax Allocation Setup is the only page in the
+> group, and a page never lists itself, so the group would be an empty dead end — the entry
+> appears on every *other* Administration page's menu, and on `Main_Form`. Adding a second
+> Tax page means giving this one the group back, with that page in it. State Setup was in
+> exactly this position until Property Rental Expense Type Setup joined it.
+
+> And it makes [the menu bar](#a-menu-bar-that-was-already-too-narrow) one entry worse again
+> on the seventeen 616px peer pages, where the surplus already lands nowhere.
 
 ---
 

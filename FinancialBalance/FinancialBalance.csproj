@@ -366,6 +366,12 @@
     <Compile Include="Before_Tax_Interest_Calculator.Designer.cs">
       <DependentUpon>Before_Tax_Interest_Calculator.cs</DependentUpon>
     </Compile>
+    <Compile Include="Setup_Tax_Allocation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Setup_Tax_Allocation.Designer.cs">
+      <DependentUpon>Setup_Tax_Allocation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Property_Summary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -560,6 +566,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Before_Tax_Interest_Calculator.resx">
       <DependentUpon>Before_Tax_Interest_Calculator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Setup_Tax_Allocation.resx">
+      <DependentUpon>Setup_Tax_Allocation.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Property_Summary.resx">
       <DependentUpon>Property_Summary.cs</DependentUpon>

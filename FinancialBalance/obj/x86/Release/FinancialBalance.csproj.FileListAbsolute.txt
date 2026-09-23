@@ -130,3 +130,4 @@ C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBal
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Forecast_Dividend_Allocation.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Tax_Deductable_Interest_Calculator.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Before_Tax_Interest_Calculator.resources
+C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Tax_Allocation.resources

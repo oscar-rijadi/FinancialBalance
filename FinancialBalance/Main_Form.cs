@@ -161,6 +161,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnTaxAllocationSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Tax_Allocation Setup_Tax_Allocation = new Setup_Tax_Allocation();
+            Setup_Tax_Allocation.Show();
+            this.Hide();
+        }
+
         private void MnStateSetup_Click(object sender, EventArgs e)
         {
             Setup_State Setup_State = new Setup_State();

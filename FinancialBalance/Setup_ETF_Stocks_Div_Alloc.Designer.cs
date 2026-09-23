@@ -45,6 +45,8 @@
             this.MnStateSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyRentalExpTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnTaxGroup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnTaxAllocationSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSuffixSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,6 +80,7 @@
             this.MnIntervalSetup,
             this.MnETFStockGroup,
             this.MnPropertyGroup,
+            this.MnTaxGroup,
             this.MnSuperGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
@@ -186,6 +189,21 @@
             this.MnPropertyGroup.Name = "MnPropertyGroup";
             this.MnPropertyGroup.Size = new System.Drawing.Size(75, 20);
             this.MnPropertyGroup.Text = "&Property";
+            // 
+            // MnTaxGroup
+            // 
+            this.MnTaxGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnTaxAllocationSetup});
+            this.MnTaxGroup.Name = "MnTaxGroup";
+            this.MnTaxGroup.Size = new System.Drawing.Size(75, 20);
+            this.MnTaxGroup.Text = "Ta&x";
+            // 
+            // MnTaxAllocationSetup
+            // 
+            this.MnTaxAllocationSetup.Name = "MnTaxAllocationSetup";
+            this.MnTaxAllocationSetup.Size = new System.Drawing.Size(216, 22);
+            this.MnTaxAllocationSetup.Text = "Tax &Allocation Setup";
+            this.MnTaxAllocationSetup.Click += new System.EventHandler(this.MnTaxAllocationSetup_Click);
             // 
             // MnStateSetup
             // 
@@ -446,6 +464,8 @@
         public System.Windows.Forms.ToolStripMenuItem MnStateSetup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalExpTypeSetup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnTaxGroup;
+        public System.Windows.Forms.ToolStripMenuItem MnTaxAllocationSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSuffixSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksSetup;

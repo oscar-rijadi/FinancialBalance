@@ -1,6 +1,6 @@
 ﻿namespace FinancialBalance
 {
-    partial class Setup_Property_Rental_Expense_Type
+    partial class Setup_Tax_Allocation
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -17,7 +17,7 @@
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_Property_Rental_Expense_Type));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setup_Tax_Allocation));
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctRefSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -36,23 +36,25 @@
             this.MnETFStocksDivAllocSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnPropertyGroup = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnTaxGroup = new System.Windows.Forms.ToolStripMenuItem();
-            this.MnTaxAllocationSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnStateSetup = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnPropertyRentalExpTypeSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperFundSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.Label21 = new System.Windows.Forms.Label();
-            this.gvType = new System.Windows.Forms.DataGridView();
-            this.Lbl_Type_Name = new System.Windows.Forms.Label();
-            this.Type_Name = new System.Windows.Forms.TextBox();
-            this.LblNote = new System.Windows.Forms.Label();
+            this.Lbl_LblTotal = new System.Windows.Forms.Label();
+            this.LblTotal = new System.Windows.Forms.Label();
             this.CmdCreate = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
+            this.Label1 = new System.Windows.Forms.Label();
+            this.Tax_Rate = new System.Windows.Forms.TextBox();
+            this.Label2 = new System.Windows.Forms.Label();
+            this.Allocation = new System.Windows.Forms.TextBox();
+            this.gvTaxAlloc = new System.Windows.Forms.DataGridView();
             this.MainMenu1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvType)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvTaxAlloc)).BeginInit();
             this.SuspendLayout();
             // 
             // MainMenu1
@@ -66,7 +68,6 @@
             this.MnIntervalSetup,
             this.MnETFStockGroup,
             this.MnPropertyGroup,
-            this.MnTaxGroup,
             this.MnSuperGroup});
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
@@ -197,25 +198,11 @@
             // MnPropertyGroup
             // 
             this.MnPropertyGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnStateSetup});
+            this.MnStateSetup,
+            this.MnPropertyRentalExpTypeSetup});
             this.MnPropertyGroup.Name = "MnPropertyGroup";
             this.MnPropertyGroup.Size = new System.Drawing.Size(75, 20);
             this.MnPropertyGroup.Text = "&Property";
-            // 
-            // MnTaxGroup
-            // 
-            this.MnTaxGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MnTaxAllocationSetup});
-            this.MnTaxGroup.Name = "MnTaxGroup";
-            this.MnTaxGroup.Size = new System.Drawing.Size(75, 20);
-            this.MnTaxGroup.Text = "Ta&x";
-            // 
-            // MnTaxAllocationSetup
-            // 
-            this.MnTaxAllocationSetup.Name = "MnTaxAllocationSetup";
-            this.MnTaxAllocationSetup.Size = new System.Drawing.Size(216, 22);
-            this.MnTaxAllocationSetup.Text = "Tax &Allocation Setup";
-            this.MnTaxAllocationSetup.Click += new System.EventHandler(this.MnTaxAllocationSetup_Click);
             // 
             // MnStateSetup
             // 
@@ -223,6 +210,13 @@
             this.MnStateSetup.Size = new System.Drawing.Size(216, 22);
             this.MnStateSetup.Text = "&State Setup";
             this.MnStateSetup.Click += new System.EventHandler(this.MnStateSetup_Click);
+            // 
+            // MnPropertyRentalExpTypeSetup
+            // 
+            this.MnPropertyRentalExpTypeSetup.Name = "MnPropertyRentalExpTypeSetup";
+            this.MnPropertyRentalExpTypeSetup.Size = new System.Drawing.Size(216, 22);
+            this.MnPropertyRentalExpTypeSetup.Text = "Property Rental &Expense Type Setup";
+            this.MnPropertyRentalExpTypeSetup.Click += new System.EventHandler(this.MnPropertyRentalExpTypeSetup_Click);
             // 
             // MnSuperGroup
             // 
@@ -250,74 +244,50 @@
             // Label21
             // 
             this.Label21.BackColor = System.Drawing.Color.Transparent;
-            this.Label21.Font = new System.Drawing.Font("Arial", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label21.Cursor = System.Windows.Forms.Cursors.Default;
+            this.Label21.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label21.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.Label21.Location = new System.Drawing.Point(19, 27);
             this.Label21.Name = "Label21";
-            this.Label21.Size = new System.Drawing.Size(557, 38);
+            this.Label21.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Label21.Size = new System.Drawing.Size(578, 44);
             this.Label21.TabIndex = 2;
-            this.Label21.Text = "PROPERTY RENTAL EXPENSE TYPE SETUP";
+            this.Label21.Text = "TAX ALLOCATION SETUP";
             this.Label21.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.Label21.UseMnemonic = false;
             // 
-            // gvType
+            // Lbl_LblTotal
             // 
-            this.gvType.AllowUserToAddRows = false;
-            this.gvType.AllowUserToDeleteRows = false;
-            this.gvType.AllowUserToResizeRows = false;
-            this.gvType.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.gvType.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvType.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gvType.Location = new System.Drawing.Point(19, 71);
-            this.gvType.MultiSelect = false;
-            this.gvType.Name = "gvType";
-            this.gvType.ReadOnly = true;
-            this.gvType.RowHeadersVisible = false;
-            this.gvType.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvType.Size = new System.Drawing.Size(557, 190);
-            this.gvType.TabIndex = 3;
-            this.gvType.SelectionChanged += new System.EventHandler(this.gvType_SelectionChanged);
+            this.Lbl_LblTotal.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_LblTotal.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_LblTotal.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_LblTotal.Location = new System.Drawing.Point(16, 322);
+            this.Lbl_LblTotal.Name = "Lbl_LblTotal";
+            this.Lbl_LblTotal.Size = new System.Drawing.Size(110, 25);
+            this.Lbl_LblTotal.TabIndex = 30;
+            this.Lbl_LblTotal.Text = "Total Allocation";
             // 
-            // Lbl_Type_Name
+            // LblTotal
             // 
-            this.Lbl_Type_Name.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_Type_Name.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_Type_Name.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_Type_Name.Location = new System.Drawing.Point(19, 272);
-            this.Lbl_Type_Name.Name = "Lbl_Type_Name";
-            this.Lbl_Type_Name.Size = new System.Drawing.Size(100, 22);
-            this.Lbl_Type_Name.TabIndex = 4;
-            this.Lbl_Type_Name.Text = "Name";
-            this.Lbl_Type_Name.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // Type_Name
-            // 
-            this.Type_Name.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Type_Name.Location = new System.Drawing.Point(128, 270);
-            this.Type_Name.MaxLength = 50;
-            this.Type_Name.Name = "Type_Name";
-            this.Type_Name.Size = new System.Drawing.Size(300, 20);
-            this.Type_Name.TabIndex = 5;
-            // 
-            // LblNote
-            // 
-            this.LblNote.BackColor = System.Drawing.Color.Transparent;
-            this.LblNote.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblNote.ForeColor = System.Drawing.Color.Black;
-            this.LblNote.Location = new System.Drawing.Point(19, 298);
-            this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(557, 22);
-            this.LblNote.TabIndex = 6;
-            this.LblNote.UseMnemonic = false;
+            this.LblTotal.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotal.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotal.ForeColor = System.Drawing.Color.Black;
+            this.LblTotal.Location = new System.Drawing.Point(136, 322);
+            this.LblTotal.Name = "LblTotal";
+            this.LblTotal.Size = new System.Drawing.Size(420, 25);
+            this.LblTotal.TabIndex = 31;
+            this.LblTotal.Text = "0.00 %";
             // 
             // CmdCreate
             // 
             this.CmdCreate.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdCreate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdCreate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdCreate.Location = new System.Drawing.Point(216, 326);
+            this.CmdCreate.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdCreate.Location = new System.Drawing.Point(216, 354);
             this.CmdCreate.Name = "CmdCreate";
+            this.CmdCreate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdCreate.Size = new System.Drawing.Size(85, 28);
-            this.CmdCreate.TabIndex = 7;
+            this.CmdCreate.TabIndex = 3;
             this.CmdCreate.Text = "&Add";
             this.CmdCreate.UseVisualStyleBackColor = false;
             this.CmdCreate.Click += new System.EventHandler(this.CmdCreate_Click);
@@ -325,11 +295,14 @@
             // CmdUpdate
             // 
             this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdUpdate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdUpdate.Location = new System.Drawing.Point(311, 326);
+            this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdUpdate.Location = new System.Drawing.Point(311, 354);
             this.CmdUpdate.Name = "CmdUpdate";
+            this.CmdUpdate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdUpdate.Size = new System.Drawing.Size(85, 28);
-            this.CmdUpdate.TabIndex = 8;
+            this.CmdUpdate.TabIndex = 4;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -337,11 +310,14 @@
             // CmdDel
             // 
             this.CmdDel.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdDel.Location = new System.Drawing.Point(406, 326);
+            this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdDel.Location = new System.Drawing.Point(406, 354);
             this.CmdDel.Name = "CmdDel";
+            this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(85, 28);
-            this.CmdDel.TabIndex = 9;
+            this.CmdDel.TabIndex = 5;
             this.CmdDel.Text = "&Delete";
             this.CmdDel.UseVisualStyleBackColor = false;
             this.CmdDel.Click += new System.EventHandler(this.CmdDel_Click);
@@ -349,44 +325,123 @@
             // CmdBack
             // 
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdBack.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(501, 326);
+            this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdBack.Location = new System.Drawing.Point(501, 354);
             this.CmdBack.Name = "CmdBack";
+            this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(85, 28);
-            this.CmdBack.TabIndex = 10;
+            this.CmdBack.TabIndex = 6;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             // 
-            // Setup_Property_Rental_Expense_Type
+            // Label1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.Label1.BackColor = System.Drawing.Color.Transparent;
+            this.Label1.Cursor = System.Windows.Forms.Cursors.Default;
+            this.Label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label1.ForeColor = System.Drawing.Color.Black;
+            this.Label1.Location = new System.Drawing.Point(16, 270);
+            this.Label1.Name = "Label1";
+            this.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Label1.Size = new System.Drawing.Size(110, 24);
+            this.Label1.TabIndex = 7;
+            this.Label1.Text = "Tax Rate";
+            // 
+            // Tax_Rate
+            // 
+            this.Tax_Rate.AcceptsReturn = true;
+            this.Tax_Rate.BackColor = System.Drawing.SystemColors.Window;
+            this.Tax_Rate.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.Tax_Rate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Tax_Rate.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.Tax_Rate.Location = new System.Drawing.Point(136, 270);
+            this.Tax_Rate.MaxLength = 3;
+            this.Tax_Rate.Name = "Tax_Rate";
+            this.Tax_Rate.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Tax_Rate.Size = new System.Drawing.Size(100, 20);
+            this.Tax_Rate.TabIndex = 8;
+            this.Tax_Rate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.Tax_Rate.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
+            // 
+            // Label2
+            // 
+            this.Label2.BackColor = System.Drawing.Color.Transparent;
+            this.Label2.Cursor = System.Windows.Forms.Cursors.Default;
+            this.Label2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label2.ForeColor = System.Drawing.Color.Black;
+            this.Label2.Location = new System.Drawing.Point(16, 294);
+            this.Label2.Name = "Label2";
+            this.Label2.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Label2.Size = new System.Drawing.Size(110, 25);
+            this.Label2.TabIndex = 9;
+            this.Label2.Text = "Allocation";
+            // 
+            // Allocation
+            // 
+            this.Allocation.AcceptsReturn = true;
+            this.Allocation.BackColor = System.Drawing.SystemColors.Window;
+            this.Allocation.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.Allocation.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Allocation.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.Allocation.Location = new System.Drawing.Point(136, 294);
+            this.Allocation.MaxLength = 50;
+            this.Allocation.Name = "Allocation";
+            this.Allocation.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.Allocation.Size = new System.Drawing.Size(100, 20);
+            this.Allocation.TabIndex = 10;
+            this.Allocation.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.Allocation.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
+            // 
+            // gvTaxAlloc
+            // 
+            this.gvTaxAlloc.AllowUserToAddRows = false;
+            this.gvTaxAlloc.AllowUserToDeleteRows = false;
+            this.gvTaxAlloc.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.gvTaxAlloc.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.gvTaxAlloc.Location = new System.Drawing.Point(19, 71);
+            this.gvTaxAlloc.MultiSelect = false;
+            this.gvTaxAlloc.Name = "gvTaxAlloc";
+            this.gvTaxAlloc.ReadOnly = true;
+            this.gvTaxAlloc.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.gvTaxAlloc.Size = new System.Drawing.Size(557, 190);
+            this.gvTaxAlloc.TabIndex = 11;
+            this.gvTaxAlloc.SelectionChanged += new System.EventHandler(this.gvTaxAlloc_SelectionChanged);
+            //
+            // Setup_Tax_Allocation
+            //
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 372);
+            this.ClientSize = new System.Drawing.Size(616, 400);
             this.ControlBox = false;
+            this.Controls.Add(this.gvTaxAlloc);
+            this.Controls.Add(this.Allocation);
+            this.Controls.Add(this.Label2);
+            this.Controls.Add(this.Tax_Rate);
+            this.Controls.Add(this.Label1);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.CmdUpdate);
+            this.Controls.Add(this.LblTotal);
+            this.Controls.Add(this.Lbl_LblTotal);
             this.Controls.Add(this.CmdCreate);
-            this.Controls.Add(this.LblNote);
-            this.Controls.Add(this.Type_Name);
-            this.Controls.Add(this.Lbl_Type_Name);
-            this.Controls.Add(this.gvType);
             this.Controls.Add(this.Label21);
             this.Controls.Add(this.MainMenu1);
             this.Font = new System.Drawing.Font("Arial", 8F);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Location = new System.Drawing.Point(4, 43);
             this.MainMenuStrip = this.MainMenu1;
-            this.Name = "Setup_Property_Rental_Expense_Type";
+            this.Name = "Setup_Tax_Allocation";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Property Rental Expense Type Setup";
-            this.Load += new System.EventHandler(this.Setup_Property_Rental_Expense_Type_Load);
+            this.Text = "Tax Allocation Setup";
+            this.Load += new System.EventHandler(this.Setup_Tax_Allocation_Load);
             this.MainMenu1.ResumeLayout(false);
             this.MainMenu1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.gvType)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gvTaxAlloc)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -412,20 +467,22 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDivAllocSetup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanSetup;
         public System.Windows.Forms.ToolStripMenuItem MnPropertyGroup;
-        public System.Windows.Forms.ToolStripMenuItem MnTaxGroup;
-        public System.Windows.Forms.ToolStripMenuItem MnTaxAllocationSetup;
         public System.Windows.Forms.ToolStripMenuItem MnStateSetup;
+        public System.Windows.Forms.ToolStripMenuItem MnPropertyRentalExpTypeSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperFundSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperSetup;
         public System.Windows.Forms.Label Label21;
-        public System.Windows.Forms.DataGridView gvType;
-        public System.Windows.Forms.Label Lbl_Type_Name;
-        public System.Windows.Forms.TextBox Type_Name;
-        public System.Windows.Forms.Label LblNote;
+        public System.Windows.Forms.Label Lbl_LblTotal;
+        public System.Windows.Forms.Label LblTotal;
         public System.Windows.Forms.Button CmdCreate;
         public System.Windows.Forms.Button CmdUpdate;
         public System.Windows.Forms.Button CmdDel;
         public System.Windows.Forms.Button CmdBack;
+        public System.Windows.Forms.Label Label1;
+        public System.Windows.Forms.TextBox Tax_Rate;
+        public System.Windows.Forms.Label Label2;
+        public System.Windows.Forms.TextBox Allocation;
+        private System.Windows.Forms.DataGridView gvTaxAlloc;
     }
 }

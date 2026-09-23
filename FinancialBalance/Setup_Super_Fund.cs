@@ -381,5 +381,11 @@ namespace FinancialBalance
             Main_Form.Show();
             this.Close();
         }
+        private void MnTaxAllocationSetup_Click(object sender, EventArgs e)
+        {
+            Setup_Tax_Allocation Setup_Tax_Allocation = new Setup_Tax_Allocation();
+            Setup_Tax_Allocation.Show();
+            this.Close();
+        }
     }
 }
