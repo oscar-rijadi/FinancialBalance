@@ -85,6 +85,9 @@
             this.CmdSoldCal = new System.Windows.Forms.Button();
             this.chkDRIP = new System.Windows.Forms.CheckBox();
             this.chkSold = new System.Windows.Forms.CheckBox();
+            this.chkIsFree = new System.Windows.Forms.CheckBox();
+            this.Lbl_txtReasonForFree = new System.Windows.Forms.Label();
+            this.txtReasonForFree = new System.Windows.Forms.TextBox();
             this.CmdCreate = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
@@ -695,6 +698,38 @@
             this.chkSold.Text = "Sold";
             this.chkSold.UseVisualStyleBackColor = false;
             this.chkSold.CheckedChanged += new System.EventHandler(this.chkSold_CheckedChanged);
+            // 
+            // chkIsFree
+            // 
+            this.chkIsFree.BackColor = System.Drawing.Color.Transparent;
+            this.chkIsFree.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkIsFree.Location = new System.Drawing.Point(375, 476);
+            this.chkIsFree.Name = "chkIsFree";
+            this.chkIsFree.Size = new System.Drawing.Size(80, 24);
+            this.chkIsFree.TabIndex = 60;
+            this.chkIsFree.Text = "Is Free";
+            this.chkIsFree.UseVisualStyleBackColor = false;
+            this.chkIsFree.CheckedChanged += new System.EventHandler(this.chkIsFree_CheckedChanged);
+            // 
+            // Lbl_txtReasonForFree
+            // 
+            this.Lbl_txtReasonForFree.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_txtReasonForFree.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_txtReasonForFree.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_txtReasonForFree.Location = new System.Drawing.Point(19, 532);
+            this.Lbl_txtReasonForFree.Name = "Lbl_txtReasonForFree";
+            this.Lbl_txtReasonForFree.Size = new System.Drawing.Size(125, 22);
+            this.Lbl_txtReasonForFree.TabIndex = 61;
+            this.Lbl_txtReasonForFree.Text = "Reason for Free";
+            // 
+            // txtReasonForFree
+            // 
+            this.txtReasonForFree.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtReasonForFree.Location = new System.Drawing.Point(150, 532);
+            this.txtReasonForFree.MaxLength = 50;
+            this.txtReasonForFree.Name = "txtReasonForFree";
+            this.txtReasonForFree.Size = new System.Drawing.Size(290, 20);
+            this.txtReasonForFree.TabIndex = 62;
             //
             // CmdCreate
             //
@@ -761,6 +796,9 @@
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.CmdUpdate);
             this.Controls.Add(this.CmdCreate);
+            this.Controls.Add(this.txtReasonForFree);
+            this.Controls.Add(this.Lbl_txtReasonForFree);
+            this.Controls.Add(this.chkIsFree);
             this.Controls.Add(this.chkSold);
             this.Controls.Add(this.chkDRIP);
             this.Controls.Add(this.CmdSoldCal);
@@ -873,6 +911,9 @@
         public System.Windows.Forms.Button CmdSoldCal;
         public System.Windows.Forms.CheckBox chkDRIP;
         public System.Windows.Forms.CheckBox chkSold;
+        public System.Windows.Forms.CheckBox chkIsFree;
+        public System.Windows.Forms.Label Lbl_txtReasonForFree;
+        public System.Windows.Forms.TextBox txtReasonForFree;
         public System.Windows.Forms.Button CmdCreate;
         public System.Windows.Forms.Button CmdUpdate;
         public System.Windows.Forms.Button CmdDel;

@@ -33,6 +33,8 @@ namespace FinancialBalance
         string OrgFlagCode;
         string OrgSoldDate;
         string OrgSaleId;
+        string OrgIsFree;
+        string OrgReasonForFree;
 
         //one MonthCalendar serves both the transaction date and the sold date
         string CalTarget = "TRANS";
@@ -430,10 +432,21 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvPurchase.Columns.Clear();
-            gvPurchase.ColumnCount = 14;
-            string[] names = new string[] { "Portfolio Code", "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "Reinvestment", "Sold", "Sold Date", "Sale Id" };
-            int[] weights = new int[] { 7, 9, 6, 8, 10, 8, 5, 11, 9, 10, 8, 4, 8, 17 };
-            for (int i = 0; i < 14; i++)
+            gvPurchase.ColumnCount = 15;
+            //Is Free sits beside Reinvestment: the two are the only flags that zero the
+            //real total, and reading them together is how a zero is explained
+            string[] names = new string[] { "Portfolio Code", "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "Reinvestment", "Is Free", "Sold", "Sold Date", "Sale Id" };
+            //Reinvestment is the widest heading and an unbreakable word, so it sets the
+            //floor; Portfolio Code, Currency and Sold were all clipped before Is Free was
+            //added, so the whole row is rebalanced rather than just made room in
+            //The weights are the pixel budget, and add to the 943 the grid has once its
+            //scrollbar is taken off - only their ratio matters, so writing them this way
+            //makes each column say what it is actually being given.  Every one is at least
+            //as wide as its longest heading word and the longest value in the real data,
+            //measured rather than guessed; whole-number weights out of 100 were too coarse
+            //to fit fifteen columns whose floors add to 881.
+            int[] weights = new int[] { 62, 85, 68, 56, 59, 56, 44, 59, 56, 56, 89, 45, 44, 86, 78 };
+            for (int i = 0; i < 15; i++)
             {
                 gvPurchase.Columns[i].Name = names[i];
                 gvPurchase.Columns[i].FillWeight = weights[i];
@@ -452,7 +465,7 @@ namespace FinancialBalance
 
         private string Select_Purchases()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Sale_Id] from TblETFStocksPurchase"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Sale_Id], [Is_Free], [Reason_for_Free] from TblETFStocksPurchase"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -469,6 +482,8 @@ namespace FinancialBalance
             while (reader.Read())
             {
                 double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
+                //a zero real total is a reinvestment only when the lot is not flagged free
+                bool TmpFree = (reader["Is_Free"].ToString().Trim() == "True");
                 gvPurchase.Rows.Add(new string[] {
                     reader["Portfolio_Code"].ToString().Trim(),
                     reader["Full_Ticker"].ToString().Trim(),
@@ -480,7 +495,8 @@ namespace FinancialBalance
                     Mdl1.FormatAmt(Read_Double(reader["Original_Total_Cost_Base"])),
                     Mdl1.FormatAmt(Read_Double(reader["Total_Cost_Base"])),
                     Mdl1.FormatAmt(TmpRealTotal),
-                    (TmpRealTotal == 0 ? "Y" : "N"),
+                    (TmpRealTotal == 0 && !TmpFree ? "Y" : "N"),
+                    (TmpFree ? "Y" : "N"),
                     (reader["Is_Sold"].ToString().Trim() == "True" ? "Y" : "N"),
                     Format_Sold_Date(reader["Sold_Date"]),
                     (reader["Sale_Id"] == DBNull.Value ? "" : reader["Sale_Id"].ToString().Trim())
@@ -545,6 +561,8 @@ namespace FinancialBalance
             txtCostBase.Text = "0.00";
             txtFee.Text = "0.00";
             chkDRIP.Checked = false;
+            chkIsFree.Checked = false;
+            txtReasonForFree.Text = "";
             chkSold.Checked = false;
             Reset_Sold_Date();
             Set_Default_Flag();
@@ -556,6 +574,7 @@ namespace FinancialBalance
         //Total Cost Base          = round(Unit x Cost Base, 2) + Fee
         //Original Total Cost Base = round(Unit x Original Cost Base, 2) + Fee
         //Reinvestment zeroes the real total, because a reinvested lot cost no new money.
+        //Is Free does the same, for the same reason: a lot that came free cost none either.
         private void Calculate_Totals()
         {
             double TmpUnit;
@@ -573,7 +592,7 @@ namespace FinancialBalance
 
             double TmpTotal = Math.Round(Math.Round(TmpUnit * TmpCostBase, 2) + TmpFee, 2);
             txtTotalCostBase.Text = Mdl1.FormatAmt(TmpTotal);
-            if (chkDRIP.Checked)
+            if (chkDRIP.Checked || chkIsFree.Checked)
             {
                 txtRealTotalCostBase.Text = Mdl1.FormatAmt(0);
             }
@@ -599,6 +618,28 @@ namespace FinancialBalance
                 return;
             }
             Calculate_Totals();
+        }
+
+        private void chkIsFree_CheckedChanged(object sender, EventArgs e)
+        {
+            Show_Reason();
+            if (Filling)
+            {
+                return;
+            }
+            Calculate_Totals();
+        }
+
+        //A reason only means anything for a lot that came free, so the box is live only
+        //then - and is emptied on the way out, so an unticked lot cannot carry a stale one
+        //into the table.
+        private void Show_Reason()
+        {
+            txtReasonForFree.Enabled = chkIsFree.Checked;
+            if (!chkIsFree.Checked)
+            {
+                txtReasonForFree.Text = "";
+            }
         }
 
         private void CheckKeyPress(KeyPressEventArgs e)
@@ -686,6 +727,12 @@ namespace FinancialBalance
                     OrgFlagCode = (reader["Portfolio_Code"] == DBNull.Value ? null : reader["Portfolio_Code"].ToString().Trim());
                     OrgSoldDate = (reader["Sold_Date"] == DBNull.Value ? null : reader["Sold_Date"].ToString().Trim());
                     OrgSaleId = (reader["Sale_Id"] == DBNull.Value ? null : reader["Sale_Id"].ToString().Trim());
+                    OrgIsFree = (reader["Is_Free"].ToString().Trim() == "True" ? "True" : "False");
+                    OrgReasonForFree = (reader["Reason_for_Free"] == DBNull.Value ? null : reader["Reason_for_Free"].ToString().Trim());
+                    if (OrgReasonForFree == "")
+                    {
+                        OrgReasonForFree = null;
+                    }
                     if (OrgSaleId == "")
                     {
                         OrgSaleId = null;
@@ -713,7 +760,12 @@ namespace FinancialBalance
             txtOriginalCostBase.Text = (OrgOriginalCostBase == null ? "0.00" : OrgOriginalCostBase);
             txtCostBase.Text = (OrgCostBase == null ? "0.00" : OrgCostBase);
             txtFee.Text = (OrgFee == null ? "0.00" : OrgFee);
-            chkDRIP.Checked = (Read_Double(OrgRealTotalCostBase) == 0);
+            chkIsFree.Checked = (OrgIsFree == "True");
+            txtReasonForFree.Text = (OrgReasonForFree == null ? "" : OrgReasonForFree);
+            Show_Reason();
+            //the two share one symptom, so the stored flag is what separates them: a zero
+            //real total means reinvestment unless the lot is on record as free
+            chkDRIP.Checked = (Read_Double(OrgRealTotalCostBase) == 0 && OrgIsFree != "True");
             chkSold.Checked = (OrgIsSold == "True");
             Set_Sold_Date(OrgSoldDate);
             if (OrgFlagCode != null && CmbFlagCode.Items.Contains(OrgFlagCode))
@@ -821,8 +873,21 @@ namespace FinancialBalance
 
             parOriginalTotal = Math.Round(Math.Round(parUnit * parOriginalCostBase, 2) + parFee, 2);
             parTotal = Math.Round(Math.Round(parUnit * parCostBase, 2) + parFee, 2);
-            parRealTotal = (chkDRIP.Checked ? 0 : parTotal);
+            parRealTotal = (chkDRIP.Checked || chkIsFree.Checked ? 0 : parTotal);
             return true;
+        }
+
+        //Null rather than an empty string, so a lot with no reason reads the same way a lot
+        //from before this field existed does.  Apostrophes are doubled, as everywhere a
+        //free-text field reaches a statement.
+        private string Sql_Reason()
+        {
+            string TmpReason = txtReasonForFree.Text.Trim();
+            if (!chkIsFree.Checked || TmpReason == "")
+            {
+                return "Null";
+            }
+            return "'" + TmpReason.Replace("'", "''") + "'";
         }
 
         private string Sql_Sold_Date()
@@ -865,7 +930,10 @@ namespace FinancialBalance
                  + " and Is_Sold = " + OrgIsSold
                  + (OrgFlagCode == null ? " and [Portfolio_Code] Is Null" : " and [Portfolio_Code] = '" + OrgFlagCode + "'")
                  + (OrgSoldDate == null ? " and [Sold_Date] Is Null" : " and [Sold_Date] = '" + OrgSoldDate + "'")
-                 + (OrgSaleId == null ? " and [Sale_Id] Is Null" : " and [Sale_Id] = '" + OrgSaleId + "'");
+                 + (OrgSaleId == null ? " and [Sale_Id] Is Null" : " and [Sale_Id] = '" + OrgSaleId + "'")
+                 + " and [Is_Free] = " + OrgIsFree
+                 + (OrgReasonForFree == null ? " and [Reason_for_Free] Is Null"
+                    : " and [Reason_for_Free] = '" + OrgReasonForFree.Replace("'", "''") + "'");
         }
 
         //Without a key, identical rows are indistinguishable - warn before touching them all.
@@ -1031,7 +1099,7 @@ namespace FinancialBalance
                                     decimal parTotal, decimal parRealTotal,
                                     decimal parOriginalCostBase, decimal parOriginalTotal)
         {
-            Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
+            Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Is_Free], [Reason_for_Free]) values ("
                 + "'" + Get_Trans_Date() + "', "
                 + "'" + CmbFullTicker.Text.Trim() + "', "
                 + "'" + CmbCurrency.Text.Trim() + "', "
@@ -1044,7 +1112,9 @@ namespace FinancialBalance
                 + Num(parRealTotal, 2) + ", "
                 + (chkSold.Checked ? "True" : "False") + ", "
                 + "'" + CmbFlagCode.Text.Trim() + "', "
-                + Sql_Sold_Date() + ")";
+                + Sql_Sold_Date() + ", "
+                + (chkIsFree.Checked ? "True" : "False") + ", "
+                + Sql_Reason() + ")";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
         }
@@ -1149,7 +1219,9 @@ namespace FinancialBalance
                     + "Real_Total_Cost_Base = " + Num(TmpRealTotal, 2) + ", "
                     + "Is_Sold = " + (chkSold.Checked ? "True" : "False") + ", "
                     + "[Portfolio_Code] = '" + CmbFlagCode.Text.Trim() + "', "
-                    + "[Sold_Date] = " + Sql_Sold_Date()
+                    + "[Sold_Date] = " + Sql_Sold_Date() + ", "
+                    + "[Is_Free] = " + (chkIsFree.Checked ? "True" : "False") + ", "
+                    + "[Reason_for_Free] = " + Sql_Reason()
                     + Where_Original();
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();

@@ -199,7 +199,7 @@ flowchart LR
 | `Main_Form` | Splash screen with an animated marquee, clock, version label. Enables the transaction menus only once `TblAcctRef` has at least one row. |
 | `Daily_Input` | Enter, amend or delete a dated voucher. Up to 5 debit and 5 credit lines; refuses to save unless the two sides balance. |
 | `Monthly_Closing` | Snapshots `TblAsset` and `TblLiability` into `TblMonthlyTrans` for a chosen month. Defaults to the month after the last close. |
-| `ETF_Stocks_Purchase` | Add / update / delete ETF and stock **buys** for one date. |
+| `ETF_Stocks_Purchase` | Add / update / delete ETF and stock **buys** for one date, including lots that came free and why. |
 | `ETF_Stocks_Sale` | Add / update / delete ETF and stock **sells** for one date. A sale is built against the purchase lots it draws from, which it then settles. |
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
@@ -374,6 +374,8 @@ erDiagram
         text    Portfolio_Code "from the portfolio code list"
         text    Sold_Date "yyyyMMdd, null unless sold"
         text    Sale_Id "50 chars, the sale that closed this lot"
+        bool    Is_Free
+        text    Reason_for_Free "50 chars, null unless free"
     }
     TblETFStocksSale {
         text    Trans_Date "yyyyMMdd"
@@ -695,6 +697,43 @@ three totals, Reinvestment, Sold with its date, and Portfolio. **ETF/Stock Sale*
 Ticker, Currency, a read-only Unit, Selling Price/Unit, Selling Total Amount, its own Portfolio,
 and the lot grid beneath. Each page validates only its own fields, and each Portfolio dropdown
 carries a description label beside it.
+
+#### Lots that cost nothing
+
+Two things make a lot cost nothing, and both zero its `Real_Total_Cost_Base`:
+
+| | Meaning | Held as |
+| --- | --- | --- |
+| **Reinvestment** | a distribution taken as units instead of cash | *inferred* — nothing is stored |
+| **Is Free** | units that arrived at no cost at all | `Is_Free`, with `Reason_for_Free` beside it |
+
+Ticking either sets Real Total Cost Base to zero as the figures are typed, and saves it as
+zero. The Total Cost Base is untouched by both: the lot still has a cost base for capital
+gains, it just did not cost the portfolio anything on the day.
+
+> **Reinvestment is not a column in the table.** It never has been — it is read back as
+> *"the real total is zero"*, in the grid and in the checkbox alike. That was unambiguous
+> while it was the only thing that could zero it, and stopped being so the moment Is Free
+> arrived: left alone, every free lot would have come back reading as a reinvestment.
+> 
+> Because `Is_Free` **is** stored, the two can still be told apart — a zero real total is a
+> reinvestment *unless the lot is on record as free*. Both the grid column and the checkbox
+> read it that way, so the three cases — paid for, reinvested, free — come back as the three
+> different things they are.
+
+**Reason for Free** is live only while Is Free is ticked, and is emptied when it is cleared,
+so an unticked lot cannot carry a stale reason into the table. A free lot with nothing said
+about why stores `Null` rather than an empty string, which is how a lot from before the field
+existed reads too. Apostrophes are doubled on the way in, as everywhere free text reaches a
+statement.
+
+> Adding the **Is Free** column meant re-measuring the whole fifteen-column grid, because
+> `Portfolio Code`, `Currency`, `Sold` and `Reinvestment` were **already clipping their own
+> headings** before it arrived. The fill weights are now written as the pixel budget they
+> add up to — 943, what the grid has once its scrollbar is off — so each column says what it
+> is being given, and every one is at least as wide as its longest heading word and the
+> longest value across all 102 real purchase rows. Whole-number weights out of 100 were too
+> coarse: the fifteen floors add to 881, leaving 62px of slack that 9.4px steps cannot place.
 
 #### Both pages move the portfolio's balance
 
