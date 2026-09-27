@@ -52,6 +52,7 @@ flowchart TD
         MI["Monthly Inquiry<br/><i>balance sheet</i>"]
         YS["Yearly Summary"]
         YT["Yearly Statistic<br/><i>chart</i>"]
+        YG["Yearly Summary Graph<br/><i>chart</i>"]
     end
 
     CHK -- "yes" --> DT
@@ -66,6 +67,7 @@ flowchart TD
     MT --> MI
     MT --> YS
     MT --> YT
+    MT --> YG
 ```
 
 The key asymmetry: **income and expense accumulate into `TblMonthlyTrans` continuously** as you
@@ -90,6 +92,7 @@ Related pages are collected into submenus rather than sitting flat:
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
 | `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
+| `Inquiry` | **Yearly** | Yearly Statistic, Yearly Summary, Yearly Summary Graph |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
 | `Process` | **Property** | Property Setup, Property Purchase, Property Sale, Property Rental Income, Property Rental Bank Expense, Property Rental Expense |
@@ -99,10 +102,23 @@ Related pages are collected into submenus rather than sitting flat:
 | `Administration` | **Super** | Super Fund Setup, Super Setup |
 
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
-one page rather than a group. `Inquiry` likewise carries **Super Balance & Historical Data**
-after its own ETF/Stock submenu. `Calculator` holds all four of its pages — **Compound
+one page rather than a group. `Inquiry` opens with **Monthly Inquiry** and closes with **Super
+Balance & Historical Data**, both single entries of their own, with the Yearly, ETF/Stock and
+Property submenus in between. `Calculator` holds all four of its pages — **Compound
 Interest Calculator**, **Dividend Snowball Calculator**, **Tax Deductable Interest
 Calculator** and **Before Tax Interest Calculator** — directly, with no submenu between.
+
+**Yearly** is the newest of these groups, and began as the smallest reason to make one: two
+pages, both already named *Yearly something*, that were sitting flat between Monthly Inquiry
+and the ETF/Stock submenu. Grouping them costs a keystroke and buys the menu back the shape
+the rest of it has — a run of submenus with a single entry at either end — and it is the same
+move that keeps a bar from silently dropping what will not fit, applied one level down where
+there is no such risk but the same argument about what is easy to read. Both pages kept their
+captions, their access keys and their handlers; only the level they sat at changed.
+
+[Yearly summary graph](#yearly-summary-graph) landed in it immediately afterwards, which is
+the argument for the group made twice: flat, `Inquiry` would now be seven entries deep instead
+of five, three of them beginning *Yearly*.
 
 The same grouping applies to each form's own menu strip, not just `Main_Form`. Because a form
 never lists itself, a submenu can hold one fewer entry there — from `Setup_Curr` the **Currency**
@@ -133,8 +149,10 @@ flowchart LR
     PPROPG --> PRE["Property_Rental_Expense"]
     MAIN --> SFYP["Super_Financial_Year"]
     MAIN --> MI["Monthly_Inquiry"]
-    MAIN --> YT["Yearly_Statistic"]
-    MAIN --> YS["Yearly_Summary"]
+    MAIN --> YEARG{{"Yearly"}}
+    YEARG --> YT["Yearly_Statistic"]
+    YEARG --> YS["Yearly_Summary"]
+    YEARG --> YSG["Yearly_Summary_Graph"]
     MAIN --> PORTG{{"ETF/Stock"}}
     PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
     PORTG --> PDIV["ETF_Stocks_Portfolio_Diversification"]
@@ -212,6 +230,7 @@ flowchart LR
 | `Monthly_Inquiry` | Balance sheet for one month: assets (split current / non-current), liabilities, income, expense, and net worth, in IDR and AUD. |
 | `Yearly_Summary` | Full-year income, expense, asset and liability breakdown with totals. Exports every year at once — see [Yearly summary](#yearly-summary). |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
+| `Yearly_Summary_Graph` | Asset, Liability, Income and Expense as four lines over time — ten years, or one year month by month — each point the total the other two pages already show for that period. Reads five tables and writes nothing. See [Yearly summary graph](#yearly-summary-graph). |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
@@ -2120,6 +2139,61 @@ a tab being built.
 
 ---
 
+### Yearly summary graph
+
+`Yearly_Summary_Graph` draws the four totals the other two pages already work out, as four
+lines over time. The **Year** dropdown is [Yearly summary](#yearly-summary)'s — `All` plus the
+last ten years — and it is what decides the x axis:
+
+| Year | x axis | Each point is |
+| --- | --- | --- |
+| `All` | the last ten years, oldest first | the figure [Yearly summary](#yearly-summary) shows for that year |
+| a year | that year's twelve months, Jan to Dec | the figure **Monthly Inquiry** shows for that month |
+
+Four checkboxes — **Asset**, **Liability**, **Income** and **Expense** — say which lines are
+drawn, and all four start ticked. Unticking one takes its line off the chart, its entry out of
+the legend and **its column out of the table underneath**, so the table always says exactly
+what the chart says rather than carrying a blank column for something that is not drawn.
+Untick all four and the title reads *Nothing selected* and the note asks for one.
+
+#### It borrows the arithmetic rather than repeating it
+
+None of these totals is a new calculation. Each is the one already on the page named above it,
+read the same way:
+
+| | A whole year | One month |
+| --- | --- | --- |
+| **Asset, Liability** | the balance at that year's last closed month — live `TblAsset` / `TblLiability` for the current year | that month's balance rows, or the live balance if the month was never closed |
+| **Income, Expense** | every `TblMonthlyTrans` row posted in the year | every row posted in that month |
+| **Converted at** | December of that year | that month |
+
+Every account goes into IDR at its own currency's rate for the period — IDR is the base and is
+never looked up — and the sum is divided into AUD once at the end. That is the conversion both
+pages do, December's rate for a whole year included.
+
+> **A month that was never closed shows the live balance**, because that is what Monthly
+> Inquiry does: a month with no `TblMonthlyTrans` rows for a category, from `201002` onwards,
+> falls back to `TblAsset` / `TblLiability`. Income and Expense have no running balance to
+> fall back to, so they read nothing.
+> 
+> Drawn as a line this is visible in a way it never was one month at a time. Pick the current
+> year and the Asset and Liability lines **run flat from the last closed month out to
+> December**, repeating today's balance, while Income and Expense sit at zero beside them.
+> That is the two pages agreeing rather than the graph inventing anything — the figures are
+> read back against both pages and match to the cent — but it is worth knowing before reading
+> a forecast into the flat part.
+
+The four lines are blue, red, green and orange, in the order the checkboxes sit. The app's own
+colours were no help: `0xFF8080` and `0xFF` are a verdict on a figure elsewhere — good or bad —
+not a name for a category, so Asset and Income would have come out the same colour as each
+other, and Liability and Expense the other one.
+
+The page reads `TblMonthlyTrans`, `TblAcctRef`, `TblAsset`, `TblLiability` and `TblCurrRate`,
+and writes nothing. It has no export: there is a table under the chart carrying every figure
+on it, and nothing on the page that is not one of those two pages' own numbers.
+
+---
+
 ### Excel exports
 
 Five pages export: [Portfolio summary](#portfolio-summary),
@@ -2516,6 +2590,7 @@ C#.Net/
 │   ├── Monthly_Inquiry.*
 │   ├── Yearly_Summary.*
 │   ├── Yearly_Statistic.*
+│   ├── Yearly_Summary_Graph.*       # the four totals as lines over time
 │   ├── Setup_Acct_Type_Ref.*
 │   ├── Setup_Acct_Ref.*
 │   ├── Setup_Curr.*

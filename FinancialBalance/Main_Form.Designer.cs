@@ -53,8 +53,10 @@
             this.MnETFStocksFYRecon = new System.Windows.Forms.ToolStripMenuItem();
             this.MnInquiry = new System.Windows.Forms.ToolStripMenuItem();
             this.MnMonthlyInq = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnYearlyGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearStat = new System.Windows.Forms.ToolStripMenuItem();
             this.MnYearSumm = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnYearSummGraph = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockPortfolioGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlan = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanByAmount = new System.Windows.Forms.ToolStripMenuItem();
@@ -306,8 +308,7 @@
             // 
             this.MnInquiry.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnMonthlyInq,
-            this.MnYearStat,
-            this.MnYearSumm,
+            this.MnYearlyGroup,
             this.MnETFStockPortfolioGroup,
             this.MnPropertyInqGroup,
             this.MnSuperBalance});
@@ -322,6 +323,16 @@
             this.MnMonthlyInq.Text = "&Monthly Inquiry";
             this.MnMonthlyInq.Click += new System.EventHandler(this.MnMonthlyInq_Click);
             // 
+            // MnYearlyGroup
+            // 
+            this.MnYearlyGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MnYearStat,
+            this.MnYearSumm,
+            this.MnYearSummGraph});
+            this.MnYearlyGroup.Name = "MnYearlyGroup";
+            this.MnYearlyGroup.Size = new System.Drawing.Size(216, 22);
+            this.MnYearlyGroup.Text = "&Yearly";
+            // 
             // MnYearStat
             // 
             this.MnYearStat.Name = "MnYearStat";
@@ -335,6 +346,13 @@
             this.MnYearSumm.Size = new System.Drawing.Size(162, 22);
             this.MnYearSumm.Text = "Yearly S&ummary";
             this.MnYearSumm.Click += new System.EventHandler(this.MnYearSumm_Click);
+            // 
+            // MnYearSummGraph
+            // 
+            this.MnYearSummGraph.Name = "MnYearSummGraph";
+            this.MnYearSummGraph.Size = new System.Drawing.Size(162, 22);
+            this.MnYearSummGraph.Text = "Yearly Summary &Graph";
+            this.MnYearSummGraph.Click += new System.EventHandler(this.MnYearSummGraph_Click);
             // 
             // MnETFStockPortfolioGroup
             // 
@@ -1142,8 +1160,10 @@
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksFYRecon;
         public System.Windows.Forms.ToolStripMenuItem MnInquiry;
         public System.Windows.Forms.ToolStripMenuItem MnMonthlyInq;
+        public System.Windows.Forms.ToolStripMenuItem MnYearlyGroup;
         public System.Windows.Forms.ToolStripMenuItem MnYearStat;
         public System.Windows.Forms.ToolStripMenuItem MnYearSumm;
+        public System.Windows.Forms.ToolStripMenuItem MnYearSummGraph;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockPortfolioGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlan;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanByAmount;

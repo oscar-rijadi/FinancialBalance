@@ -414,6 +414,12 @@
     <Compile Include="Yearly_Statistic.Designer.cs">
       <DependentUpon>Yearly_Statistic.cs</DependentUpon>
     </Compile>
+    <Compile Include="Yearly_Summary_Graph.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Yearly_Summary_Graph.Designer.cs">
+      <DependentUpon>Yearly_Summary_Graph.cs</DependentUpon>
+    </Compile>
     <Compile Include="Yearly_Summary.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -593,6 +599,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Yearly_Summary.resx">
       <DependentUpon>Yearly_Summary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Yearly_Summary_Graph.resx">
+      <DependentUpon>Yearly_Summary_Graph.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">

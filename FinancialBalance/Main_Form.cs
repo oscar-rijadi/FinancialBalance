@@ -364,6 +364,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnYearSummGraph_Click(object sender, EventArgs e)
+        {
+            Yearly_Summary_Graph Yearly_Summary_Graph = new Yearly_Summary_Graph();
+            Yearly_Summary_Graph.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksPortfolioSummary_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Portfolio_Summary ETF_Stocks_Portfolio_Summary = new ETF_Stocks_Portfolio_Summary();
