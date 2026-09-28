@@ -524,9 +524,7 @@ namespace FinancialBalance
             }
 
             Cursor.Current = Cursors.WaitCursor;
-            CmdGetRate.Enabled = false;
-            CmdSetup.Enabled = false;
-            CmdBack.Enabled = false;
+            Buttons(false);
             try
             {
                 if (!Fetch_Latest_Rate(strCurr, out TmpRate, out TmpWhen, out TmpQuoted, out TmpError))
@@ -573,9 +571,113 @@ namespace FinancialBalance
             }
             finally
             {
-                CmdGetRate.Enabled = true;
-                CmdSetup.Enabled = true;
-                CmdBack.Enabled = true;
+                Buttons(true);
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        //The call runs on the UI thread, so the form is frozen for the duration regardless.
+        //Disabling is what stops a click queued during the freeze from landing after it.
+        private void Buttons(bool parOn)
+        {
+            CmdGetRate.Enabled = parOn;
+            CmdGetAllRates.Enabled = parOn;
+            CmdSetup.Enabled = parOn;
+            CmdBack.Enabled = parOn;
+        }
+
+        //The same thing the button beside it does, once per currency in TblCurrCode. One that
+        //cannot be fetched is collected rather than thrown, so a single currency Yahoo has
+        //stopped quoting does not cost the other five their update.
+        private void CmdGetAllRates_Click(object sender, EventArgs e)
+        {
+            List<string> Currs = new List<string>();
+            List<string> Failed = new List<string>();
+            int Saved = 0;
+
+            try
+            {
+                Mdl1.Ssql = "select Curr_Code from TblCurrCode order by Curr_Code";
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Currs.Add(reader["Curr_Code"].ToString().Trim());
+                }
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+                return;
+            }
+
+            if (Currs.Count == 0)
+            {
+                MessageBox.Show("No currency is set up in Currency Setup.", "Error Message");
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            Buttons(false);
+            try
+            {
+                //one date for the whole run, so a pass that straddles midnight does not land half
+                //its rates on one day and half on the next
+                DateTime TmpToday = DateTime.Now;
+                string strDate = TmpToday.ToString("yyyyMMdd");
+
+                for (int i = 0; i < Currs.Count; i++)
+                {
+                    double TmpRate;
+                    DateTime TmpWhen;
+                    bool TmpQuoted;
+                    string TmpError;
+
+                    if (Fetch_Latest_Rate(Currs[i], out TmpRate, out TmpWhen, out TmpQuoted, out TmpError))
+                    {
+                        Save_Rate(strDate, Currs[i], TmpRate);
+                        Saved++;
+                    }
+                    else
+                    {
+                        Failed.Add(Currs[i] + " : " + TmpError);
+                    }
+                }
+
+                FirstLoad = true;
+                CmbDD.Text = TmpToday.ToString("dd");
+                CmbMM.Text = TmpToday.ToString("MM");
+                CmbYear.Text = TmpToday.ToString("yyyy");
+                FirstLoad = false;
+
+                ChangeLblDay();
+                Get_Data();
+                Get_Rate();
+
+                string strMsg = Saved.ToString() + " of " + Currs.Count.ToString()
+                              + " currency rate(s) saved against " + Mdl1.toLongDate(strDate) + ".";
+                if (Failed.Count > 0)
+                {
+                    strMsg = strMsg + Environment.NewLine + Environment.NewLine + "Not updated :" + Environment.NewLine;
+                    for (int i = 0; i < Failed.Count; i++)
+                    {
+                        strMsg = strMsg + Environment.NewLine + Failed[i];
+                    }
+                    MessageBox.Show(strMsg, "Error Message");
+                }
+                else
+                {
+                    MessageBox.Show(strMsg, "Success");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+            finally
+            {
+                Buttons(true);
                 Cursor.Current = Cursors.Default;
             }
         }

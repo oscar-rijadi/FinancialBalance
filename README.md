@@ -250,7 +250,7 @@ flowchart LR
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
-| `Setup_Curr_Rate` | Dated exchange rates, typed in or fetched from Yahoo Finance — see [Currency Rate Setup](#currency-rate-setup). |
+| `Setup_Curr_Rate` | Dated exchange rates, typed in or fetched from Yahoo Finance one currency at a time or all at once — see [Currency Rate Setup](#currency-rate-setup). |
 | `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
 | `Setup_Financial_Year` | Shown as **Financial Year Setup**. Names a financial year and the dates it runs between. |
 | `Setup_Interval` | Shown as **Interval Setup**. Maintains the intervals a distribution or dividend can be paid at. |
@@ -2776,9 +2776,11 @@ Things worth knowing before changing this code.
   accumulates `Main_Form` instances rather than returning to the existing one.
 - **Three pages reach the network**, and only these three: `ETF_Stocks_Price` on either sync
   button, `Setup_ETF_Stocks` on **Get Dividend Yield from Yahoo Finance**, and `Setup_Curr_Rate`
-  on **Get Latest Currency**. All three force TLS 1.2, set a `User-Agent`, and run on the UI
-  thread — the form freezes for the duration. **Sync all** makes one request per flagged ticker
-  in sequence, so that freeze scales with how many you track; the other two make one each.
+  on **Get Latest Currency** or **Get All Latest Currency**. All three force TLS 1.2, set a
+  `User-Agent`, and run on the UI thread — the form freezes for the duration. The two bulk
+  buttons, **Sync all** and **Get All Latest Currency**, make one request per ticker or per
+  currency in sequence, so that freeze scales with how many there are; the other two make one
+  each.
   Yahoo's endpoint is undocumented and can change without notice — the `quote` and
   `quoteSummary` endpoints already have, which is why the yield is computed from dividend
   events rather than read from a field.
@@ -4560,8 +4562,8 @@ the date on screen — inserting or updating, since a currency and a date name a
 
 #### Get Latest Currency
 
-The button before **Setup** fetches today's rate for **the currency on screen** and saves it,
-in one press. That is what sets it apart from
+The first of the two buttons before **Setup** fetches today's rate for **the currency on
+screen** and saves it, in one press. That is what sets it apart from
 [Get Dividend Yield from Yahoo Finance](#get-dividend-yield-from-yahoo-finance), which fills a
 box and stops: a yield is a starting point to be adjusted before it is stored, while a rate is
 a fact about a day and there is nothing to look over before writing it down.
@@ -4604,12 +4606,47 @@ While the button is working, it and **Setup** and **Back** are all disabled and 
 wait cursor. The call runs on the UI thread, so the form is frozen regardless — the disabling is
 what stops a queued click landing after it.
 
+#### Get All Latest Currency
+
+The button beside it does the same thing once per row in `TblCurrCode`, which is rather the
+point: rates are only worth much as a set, and six dropdown selections to collect one
+consistent day of them is six chances to forget the sixth.
+
+**The whole run shares one date**, read before the first fetch rather than per currency, so a
+pass that straddles midnight cannot land half its rates on one day and half on the next.
+
+A currency that cannot be fetched is **collected rather than thrown**: one Yahoo has stopped
+quoting does not cost the others their update. The summary counts what was saved and lists
+what was not, with the reason against each:
+
+```
+5 of 6 currency rate(s) saved against 28 September 2026.
+
+Not updated :
+
+ZZZ : Yahoo Finance does not quote ZZZIDR=X, so there is no rate to fetch for ZZZ.
+```
+
+It comes up as a **Success** when everything landed and as an **Error Message** when anything
+did not — the same shape **Sync all with Yahoo Finance** uses on the price page, for the same
+reason: a partial result is not a failure, but it is not something to dismiss unread either.
+
+It moves the date pickers to today and redraws the list exactly as the single-currency button
+does, so the page ends up showing the row it just wrote for whichever currency is selected.
+Pressing either button twice in a day updates rather than duplicating, because a currency and
+a date name at most one row.
+
+> Fitting four buttons across 574px is what finally made the tab order read left to right.
+> **Back** had a lower `TabIndex` than **Setup** and was being reached first; with a third and
+> fourth button on the row that was no longer something to leave alone.
+
 #### One place a rate is written
 
-Both buttons go through the same `Save_Rate`, so they cannot drift apart on what a saved row
-looks like. It also fixed something that was already there: the rate used to be pasted into the
-statement as whatever was in the box, which on a machine whose decimal separator is a comma
-would send `12617,80` to Access as **two arguments rather than one rate**. It is now formatted
+All three buttons go through the same `Save_Rate`, so a rate saved in bulk is
+indistinguishable from one saved on its own or typed by hand. Sharing it also fixed
+something that was already there: the rate used to be pasted into the statement as whatever
+was in the box, which on a machine whose decimal separator is a comma would send
+`12617,80` to Access as **two arguments rather than one rate**. It is now formatted
 invariantly, the way every other number this application writes as a bare SQL literal is.
 
 > The page title was reading **CURRENCY RATE** rather than *CURRENCY RATE SETUP*: the label was

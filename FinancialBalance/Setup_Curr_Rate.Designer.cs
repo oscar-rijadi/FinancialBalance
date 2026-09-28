@@ -32,6 +32,7 @@
             this.CmdBack = new System.Windows.Forms.Button();
             this.CmdSetup = new System.Windows.Forms.Button();
             this.CmdGetRate = new System.Windows.Forms.Button();
+            this.CmdGetAllRates = new System.Windows.Forms.Button();
             this.MainMenu1 = new System.Windows.Forms.MenuStrip();
             this.MnAdmin = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,11 +85,11 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(439, 342);
+            this.CmdBack.Location = new System.Drawing.Point(466, 342);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
-            this.CmdBack.TabIndex = 5;
+            this.CmdBack.TabIndex = 7;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -99,7 +100,7 @@
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(255, 342);
+            this.CmdSetup.Location = new System.Drawing.Point(375, 342);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -114,7 +115,7 @@
             this.CmdGetRate.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetRate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetRate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetRate.Location = new System.Drawing.Point(46, 342);
+            this.CmdGetRate.Location = new System.Drawing.Point(18, 342);
             this.CmdGetRate.Name = "CmdGetRate";
             this.CmdGetRate.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetRate.Size = new System.Drawing.Size(160, 27);
@@ -122,6 +123,21 @@
             this.CmdGetRate.Text = "&Get Latest Currency";
             this.CmdGetRate.UseVisualStyleBackColor = false;
             this.CmdGetRate.Click += new System.EventHandler(this.CmdGetRate_Click);
+            // 
+            // CmdGetAllRates
+            // 
+            this.CmdGetAllRates.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdGetAllRates.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdGetAllRates.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdGetAllRates.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdGetAllRates.Location = new System.Drawing.Point(196, 342);
+            this.CmdGetAllRates.Name = "CmdGetAllRates";
+            this.CmdGetAllRates.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdGetAllRates.Size = new System.Drawing.Size(160, 27);
+            this.CmdGetAllRates.TabIndex = 5;
+            this.CmdGetAllRates.Text = "Get &All Latest Currency";
+            this.CmdGetAllRates.UseVisualStyleBackColor = false;
+            this.CmdGetAllRates.Click += new System.EventHandler(this.CmdGetAllRates_Click);
             // 
             // MainMenu1
             // 
@@ -544,6 +560,7 @@
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(574, 387);
             this.ControlBox = false;
+            this.Controls.Add(this.CmdGetAllRates);
             this.Controls.Add(this.CmdGetRate);
             this.Controls.Add(this.monthCalendar1);
             this.Controls.Add(this.gvCurrRate);
@@ -585,6 +602,7 @@
         public System.Windows.Forms.Button CmdBack;
         public System.Windows.Forms.Button CmdSetup;
         public System.Windows.Forms.Button CmdGetRate;
+        public System.Windows.Forms.Button CmdGetAllRates;
         public System.Windows.Forms.MenuStrip MainMenu1;
         public System.Windows.Forms.ToolStripMenuItem MnAdmin;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
