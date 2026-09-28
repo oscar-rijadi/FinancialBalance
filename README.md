@@ -250,7 +250,7 @@ flowchart LR
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
-| `Setup_Curr_Rate` | Dated exchange rates. |
+| `Setup_Curr_Rate` | Dated exchange rates, typed in or fetched from Yahoo Finance — see [Currency Rate Setup](#currency-rate-setup). |
 | `Setup_Activa_Passiva` | Shown as **Asset Liability Setup**. Directly set the opening/running balance of an asset or liability account. |
 | `Setup_Financial_Year` | Shown as **Financial Year Setup**. Names a financial year and the dates it runs between. |
 | `Setup_Interval` | Shown as **Interval Setup**. Maintains the intervals a distribution or dividend can be paid at. |
@@ -2553,7 +2553,8 @@ broken.
 Each account is denominated in one currency, and **balances are stored in that account's own
 currency** — never pre-converted. Conversion happens at report time.
 
-`TblCurrRate.Curr_Rate` holds **IDR per one unit** of the currency, so IDR is the pivot:
+`TblCurrRate.Curr_Rate` holds **IDR per one unit** of the currency, so IDR is the pivot —
+which is also what [Currency Rate Setup](#currency-rate-setup) asks Yahoo for:
 
 ```
 amount_IDR   = Balance × GetCurrRate(Curr_Code, month)
@@ -2597,7 +2598,7 @@ C#.Net/
 │   ├── Setup_Acct_Type_Ref.*
 │   ├── Setup_Acct_Ref.*
 │   ├── Setup_Curr.*
-│   ├── Setup_Curr_Rate.*
+│   ├── Setup_Curr_Rate.*            # rates, typed in or fetched
 │   ├── Setup_Activa_Passiva.*
 │   ├── Setup_Financial_Year.*
 │   ├── Setup_Interval.*              # distribution/dividend intervals
@@ -2773,13 +2774,14 @@ Things worth knowing before changing this code.
 - **`decimal` columns are read through `double`**, which introduces rounding on large IDR figures.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
-- **Two pages reach the network**, and only these two: `ETF_Stocks_Price` on either sync button,
-  and `Setup_ETF_Stocks` on **Get Dividend Yield from Yahoo Finance**. Both force TLS 1.2, set a
-  `User-Agent`, and run on the UI thread — the form freezes for the duration. **Sync all** makes
-  one request per flagged ticker in sequence, so that freeze scales with how many you track; the
-  yield button makes one. Yahoo's endpoint is undocumented and can change without notice — the
-  `quote` and `quoteSummary` endpoints already have, which is why the yield is computed from
-  dividend events rather than read from a field.
+- **Three pages reach the network**, and only these three: `ETF_Stocks_Price` on either sync
+  button, `Setup_ETF_Stocks` on **Get Dividend Yield from Yahoo Finance**, and `Setup_Curr_Rate`
+  on **Get Latest Currency**. All three force TLS 1.2, set a `User-Agent`, and run on the UI
+  thread — the form freezes for the duration. **Sync all** makes one request per flagged ticker
+  in sequence, so that freeze scales with how many you track; the other two make one each.
+  Yahoo's endpoint is undocumented and can change without notice — the `quote` and
+  `quoteSummary` endpoints already have, which is why the yield is computed from dividend
+  events rather than read from a field.
 - **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
   `Setup_ETF_Stocks_Flag` is displayed as **ETF/Stock Portfolio Code Setup**, and on
   `ETF_Stocks_Purchase` and `ETF_Stocks_Sale` the dropdown is labelled **Portfolio** and the grid column
@@ -4546,6 +4548,74 @@ blocked while any super record still names the fund.
 page never lists itself, so the group would be an empty dead end — the entry appears on every
 *other* Administration page's menu, and on `Main_Form`. Adding a second Property page means giving
 this one the group back, with that page in it.
+
+---
+
+### Currency Rate Setup
+
+`Administration` ▸ Currency ▸ Currency Rate Setup maintains `TblCurrRate`: one rate per
+currency per day. A currency and a date pick the row, the list beside them shows every rate
+that currency has ever had newest first, and **Setup** writes what is in the Rate box against
+the date on screen — inserting or updating, since a currency and a date name at most one row.
+
+#### Get Latest Currency
+
+The button before **Setup** fetches today's rate for **the currency on screen** and saves it,
+in one press. That is what sets it apart from
+[Get Dividend Yield from Yahoo Finance](#get-dividend-yield-from-yahoo-finance), which fills a
+box and stops: a yield is a starting point to be adjusted before it is stored, while a rate is
+a fact about a day and there is nothing to look over before writing it down.
+
+**It saves against today, whatever date the page was showing.** A rate read just now is not a
+fact about some other day, so the date pickers are moved to today with it and the list is
+redrawn — the page ends up showing the row that was written rather than the one that was on
+screen before the press.
+
+Yahoo quotes a currency pair as though it were an instrument, so the rate comes from the same
+chart endpoint the other two network calls use:
+
+```
+https://query1.finance.yahoo.com/v8/finance/chart/{ISO}IDR=X?interval=1d&range=5d
+```
+
+`AUDIDR=X` is the price of one Australian dollar in rupiah, which is exactly what
+[`Curr_Rate` holds](#multi-currency-handling) — so the figure needs no arithmetic doing to it,
+only rounding to the two decimal places the column keeps. `regularMarketTime` comes back with
+it and is quoted in the confirmation, so a stale weekend quote is visible as one.
+
+> **Two of the currency codes are the user's own rather than ISO 4217.** `BHT` is the Thai baht
+> and `YEN` the Japanese yen, and Yahoo has never heard of either — `BHTIDR=X` is a 404. They
+> are mapped to `THB` and `JPY` on the way out and nowhere else, so the codes in `TblCurrCode`
+> are left exactly as they are. Anything not on that list goes out as it stands, so a currency
+> added later under a proper code needs nothing doing here.
+
+**`IDR` never reaches the network.** It is the base every other rate is measured in, so its own
+rate is 1 by definition — there is no pair to ask for, and `IDRIDR=X` is a 404 like the other
+two. The button says so and saves the 1 anyway, which keeps the base on the same footing as
+every other currency rather than a special case the user has to remember.
+
+Two things are refused rather than guessed at. A currency Yahoo does not quote is named in the
+error along with the pair that was asked for, and **nothing is written** — a missing rate leaves
+`Mdl1.GetCurrRate` falling back, which is recoverable, where a wrong one is not. And a rate that
+**rounds to nothing** at two decimal places is refused for the same reason: a zero written there
+would be multiplied through every conversion in the application.
+
+While the button is working, it and **Setup** and **Back** are all disabled and the cursor is a
+wait cursor. The call runs on the UI thread, so the form is frozen regardless — the disabling is
+what stops a queued click landing after it.
+
+#### One place a rate is written
+
+Both buttons go through the same `Save_Rate`, so they cannot drift apart on what a saved row
+looks like. It also fixed something that was already there: the rate used to be pasted into the
+statement as whatever was in the box, which on a machine whose decimal separator is a comma
+would send `12617,80` to Access as **two arguments rather than one rate**. It is now formatted
+invariantly, the way every other number this application writes as a bare SQL literal is.
+
+> The page title was reading **CURRENCY RATE** rather than *CURRENCY RATE SETUP*: the label was
+> 292px wide and the text needs 399. It had also been overlapping the Currency dropdown by a
+> pixel. Both were there before this button was, and both are fixed — the label is now 430px
+> and sits four pixels clear of the row below it.
 
 ---
 

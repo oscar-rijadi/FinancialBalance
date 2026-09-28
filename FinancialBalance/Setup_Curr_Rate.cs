@@ -7,12 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Data.OleDb;
+using System.Globalization;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace FinancialBalance
 {
     public partial class Setup_Curr_Rate : Form
     {
         bool FirstLoad;
+
+        //The base every rate on this page is measured in. A row here says how many rupiah one
+        //unit of Curr_Code is worth, which is why IDR's own rate is 1 and why every conversion
+        //in the application returns 1 for it without ever reading the table.
+        const string BaseCurr = "IDR";
         public Setup_Curr_Rate()
         {
             InitializeComponent();
@@ -360,37 +368,227 @@ namespace FinancialBalance
             txtRate.Text = Mdl1.checkNumeric(txtRate.Text).ToString();            
         }
 
+        //A rate is written in one place only, so the Setup button and the Get Latest Currency
+        //button cannot drift apart on what a saved row looks like.
+        private void Save_Rate(string parDate, string parCurr, double parRate)
+        {
+            bool FlagRecNotExist;
+
+            Mdl1.Ssql = "Select top 1 Curr_Date from TblCurrRate where Curr_Date = '" + parDate + "' and Curr_Code = '" + parCurr + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            FlagRecNotExist = !reader.HasRows;
+            reader.Close();
+
+            if (FlagRecNotExist)
+            {
+                Mdl1.Ssql = "Insert into TblCurrRate values ('" + parDate + "', '" + parCurr + "', " + Sql_Rate(parRate) + ")";
+            }
+            else
+            {
+                Mdl1.Ssql = "Update TblCurrRate set Curr_Rate = " + Sql_Rate(parRate) + " where Curr_Date = '" + parDate + "' and Curr_Code = '" + parCurr + "'";
+            }
+            cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            cmd.ExecuteNonQuery();
+        }
+
+        //The rate goes into the statement as a bare number, so it has to be written the way SQL
+        //reads one. On a machine whose decimal separator is a comma, 12617,80 would arrive as
+        //two arguments rather than one rate.
+        private string Sql_Rate(double parRate)
+        {
+            return Math.Round(parRate, 2).ToString("0.00", CultureInfo.InvariantCulture);
+        }
+
+        //Two of the codes in TblCurrCode are the user's own rather than ISO 4217, and Yahoo has
+        //never heard of either of them. Anything not listed goes out as it stands, so a currency
+        //added later under a proper code needs nothing doing here.
+        private string Iso_Code(string parCurr)
+        {
+            string strCurr = parCurr.Trim().ToUpper();
+            if (strCurr == "BHT")
+            {
+                return "THB";
+            }
+            if (strCurr == "YEN")
+            {
+                return "JPY";
+            }
+            return strCurr;
+        }
+
+        //Yahoo quotes a currency pair as if it were an instrument, so AUDIDR=X is the price of
+        //one Australian dollar in rupiah - which is exactly what this table holds. The chart
+        //endpoint is the one ETF/Stock Setup already uses: quote and quoteSummary answer 401
+        //without a crumb, while this one answers plainly.
+        private bool Fetch_Latest_Rate(string parCurr, out double parRate, out DateTime parWhen,
+                                       out bool parQuoted, out string parError)
+        {
+            parRate = 0;
+            parWhen = DateTime.Now;
+            parQuoted = false;
+            parError = "";
+
+            //one rupiah to the rupiah, by definition - there is no pair to ask for
+            if (parCurr.Trim().ToUpper() == BaseCurr)
+            {
+                parRate = 1;
+                return true;
+            }
+
+            string strPair = Iso_Code(parCurr) + BaseCurr + "=X";
+
+            try
+            {
+                ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol | SecurityProtocolType.Tls12;
+
+                string Url = "https://query1.finance.yahoo.com/v8/finance/chart/"
+                           + Uri.EscapeDataString(strPair) + "?interval=1d&range=5d";
+
+                string Json;
+                using (WebClient Client = new WebClient())
+                {
+                    Client.Headers.Add("User-Agent", "Mozilla/5.0");
+                    Json = Client.DownloadString(Url);
+                }
+
+                double TmpRaw;
+                Match RateMatch = Regex.Match(Json, "\"regularMarketPrice\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
+                if (!RateMatch.Success
+                    || !double.TryParse(RateMatch.Groups[1].Value, NumberStyles.Number,
+                                        CultureInfo.InvariantCulture, out TmpRaw)
+                    || TmpRaw <= 0)
+                {
+                    parError = "Yahoo Finance did not return a rate for " + strPair + ".";
+                    return false;
+                }
+
+                //Curr_Rate holds two decimal places, so a currency worth less than half a cent of a
+                //rupiah cannot be stored at all. Saying so beats writing a zero that would then be
+                //multiplied through every conversion in the application.
+                parRate = Math.Round(TmpRaw, 2);
+                if (parRate == 0)
+                {
+                    parError = "One " + parCurr.Trim() + " is worth "
+                             + TmpRaw.ToString("0.########", CultureInfo.InvariantCulture) + " " + BaseCurr
+                             + ", which rounds to nothing at the two decimal places a rate is stored to.";
+                    return false;
+                }
+
+                long TmpWhen;
+                Match WhenMatch = Regex.Match(Json, "\"regularMarketTime\"\\s*:\\s*([0-9]+)");
+                if (WhenMatch.Success && long.TryParse(WhenMatch.Groups[1].Value, out TmpWhen))
+                {
+                    parWhen = DateTimeOffset.FromUnixTimeSeconds(TmpWhen).ToLocalTime().DateTime;
+                    parQuoted = true;
+                }
+
+                return true;
+            }
+            catch (WebException ex)
+            {
+                HttpWebResponse Response = ex.Response as HttpWebResponse;
+                if (Response != null && Response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    parError = "Yahoo Finance does not quote " + strPair + ", so there is no rate to"
+                             + " fetch for " + parCurr.Trim() + ".";
+                }
+                else
+                {
+                    parError = "Could not reach Yahoo Finance : " + ex.Message;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                parError = ex.Message;
+                return false;
+            }
+        }
+
+        //Fetches and saves in one go, which is what sets it apart from the yield button on
+        //ETF/Stock Setup. A yield is a starting point to be adjusted before it is stored; a rate
+        //is a fact about a day, and there is nothing to look over before writing it down.
+        private void CmdGetRate_Click(object sender, EventArgs e)
+        {
+            double TmpRate;
+            DateTime TmpWhen;
+            bool TmpQuoted;
+            string TmpError;
+
+            string strCurr = CmbCurr.Text.Trim();
+            if (strCurr == "")
+            {
+                MessageBox.Show("Currency cannot be empty !", "Error Message");
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            CmdGetRate.Enabled = false;
+            CmdSetup.Enabled = false;
+            CmdBack.Enabled = false;
+            try
+            {
+                if (!Fetch_Latest_Rate(strCurr, out TmpRate, out TmpWhen, out TmpQuoted, out TmpError))
+                {
+                    MessageBox.Show(TmpError, "Error Message");
+                    return;
+                }
+
+                //"Latest" means today, whatever date the page happened to be showing: a rate read
+                //just now is not a fact about some other day. The pickers move with it so the page
+                //ends up showing the row that was written rather than the one that was on screen.
+                DateTime TmpToday = DateTime.Now;
+                string strDate = TmpToday.ToString("yyyyMMdd");
+
+                Save_Rate(strDate, strCurr, TmpRate);
+
+                FirstLoad = true;
+                CmbDD.Text = TmpToday.ToString("dd");
+                CmbMM.Text = TmpToday.ToString("MM");
+                CmbYear.Text = TmpToday.ToString("yyyy");
+                FirstLoad = false;
+
+                ChangeLblDay();
+                Get_Data();
+                Get_Rate();
+
+                if (strCurr.ToUpper() == BaseCurr)
+                {
+                    MessageBox.Show(BaseCurr + " is what every other rate is measured in, so its own"
+                        + " rate is 1.00 without going to the internet. Saved against "
+                        + Mdl1.toLongDate(strDate) + ".", "Success");
+                }
+                else
+                {
+                    MessageBox.Show("Yahoo Finance quotes one " + strCurr + " at "
+                        + TmpRate.ToString("#,##0.00", CultureInfo.InvariantCulture) + " " + BaseCurr
+                        + (TmpQuoted ? ", as at " + TmpWhen.ToString("dd MMMM yyyy HH:mm") : "")
+                        + ". Saved against " + Mdl1.toLongDate(strDate) + ".", "Success");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+            finally
+            {
+                CmdGetRate.Enabled = true;
+                CmdSetup.Enabled = true;
+                CmdBack.Enabled = true;
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
         private void CmdSetup_Click(object sender, EventArgs e)
         {
             try
             {
-                bool FlagRecNotExist;
+                string strDate = CmbYear.Text + CmbMM.Text + CmbDD.Text;
 
-                Mdl1.Ssql = "Select top 1 Curr_Date from TblCurrRate where Curr_Date = '" + CmbYear.Text + CmbMM.Text + CmbDD.Text + "' and Curr_Code = '" + CmbCurr.Text + "'";
-                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
-                OleDbDataReader reader = cmd.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    FlagRecNotExist = false;
-                }
-                else
-                {
-                    FlagRecNotExist = true;
-                }
-                reader.Close();
+                Save_Rate(strDate, CmbCurr.Text, Mdl1.checkNumeric(txtRate.Text));
 
-                if (FlagRecNotExist)
-                {
-                    Mdl1.Ssql = "Insert into TblCurrRate values ('" + CmbYear.Text + CmbMM.Text + CmbDD.Text + "', '" + CmbCurr.Text + "', " + txtRate.Text.Trim() + ")";
-                }
-                else
-                {
-                    Mdl1.Ssql = "Update TblCurrRate set Curr_Rate = '" + txtRate.Text.Trim() + "' where Curr_Date = '" + CmbYear.Text + CmbMM.Text + CmbDD.Text + "' and Curr_Code = '" + CmbCurr.Text + "'";
-                }
-                cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
-                cmd.ExecuteNonQuery();
-
-                MessageBox.Show("Create or Update successfully for Currency Code : " + CmbCurr.Text + " and Date : " + Mdl1.toLongDate(CmbYear.Text + CmbMM.Text + CmbDD.Text), "Success");
+                MessageBox.Show("Create or Update successfully for Currency Code : " + CmbCurr.Text + " and Date : " + Mdl1.toLongDate(strDate), "Success");
 
                 Get_Data();
             }
