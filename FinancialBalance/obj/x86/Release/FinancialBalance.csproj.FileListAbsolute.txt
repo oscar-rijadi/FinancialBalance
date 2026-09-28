@@ -132,3 +132,4 @@ C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBal
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Before_Tax_Interest_Calculator.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Tax_Allocation.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Yearly_Summary_Graph.resources
+C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Superannuation_Calculator.resources

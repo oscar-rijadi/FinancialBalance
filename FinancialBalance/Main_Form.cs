@@ -189,6 +189,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnSuperCalculator_Click(object sender, EventArgs e)
+        {
+            Superannuation_Calculator Superannuation_Calculator = new Superannuation_Calculator();
+            Superannuation_Calculator.Show();
+            this.Hide();
+        }
+
         private void MnTaxDeductableInterest_Click(object sender, EventArgs e)
         {
             Tax_Deductable_Interest_Calculator Tax_Deductable_Interest_Calculator = new Tax_Deductable_Interest_Calculator();

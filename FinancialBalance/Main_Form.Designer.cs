@@ -75,6 +75,7 @@
             this.MnDividendSnowball = new System.Windows.Forms.ToolStripMenuItem();
             this.MnTaxDeductableInterest = new System.Windows.Forms.ToolStripMenuItem();
             this.MnBeforeTaxInterest = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnSuperCalculator = new System.Windows.Forms.ToolStripMenuItem();
             this.MnCalculator = new System.Windows.Forms.ToolStripMenuItem();
             this.MnAcctTypeRefSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnSuperGroup = new System.Windows.Forms.ToolStripMenuItem();
@@ -461,7 +462,8 @@
             this.MnCompoundInterest,
             this.MnDividendSnowball,
             this.MnTaxDeductableInterest,
-            this.MnBeforeTaxInterest});
+            this.MnBeforeTaxInterest,
+            this.MnSuperCalculator});
             this.MnCalculator.Name = "MnCalculator";
             this.MnCalculator.Size = new System.Drawing.Size(72, 20);
             this.MnCalculator.Text = "&Calculator";
@@ -493,6 +495,13 @@
             this.MnBeforeTaxInterest.Size = new System.Drawing.Size(260, 22);
             this.MnBeforeTaxInterest.Text = "&Before Tax Interest Calculator";
             this.MnBeforeTaxInterest.Click += new System.EventHandler(this.MnBeforeTaxInterest_Click);
+            // 
+            // MnSuperCalculator
+            // 
+            this.MnSuperCalculator.Name = "MnSuperCalculator";
+            this.MnSuperCalculator.Size = new System.Drawing.Size(260, 22);
+            this.MnSuperCalculator.Text = "&Superannuation Calculator";
+            this.MnSuperCalculator.Click += new System.EventHandler(this.MnSuperCalculator_Click);
             // 
             // MnAdmin
             // 
@@ -1182,6 +1191,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnDividendSnowball;
         public System.Windows.Forms.ToolStripMenuItem MnTaxDeductableInterest;
         public System.Windows.Forms.ToolStripMenuItem MnBeforeTaxInterest;
+        public System.Windows.Forms.ToolStripMenuItem MnSuperCalculator;
         public System.Windows.Forms.ToolStripMenuItem MnCalculator;
         public System.Windows.Forms.ToolStripMenuItem MnAcctTypeRefSetup;
         public System.Windows.Forms.ToolStripMenuItem MnSuperGroup;

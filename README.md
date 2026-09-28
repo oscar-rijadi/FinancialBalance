@@ -104,9 +104,10 @@ Related pages are collected into submenus rather than sitting flat:
 `Process` also carries **Super** as a single entry of its own, after the ETF/Stock submenu —
 one page rather than a group. `Inquiry` opens with **Monthly Inquiry** and closes with **Super
 Balance & Historical Data**, both single entries of their own, with the Yearly, ETF/Stock and
-Property submenus in between. `Calculator` holds all four of its pages — **Compound
+Property submenus in between. `Calculator` holds all five of its pages — **Compound
 Interest Calculator**, **Dividend Snowball Calculator**, **Tax Deductable Interest
-Calculator** and **Before Tax Interest Calculator** — directly, with no submenu between.
+Calculator**, **Before Tax Interest Calculator** and **Superannuation Calculator** —
+directly, with no submenu between.
 
 **Yearly** is the newest of these groups, and began as the smallest reason to make one: two
 pages, both already named *Yearly something*, that were sitting flat between Monthly Inquiry
@@ -170,6 +171,7 @@ flowchart LR
     MAIN --> DSC["Dividend_Snowball_Calculator"]
     MAIN --> TDI["Tax_Deductable_Interest_Calculator"]
     MAIN --> BTI["Before_Tax_Interest_Calculator"]
+    MAIN --> SUC["Superannuation_Calculator"]
 
     MAIN --> ADMIN{{"Administration"}}
     ADMIN --> SATR["Setup_Acct_Type_Ref"]
@@ -244,6 +246,7 @@ flowchart LR
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
 | `Tax_Deductable_Interest_Calculator` | Shown as **Tax Deductable Interest Calculator**. Splits an interest *rate* into bands, taxes each at its own rate, and says what rate is left. Percentages throughout, no money. Reads `TblTaxAllocation` and writes nothing. |
 | `Before_Tax_Interest_Calculator` | Shown as **Before Tax Interest Calculator**. The same question as the one above, asked backwards: given the rate left after tax and how it is taxed, what rate has to be earned. Reads `TblTaxAllocation` and writes nothing. |
+| `Superannuation_Calculator` | Shown as **Superannuation Calculator**. What will be in super at retirement, in today's dollars — sixteen inputs, six figures that reconcile to the answer, a year-by-year table and a chart. Modelled on the MoneySmart calculator. Reads and writes nothing. See [the superannuation calculator](#the-superannuation-calculator). |
 | `Setup_Acct_Type_Ref` | Maintains the four account types. |
 | `Setup_Acct_Ref` | Chart of accounts — code, name, type, currency, display order, current-asset flag. |
 | `Setup_Curr` | Currency codes and names. |
@@ -2613,6 +2616,7 @@ C#.Net/
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
 │   ├── Tax_Deductable_Interest_Calculator.*  # interest rate after tax, reads TblTaxAllocation
 │   ├── Before_Tax_Interest_Calculator.*  # the same sum backwards, reads TblTaxAllocation
+│   ├── Superannuation_Calculator.*     # super at retirement in today's dollars, no database
 │   ├── Setup_State.*                 # the Australian states and territories
 │   ├── Setup_Tax_Allocation.*        # tax rates and the share taxed at each
 │   ├── Setup_Property_Rental_Expense_Type.*  # the kinds of rental expense
@@ -3728,6 +3732,145 @@ Dividend Income is the one input that may be left blank.**
 As on the compound interest calculator, the page **recalculates on every keystroke**, so a refused
 input is reported **in the note above the table, in red** rather than in a message box, and the
 table and all five figures are cleared so nothing stale is left looking like an answer.
+
+---
+
+### The superannuation calculator
+
+`Calculator` ▸ Superannuation Calculator is the [MoneySmart superannuation
+calculator](https://moneysmart.gov.au/how-super-works/superannuation-calculator) built into
+the app: **what will be in super at retirement, in today's money.** Sixteen inputs in two
+columns, one headline, six figures that reconcile to it, a year-by-year table and a stacked
+column per year. It reads and writes nothing.
+
+#### The inputs
+
+**You and your super**
+
+| Input | Range |
+| --- | --- |
+| **Age** | 18 to 75, whole years |
+| **Retirement Age** | 60 to 75, and more than Age |
+| **Income per Year** | up to 1,000,000, before tax and before super |
+| **Super Balance** | up to 5,000,000, what is in it now |
+| **Employer Contribution** | 10.5 to 25 % |
+| **Before-tax Contribution** | salary sacrifice, per year |
+| **After-tax Contribution** | per year |
+| **Concessional Cap** | per year; the after-tax cap is four times it |
+
+**Your fund, and what it is assumed to do**
+
+| Input | Range |
+| --- | --- |
+| **Investment Option** | Cash, Conservative, Moderate, Balanced, Growth, High Growth, Other |
+| **Super Return** | 0 to 20 % a year, net of tax and investment fees |
+| **Contribution Fee** | 0 to 10 % of what goes in |
+| **Admin Fee per Year** | 0 to 1,000 |
+| **Admin Fee** | 0 to 5 % of the balance |
+| **Insurance per Year** | 0 to 10,000 |
+| **Rise in Cost of Living** | 0 to 10 % a year |
+| **Rise in Living Standards** | 0 to 10 % a year |
+
+The page opens on a worked example rather than on nothing — 30 years old retiring at 67 on
+100,000 with 50,000 already there, a Balanced fund, and MoneySmart's own defaults of 12 %
+employer contribution, 59.00 and 0.11 % admin, 599.00 insurance, a 2.50 % cost of living and
+a further 1.20 % of living standards, against a concessional cap of 32,500. Type over any
+of it; every box redraws the page as it is typed.
+
+**Investment Option and Super Return drive each other.** Picking an option fills the rate in —
+3.70, 4.90, 5.70, 6.10, 6.40 and 6.80 for the six — and typing a rate of your own is what
+`Other` means, so the dropdown follows the box rather than arguing with it. Pick an option
+again and the rate goes back to that option's.
+
+#### Everything is in today's dollars
+
+A balance forty years out is unreadable in the dollars of that year, so the whole projection
+runs in today's. The Super Return is typed as a nominal rate and deflated once, at the start:
+
+```
+rise    d = (1 + cost of living) x (1 + living standards) - 1
+return  r = (1 + super return) / (1 + d) - 1
+```
+
+The two rises **compound rather than being added** — they are two separate escalations, so
+the default 2.50 % and 1.20 % come to 3.73 % a year, not 3.70 %, and a 6.10 % fund is
+2.28 % in today's money. The note says all three figures so the deflation is never implicit.
+
+Income, fees and insurance are then **held level** for the whole projection. That is the same
+assumption twice over: MoneySmart indexes its dollar fees, and takes wages to rise with the
+cost of living and living standards together — which is exactly what `d` is. In today's
+dollars neither moves.
+
+#### One year at a time
+
+```
+employer          = income x employer rate
+concessional      = employer + before-tax, up to the cap
+contributions tax = concessional x 15 %
+after-tax         = what is typed, up to four times the cap
+contribution fee  = (concessional + after-tax) x contribution fee rate
+net in            = concessional - tax + after-tax - contribution fee
+
+average balance   = opening balance + net in / 2
+earnings          = average balance x r
+percentage fee    = average balance x admin fee rate
+closing balance   = opening + net in + earnings - admin - insurance - percentage fee
+```
+
+Contributions are taken to **arrive evenly through the year**, which is what the half of
+*net in* in the average balance says: a year's contributions earn half a year's return.
+Assuming they all land on day one would show more and on the last day less, and neither is
+truer than the other.
+
+**The employer part counts against the cap first.** It arrives whether or not it is wanted,
+so it is the salary sacrifice that has to give way: sacrificing 40,000 against a 32,500 cap
+with 12,000 coming from the employer puts **20,500** in, not 32,500, and the note says the
+cap turned some of it away.
+
+#### The six figures reconcile to the headline
+
+```
+  Super Balance Now
++ Employer Contributions
++ Your Extra Contributions
+- Contributions Tax
+- Fees and Insurance
++ Investment Earnings
+= Super Balance at Retirement
+```
+
+That is not a presentational grouping, it is the loop above added up — and it holds to the
+cent. So does the chart: the three stacked parts of each column are the balance there is now,
+what the contributions added once tax and every fee came off, and what the earnings added,
+and the last column stacks to the same number as the headline. The table's last row is that
+number too.
+
+> **The year rows are kept unrounded and rounded only when they are printed.** Rounding each
+> year to the cent as it was worked out left the chart's columns three cents short of the
+> headline after thirty-seven of them — a difference nobody could see on a chart, and one
+> there was no reason to carry.
+
+The x axis is pinned to the ages actually plotted and ticked every few years **from the first
+of them**, so the first column and the retirement age both carry a label. Left to choose, the
+axis picks round numbers of its own and labels ages with no column standing under them.
+
+#### What it does not model, and says so
+
+The note under the inputs runs to three lines, and the last is a scope statement:
+
+> Division 293 tax, the government co-contribution and the low income super tax offset are
+> not included.
+
+Each of those needs thresholds the page does not ask for, and guessing at them would make the
+answer worse rather than better. The first two lines say how long the projection runs and at
+what rate once the rise is taken off, that contributions are taxed at 15 %, and that fees,
+insurance and income are held level — plus a sentence for each cap that turned something away.
+
+Everything that can be refused is refused **in the note, in red**, rather than in a dialog:
+the page recalculates on every keystroke, and a message box per character would be unusable.
+A retirement age at or below the age typed reads *there is nothing to project*, and the
+answer, the six figures, the table and the chart are all cleared so nothing stale is left
+looking like a result.
 
 ---
 

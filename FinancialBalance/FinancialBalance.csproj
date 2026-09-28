@@ -414,6 +414,12 @@
     <Compile Include="Yearly_Statistic.Designer.cs">
       <DependentUpon>Yearly_Statistic.cs</DependentUpon>
     </Compile>
+    <Compile Include="Superannuation_Calculator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Superannuation_Calculator.Designer.cs">
+      <DependentUpon>Superannuation_Calculator.cs</DependentUpon>
+    </Compile>
     <Compile Include="Yearly_Summary_Graph.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -602,6 +608,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Yearly_Summary_Graph.resx">
       <DependentUpon>Yearly_Summary_Graph.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Superannuation_Calculator.resx">
+      <DependentUpon>Superannuation_Calculator.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">
