@@ -130,6 +130,16 @@ namespace FinancialBalance
             {
                 return;
             }
+            //Coming back to All reveals the summary grid again, but on its own that leaves the
+            //note beside it still saying what the single-ticker view wrote - and the note now
+            //carries which currencies could not be converted, which is not a thing to leave
+            //stale over a table it no longer describes. So the summary is rebuilt, not just
+            //shown. Refresh_All has already built it by the time it calls Show_View, which is
+            //why this sits here rather than in there.
+            if (CmbTicker.Text.Trim() == "" || CmbTicker.Text.Trim() == "All")
+            {
+                Get_Data();
+            }
             Show_View();
         }
 
@@ -205,29 +215,122 @@ namespace FinancialBalance
             }
         }
 
-        //AUD and USD are shown with a dollar sign; any other currency stays bare.
-        //A negative reads -$12.34 rather than $-12.34.
-        private bool Is_Dollar(string parCurr)
+        //Every figure on this page is in AUD, whatever currency it was stored in, so every
+        //figure takes the sign. A negative reads -$12.34 rather than $-12.34.
+        private string Money(double parValue)
         {
-            if (parCurr == null)
-            {
-                return false;
-            }
-            string TmpCurr = parCurr.Trim().ToUpper();
-            return (TmpCurr == "AUD" || TmpCurr == "USD");
-        }
-
-        private string Money(double parValue, string parCurr)
-        {
-            if (!Is_Dollar(parCurr))
-            {
-                return Mdl1.FormatAmt(parValue);
-            }
             if (parValue < 0)
             {
                 return "-$" + Mdl1.FormatAmt(Math.Abs(parValue));
             }
             return "$" + Mdl1.FormatAmt(parValue);
+        }
+
+        //---- into Australian Dollar -------------------------------------------------
+        //
+        //TblCurrRate holds IDR per one unit of a currency, so a figure reaches AUD by way of
+        //the rupiah, which is the pivot the whole application converts through:
+        //
+        //    AUD = amount x rate(currency) / rate(AUD)
+        //
+        //One month's rate is used for every figure on the page - today's - rather than the
+        //rate of the day each lot was bought. That is what keeps the page's own arithmetic
+        //true: investment plus profit still equals the current amount, and the per-unit
+        //figures still reconcile with the totals. The cost of it is that a holding bought
+        //when the dollar stood somewhere else shows no gain or loss from the currency having
+        //moved since - the profit here is what the price did, not what the exchange rate did.
+        private const string PageCurr = "AUD";
+
+        //One rate per currency for the length of a refresh. Mdl1.GetCurrRate runs up to three
+        //queries a call, and without this it would run them once per figure per row.
+        private Dictionary<string, double> RateCache = new Dictionary<string, double>();
+        private List<string> NoRate = new List<string>();
+        private string RateMonth = "";
+
+        private void Begin_Rates()
+        {
+            RateCache.Clear();
+            NoRate.Clear();
+            RateMonth = DateTime.Now.ToString("yyyyMM");
+        }
+
+        //GetCurrRate answers 1 for a currency it has never heard of, which would leave a figure
+        //unconverted while looking exactly like one that needed no converting. Asking the table
+        //whether it holds anything at all for the currency is what tells those two apart.
+        private bool Has_Rate(string parCurr)
+        {
+            bool Found = false;
+            Mdl1.Ssql = "select top 1 Curr_Date from TblCurrRate where Curr_Code = '" + parCurr + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            Found = reader.Read();
+            reader.Close();
+            return Found;
+        }
+
+        private double Rate_Of(string parCurr)
+        {
+            string strCurr = (parCurr == null ? "" : parCurr.Trim().ToUpper());
+            if (strCurr == "")
+            {
+                strCurr = PageCurr;
+            }
+            if (RateCache.ContainsKey(strCurr))
+            {
+                return RateCache[strCurr];
+            }
+
+            double TmpRate;
+            if (strCurr == "IDR")
+            {
+                //the pivot itself - one rupiah to the rupiah, and never a row to read
+                TmpRate = 1;
+            }
+            else
+            {
+                if (!Has_Rate(strCurr) && !NoRate.Contains(strCurr))
+                {
+                    NoRate.Add(strCurr);
+                }
+                TmpRate = Mdl1.GetCurrRate(strCurr, RateMonth);
+            }
+            if (TmpRate <= 0)
+            {
+                TmpRate = 1;
+            }
+
+            RateCache[strCurr] = TmpRate;
+            return TmpRate;
+        }
+
+        private double To_AUD(double parAmount, string parCurr)
+        {
+            string strCurr = (parCurr == null ? "" : parCurr.Trim().ToUpper());
+            //nothing said is taken as already being in AUD, which is what an empty Currency has
+            //always meant on the purchase pages
+            if (strCurr == "" || strCurr == PageCurr)
+            {
+                return parAmount;
+            }
+            return parAmount * Rate_Of(strCurr) / Rate_Of(PageCurr);
+        }
+
+        //What the page says it is in, and any currency it could not convert
+        private string Rate_Note()
+        {
+            if (NoRate.Count == 0)
+            {
+                return "";
+            }
+            return "   -   no currency rate on record for "
+                 + String.Join(", ", NoRate.ToArray())
+                 + ", shown unconverted";
+        }
+
+        private void Show_Page_Currency()
+        {
+            LblCurrency.Text = "All amounts are in Australian Dollar (" + PageCurr + "), at "
+                             + DateTime.Now.ToString("MMM yyyy", new CultureInfo("en-AU")) + " rates";
         }
 
         private double Read_Double(object parValue)
@@ -244,19 +347,24 @@ namespace FinancialBalance
             return 0;
         }
 
-        //Latest price for a ticker, or false when the ticker has never been priced
-        private bool Get_Latest_Price(string parFullTicker, out double parPrice)
+        //Latest price for a ticker, or false when the ticker has never been priced.
+        //The price carries a currency of its own, which the sync fills in from what Yahoo
+        //quotes. It is usually the currency the holding was bought in but does not have to be,
+        //so it is read rather than assumed - converting a price needs to know what it is in.
+        private bool Get_Latest_Price(string parFullTicker, out double parPrice, out string parCurr)
         {
             parPrice = 0;
+            parCurr = "";
             bool Found = false;
 
-            Mdl1.Ssql = "select top 1 [Price] from TblETFStocksPrice where Full_Ticker = '" + parFullTicker
+            Mdl1.Ssql = "select top 1 [Price], [Currency] from TblETFStocksPrice where Full_Ticker = '" + parFullTicker
                       + "' order by Price_Date Desc";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
                 parPrice = Read_Double(reader["Price"]);
+                parCurr = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
                 Found = true;
             }
             reader.Close();
@@ -269,6 +377,7 @@ namespace FinancialBalance
             try
             {
                 Clear_Grid();
+                Begin_Rates();
 
                 string TmpFlagCode = null;
                 int idx = CmbPortfolio.SelectedIndex;
@@ -291,7 +400,6 @@ namespace FinancialBalance
                 double TotalCurrent = 0;
                 double TotalProfit = 0;
                 int Unpriced = 0;
-                bool AllDollar = true;
 
                 //read the aggregate first, so no reader is open while prices are looked up
                 List<string> Tickers = new List<string>();
@@ -324,7 +432,9 @@ namespace FinancialBalance
                 }
                 reader.Close();
 
-                //first pass works out every figure and the portfolio totals
+                //First pass works out every figure and the portfolio totals. Every amount is put into
+                //AUD before anything is derived from it, so a figure is never the difference between
+                //two currencies - and the columns still add across.
                 List<bool> PricedList = new List<bool>();
                 List<double> Prices = new List<double>();
                 List<double> Currents = new List<double>();
@@ -333,8 +443,15 @@ namespace FinancialBalance
 
                 for (int i = 0; i < Tickers.Count; i++)
                 {
-                    double TmpPrice;
-                    bool Priced = Get_Latest_Price(Tickers[i], out TmpPrice);
+                    double TmpRawPrice;
+                    string TmpPriceCurr;
+                    bool Priced = Get_Latest_Price(Tickers[i], out TmpRawPrice, out TmpPriceCurr);
+
+                    //the cost base and its average come from the purchase, the price from the price
+                    //table - so each is converted out of the currency it was actually stored in
+                    TotInvs[i] = Math.Round(To_AUD(TotInvs[i], Currs[i]), 2);
+                    AvgCosts[i] = Math.Round(To_AUD(AvgCosts[i], Currs[i]), 4);
+                    double TmpPrice = (Priced ? Math.Round(To_AUD(TmpRawPrice, TmpPriceCurr), 4) : 0);
 
                     double TmpCurrent = 0;
                     double TmpProfit = 0;
@@ -357,10 +474,6 @@ namespace FinancialBalance
                     }
 
                     TotalInvestment += TotInvs[i];
-                    if (!Is_Dollar(Currs[i]))
-                    {
-                        AllDollar = false;
-                    }
 
                     PricedList.Add(Priced);
                     Prices.Add(TmpPrice);
@@ -379,8 +492,8 @@ namespace FinancialBalance
                         //no price on record - the derived figures are unknown, not zero
                         //what a unit cost is known whether or not there is a price to compare it to
                         row = new string[] { Tickers[i], TotUnits[i].ToString("#,##0.0000"),
-                                             Money(TotInvs[i], Currs[i]),
-                                             Money(AvgCosts[i], Currs[i]),
+                                             Money(TotInvs[i]),
+                                             Money(AvgCosts[i]),
                                              "-", "-", "-", "-", "-", "-" };
                         gvSummary.Rows.Add(row);
                         continue;
@@ -399,12 +512,12 @@ namespace FinancialBalance
                     row = new string[] {
                         Tickers[i],
                         TotUnits[i].ToString("#,##0.0000"),
-                        Money(TotInvs[i], Currs[i]),
-                        Money(AvgCosts[i], Currs[i]),
-                        Money(Prices[i], Currs[i]),
-                        Money(TmpDiff, Currs[i]),
-                        Money(Currents[i], Currs[i]),
-                        Money(Profits[i], Currs[i]),
+                        Money(TotInvs[i]),
+                        Money(AvgCosts[i]),
+                        Money(Prices[i]),
+                        Money(TmpDiff),
+                        Money(Currents[i]),
+                        Money(Profits[i]),
                         Percents[i].ToString("#,##0.00") + " %",
                         TmpShare.ToString("#,##0.00") + " %"
                     };
@@ -417,8 +530,8 @@ namespace FinancialBalance
                     Colour_Cell(gvSummary.Rows[RowIdx].Cells[8], Percents[i]);
                 }
 
-                Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced,
-                            (Tickers.Count > 0 && AllDollar ? "AUD" : ""));
+                Show_Totals(TotalInvestment, TotalCurrent, TotalProfit, Unpriced);
+                Show_Page_Currency();
 
                 gvSummary.ClearSelection();
 
@@ -437,7 +550,7 @@ namespace FinancialBalance
         //Each total is the sum of its own column.  An unpriced holding has a known
         //investment but no current value, so it lifts the investment total only - the
         //note says so, because the three figures then no longer reconcile.
-        private void Show_Totals(double parInvestment, double parCurrent, double parProfit, int parUnpriced, string parCurr)
+        private void Show_Totals(double parInvestment, double parCurrent, double parProfit, int parUnpriced)
         {
             double TmpPercent = 0;
             if (parInvestment > 0)
@@ -445,9 +558,9 @@ namespace FinancialBalance
                 TmpPercent = (parProfit / parInvestment) * 100;
             }
 
-            LblTotInv.Text = Money(parInvestment, parCurr);
-            LblTotCur.Text = Money(parCurrent, parCurr);
-            LblTotPL.Text = Money(parProfit, parCurr);
+            LblTotInv.Text = Money(parInvestment);
+            LblTotCur.Text = Money(parCurrent);
+            LblTotPL.Text = Money(parProfit);
             LblTotPct.Text = TmpPercent.ToString("#,##0.00") + " %";
 
             Colour_Label(LblTotPL, parProfit);
@@ -458,6 +571,7 @@ namespace FinancialBalance
                 LblNote.Text = LblNote.Text + "   -   " + parUnpriced.ToString()
                     + " holding(s) have no price and are excluded from the current amount and profit totals";
             }
+            LblNote.Text = LblNote.Text + Rate_Note();
         }
 
         private void Colour_Label(Label parLabel, double parValue)
@@ -520,6 +634,7 @@ namespace FinancialBalance
             try
             {
                 Clear_Detail_Grid();
+                Begin_Rates();
 
                 string TmpFlagCode = null;
                 int idx = CmbPortfolio.SelectedIndex;
@@ -528,8 +643,10 @@ namespace FinancialBalance
                     TmpFlagCode = FlagCodes[idx];
                 }
 
-                double TmpPrice;
-                bool Priced = Get_Latest_Price(parFullTicker, out TmpPrice);
+                double TmpRawPrice;
+                string TmpPriceCurr;
+                bool Priced = Get_Latest_Price(parFullTicker, out TmpRawPrice, out TmpPriceCurr);
+                double TmpPrice = (Priced ? Math.Round(To_AUD(TmpRawPrice, TmpPriceCurr), 4) : 0);
 
                 string TmpWhere = " where Is_Sold = False and Full_Ticker = '" + parFullTicker + "'";
                 if (TmpFlagCode != null)
@@ -541,7 +658,7 @@ namespace FinancialBalance
                 LblNote.Text = "Unsold purchases of " + parFullTicker
                     + (TmpFlagCode == null ? "" : "  (flag " + TmpFlagCode + ")")
                     + (chkMainOnly.Checked ? "  (main portfolios only)" : "")
-                    + (Priced ? "  -  latest price " + Mdl1.FormatAmt(TmpPrice)
+                    + (Priced ? "  -  latest price " + Money(TmpPrice)
                               : "  -  no price on record, profit/loss unknown");
 
 
@@ -550,7 +667,6 @@ namespace FinancialBalance
                 double TotCostBase = 0;
                 double TotRealCostBase = 0;
                 double TotProfit = 0;
-                bool AllDollar = true;
                 int RowCount = 0;
 
                 Mdl1.Ssql = "select Trans_Date, [Currency], Unit, Cost_Base, Fee, Total_Cost_Base, Real_Total_Cost_Base, [Portfolio_Code]"
@@ -568,28 +684,31 @@ namespace FinancialBalance
                     double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
                     string TmpFlag = (reader["Portfolio_Code"] == DBNull.Value ? "" : reader["Portfolio_Code"].ToString().Trim());
                     string TmpCurr = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
-                    if (!Is_Dollar(TmpCurr))
-                    {
-                        AllDollar = false;
-                    }
                     RowCount++;
+
+                    //each lot is converted out of the currency it was bought in, before anything is
+                    //taken away from it
+                    TmpCostBase = Math.Round(To_AUD(TmpCostBase, TmpCurr), 4);
+                    TmpFee = Math.Round(To_AUD(TmpFee, TmpCurr), 2);
+                    TmpTotal = Math.Round(To_AUD(TmpTotal, TmpCurr), 2);
+                    TmpRealTotal = Math.Round(To_AUD(TmpRealTotal, TmpCurr), 2);
 
                     double TmpProfit = 0;
                     string strProfit = "-";
                     if (Priced)
                     {
                         TmpProfit = Math.Round((TmpUnit * TmpPrice) - TmpRealTotal, 2);
-                        strProfit = Money(TmpProfit, TmpCurr);
+                        strProfit = Money(TmpProfit);
                         TotProfit += TmpProfit;
                     }
 
                     Rows.Add(new string[] {
                         Format_Date(reader["Trans_Date"].ToString().Trim()),
                         TmpUnit.ToString("#,##0.0000"),
-                        Money(TmpCostBase, TmpCurr),
-                        Money(TmpFee, TmpCurr),
-                        Money(TmpTotal, TmpCurr),
-                        Money(TmpRealTotal, TmpCurr),
+                        Money(TmpCostBase),
+                        Money(TmpFee),
+                        Money(TmpTotal),
+                        Money(TmpRealTotal),
                         strProfit,
                         TmpFlag });
                     Profits.Add(TmpProfit);
@@ -617,8 +736,6 @@ namespace FinancialBalance
                     TmpPercent = (TotProfit / TotRealCostBase) * 100;
                 }
 
-                string TmpTotCurr = (RowCount > 0 && AllDollar ? "AUD" : "");
-
                 LblDTotUnit.Text = TotUnit.ToString("#,##0.0000");
 
                 //the same weighted average the All view shows in its own column, so the two
@@ -628,11 +745,11 @@ namespace FinancialBalance
                 {
                     TmpAvgCost = Math.Round(TotUnitCost / TotUnit, 4);
                 }
-                LblDAvgCost.Text = Money(TmpAvgCost, TmpTotCurr);
+                LblDAvgCost.Text = Money(TmpAvgCost);
 
                 //the price the average is worth comparing against.  Already fetched at the top
                 //of this method for the per-lot profit, so it is the same figure the rows use.
-                LblDCurPrice.Text = (Priced ? Money(TmpPrice, TmpTotCurr) : "-");
+                LblDCurPrice.Text = (Priced ? Money(TmpPrice) : "-");
 
                 //What a unit has gained or lost since it was bought, per unit.  The profit
                 //totals below say the same thing in money across the whole holding; this says
@@ -641,7 +758,7 @@ namespace FinancialBalance
                 if (Priced)
                 {
                     double TmpDiff = Math.Round(TmpPrice - TmpAvgCost, 4);
-                    LblDPriceDiff.Text = Money(TmpDiff, TmpTotCurr);
+                    LblDPriceDiff.Text = Money(TmpDiff);
                     Colour_Label(LblDPriceDiff, TmpDiff);
                 }
                 else
@@ -649,11 +766,11 @@ namespace FinancialBalance
                     LblDPriceDiff.Text = "-";
                     Colour_Label(LblDPriceDiff, 0);
                 }
-                LblDGrandTCB.Text = Money(TotCostBase, TmpTotCurr);
-                LblDGrandTRCB.Text = Money(TotRealCostBase, TmpTotCurr);
+                LblDGrandTCB.Text = Money(TotCostBase);
+                LblDGrandTRCB.Text = Money(TotRealCostBase);
                 if (Priced)
                 {
-                    LblDTotPL.Text = Money(TotProfit, TmpTotCurr);
+                    LblDTotPL.Text = Money(TotProfit);
                     LblDTotPct.Text = TmpPercent.ToString("#,##0.00") + " %";
                     Colour_Label(LblDTotPL, TotProfit);
                     Colour_Label(LblDTotPct, TmpPercent);
@@ -665,6 +782,9 @@ namespace FinancialBalance
                     Colour_Label(LblDTotPL, 0);
                     Colour_Label(LblDTotPct, 0);
                 }
+
+                LblNote.Text = LblNote.Text + Rate_Note();
+                Show_Page_Currency();
             }
             catch (Exception ex)
             {

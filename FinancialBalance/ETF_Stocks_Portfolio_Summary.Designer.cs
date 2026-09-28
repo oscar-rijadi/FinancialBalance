@@ -34,6 +34,7 @@
             this.CmbPortfolio = new System.Windows.Forms.ComboBox();
             this.gvSummary = new System.Windows.Forms.DataGridView();
             this.LblNote = new System.Windows.Forms.Label();
+            this.LblCurrency = new System.Windows.Forms.Label();
             this.LblTotInv = new System.Windows.Forms.Label();
             this.LblTotInvCap = new System.Windows.Forms.Label();
             this.LblTotCur = new System.Windows.Forms.Label();
@@ -109,11 +110,22 @@
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
             this.LblNote.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblNote.ForeColor = System.Drawing.Color.DimGray;
-            this.LblNote.Location = new System.Drawing.Point(492, 78);
+            this.LblNote.Location = new System.Drawing.Point(492, 98);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(549, 20);
+            this.LblNote.Size = new System.Drawing.Size(549, 48);
             this.LblNote.TabIndex = 3;
             this.LblNote.Text = "Unsold holdings only";
+            //
+            // LblCurrency
+            //
+            this.LblCurrency.BackColor = System.Drawing.Color.Transparent;
+            this.LblCurrency.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblCurrency.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.LblCurrency.Location = new System.Drawing.Point(492, 76);
+            this.LblCurrency.Name = "LblCurrency";
+            this.LblCurrency.Size = new System.Drawing.Size(549, 20);
+            this.LblCurrency.TabIndex = 24;
+            this.LblCurrency.Text = "All amounts are in Australian Dollar (AUD)";
             //
             // gvSummary
             //
@@ -121,13 +133,13 @@
             this.gvSummary.AllowUserToDeleteRows = false;
             this.gvSummary.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.gvSummary.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvSummary.Location = new System.Drawing.Point(19, 134);
+            this.gvSummary.Location = new System.Drawing.Point(19, 154);
             this.gvSummary.MultiSelect = false;
             this.gvSummary.Name = "gvSummary";
             this.gvSummary.ReadOnly = true;
             this.gvSummary.RowHeadersVisible = false;
             this.gvSummary.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvSummary.Size = new System.Drawing.Size(1020, 300);
+            this.gvSummary.Size = new System.Drawing.Size(1020, 280);
             this.gvSummary.TabIndex = 4;
             //
             // LblTotInvCap
@@ -268,13 +280,13 @@
             this.gvDetail.AllowUserToDeleteRows = false;
             this.gvDetail.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.gvDetail.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.gvDetail.Location = new System.Drawing.Point(19, 134);
+            this.gvDetail.Location = new System.Drawing.Point(19, 154);
             this.gvDetail.MultiSelect = false;
             this.gvDetail.Name = "gvDetail";
             this.gvDetail.ReadOnly = true;
             this.gvDetail.RowHeadersVisible = false;
             this.gvDetail.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gvDetail.Size = new System.Drawing.Size(1020, 300);
+            this.gvDetail.Size = new System.Drawing.Size(1020, 280);
             this.gvDetail.TabIndex = 32;
             this.gvDetail.Visible = false;
             //
@@ -419,7 +431,7 @@
             this.CmdDrive.Location = new System.Drawing.Point(460, 650);
             this.CmdDrive.Name = "CmdDrive";
             this.CmdDrive.Size = new System.Drawing.Size(170, 27);
-            this.CmdDrive.TabIndex = 25;
+            this.CmdDrive.TabIndex = 26;
             this.CmdDrive.Text = "Generate to Google &Drive";
             this.CmdDrive.UseVisualStyleBackColor = false;
             this.CmdDrive.Click += new System.EventHandler(this.CmdDrive_Click);
@@ -552,6 +564,7 @@
             this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.gvSummary);
+            this.Controls.Add(this.LblCurrency);
             this.Controls.Add(this.LblNote);
             this.Controls.Add(this.CmbPortfolio);
             this.Controls.Add(this.Label1);
@@ -575,6 +588,7 @@
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbPortfolio;
         public System.Windows.Forms.Label LblNote;
+        public System.Windows.Forms.Label LblCurrency;
         private System.Windows.Forms.DataGridView gvSummary;
         public System.Windows.Forms.Label LblTotInv;
         public System.Windows.Forms.Label LblTotInvCap;

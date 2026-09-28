@@ -233,7 +233,7 @@ flowchart LR
 | `Yearly_Summary` | Full-year income, expense, asset and liability breakdown with totals. Exports every year at once — see [Yearly summary](#yearly-summary). |
 | `Yearly_Statistic` | Ten-year trend for any Asset, Liability, Income or Expense account — or a whole category — drawn with `System.Windows.Forms.DataVisualization` charting. |
 | `Yearly_Summary_Graph` | Asset, Liability, Income and Expense as four lines over time — ten years, or one year month by month — each point the total the other two pages already show for that period. Reads five tables and writes nothing. See [Yearly summary graph](#yearly-summary-graph). |
-| `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. |
+| `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. Every amount is converted to Australian Dollar. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
@@ -1604,8 +1604,9 @@ back at the reader.
 Every percentage divides by **Total Ending Investment**, including the two that measure real
 rather than on-paper results, and each guards its own divide-by-zero.
 
-Amounts carry a dollar sign under the same rule as the rest of the app: only when the rows that
-fed the total all share one dollar currency (AUD or USD). A selection spanning AUD and USD
+Amounts carry a dollar sign under the rule this page shares with
+[Dividend history](#dividend-history): only when the rows that fed the total all share one
+dollar currency (AUD or USD). A selection spanning AUD and USD
 totals to a number that is in neither, so it is shown bare rather than labelled with a currency
 it is not in — and a selection with no rows at all has no currency to name, so its zeros are
 bare too, matching [Dividend history](#dividend-history).
@@ -1889,7 +1890,9 @@ daily for one week and then not again for a year would otherwise chart as a sing
 ### Portfolio summary
 
 `ETF_Stocks_Portfolio_Summary` aggregates `TblETFStocksPurchase` into one row per `Full_Ticker`.
-It only ever counts **unsold** lots (`Is_Sold = False`) — a sold lot leaves the portfolio.
+It only ever counts **unsold** lots (`Is_Sold = False`) — a sold lot leaves the portfolio. Every
+amount on it is shown in **Australian Dollar**, whatever currency the lot was bought in — see
+[Every figure is in Australian Dollar](#every-figure-is-in-australian-dollar).
 
 The **Portfolio** dropdown offers `All` plus one entry per row in `TblETFStocksPortfolioCode`,
 showing the `Description`. Picking one filters on that row's `Portfolio_Code`; `All` applies no
@@ -2046,20 +2049,71 @@ Excel is driven with one bulk write rather than cell by cell, every COM object i
 explicitly, and the Excel process is killed as a backstop — `Quit` does not always end it, and
 without that an export could leave an invisible copy running.
 
-#### Money formatting
+#### Every figure is in Australian Dollar
 
-`Total_Cost_Base` and friends are stored as bare numbers, and the currency lives on the purchase.
-Where a figure is denominated in **AUD or USD** it is shown with a `$`; any other currency prints
-the bare amount. A negative reads `-$75.30`, not `$-75.30`.
+`Total_Cost_Base` and friends are stored as bare numbers in whatever currency the lot was bought
+in, with the currency itself on the purchase. **This page converts every one of them to AUD**,
+and says so above the table:
 
-Unit counts and percentages never take a sign. A **total** only takes one when *every* row
-feeding it is AUD or USD — mixing currencies into one sum is already approximate, so stamping a
-dollar sign on the result would overstate it. The summary reads each ticker's currency with
-`Max([Currency])` rather than grouping by it, which would otherwise split one ticker across
-several rows.
+> All amounts are in Australian Dollar (AUD), at Sep 2026 rates
+
+`TblCurrRate.Curr_Rate` holds IDR per one unit, so the conversion goes through the rupiah the
+way [the rest of the application](#multi-currency-handling) does:
+
+```
+AUD = amount x rate(currency) / rate(AUD)
+```
+
+**One month's rate is used for every figure on the page — this month's — rather than the rate of
+the day each lot was bought.** That is what keeps the page's own arithmetic true: investment
+plus profit still equals the current amount, the per-unit figures still reconcile with the
+totals, and `Percentage from whole portfolio` still adds to a hundred. The cost of it is that a
+holding bought when the dollar stood somewhere else shows no gain or loss from the currency
+having moved since — **the profit on this page is what the price did, not what the exchange rate
+did.**
+
+> **The price is converted out of its own currency, not the purchase's.** `TblETFStocksPrice`
+> carries a currency per row, filled in from whatever Yahoo quotes, and it does not have to
+> match the one the holding was bought in — the live database has `GOOGL` priced in USD. The
+> page used to format the price with the *purchase's* currency and multiply it straight into the
+> current amount, so a ticker bought in AUD and priced in USD would have produced a current
+> value that was in neither. Converting a figure means knowing what it is in, which is what
+> forced the two apart.
+
+Everything else follows. **Every amount now takes a `$`**, because every amount is in the same
+currency: there is no longer a bare-unless-it-is-a-dollar-currency case, and no need to check
+whether a total's rows all share a currency before labelling it. A negative still reads
+`-$75.30`, not `$-75.30`, and unit counts and percentages still never take a sign.
+
+The rate is looked up **once per currency per refresh** and cached. `Mdl1.GetCurrRate` runs up
+to three queries a call, and without the cache it would run them once per figure per row.
+
+> **A currency with no rate at all is said, not silently left alone.** `GetCurrRate` answers `1`
+> for a currency it has never heard of, which would leave the figure unconverted while looking
+> exactly like one that needed no converting. The page asks `TblCurrRate` directly whether it
+> holds anything for that currency, and names any it could not convert in the note: *no currency
+> rate on record for BHT, shown unconverted*.
+> 
+> A **stale** rate is a different matter and cannot be told apart from a current one:
+> `GetCurrRate` falls back to the nearest rate it can find, so a 2013 rate answers a 2026
+> question without complaint. Keeping them current is what
+> [Get All Latest Currency](#get-all-latest-currency) is for.
+
+The summary reads each ticker's currency with `Max([Currency])` rather than grouping by it,
+which would otherwise split one ticker across several rows.
 
 The aggregate is read fully before any price lookup, so no second reader is opened on the shared
 connection while the first is still live.
+
+> Three things already on the page were fixed on the way. **Going back to `All`
+> from a single ticker was leaving the note stale** — `Show_View` made the summary grid visible
+> again without rebuilding it, so the note still read *Unsold purchases of X* over a table of
+> the whole portfolio. That was cosmetic while the note only described the filters; it stopped
+> being cosmetic when the note started carrying which currencies could not be converted. And
+> **the note had only one line of 549px** where its longest message wants 546 and a filtered
+> view with unpriced holdings wants more; it has three now, and the two grids moved down twenty
+> pixels to pay for them. **Generate Excel** and **Generate to Google Drive** also shared a
+> `TabIndex`, so which of them Tab reached first was down to z-order.
 
 The sample database ships with six currencies — AUD, BHT, IDR, SGD, USD, YEN — 8 accounts,
 11 tickers with their latest prices, and a single portfolio code `OB` ("Oz Betashares Direct")
