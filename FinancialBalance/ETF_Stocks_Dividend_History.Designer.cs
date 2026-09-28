@@ -38,6 +38,7 @@
             this.Label3 = new System.Windows.Forms.Label();
             this.CmbFinYear = new System.Windows.Forms.ComboBox();
             this.LblNote = new System.Windows.Forms.Label();
+            this.LblCurrency = new System.Windows.Forms.Label();
             this.gvSummary = new System.Windows.Forms.DataGridView();
             this.gvDetail = new System.Windows.Forms.DataGridView();
             this.LblAgg1Cap = new System.Windows.Forms.Label();
@@ -160,6 +161,17 @@
             this.LblNote.Name = "LblNote";
             this.LblNote.Size = new System.Drawing.Size(900, 20);
             this.LblNote.TabIndex = 8;
+            //
+            // LblCurrency
+            //
+            this.LblCurrency.BackColor = System.Drawing.Color.Transparent;
+            this.LblCurrency.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblCurrency.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.LblCurrency.Location = new System.Drawing.Point(500, 96);
+            this.LblCurrency.Name = "LblCurrency";
+            this.LblCurrency.Size = new System.Drawing.Size(420, 22);
+            this.LblCurrency.TabIndex = 24;
+            this.LblCurrency.Text = "All amounts are in Australian Dollar (AUD)";
             //
             // gvSummary
             //
@@ -330,7 +342,7 @@
             this.CmdBack.Location = new System.Drawing.Point(834, 600);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
-            this.CmdBack.TabIndex = 11;
+            this.CmdBack.TabIndex = 23;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -358,6 +370,7 @@
             this.Controls.Add(this.LblAgg5Cap);
             this.Controls.Add(this.gvDetail);
             this.Controls.Add(this.gvSummary);
+            this.Controls.Add(this.LblCurrency);
             this.Controls.Add(this.LblNote);
             this.Controls.Add(this.CmbFinYear);
             this.Controls.Add(this.Label3);
@@ -391,6 +404,7 @@
         public System.Windows.Forms.Label Label3;
         public System.Windows.Forms.ComboBox CmbFinYear;
         public System.Windows.Forms.Label LblNote;
+        public System.Windows.Forms.Label LblCurrency;
         private System.Windows.Forms.DataGridView gvSummary;
         private System.Windows.Forms.DataGridView gvDetail;
         public System.Windows.Forms.Label LblAgg1Cap;

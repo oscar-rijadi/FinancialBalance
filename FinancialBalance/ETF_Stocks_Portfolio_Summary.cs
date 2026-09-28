@@ -244,19 +244,67 @@ namespace FinancialBalance
         //One rate per currency for the length of a refresh. Mdl1.GetCurrRate runs up to three
         //queries a call, and without this it would run them once per figure per row.
         private Dictionary<string, double> RateCache = new Dictionary<string, double>();
+        private Dictionary<string, bool> RateKnown = new Dictionary<string, bool>();
         private List<string> NoRate = new List<string>();
         private string RateMonth = "";
 
+        //Every rate a refresh could want, read before a single row of data is. The page converts
+        //inside its read loops, and opening a second reader on the shared connection while the
+        //first is still live is the one thing this connection will not stand - which is the same
+        //reason the summary reads its aggregate out in full before it looks up any price.
         private void Begin_Rates()
         {
             RateCache.Clear();
+            RateKnown.Clear();
             NoRate.Clear();
             RateMonth = DateTime.Now.ToString("yyyyMM");
+
+            List<string> Codes = new List<string>();
+            Codes.Add(PageCurr);
+            Mdl1.Ssql = "select Curr_Code from TblCurrCode order by Curr_Code";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string TmpCode = (reader["Curr_Code"] == DBNull.Value ? "" : reader["Curr_Code"].ToString().Trim().ToUpper());
+                if (TmpCode != "" && !Codes.Contains(TmpCode))
+                {
+                    Codes.Add(TmpCode);
+                }
+            }
+            reader.Close();
+
+            for (int i = 0; i < Codes.Count; i++)
+            {
+                Load_Rate(Codes[i]);
+            }
         }
 
-        //GetCurrRate answers 1 for a currency it has never heard of, which would leave a figure
-        //unconverted while looking exactly like one that needed no converting. Asking the table
-        //whether it holds anything at all for the currency is what tells those two apart.
+        //One currency's rate, and whether TblCurrRate holds anything for it at all. GetCurrRate
+        //answers 1 for a currency it has never heard of, which would leave a figure unconverted
+        //while looking exactly like one that needed no converting; asking the table directly is
+        //what tells those two apart. Whether it is *said* waits until a figure actually needs it,
+        //so a currency set up but never used raises nothing.
+        private void Load_Rate(string parCurr)
+        {
+            if (RateCache.ContainsKey(parCurr))
+            {
+                return;
+            }
+            if (parCurr == "IDR")
+            {
+                //the pivot itself - one rupiah to the rupiah, and never a row to read
+                RateCache[parCurr] = 1;
+                RateKnown[parCurr] = true;
+                return;
+            }
+
+            bool Known = Has_Rate(parCurr);
+            double TmpRate = (Known ? Mdl1.GetCurrRate(parCurr, RateMonth) : 1);
+            RateCache[parCurr] = (TmpRate <= 0 ? 1 : TmpRate);
+            RateKnown[parCurr] = Known;
+        }
+
         private bool Has_Rate(string parCurr)
         {
             bool Found = false;
@@ -268,6 +316,8 @@ namespace FinancialBalance
             return Found;
         }
 
+        //Nothing here reads the database: it is called from inside the read loops, and every
+        //rate it can answer with was loaded before those loops opened.
         private double Rate_Of(string parCurr)
         {
             string strCurr = (parCurr == null ? "" : parCurr.Trim().ToUpper());
@@ -275,32 +325,22 @@ namespace FinancialBalance
             {
                 strCurr = PageCurr;
             }
+
             if (RateCache.ContainsKey(strCurr))
             {
-                return RateCache[strCurr];
-            }
-
-            double TmpRate;
-            if (strCurr == "IDR")
-            {
-                //the pivot itself - one rupiah to the rupiah, and never a row to read
-                TmpRate = 1;
-            }
-            else
-            {
-                if (!Has_Rate(strCurr) && !NoRate.Contains(strCurr))
+                if (!RateKnown[strCurr] && !NoRate.Contains(strCurr))
                 {
                     NoRate.Add(strCurr);
                 }
-                TmpRate = Mdl1.GetCurrRate(strCurr, RateMonth);
-            }
-            if (TmpRate <= 0)
-            {
-                TmpRate = 1;
+                return RateCache[strCurr];
             }
 
-            RateCache[strCurr] = TmpRate;
-            return TmpRate;
+            //a currency on a row but not in Currency Setup, so there can be no rate for it either
+            if (!NoRate.Contains(strCurr))
+            {
+                NoRate.Add(strCurr);
+            }
+            return 1;
         }
 
         private double To_AUD(double parAmount, string parCurr)

@@ -244,29 +244,34 @@ namespace FinancialBalance
         //One money column added up to the cut-off.  The currency comes back too, but only when
         //every contributing row agrees on it - Min and Max matching is the cheapest way to ask
         //that without a second trip to the database.
+        //Grouped by currency and converted a group at a time, rather than summed across them.
+        //Adding USD to AUD first would give a figure that is in neither - which is exactly what
+        //this page used to do, and then decline to put a dollar sign on rather than fix.
         private double Sum_Money(string parTable, string parField, string parTickerClause,
-                                 string parCodeClause, string parCutoff, out string parCurrency)
+                                 string parCodeClause, string parCutoff)
         {
-            double Result = 0;
-            parCurrency = "";
+            List<double> Amounts = new List<double>();
+            List<string> Currs = new List<string>();
 
-            Mdl1.Ssql = "select Sum(" + parField + ") as N, Min([Currency]) as C1, Max([Currency]) as C2"
+            Mdl1.Ssql = "select [Currency] as C, Sum(" + parField + ") as N"
                       + " from " + parTable
                       + " where 1 = 1" + parTickerClause + parCodeClause
-                      + " and Trans_Date <= '" + parCutoff + "'";
+                      + " and Trans_Date <= '" + parCutoff + "'"
+                      + " group by [Currency]";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
+            while (reader.Read())
             {
-                Result = Read_Double(reader["N"]);
-                string TmpC1 = Read_Text(reader["C1"]);
-                string TmpC2 = Read_Text(reader["C2"]);
-                if (TmpC1 != "" && TmpC1 == TmpC2)
-                {
-                    parCurrency = TmpC1;
-                }
+                Amounts.Add(Read_Double(reader["N"]));
+                Currs.Add(Read_Text(reader["C"]));
             }
             reader.Close();
+
+            double Result = 0;
+            for (int i = 0; i < Amounts.Count; i++)
+            {
+                Result += To_AUD(Amounts[i], Currs[i]);
+            }
             return Result;
         }
 
@@ -274,55 +279,169 @@ namespace FinancialBalance
         //selling returned.  Real_Total_Cost_Base is 0 on a reinvested purchase, so units that
         //arrived as a DRIP add no cost - which is the point of using that field rather than
         //Total_Cost_Base.  Proceeds can exceed cost, so this can legitimately go negative.
-        private double Net_Cost(string parTickerClause, string parCodeClause, string parCutoff, out string parCurrency)
+        private double Net_Cost(string parTickerClause, string parCodeClause, string parCutoff)
         {
-            string TmpBuyCurr;
-            string TmpSellCurr;
-
             double Bought = Sum_Money("TblETFStocksPurchase", "[Real_Total_Cost_Base]",
-                                      parTickerClause, parCodeClause, parCutoff, out TmpBuyCurr);
+                                      parTickerClause, parCodeClause, parCutoff);
             double Sold = Sum_Money("TblETFStocksSale", "[Selling_Total_Amount]",
-                                    parTickerClause, parCodeClause, parCutoff, out TmpSellCurr);
+                                    parTickerClause, parCodeClause, parCutoff);
 
-            //a dollar sign is only earned when the two sides agree, or only one side exists
-            parCurrency = "";
-            if (TmpBuyCurr != "" && (TmpSellCurr == "" || TmpSellCurr == TmpBuyCurr))
-            {
-                parCurrency = TmpBuyCurr;
-            }
-            else if (TmpBuyCurr == "" && TmpSellCurr != "")
-            {
-                parCurrency = TmpSellCurr;
-            }
-
+            //both sides are in AUD by now, so the two can simply be taken away from each other
             return Math.Round(Bought - Sold, 2);
         }
 
         //---- formatting ----------------------------------------------------------
 
-        //AUD and USD are shown with a dollar sign; any other currency stays bare.
-        //A negative reads -$12.34 rather than $-12.34.
-        private bool Is_Dollar(string parCurr)
+        //Every figure on this page is in AUD, whatever currency it was recorded in, so every
+        //figure takes the sign. A negative reads -$12.34 rather than $-12.34.
+        private string Money(double parValue)
         {
-            if (parCurr == null)
-            {
-                return false;
-            }
-            string TmpCurr = parCurr.Trim().ToUpper();
-            return (TmpCurr == "AUD" || TmpCurr == "USD");
-        }
-
-        private string Money(double parValue, string parCurr)
-        {
-            if (!Is_Dollar(parCurr))
-            {
-                return Mdl1.FormatAmt(parValue);
-            }
             if (parValue < 0)
             {
                 return "-$" + Mdl1.FormatAmt(Math.Abs(parValue));
             }
             return "$" + Mdl1.FormatAmt(parValue);
+        }
+
+        //---- into Australian Dollar -------------------------------------------------
+        //
+        //The same conversion [ETF/Stock Portfolio Summary] makes, for the same reasons.
+        //TblCurrRate holds IDR per one unit, so a figure reaches AUD by way of the rupiah:
+        //
+        //    AUD = amount x rate(currency) / rate(AUD)
+        //
+        //One month's rate is used for every figure on the page - today's - rather than the rate
+        //of the day each payment landed. A yield is a ratio of two figures that have to be in
+        //the same currency to divide, and converting each at its own historical rate would make
+        //a yield that is partly a currency movement. The cost is the same as on the summary
+        //page: what the exchange rate did since is not in these numbers.
+        private const string PageCurr = "AUD";
+
+        private Dictionary<string, double> RateCache = new Dictionary<string, double>();
+        private Dictionary<string, bool> RateKnown = new Dictionary<string, bool>();
+        private List<string> NoRate = new List<string>();
+        private string RateMonth = "";
+
+        //Every rate a refresh could want, read before a single row of data is. The page converts
+        //inside its read loops, and opening a second reader on the shared connection while the
+        //first is still live is the one thing this connection will not stand.
+        private void Begin_Rates()
+        {
+            RateCache.Clear();
+            RateKnown.Clear();
+            NoRate.Clear();
+            RateMonth = DateTime.Now.ToString("yyyyMM");
+
+            List<string> Codes = new List<string>();
+            Codes.Add(PageCurr);
+            Mdl1.Ssql = "select Curr_Code from TblCurrCode order by Curr_Code";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string TmpCode = Read_Text(reader["Curr_Code"]).ToUpper();
+                if (TmpCode != "" && !Codes.Contains(TmpCode))
+                {
+                    Codes.Add(TmpCode);
+                }
+            }
+            reader.Close();
+
+            for (int i = 0; i < Codes.Count; i++)
+            {
+                Load_Rate(Codes[i]);
+            }
+        }
+
+        //One currency's rate, and whether TblCurrRate holds anything for it at all. GetCurrRate
+        //answers 1 for a currency it has never heard of, which would leave a figure unconverted
+        //while looking exactly like one that needed no converting; asking the table directly is
+        //what tells those two apart. Whether it is *said* waits until a figure actually needs it,
+        //so a currency set up but never used raises nothing.
+        private void Load_Rate(string parCurr)
+        {
+            if (RateCache.ContainsKey(parCurr))
+            {
+                return;
+            }
+            if (parCurr == "IDR")
+            {
+                //the pivot itself - one rupiah to the rupiah, and never a row to read
+                RateCache[parCurr] = 1;
+                RateKnown[parCurr] = true;
+                return;
+            }
+
+            bool Known = Has_Rate(parCurr);
+            double TmpRate = (Known ? Mdl1.GetCurrRate(parCurr, RateMonth) : 1);
+            RateCache[parCurr] = (TmpRate <= 0 ? 1 : TmpRate);
+            RateKnown[parCurr] = Known;
+        }
+
+        private bool Has_Rate(string parCurr)
+        {
+            bool Found = false;
+            Mdl1.Ssql = "select top 1 Curr_Date from TblCurrRate where Curr_Code = '" + parCurr + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            Found = reader.Read();
+            reader.Close();
+            return Found;
+        }
+
+        //Nothing here reads the database: it is called from inside the read loops, and every
+        //rate it can answer with was loaded before those loops opened.
+        private double Rate_Of(string parCurr)
+        {
+            string strCurr = (parCurr == null ? "" : parCurr.Trim().ToUpper());
+            if (strCurr == "")
+            {
+                strCurr = PageCurr;
+            }
+
+            if (RateCache.ContainsKey(strCurr))
+            {
+                if (!RateKnown[strCurr] && !NoRate.Contains(strCurr))
+                {
+                    NoRate.Add(strCurr);
+                }
+                return RateCache[strCurr];
+            }
+
+            //a currency on a row but not in Currency Setup, so there can be no rate for it either
+            if (!NoRate.Contains(strCurr))
+            {
+                NoRate.Add(strCurr);
+            }
+            return 1;
+        }
+
+        private double To_AUD(double parAmount, string parCurr)
+        {
+            string strCurr = (parCurr == null ? "" : parCurr.Trim().ToUpper());
+            //nothing said is taken as already being in AUD
+            if (strCurr == "" || strCurr == PageCurr)
+            {
+                return parAmount;
+            }
+            return parAmount * Rate_Of(strCurr) / Rate_Of(PageCurr);
+        }
+
+        private string Rate_Note()
+        {
+            if (NoRate.Count == 0)
+            {
+                return "";
+            }
+            return "   -   no currency rate on record for "
+                 + String.Join(", ", NoRate.ToArray())
+                 + ", shown unconverted";
+        }
+
+        private void Show_Page_Currency()
+        {
+            LblCurrency.Text = "All amounts are in Australian Dollar (" + PageCurr + "), at "
+                             + DateTime.Now.ToString("MMM yyyy", new CultureInfo("en-AU")) + " rates";
         }
 
         private string Format_Date(string parYyyyMMdd)
@@ -406,6 +525,8 @@ namespace FinancialBalance
         {
             try
             {
+                Begin_Rates();
+
                 bool AllTickers = (CmbTicker.Text.Trim() == "" || CmbTicker.Text.Trim() == "All");
 
                 gvSummary.Visible = AllTickers;
@@ -421,6 +542,7 @@ namespace FinancialBalance
                 }
 
                 Show_Note();
+                Show_Page_Currency();
             }
             catch (Exception ex)
             {
@@ -506,7 +628,10 @@ namespace FinancialBalance
                     TmpIndex.Add(TmpKey, TmpHolding);
                     TmpOrder.Add(TmpHolding);
                 }
-                TmpHolding.Bought += Read_Double(reader["Real_Total_Cost_Base"]);
+                //out of the currency this lot was bought in, before it joins the group - lots of
+                //one holding can differ, and the group carries only the first one's code
+                TmpHolding.Bought += To_AUD(Read_Double(reader["Real_Total_Cost_Base"]),
+                                            Read_Text(reader["Currency"]));
             }
             reader.Close();
 
@@ -520,10 +645,11 @@ namespace FinancialBalance
         //its own - there would be no cost, and the yield would read as though it were free.
         private void Add_Sales(Dictionary<string, Holding> parIndex)
         {
-            Mdl1.Ssql = "select [Portfolio_Code], Full_Ticker, Sum([Selling_Total_Amount]) as N"
+            //grouped by currency as well, so each group is converted out of what it is actually in
+            Mdl1.Ssql = "select [Portfolio_Code], Full_Ticker, [Currency], Sum([Selling_Total_Amount]) as N"
                       + " from TblETFStocksSale"
                       + " where 1 = 1" + Portfolio_Filter() + Ticker_Filter() + Upto_Filter("Trans_Date")
-                      + " group by [Portfolio_Code], Full_Ticker";
+                      + " group by [Portfolio_Code], Full_Ticker, [Currency]";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -531,7 +657,7 @@ namespace FinancialBalance
                 Holding TmpHolding;
                 if (Find_Holding(parIndex, reader, out TmpHolding))
                 {
-                    TmpHolding.Sold += Read_Double(reader["N"]);
+                    TmpHolding.Sold += To_AUD(Read_Double(reader["N"]), Read_Text(reader["Currency"]));
                 }
             }
             reader.Close();
@@ -542,13 +668,14 @@ namespace FinancialBalance
         //same reason a stray sale is.
         private void Add_Payments(Dictionary<string, Holding> parIndex)
         {
-            Mdl1.Ssql = "select [Portfolio_Code], Full_Ticker,"
+            //grouped by currency as well, so each group is converted out of what it is actually in
+            Mdl1.Ssql = "select [Portfolio_Code], Full_Ticker, [Currency],"
                       + " Sum([Total_Amount]) as TotAll,"
                       + " Sum(IIf([Is_Reinvested] = True, [Total_Amount], 0)) as TotYes,"
                       + " Sum(IIf([Is_Reinvested] = True, 0, [Total_Amount])) as TotNo"
                       + " from TblETFStocksDistributionDividend"
                       + " where 1 = 1" + Portfolio_Filter() + Ticker_Filter() + Upto_Filter("Pay_Date")
-                      + " group by [Portfolio_Code], Full_Ticker";
+                      + " group by [Portfolio_Code], Full_Ticker, [Currency]";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -556,9 +683,10 @@ namespace FinancialBalance
                 Holding TmpHolding;
                 if (Find_Holding(parIndex, reader, out TmpHolding))
                 {
-                    TmpHolding.PaidAll += Read_Double(reader["TotAll"]);
-                    TmpHolding.PaidYes += Read_Double(reader["TotYes"]);
-                    TmpHolding.PaidNo += Read_Double(reader["TotNo"]);
+                    string TmpCurr = Read_Text(reader["Currency"]);
+                    TmpHolding.PaidAll += To_AUD(Read_Double(reader["TotAll"]), TmpCurr);
+                    TmpHolding.PaidYes += To_AUD(Read_Double(reader["TotYes"]), TmpCurr);
+                    TmpHolding.PaidNo += To_AUD(Read_Double(reader["TotNo"]), TmpCurr);
                 }
             }
             reader.Close();
@@ -600,33 +728,30 @@ namespace FinancialBalance
             double GrandAll = 0;
             double GrandYes = 0;
             double GrandNo = 0;
-            List<string> Currencies = new List<string>();
 
             foreach (Holding TmpHolding in TmpHoldings)
             {
                 double TmpInvestment = TmpHolding.Investment;
 
+                //the Currency column still says what the holding was opened in - what the figures
+                //beside it were converted out of, rather than what they are in
                 gvSummary.Rows.Add(new string[] {
                     TmpHolding.Ticker,
                     TmpHolding.Code,
                     (TmpHolding.Currency == "" ? "-" : TmpHolding.Currency),
-                    Money(TmpInvestment, TmpHolding.Currency),
-                    Money(TmpHolding.PaidAll, TmpHolding.Currency),
+                    Money(TmpInvestment),
+                    Money(TmpHolding.PaidAll),
                     Percent(Yield_Of(TmpInvestment, TmpHolding.PaidAll)),
-                    Money(TmpHolding.PaidYes, TmpHolding.Currency),
-                    Money(TmpHolding.PaidNo, TmpHolding.Currency) });
+                    Money(TmpHolding.PaidYes),
+                    Money(TmpHolding.PaidNo) });
 
                 GrandInv += TmpInvestment;
                 GrandAll += TmpHolding.PaidAll;
                 GrandYes += TmpHolding.PaidYes;
                 GrandNo += TmpHolding.PaidNo;
-                if (!Currencies.Contains(TmpHolding.Currency))
-                {
-                    Currencies.Add(TmpHolding.Currency);
-                }
             }
 
-            Show_Summary_Totals(GrandInv, GrandAll, GrandYes, GrandNo, Currencies);
+            Show_Summary_Totals(GrandInv, GrandAll, GrandYes, GrandNo);
 
             gvSummary.ClearSelection();
         }
@@ -646,20 +771,20 @@ namespace FinancialBalance
             double GrandAll = 0;
             double GrandYes = 0;
             double GrandNo = 0;
-            List<string> Currencies = new List<string>();
             while (reader.Read())
             {
                 string TmpCurr = Read_Text(reader["Currency"]);
-                double TmpAmount = Read_Double(reader["Total_Amount"]);
+                //out of the currency the payment was recorded in, before it is shown or added up
+                double TmpAmount = To_AUD(Read_Double(reader["Total_Amount"]), TmpCurr);
                 bool TmpReinvested = (Read_Text(reader["Is_Reinvested"]) == "True");
 
                 gvDetail.Rows.Add(new string[] {
                     Format_Date(Read_Text(reader["Pay_Date"])),
                     Read_Text(reader["Portfolio_Code"]),
                     (TmpCurr == "" ? "-" : TmpCurr),
-                    Money(TmpAmount, TmpCurr),
-                    Money((TmpReinvested ? TmpAmount : 0), TmpCurr),
-                    Money((TmpReinvested ? 0 : TmpAmount), TmpCurr) });
+                    Money(TmpAmount),
+                    Money(TmpReinvested ? TmpAmount : 0),
+                    Money(TmpReinvested ? 0 : TmpAmount) });
 
                 GrandAll += TmpAmount;
                 if (TmpReinvested)
@@ -670,14 +795,10 @@ namespace FinancialBalance
                 {
                     GrandNo += TmpAmount;
                 }
-                if (!Currencies.Contains(TmpCurr))
-                {
-                    Currencies.Add(TmpCurr);
-                }
             }
             reader.Close();
 
-            Show_Detail_Totals(GrandAll, GrandYes, GrandNo, Currencies);
+            Show_Detail_Totals(GrandAll, GrandYes, GrandNo);
 
             gvDetail.ClearSelection();
         }
@@ -687,9 +808,7 @@ namespace FinancialBalance
         //at once.  A slot given a null caption is put away, which keeps the helper usable if
         //a view ever needs fewer than five.
         //
-        //A dollar sign is only put on a total when every row that fed it shares one dollar
-        //currency.  Adding AUD to USD does not produce an amount in either, so a mixed
-        //selection is left bare rather than labelled with a currency it is not in.
+        //Every figure in them is in AUD by the time it gets here, so every one takes the sign.
         private void Set_Slot(int parSlot, string parCaption, string parValue)
         {
             Label[] Caps = new Label[] { LblAgg1Cap, LblAgg2Cap, LblAgg3Cap, LblAgg4Cap, LblAgg5Cap };
@@ -705,48 +824,40 @@ namespace FinancialBalance
             }
         }
 
-        private string One_Currency(List<string> parCurrencies)
-        {
-            return (parCurrencies.Count == 1 ? parCurrencies[0] : "");
-        }
-
         //Summary view: the columns above added straight down, so what is under the table and
         //what is in it can never disagree.  The yield comes from the two grand totals rather
         //than from averaging the per-row yields, which would weigh a small holding the same as
         //a large one.
         private void Show_Summary_Totals(double parInvestment, double parAll, double parYes,
-                                         double parNo, List<string> parCurrencies)
+                                         double parNo)
         {
-            string TmpCurr = One_Currency(parCurrencies);
-
-            Set_Slot(0, "Grand Total Investment", Money(parInvestment, TmpCurr));
-            Set_Slot(1, "Grand Total", Money(parAll, TmpCurr));
+            Set_Slot(0, "Grand Total Investment", Money(parInvestment));
+            Set_Slot(1, "Grand Total", Money(parAll));
             Set_Slot(2, "Yield", Percent(Yield_Of(parInvestment, parAll)));
-            Set_Slot(3, "Grand Total Reinvested", Money(parYes, TmpCurr));
-            Set_Slot(4, "Grand Total Not Reinvested", Money(parNo, TmpCurr));
+            Set_Slot(3, "Grand Total Reinvested", Money(parYes));
+            Set_Slot(4, "Grand Total Not Reinvested", Money(parNo));
         }
 
         //Payment view: the same shape as the summary, but for the one ticker on screen.  The
         //portfolio side still comes from the dropdown and Main Only rather than any single
         //row, so the investment covers every portfolio the selection includes.
-        private void Show_Detail_Totals(double parAll, double parYes, double parNo, List<string> parCurrencies)
+        private void Show_Detail_Totals(double parAll, double parYes, double parNo)
         {
-            string TmpCurr = One_Currency(parCurrencies);
+            double TmpInvestment = Net_Cost(Ticker_Filter(), Portfolio_Filter(), Cutoff_Date());
 
-            string TmpInvCurr;
-            double TmpInvestment = Net_Cost(Ticker_Filter(), Portfolio_Filter(), Cutoff_Date(), out TmpInvCurr);
-
+            //both sides are AUD now, so the yield is a ratio of two figures in one currency - which
+            //is the only way a yield means anything
             double TmpYield = 0;
             if (TmpInvestment > 0)
             {
                 TmpYield = parAll / TmpInvestment * 100;
             }
 
-            Set_Slot(0, "Total Investment", Money(TmpInvestment, TmpInvCurr));
-            Set_Slot(1, "Total Amount", Money(parAll, TmpCurr));
+            Set_Slot(0, "Total Investment", Money(TmpInvestment));
+            Set_Slot(1, "Total Amount", Money(parAll));
             Set_Slot(2, "Yield", TmpYield.ToString("#,##0.00") + " %");
-            Set_Slot(3, "Total Amount Reinvested", Money(parYes, TmpCurr));
-            Set_Slot(4, "Total Amount Not Reinvested", Money(parNo, TmpCurr));
+            Set_Slot(3, "Total Amount Reinvested", Money(parYes));
+            Set_Slot(4, "Total Amount Not Reinvested", Money(parNo));
         }
 
         //Says which filters are narrowing what is on screen, so an empty table is explainable
@@ -784,7 +895,7 @@ namespace FinancialBalance
             {
                 TmpText = TmpText + "   -   " + String.Join(", ", Parts.ToArray());
             }
-            LblNote.Text = TmpText;
+            LblNote.Text = TmpText + Rate_Note();
         }
 
         //---- Excel ---------------------------------------------------------------

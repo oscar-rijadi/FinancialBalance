@@ -235,7 +235,7 @@ flowchart LR
 | `Yearly_Summary_Graph` | Asset, Liability, Income and Expense as four lines over time — ten years, or one year month by month — each point the total the other two pages already show for that period. Reads five tables and writes nothing. See [Yearly summary graph](#yearly-summary-graph). |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. Every amount is converted to Australian Dollar. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
-| `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Exports to Excel. |
+| `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads `TblETFStocks` and the diversification tables, and writes nothing. |
@@ -1604,12 +1604,15 @@ back at the reader.
 Every percentage divides by **Total Ending Investment**, including the two that measure real
 rather than on-paper results, and each guards its own divide-by-zero.
 
-Amounts carry a dollar sign under the rule this page shares with
-[Dividend history](#dividend-history): only when the rows that fed the total all share one
-dollar currency (AUD or USD). A selection spanning AUD and USD
-totals to a number that is in neither, so it is shown bare rather than labelled with a currency
-it is not in — and a selection with no rows at all has no currency to name, so its zeros are
-bare too, matching [Dividend history](#dividend-history).
+Amounts carry a dollar sign only when the rows that fed the total all share one dollar currency
+(AUD or USD). A selection spanning AUD and USD totals to a number that is in neither, so it is
+shown bare rather than labelled with a currency it is not in — and a selection with no rows at
+all has no currency to name, so its zeros are bare too.
+
+> This page still works that way. [Portfolio summary](#portfolio-summary) and
+> [Dividend history](#dividend-history) no longer do — they convert everything to AUD instead,
+> which is the better answer to the same problem and the one to copy if this page is ever
+> given the same treatment.
 
 #### Generate Excel
 
@@ -1660,7 +1663,9 @@ collecting every year in turn, each run overwriting the last.
 
 ### Dividend history
 
-`ETF_Stocks_Dividend_History` answers "what have the holdings paid, and what is tied up in them".
+`ETF_Stocks_Dividend_History` answers "what have the holdings paid, and what is tied up in them",
+with every amount on it in **Australian Dollar** — see
+[Every figure is in Australian Dollar, currency by currency](#every-figure-is-in-australian-dollar-currency-by-currency).
 It shares the **Portfolio** dropdown and **Main Only** checkbox with the portfolio summary —
 descriptions shown, codes filtered on, Main Only ticked when the page opens and narrowing the
 dropdown as well as the data — and adds a **Financial Year** dropdown listing
@@ -1711,7 +1716,8 @@ The note line under the filters says which of the two rules is in force.
 
 `Currency` is the currency of the **earliest purchase** for that portfolio and ticker. It is read off
 the purchases rather than grouped on, so a payment entered in the wrong currency cannot split one
-holding into two rows.
+holding into two rows. It says what the figures beside it were converted **out of**, not what they
+are in — everything on the page is in AUD.
 
 `Investment` is the **money actually put in and not yet taken back out**:
 
@@ -1733,7 +1739,7 @@ a DRIP add no cost, which is the point of using that field rather than `Total_Co
 
 The reinvested split is a single `Sum(IIf(...))` pass rather than three queries. In the per-payment
 table a payment is either reinvested or it is not, so its amount lands in one of those two columns
-and the other reads zero. Amounts carry a `$` for AUD and USD and stay bare otherwise, as elsewhere.
+and the other reads zero.
 
 #### The totals underneath
 
@@ -1752,7 +1758,9 @@ In the summary view each is **the column above it added straight down**, so what
 and what is in it can never disagree. `Yield` is worked out from the two grand totals rather than by
 averaging the per-row yields, which would weigh a small holding the same as a large one.
 
-Worked through on seeded data, with the year closing `30-Jun-2025` and both portfolios in scope:
+Worked through on seeded data, with the year closing `30-Jun-2025` and both portfolios in scope.
+The USD row is shown at a one-for-one rate so the conversion does not obscure what the example is
+about:
 
 | Full Ticker | Portfolio Code | Currency | Investment | Total | Yield | Total Reinvested | Total Not Reinvested |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1774,13 +1782,53 @@ the identical sums narrowed to that ticker, and `Yield` is `Total Amount / Total
 > `140.00` with Main Only ticked, `165.00` unticked, and `25.00` with the non-main portfolio
 > selected on its own.
 
-> A total carries a `$` **only when every row feeding it shares one dollar currency**. Adding AUD to
-> USD does not produce an amount in either, so a mixed selection is left bare rather than labelled
-> with a currency it is not in. An empty table shows `0.00`, since with no rows there is no currency
-> to claim.
+> Every total carries a `$`, because every figure feeding it is in AUD by the time it gets there.
+> There used to be a rule about this — a total was left bare unless every row behind it shared one
+> dollar currency, since adding AUD to USD produces an amount in neither. Converting first is what
+> retired the rule: there is nothing left to be careful about.
 
 A note line under the filters says how many rows are showing and which filters are narrowing them,
 so an empty table is explainable rather than mysterious.
+
+#### Every figure is in Australian Dollar, currency by currency
+
+The same conversion [Portfolio summary](#every-figure-is-in-australian-dollar) makes, by the same
+machinery and at the same one rate for the whole page, with the statement said above the table in
+the same words. What is particular to this page is **where the converting has to happen**.
+
+This page does its adding in SQL — `Sum(Selling_Total_Amount)`, `Sum(Total_Amount)`, and the
+`Sum(IIf(Is_Reinvested ...))` pair that splits the payments — and a `Sum` does not care what
+currency its rows are in. So **the three grouped reads now group by `[Currency]` as well**, and
+each group is converted out of what it is actually in before the parts are added together:
+
+| Read | Was grouped by | Now grouped by |
+| --- | --- | --- |
+| what selling has returned | `Portfolio_Code`, `Full_Ticker` | and `Currency` |
+| what it has paid out | `Portfolio_Code`, `Full_Ticker` | and `Currency` |
+| the payment view's own investment | nothing — one `Sum` over everything | `Currency` |
+
+The purchases were already read row by row, so each lot converts out of its own currency without
+any regrouping — which matters, because the `Currency` column shows only the *earliest* lot's and
+the later ones do not have to agree with it.
+
+**The yield is what this buys.** `Total / Investment x 100` divides two figures that have to be in
+one currency to mean anything; before, a holding paid in USD against a cost in AUD produced a
+number with no interpretation at all, and the page's only defence was to decline the dollar sign
+on the totals. Now both sides are AUD and the division says what it looks like it says.
+
+> **Rates are read before any of the tables are opened.** The conversion happens inside the read
+> loops, and this connection will not have a second reader opened while the first is live — the
+> same constraint that makes the portfolio summary read its aggregate out in full before looking
+> up a price. So a refresh starts by loading every rate in `TblCurrCode` in one pass, and the
+> conversion itself never touches the database. [Portfolio summary](#portfolio-summary) does the
+> same, for the same reason.
+
+A currency with no rate on record is named in the note and shown unconverted, exactly as on the
+portfolio summary. Whether it is *said* waits until a figure actually needs it, so a currency set
+up in Currency Setup but never used raises nothing.
+
+> **Back** was sharing a `TabIndex` with the first aggregate caption, so which of the two Tab
+> reached first was down to z-order. It has one of its own now.
 
 #### Generate Excel
 
@@ -2085,8 +2133,13 @@ currency: there is no longer a bare-unless-it-is-a-dollar-currency case, and no 
 whether a total's rows all share a currency before labelling it. A negative still reads
 `-$75.30`, not `$-75.30`, and unit counts and percentages still never take a sign.
 
-The rate is looked up **once per currency per refresh** and cached. `Mdl1.GetCurrRate` runs up
-to three queries a call, and without the cache it would run them once per figure per row.
+Every rate a refresh could want is **read before a single row of data is**, in one pass over
+`TblCurrCode`, and the conversion itself never touches the database afterwards. Partly that is
+cost — `Mdl1.GetCurrRate` runs up to three queries a call, and looking one up per figure per
+row would be thousands of them. Mostly it is that the converting happens *inside* the read
+loops, and this connection will not have a second reader opened while the first is still live
+— the same constraint that makes the aggregate below be read out in full before any price is
+looked up.
 
 > **A currency with no rate at all is said, not silently left alone.** `GetCurrRate` answers `1`
 > for a currency it has never heard of, which would leave the figure unconverted while looking
