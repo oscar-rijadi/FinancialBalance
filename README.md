@@ -1520,8 +1520,8 @@ database, all of them still editable afterwards:
 | `Investment` | Money **in less money out less what is still cash**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash` — see below. |
 | `Sold_Amount` | `SUM(Real_Total_Cost_Base)` from sold purchases inside the year. |
 | `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
-| `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below. |
-| `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year. |
+| `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below, **converted into the entry's Currency** — see below. |
+| `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year, **converted into the entry's Currency** — see below. |
 | `Capital_Gains_On_Paper`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
 | `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
 
@@ -1564,6 +1564,42 @@ has one:
 A ticker never priced at all contributes nothing rather than being guessed at. The fallback matters
 because a holding bought late, or one whose prices were only recorded later, would otherwise be
 valued at zero and drag the whole figure down.
+
+##### The four defaults converted into the chosen Currency
+
+`On_Paper_Ending_Value`, `Total_DistributionDividend`, `DistributionDividend_Reinvested` and
+`DistributionDividend_Not_Reinvested` are **converted into whatever the entry's Currency dropdown
+shows** before they are placed in their boxes. A portfolio can hold an AUD ticker and a USD one,
+and be paid dividends in both; adding those up as they stand gives a figure in neither currency.
+
+- **On paper ending value** — each ticker's `units x price` is converted out of **the currency its
+  price is quoted in** (`TblETFStocksPrice.Currency`, the price row that was picked) and only then
+  added to the others.
+- **The three distribution figures** — the sums are grouped by `TblETFStocksDistributionDividend.Currency`
+  and each group is converted before the groups are added together.
+
+The conversion goes through the rupiah, since `TblCurrRate` holds IDR per one unit:
+
+```
+amount in chosen currency = amount x rate(from) / rate(chosen)
+```
+
+**The rate is the one for the month the financial year closes** (`End_Date`), because these figures
+describe where the portfolio stood at the year end. `Mdl1.GetCurrRate` uses the latest rate in that
+month, then falls back to the nearest one before it, then the nearest one after it — so a year still
+in progress uses the latest rate on record. A price or payment with no currency recorded is taken as
+`AUD`, the same rule the other ETF pages follow, and a figure already in the chosen currency is left
+as it is.
+
+**A currency with no rate at all in `TblCurrRate`** is left unconverted rather than silently treated
+as one-for-one, and named in the note line under the filters: *no currency rate on record for …,
+entry defaults left unconverted*.
+
+**Changing the Currency dropdown re-derives those four boxes** in the new currency — but only while
+a new entry is being made. On a row loaded from the table the stored figures stand, and changing its
+currency is taken as correcting the label rather than asking for new figures; press **Clear** first
+to get the defaults recalculated. The other defaults (`Previous_Investment`, `Investment`,
+`Sold_Amount`, the capital gains) are not converted.
 
 The rest are derived and re-derive as their inputs change: `On_Paper_Profit_Or_Loss` is
 `On_Paper_Ending_Value - Ending_Investment`, `Real_Profit_Or_Loss` is

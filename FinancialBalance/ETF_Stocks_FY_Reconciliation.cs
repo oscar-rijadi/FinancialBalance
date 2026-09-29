@@ -484,7 +484,7 @@ namespace FinancialBalance
             {
                 TmpText = TmpText + "   -   main portfolios only";
             }
-            LblNote.Text = TmpText;
+            LblNote.Text = TmpText + Rate_Note();
         }
 
         //---- the entry section ---------------------------------------------------
@@ -567,9 +567,39 @@ namespace FinancialBalance
             Apply_Defaults();
         }
 
+        //The on-paper value and the three distribution figures are converted into this
+        //currency, so choosing another one re-derives those four. Only while a new entry is
+        //being made, though: a row loaded from the table keeps what was stored, and changing
+        //its currency is taken as correcting the label rather than asking for new figures.
         private void CmbEntryCurrency_SelectedIndexChanged(object sender, EventArgs e)
         {
-            //nothing is derived from the currency; it is stored as chosen
+            if (Filling) { return; }
+            if (gvRecon.SelectedRows.Count > 0) { return; }
+
+            try
+            {
+                string TmpStart;
+                string TmpEnd;
+                string TmpCode = CmbEntryCode.Text.Trim();
+                if (TmpCode == "" || !Year_Range(CmbEntryFinYear.Text, out TmpStart, out TmpEnd))
+                {
+                    return;
+                }
+
+                Filling = true;
+                Apply_Currency_Defaults(TmpCode, TmpStart, TmpEnd);
+                Filling = false;
+
+                Recalc_OnPaperPL();
+                Recalc_DDYield();
+                Recalc_RealPL();
+                Show_Note();
+            }
+            catch (Exception ex)
+            {
+                Filling = false;
+                MessageBox.Show(ex.Message, "Error Message");
+            }
         }
 
         //---- reading the numbers -------------------------------------------------
@@ -831,9 +861,12 @@ namespace FinancialBalance
 
         //The price to value a holding at, in order of preference: the latest one inside the
         //year, then the last one before it, then the first one after it.  A ticker with no
-        //price at all anywhere is worth nothing here rather than being guessed at.
-        private double Price_For_Year(string parTicker, string parStart, string parEnd)
+        //price at all anywhere is worth nothing here rather than being guessed at.  The
+        //currency the price is quoted in comes back with it, so it can be converted.
+        private double Price_For_Year(string parTicker, string parStart, string parEnd,
+                                      out string parCurr)
         {
+            parCurr = "";
             string[] Clauses = new string[] {
                 " and Price_Date >= '" + parStart + "' and Price_Date <= '" + parEnd + "' order by Price_Date Desc",
                 " and Price_Date < '" + parStart + "' order by Price_Date Desc",
@@ -841,7 +874,7 @@ namespace FinancialBalance
 
             for (int Pass = 0; Pass < Clauses.Length; Pass++)
             {
-                Mdl1.Ssql = "select top 1 [Price] from TblETFStocksPrice"
+                Mdl1.Ssql = "select top 1 [Price], [Currency] from TblETFStocksPrice"
                           + " where Full_Ticker = '" + parTicker + "'"
                           + Clauses[Pass];
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
@@ -851,6 +884,7 @@ namespace FinancialBalance
                 if (reader.Read())
                 {
                     TmpPrice = Read_Double(reader["Price"]);
+                    parCurr = Read_Text(reader["Currency"]);
                     Found = true;
                 }
                 reader.Close();
@@ -865,7 +899,9 @@ namespace FinancialBalance
         //What the units still held were worth at the year end: every ticker still open in this
         //portfolio and bought on or before the year closed, valued at the price above.  Buying
         //after the year end cannot count towards that year, hence the cut-off on Trans_Date.
-        private double On_Paper_Value(string parCode, string parStart, string parEnd)
+        //Each ticker is converted out of its price's currency into parCurr before the tickers
+        //are added together - an AUD holding and a USD one cannot be summed as they stand.
+        private double On_Paper_Value(string parCode, string parStart, string parEnd, string parCurr)
         {
             List<string> Tickers = new List<string>();
             List<double> Units = new List<double>();
@@ -887,9 +923,135 @@ namespace FinancialBalance
             for (int i = 0; i < Tickers.Count; i++)
             {
                 if (Units[i] == 0) { continue; }
-                Total += Math.Round(Units[i] * Price_For_Year(Tickers[i], parStart, parEnd), 2);
+                string TmpPriceCurr;
+                double TmpPrice = Price_For_Year(Tickers[i], parStart, parEnd, out TmpPriceCurr);
+                Total += Math.Round(Convert_To(Units[i] * TmpPrice, TmpPriceCurr, parCurr), 2);
             }
             return Math.Round(Total, 2);
+        }
+
+        //Sum_Between, but grouped by the currency each row was recorded in and converted into
+        //parCurr a group at a time.  Summing across currencies first would give a figure that
+        //is in none of them.  The groups are read and the reader closed before any rate is
+        //looked up, since the shared connection will not stand a second live reader.
+        private double Sum_Between_In(string parTable, string parField, string parDateField,
+                                      string parCode, string parStart, string parEnd,
+                                      string parExtra, string parCurr)
+        {
+            List<double> Amounts = new List<double>();
+            List<string> Currs = new List<string>();
+
+            Mdl1.Ssql = "select [Currency] as C, Sum(" + parField + ") as N from " + parTable
+                      + " where [Portfolio_Code] = '" + parCode + "'"
+                      + " and " + parDateField + " >= '" + parStart + "'"
+                      + " and " + parDateField + " <= '" + parEnd + "'"
+                      + parExtra
+                      + " group by [Currency]";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                Amounts.Add(Read_Double(reader["N"]));
+                Currs.Add(Read_Text(reader["C"]));
+            }
+            reader.Close();
+
+            double Result = 0;
+            for (int i = 0; i < Amounts.Count; i++)
+            {
+                Result += Convert_To(Amounts[i], Currs[i], parCurr);
+            }
+            return Math.Round(Result, 2);
+        }
+
+        //---- into the chosen currency --------------------------------------------
+        //
+        //TblCurrRate holds IDR per one unit, so a figure moves between two currencies by way
+        //of the rupiah:
+        //
+        //    amount in To = amount x rate(From) / rate(To)
+        //
+        //The rate is the one for the month the financial year closes - these figures are where
+        //the portfolio stood at the year end - and Mdl1.GetCurrRate falls back to the nearest
+        //earlier (then later) rate when that month has none.  A price or payment with no
+        //currency recorded is taken as AUD, the same rule the other ETF pages follow.
+        private Dictionary<string, double> RateCache = new Dictionary<string, double>();
+        private List<string> NoRate = new List<string>();
+        private string RateMonth = "";
+
+        private void Begin_Rates(string parEnd)
+        {
+            RateCache.Clear();
+            NoRate.Clear();
+            RateMonth = (parEnd.Length >= 6 ? parEnd.Substring(0, 6) : DateTime.Now.ToString("yyyyMM"));
+        }
+
+        //GetCurrRate answers 1 for a currency it has never heard of, which would look exactly
+        //like a conversion that happened; asking the table directly tells the two apart, and a
+        //currency with no rate at all is left unconverted and named in the note.
+        private double Rate_Of(string parCurr)
+        {
+            if (parCurr == "IDR")
+            {
+                return 1;
+            }
+            double TmpRate;
+            if (RateCache.TryGetValue(parCurr, out TmpRate))
+            {
+                return TmpRate;
+            }
+
+            bool Known = false;
+            Mdl1.Ssql = "select top 1 Curr_Date from TblCurrRate where Curr_Code = '" + parCurr + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            Known = reader.Read();
+            reader.Close();
+
+            TmpRate = (Known ? Mdl1.GetCurrRate(parCurr, RateMonth) : 1);
+            if (TmpRate <= 0) { TmpRate = 1; }
+            if (!Known && !NoRate.Contains(parCurr)) { NoRate.Add(parCurr); }
+            RateCache[parCurr] = TmpRate;
+            return TmpRate;
+        }
+
+        private double Convert_To(double parAmount, string parFrom, string parTo)
+        {
+            string TmpFrom = (parFrom == null ? "" : parFrom.Trim().ToUpper());
+            string TmpTo = (parTo == null ? "" : parTo.Trim().ToUpper());
+            if (TmpFrom == "") { TmpFrom = "AUD"; }
+            if (TmpTo == "") { TmpTo = "AUD"; }
+            if (parAmount == 0 || TmpFrom == TmpTo)
+            {
+                return parAmount;
+            }
+            return parAmount * Rate_Of(TmpFrom) / Rate_Of(TmpTo);
+        }
+
+        private string Rate_Note()
+        {
+            if (NoRate.Count == 0)
+            {
+                return "";
+            }
+            return "   -   no currency rate on record for " + String.Join(", ", NoRate.ToArray())
+                 + ", entry defaults left unconverted";
+        }
+
+        //The four defaults that depend on the chosen currency: what the holdings were worth at
+        //the year end, and what they paid during it.
+        private void Apply_Currency_Defaults(string parCode, string parStart, string parEnd)
+        {
+            string TmpCurr = CmbEntryCurrency.Text.Trim();
+            Begin_Rates(parEnd);
+
+            Set_Box(txtOnPaperVal, On_Paper_Value(parCode, parStart, parEnd, TmpCurr));
+            Set_Box(txtDD, Sum_Between_In("TblETFStocksDistributionDividend", "[Total_Amount]",
+                                          "Pay_Date", parCode, parStart, parEnd, "", TmpCurr));
+            Set_Box(txtDDReinv, Sum_Between_In("TblETFStocksDistributionDividend", "[Total_Amount]",
+                                               "Pay_Date", parCode, parStart, parEnd, " and [Is_Reinvested] = True", TmpCurr));
+            Set_Box(txtDDNotReinv, Sum_Between_In("TblETFStocksDistributionDividend", "[Total_Amount]",
+                                                  "Pay_Date", parCode, parStart, parEnd, " and [Is_Reinvested] = False", TmpCurr));
         }
 
         //What the portfolio is holding as cash rather than as investments. A running figure,
@@ -925,6 +1087,7 @@ namespace FinancialBalance
                 string TmpEnd;
 
                 Filling = true;
+                NoRate.Clear();
                 if (TmpYear == "" || TmpCode == "" || !Year_Range(TmpYear, out TmpStart, out TmpEnd))
                 {
                     Set_Box(txtPrevInv, 0); Set_Box(txtInvestment, 0); Set_Box(txtSold, 0);
@@ -951,13 +1114,8 @@ namespace FinancialBalance
                       - Portfolio_Cash(TmpCode));
                     Set_Box(txtSold, Sum_Between("TblETFStocksPurchase", "[Real_Total_Cost_Base]",
                                                  "Trans_Date", TmpCode, TmpStart, TmpEnd, " and Is_Sold = True"));
-                    Set_Box(txtOnPaperVal, On_Paper_Value(TmpCode, TmpStart, TmpEnd));
-                    Set_Box(txtDD, Sum_Between("TblETFStocksDistributionDividend", "[Total_Amount]",
-                                               "Pay_Date", TmpCode, TmpStart, TmpEnd, ""));
-                    Set_Box(txtDDReinv, Sum_Between("TblETFStocksDistributionDividend", "[Total_Amount]",
-                                                    "Pay_Date", TmpCode, TmpStart, TmpEnd, " and [Is_Reinvested] = True"));
-                    Set_Box(txtDDNotReinv, Sum_Between("TblETFStocksDistributionDividend", "[Total_Amount]",
-                                                       "Pay_Date", TmpCode, TmpStart, TmpEnd, " and [Is_Reinvested] = False"));
+                    //converted into the currency chosen in the entry area
+                    Apply_Currency_Defaults(TmpCode, TmpStart, TmpEnd);
                     Set_Box(txtCapGainPaper, Sum_Between("TblETFStocksSale", "[Profit_Or_Loss_On_Paper]",
                                                          "Trans_Date", TmpCode, TmpStart, TmpEnd, ""));
                     Set_Box(txtCapGainReal, Sum_Between("TblETFStocksSale", "[Real_Profit_Or_Loss]",
@@ -970,6 +1128,7 @@ namespace FinancialBalance
                 //everything derived follows from the figures just placed
                 Recalc_Ending();
                 Recalc_RealPL();
+                Show_Note();
             }
             catch (Exception ex)
             {
