@@ -133,3 +133,12 @@ C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBal
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Tax_Allocation.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Yearly_Summary_Graph.resources
 C:\Users\OJDA\OneDrive\Desktop\Financial Balance\Source Code\GitHub\FinancialBalance\obj\x86\Release\FinancialBalance.Superannuation_Calculator.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Investment_Plan_By_Amount.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Interval.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Forecast_Dividend_Calendar.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.ETF_Stocks_Forecast_Dividend_Allocation.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Tax_Deductable_Interest_Calculator.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Before_Tax_Interest_Calculator.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Setup_Tax_Allocation.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Yearly_Summary_Graph.resources
+C:\Oscar\Me\Financial Balance\C#.Net\FinancialBalance\obj\x86\Release\FinancialBalance.Superannuation_Calculator.resources

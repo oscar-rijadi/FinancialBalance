@@ -973,16 +973,21 @@ namespace FinancialBalance
         //TblETFStocksPortfolio holds one running row per portfolio code - its cash and the amount
         //invested out of it. Real_Total_Cost_Base is what the purchase actually cost out of that
         //cash, so buying moves the two in opposite directions by that figure.
+        //
+        //A portfolio can also keep a second, US dollar cash balance in Cash_In_USD, for buying
+        //US-listed securities out of a portfolio held in another currency.
 
         private bool Portfolio_Exists(string parCode, out string parCurrency,
-                                      out decimal parCash, out decimal parInvAmt)
+                                      out decimal parCash, out decimal parCashUSD,
+                                      out decimal parInvAmt)
         {
             parCurrency = "";
             parCash = 0;
+            parCashUSD = 0;
             parInvAmt = 0;
             bool Found = false;
 
-            Mdl1.Ssql = "select [Currency], [Cash], Investment_Amount from TblETFStocksPortfolio"
+            Mdl1.Ssql = "select [Currency], [Cash], Cash_In_USD, Investment_Amount from TblETFStocksPortfolio"
                       + " where Portfolio_Code = '" + parCode + "'";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
@@ -990,6 +995,7 @@ namespace FinancialBalance
             {
                 parCurrency = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
                 parCash = Read_Decimal(reader["Cash"]);
+                parCashUSD = Read_Decimal(reader["Cash_In_USD"]);
                 parInvAmt = Read_Decimal(reader["Investment_Amount"]);
                 Found = true;
             }
@@ -1011,21 +1017,28 @@ namespace FinancialBalance
             return 0;
         }
 
-        //Shifts parInvested out of the portfolio's cash and into its invested amount. A
-        //negative figure runs it backwards, which is what Delete and a reduced Update need:
+        //Moves parInvested out of the portfolio's cash. Which cash depends on the purchase's
+        //currency against the portfolio's own:
         //
-        //    Cash              = Cash - parInvested
-        //    Investment_Amount = Investment_Amount + parInvested
+        //    same currency  ->  Cash              = Cash - parInvested
+        //                       Investment_Amount = Investment_Amount + parInvested
+        //    USD            ->  Cash_In_USD       = Cash_In_USD - parInvested
+        //    anything else  ->  nothing moves
+        //
+        //Investment_Amount is a figure in the portfolio's currency, so a USD purchase out of a
+        //portfolio held in another currency leaves it alone rather than adding dollars to it. A
+        //negative figure runs it backwards, which is what Delete and a reduced Update need.
         //
         //A purchase can name a portfolio code that has no running row yet, since the codes live
         //in TblETFStocksPortfolioCode and the balances here. Writing one rather than letting the
         //update match nothing is what ETF_Stocks_Investment does, and it keeps the movement from
-        //being silently lost.
+        //being silently lost. The new row is held in the purchase's currency, so it is Cash.
+        //
+        //parNote says where the portfolio now stands, or why it was left alone.
         private bool Move_Portfolio(string parCode, string parCurrency, decimal parInvested,
-                                    out decimal parNewCash, out decimal parNewInvAmt)
+                                    out string parNote)
         {
-            parNewCash = 0;
-            parNewInvAmt = 0;
+            parNote = "";
             if (parCode == "" || parInvested == 0)
             {
                 return false;
@@ -1033,63 +1046,53 @@ namespace FinancialBalance
 
             string TmpHeldIn;
             decimal TmpCash;
+            decimal TmpCashUSD;
             decimal TmpInvAmt;
-            bool TmpExists = Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpInvAmt);
+            bool TmpExists = Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpCashUSD, out TmpInvAmt);
 
-            parNewCash = TmpCash - parInvested;
-            parNewInvAmt = TmpInvAmt + parInvested;
-
-            if (TmpExists)
+            if (!TmpExists)
             {
+                TmpCash = TmpCash - parInvested;
+                TmpInvAmt = TmpInvAmt + parInvested;
+                Mdl1.Ssql = "Insert into TblETFStocksPortfolio (Portfolio_Code, [Currency], [Cash],"
+                          + " Cash_In_USD, Investment_Amount) values ('" + parCode + "', '" + parCurrency + "', "
+                          + Num(TmpCash, 2) + ", 0, " + Num(TmpInvAmt, 2) + ")";
+            }
+            else if (TmpHeldIn == "" || TmpHeldIn == parCurrency)
+            {
+                TmpCash = TmpCash - parInvested;
+                TmpInvAmt = TmpInvAmt + parInvested;
                 Mdl1.Ssql = "Update TblETFStocksPortfolio set"
-                          + " [Cash] = " + Num(parNewCash, 2) + ","
-                          + " Investment_Amount = " + Num(parNewInvAmt, 2)
+                          + " [Cash] = " + Num(TmpCash, 2) + ","
+                          + " Investment_Amount = " + Num(TmpInvAmt, 2)
+                          + " where Portfolio_Code = '" + parCode + "'";
+            }
+            else if (parCurrency == "USD")
+            {
+                TmpCashUSD = TmpCashUSD - parInvested;
+                Mdl1.Ssql = "Update TblETFStocksPortfolio set"
+                          + " Cash_In_USD = " + Num(TmpCashUSD, 2)
                           + " where Portfolio_Code = '" + parCode + "'";
             }
             else
             {
-                Mdl1.Ssql = "Insert into TblETFStocksPortfolio (Portfolio_Code, [Currency], [Cash],"
-                          + " Investment_Amount) values ('" + parCode + "', '" + parCurrency + "', "
-                          + Num(parNewCash, 2) + ", " + Num(parNewInvAmt, 2) + ")";
+                parNote = Environment.NewLine + "Portfolio " + parCode + " is held in " + TmpHeldIn
+                        + "; a " + parCurrency + " purchase leaves its cash unchanged.";
+                return false;
             }
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
+
+            parNote = Portfolio_Note(parCode, TmpCash, TmpCashUSD, TmpInvAmt);
             return true;
         }
 
-        //Cash and Investment_Amount are single figures, so an amount in another currency cannot
-        //be added to them. Checked before anything is written, rather than leaving the purchase
-        //saved and the balance quietly wrong - the same rule ETF_Stocks_Investment applies.
-        private bool Currency_Fits(string parCode, string parCurrency, decimal parAmount)
-        {
-            if (parAmount <= 0 || parCode == "")
-            {
-                return true;
-            }
-            string TmpHeldIn;
-            decimal TmpCash;
-            decimal TmpInvAmt;
-            if (!Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpInvAmt))
-            {
-                return true;
-            }
-            if (TmpHeldIn == "" || TmpHeldIn == parCurrency)
-            {
-                return true;
-            }
-            MessageBox.Show("Portfolio " + parCode + " is held in " + TmpHeldIn
-                + " but this purchase is in " + parCurrency + "."
-                + Environment.NewLine + Environment.NewLine
-                + "Amounts in different currencies cannot be added together. Change the currency,"
-                + " or edit the portfolio first.", "Error Message");
-            return false;
-        }
-
         //What the balance movement is reported as, so it is visible without going to another page
-        private string Portfolio_Note(string parCode, decimal parCash, decimal parInvAmt)
+        private string Portfolio_Note(string parCode, decimal parCash, decimal parCashUSD, decimal parInvAmt)
         {
             return Environment.NewLine + "Portfolio " + parCode + " : cash "
-                 + Mdl1.FormatAmt((double)parCash) + ", invested "
+                 + Mdl1.FormatAmt((double)parCash) + ", cash in USD "
+                 + Mdl1.FormatAmt((double)parCashUSD) + ", invested "
                  + Mdl1.FormatAmt((double)parInvAmt) + ".";
         }
 
@@ -1141,20 +1144,10 @@ namespace FinancialBalance
                 string TmpCode = CmbFlagCode.Text.Trim();
                 string TmpCurrency = CmbCurrency.Text.Trim();
 
-                if (!Currency_Fits(TmpCode, TmpCurrency, TmpRealTotal))
-                {
-                    return;
-                }
-
                 Insert_Current(TmpUnit, TmpCostBase, TmpFee, TmpTotal, TmpRealTotal, TmpOriginalCostBase, TmpOriginalTotal);
 
-                string TmpExtra = "";
-                decimal TmpNewCash;
-                decimal TmpNewInv;
-                if (Move_Portfolio(TmpCode, TmpCurrency, TmpRealTotal, out TmpNewCash, out TmpNewInv))
-                {
-                    TmpExtra = Portfolio_Note(TmpCode, TmpNewCash, TmpNewInv);
-                }
+                string TmpExtra;
+                Move_Portfolio(TmpCode, TmpCurrency, TmpRealTotal, out TmpExtra);
 
                 MessageBox.Show("Create successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
 
@@ -1200,12 +1193,8 @@ namespace FinancialBalance
                 string TmpCode = CmbFlagCode.Text.Trim();
                 string TmpCurrency = CmbCurrency.Text.Trim();
                 string TmpWasCode = (OrgFlagCode == null ? "" : OrgFlagCode.Trim());
+                string TmpWasCurrency = (OrgCurrency == null ? "" : OrgCurrency.Trim());
                 decimal TmpWasReal = Read_Decimal(OrgRealTotalCostBase);
-
-                if (!Currency_Fits(TmpCode, TmpCurrency, TmpRealTotal))
-                {
-                    return;
-                }
 
                 Mdl1.Ssql = "Update TblETFStocksPurchase set "
                     + "Full_Ticker = '" + CmbFullTicker.Text.Trim() + "', "
@@ -1226,34 +1215,25 @@ namespace FinancialBalance
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                string TmpExtra = "";
-                decimal TmpNewCash;
-                decimal TmpNewInv;
-                if (TmpCode == TmpWasCode)
+                string TmpExtra;
+                if (TmpCode == TmpWasCode && TmpCurrency == TmpWasCurrency)
                 {
-                    //the usual case: one portfolio, moved by the difference
-                    if (Move_Portfolio(TmpCode, TmpCurrency,
-                                       (TmpRealTotal - TmpWasReal) * TmpRows,
-                                       out TmpNewCash, out TmpNewInv))
-                    {
-                        TmpExtra = Portfolio_Note(TmpCode, TmpNewCash, TmpNewInv);
-                    }
+                    //the usual case: one portfolio and one cash balance, moved by the difference
+                    Move_Portfolio(TmpCode, TmpCurrency,
+                                   (TmpRealTotal - TmpWasReal) * TmpRows, out TmpExtra);
                 }
                 else
                 {
-                    //The portfolio was changed as well, so the row's cost leaves one balance and
-                    //lands on the other. Moving only the difference would leave the old portfolio
-                    //holding a cost that is no longer its own.
-                    if (Move_Portfolio(TmpWasCode, TmpCurrency, -TmpWasReal * TmpRows,
-                                       out TmpNewCash, out TmpNewInv))
-                    {
-                        TmpExtra = Portfolio_Note(TmpWasCode, TmpNewCash, TmpNewInv);
-                    }
-                    if (Move_Portfolio(TmpCode, TmpCurrency, TmpRealTotal * TmpRows,
-                                       out TmpNewCash, out TmpNewInv))
-                    {
-                        TmpExtra = TmpExtra + Portfolio_Note(TmpCode, TmpNewCash, TmpNewInv);
-                    }
+                    //The portfolio or the currency was changed as well, so the row's cost may
+                    //leave one balance and land on another - a different portfolio, or Cash
+                    //instead of Cash_In_USD. The stored cost goes back the way it was taken, under
+                    //the stored currency, and the new cost is taken under the new one. Moving only
+                    //the difference would leave the old balance holding a cost no longer its own.
+                    string TmpBackNote;
+                    string TmpTakeNote;
+                    Move_Portfolio(TmpWasCode, TmpWasCurrency, -TmpWasReal * TmpRows, out TmpBackNote);
+                    Move_Portfolio(TmpCode, TmpCurrency, TmpRealTotal * TmpRows, out TmpTakeNote);
+                    TmpExtra = TmpBackNote + TmpTakeNote;
                 }
 
                 MessageBox.Show("Update successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
@@ -1294,13 +1274,10 @@ namespace FinancialBalance
                 cmd.ExecuteNonQuery();
 
                 string TmpExtra = "";
-                decimal TmpNewCash;
-                decimal TmpNewInv;
-                if (TmpWasReal > 0
-                    && Move_Portfolio(TmpWasCode, OrgCurrency, -TmpWasReal * TmpRows,
-                                      out TmpNewCash, out TmpNewInv))
+                if (TmpWasReal > 0)
                 {
-                    TmpExtra = Portfolio_Note(TmpWasCode, TmpNewCash, TmpNewInv);
+                    Move_Portfolio(TmpWasCode, (OrgCurrency == null ? "" : OrgCurrency.Trim()),
+                                   -TmpWasReal * TmpRows, out TmpExtra);
                 }
 
                 MessageBox.Show("Delete successfully for " + OrgFullTicker + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");

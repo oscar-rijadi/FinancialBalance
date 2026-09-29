@@ -384,27 +384,31 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvPortfolio.Columns.Clear();
-            gvPortfolio.ColumnCount = 5;
+            gvPortfolio.ColumnCount = 6;
             gvPortfolio.Columns[0].Name = "Portfolio Code";
-            gvPortfolio.Columns[0].FillWeight = 18;
+            gvPortfolio.Columns[0].FillWeight = 16;
             gvPortfolio.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvPortfolio.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvPortfolio.Columns[1].Name = "Portfolio";
-            gvPortfolio.Columns[1].FillWeight = 32;
+            gvPortfolio.Columns[1].FillWeight = 27;
             gvPortfolio.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvPortfolio.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvPortfolio.Columns[2].Name = "Currency";
-            gvPortfolio.Columns[2].FillWeight = 14;
+            gvPortfolio.Columns[2].FillWeight = 12;
             gvPortfolio.Columns[2].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             gvPortfolio.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             gvPortfolio.Columns[3].Name = "Cash";
-            gvPortfolio.Columns[3].FillWeight = 18;
+            gvPortfolio.Columns[3].FillWeight = 15;
             gvPortfolio.Columns[3].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
             gvPortfolio.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvPortfolio.Columns[4].Name = "Investment Amount";
-            gvPortfolio.Columns[4].FillWeight = 18;
+            gvPortfolio.Columns[4].Name = "Cash in USD";
+            gvPortfolio.Columns[4].FillWeight = 15;
             gvPortfolio.Columns[4].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
             gvPortfolio.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvPortfolio.Columns[5].Name = "Investment Amount";
+            gvPortfolio.Columns[5].FillWeight = 15;
+            gvPortfolio.Columns[5].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvPortfolio.Columns[5].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
 
         //The description is looked up per row rather than joined, matching the rest of the
@@ -429,7 +433,7 @@ namespace FinancialBalance
 
             gvPortfolio.Rows.Clear();
 
-            Mdl1.Ssql = "select Portfolio_Code, [Currency], [Cash], Investment_Amount from TblETFStocksPortfolio order by Portfolio_Code";
+            Mdl1.Ssql = "select Portfolio_Code, [Currency], [Cash], Cash_In_USD, Investment_Amount from TblETFStocksPortfolio order by Portfolio_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -437,14 +441,17 @@ namespace FinancialBalance
                 string TmpCode = Read_Text(reader["Portfolio_Code"]);
                 string TmpCurrency = Read_Text(reader["Currency"]);
                 double TmpCash = Read_Double(reader["Cash"]);
+                double TmpCashUSD = Read_Double(reader["Cash_In_USD"]);
                 double TmpInvAmt = Read_Double(reader["Investment_Amount"]);
                 string TmpDesc = Description_For(TmpCode);
 
+                //Cash_In_USD is always US dollars, whatever the portfolio itself is held in
                 gvPortfolio.Rows.Add(new string[] {
                     TmpCode,
                     (TmpDesc == "" ? "-" : TmpDesc),
                     (TmpCurrency == "" ? "-" : TmpCurrency),
                     Money(TmpCash, TmpCurrency),
+                    Money(TmpCashUSD, "USD"),
                     Money(TmpInvAmt, TmpCurrency) });
                 gvPortfolio.Rows[gvPortfolio.Rows.Count - 1].Tag = TmpCode;
             }
@@ -488,8 +495,8 @@ namespace FinancialBalance
         }
 
         //Mdl1.NumericKeyPress rejects a minus sign, which is right for Amount - the sign is
-        //carried by Investment Type.  Cash and Investment Amount are running balances that
-        //can genuinely be negative, so those two also accept a leading minus.
+        //carried by Investment Type.  Cash, Cash in USD and Investment Amount are running
+        //balances that can genuinely be negative, so those three also accept a leading minus.
         private void Signed_KeyPress(object sender, KeyPressEventArgs e)
         {
             TextBox Box = sender as TextBox;
@@ -615,8 +622,8 @@ namespace FinancialBalance
                 else
                 {
                     //a brand new portfolio starts from nothing, so its cash is just this movement
-                    Mdl1.Ssql = "Insert into TblETFStocksPortfolio (Portfolio_Code, [Currency], [Cash], Investment_Amount) values ("
-                              + "'" + TmpCode + "', '" + TmpCurrency + "', " + Db_Number(TmpSigned) + ", 0.00)";
+                    Mdl1.Ssql = "Insert into TblETFStocksPortfolio (Portfolio_Code, [Currency], [Cash], Cash_In_USD, Investment_Amount) values ("
+                              + "'" + TmpCode + "', '" + TmpCurrency + "', " + Db_Number(TmpSigned) + ", 0.00, 0.00)";
                 }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
@@ -637,13 +644,14 @@ namespace FinancialBalance
         }
 
         //The edit inputs only appear once a portfolio is picked out of the grid
-        private void Begin_Edit(string parCode, string parCurrency, string parCash, string parInvAmt)
+        private void Begin_Edit(string parCode, string parCurrency, string parCash, string parCashUSD, string parInvAmt)
         {
             EditCode = parCode;
             LblEditCaption.Text = "Edit portfolio : " + parCode;
 
             Select_Currency(CmbEditCurrency, parCurrency);
             txtEditCash.Text = Strip_Money(parCash);
+            txtEditCashUSD.Text = Strip_Money(parCashUSD);
             txtEditInvAmt.Text = Strip_Money(parInvAmt);
 
             Show_Edit(true);
@@ -663,6 +671,8 @@ namespace FinancialBalance
             CmbEditCurrency.Visible = parShow;
             Label8.Visible = parShow;
             txtEditCash.Visible = parShow;
+            Label10.Visible = parShow;
+            txtEditCashUSD.Visible = parShow;
             Label9.Visible = parShow;
             txtEditInvAmt.Visible = parShow;
             CmdUpdate.Visible = parShow;
@@ -712,7 +722,8 @@ namespace FinancialBalance
             Begin_Edit(Row.Tag.ToString(),
                        Row.Cells[2].Value.ToString().Replace("-", ""),
                        Row.Cells[3].Value.ToString(),
-                       Row.Cells[4].Value.ToString());
+                       Row.Cells[4].Value.ToString(),
+                       Row.Cells[5].Value.ToString());
         }
 
         private void CmdUpdate_Click(object sender, EventArgs e)
@@ -720,6 +731,7 @@ namespace FinancialBalance
             try
             {
                 double TmpCash;
+                double TmpCashUSD;
                 double TmpInvAmt;
 
                 if (EditCode == null || EditCode == "")
@@ -738,6 +750,10 @@ namespace FinancialBalance
                 {
                     return;
                 }
+                if (!Valid_Amount(txtEditCashUSD.Text, "Cash in USD", true, out TmpCashUSD))
+                {
+                    return;
+                }
                 if (!Valid_Amount(txtEditInvAmt.Text, "Investment Amount", true, out TmpInvAmt))
                 {
                     return;
@@ -745,6 +761,7 @@ namespace FinancialBalance
 
                 Mdl1.Ssql = "Update TblETFStocksPortfolio set [Currency] = '" + TmpCurrency + "'"
                           + ", [Cash] = " + Db_Number(TmpCash)
+                          + ", Cash_In_USD = " + Db_Number(TmpCashUSD)
                           + ", Investment_Amount = " + Db_Number(TmpInvAmt)
                           + " where Portfolio_Code = '" + EditCode + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);

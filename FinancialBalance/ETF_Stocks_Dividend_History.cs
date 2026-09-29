@@ -510,15 +510,15 @@ namespace FinancialBalance
         private void Clear_Summary_Grid()
         {
             Build_Grid(gvSummary,
-                new string[] { "Full Ticker", "Portfolio Code", "Currency", "Investment", "Total", "Yield", "Total Reinvested", "Total Not Reinvested" },
-                new int[] { 14, 11, 8, 14, 14, 10, 14, 15 }, 3);
+                new string[] { "Full Ticker", "Portfolio Code", "Investment", "Total", "Yield", "Total Reinvested", "Total Not Reinvested" },
+                new int[] { 15, 12, 15, 15, 11, 16, 16 }, 2);
         }
 
         private void Clear_Detail_Grid()
         {
             Build_Grid(gvDetail,
-                new string[] { "Pay Date", "Portfolio Code", "Currency", "Amount", "Amount Reinvested", "Amount Not Reinvested" },
-                new int[] { 18, 14, 10, 19, 19, 20 }, 3);
+                new string[] { "Pay Date", "Portfolio Code", "Amount", "Amount Reinvested", "Amount Not Reinvested" },
+                new int[] { 20, 16, 21, 21, 22 }, 2);
         }
 
         private void Get_Data()
@@ -553,14 +553,12 @@ namespace FinancialBalance
         //One row per portfolio and ticker that has ever been bought.  The purchases decide what
         //is listed, not the payments: a holding that has paid nothing still belongs on the page,
         //showing what is tied up in it against a nil return.  Grouping is by portfolio and
-        //ticker alone - the currency is the one the holding was bought in, read from the
-        //purchases rather than grouped on, so a payment recorded against the wrong currency
-        //cannot split one holding into two rows.
+        //ticker alone - each row is converted to AUD out of its own currency as it is added, so
+        //a payment recorded against the wrong currency cannot split one holding into two rows.
         private class Holding
         {
             public string Ticker;
             public string Code;
-            public string Currency;     //the earliest purchase's, which is what the money is in
             public double Bought;       //Real_Total_Cost_Base, so DRIP units add no cost
             public double Sold;         //Selling_Total_Amount
             public double PaidAll;
@@ -597,8 +595,7 @@ namespace FinancialBalance
         }
 
         //The rows themselves, and what was paid for them.  Read row by row rather than grouped
-        //so the currency can be the earliest purchase's - Access's First() follows storage
-        //order, which is not the same thing.
+        //so each lot is converted out of the currency it was bought in.
         private List<Holding> Load_Holdings()
         {
             Dictionary<string, Holding> TmpIndex = new Dictionary<string, Holding>();
@@ -622,14 +619,11 @@ namespace FinancialBalance
                     TmpHolding = new Holding();
                     TmpHolding.Ticker = TmpTicker;
                     TmpHolding.Code = TmpCode;
-                    //first row of the group, and the read is ordered by date within it, so this
-                    //is the currency the holding was opened in
-                    TmpHolding.Currency = Read_Text(reader["Currency"]);
                     TmpIndex.Add(TmpKey, TmpHolding);
                     TmpOrder.Add(TmpHolding);
                 }
                 //out of the currency this lot was bought in, before it joins the group - lots of
-                //one holding can differ, and the group carries only the first one's code
+                //one holding can differ
                 TmpHolding.Bought += To_AUD(Read_Double(reader["Real_Total_Cost_Base"]),
                                             Read_Text(reader["Currency"]));
             }
@@ -733,12 +727,10 @@ namespace FinancialBalance
             {
                 double TmpInvestment = TmpHolding.Investment;
 
-                //the Currency column still says what the holding was opened in - what the figures
-                //beside it were converted out of, rather than what they are in
+                //every figure is already AUD, so there is no currency column to show
                 gvSummary.Rows.Add(new string[] {
                     TmpHolding.Ticker,
                     TmpHolding.Code,
-                    (TmpHolding.Currency == "" ? "-" : TmpHolding.Currency),
                     Money(TmpInvestment),
                     Money(TmpHolding.PaidAll),
                     Percent(Yield_Of(TmpInvestment, TmpHolding.PaidAll)),
@@ -781,7 +773,6 @@ namespace FinancialBalance
                 gvDetail.Rows.Add(new string[] {
                     Format_Date(Read_Text(reader["Pay_Date"])),
                     Read_Text(reader["Portfolio_Code"]),
-                    (TmpCurr == "" ? "-" : TmpCurr),
                     Money(TmpAmount),
                     Money(TmpReinvested ? TmpAmount : 0),
                     Money(TmpReinvested ? 0 : TmpAmount) });

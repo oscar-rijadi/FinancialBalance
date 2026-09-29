@@ -74,6 +74,8 @@
             this.CmbEditCurrency = new System.Windows.Forms.ComboBox();
             this.Label8 = new System.Windows.Forms.Label();
             this.txtEditCash = new System.Windows.Forms.TextBox();
+            this.Label10 = new System.Windows.Forms.Label();
+            this.txtEditCashUSD = new System.Windows.Forms.TextBox();
             this.Label9 = new System.Windows.Forms.Label();
             this.txtEditInvAmt = new System.Windows.Forms.TextBox();
             this.CmdUpdate = new System.Windows.Forms.Button();
@@ -391,7 +393,7 @@
             this.LblPortfolioDesc.Location = new System.Drawing.Point(310, 323);
             this.LblPortfolioDesc.Name = "LblPortfolioDesc";
             this.LblPortfolioDesc.Size = new System.Drawing.Size(370, 20);
-            this.LblPortfolioDesc.TabIndex = 31;
+            this.LblPortfolioDesc.TabIndex = 33;
             //
             // Label4
             //
@@ -528,15 +530,39 @@
             this.txtEditCash.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtEditCash.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Signed_KeyPress);
             //
+            // Label10
+            //
+            this.Label10.BackColor = System.Drawing.Color.Transparent;
+            this.Label10.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label10.ForeColor = System.Drawing.Color.Black;
+            this.Label10.Location = new System.Drawing.Point(19, 576);
+            this.Label10.Name = "Label10";
+            this.Label10.Size = new System.Drawing.Size(120, 22);
+            this.Label10.TabIndex = 26;
+            this.Label10.Text = "Cash in USD";
+            //
+            // txtEditCashUSD
+            //
+            this.txtEditCashUSD.BackColor = System.Drawing.SystemColors.Window;
+            this.txtEditCashUSD.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtEditCashUSD.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.txtEditCashUSD.Location = new System.Drawing.Point(145, 576);
+            this.txtEditCashUSD.MaxLength = 20;
+            this.txtEditCashUSD.Name = "txtEditCashUSD";
+            this.txtEditCashUSD.Size = new System.Drawing.Size(157, 20);
+            this.txtEditCashUSD.TabIndex = 27;
+            this.txtEditCashUSD.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtEditCashUSD.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Signed_KeyPress);
+            //
             // Label9
             //
             this.Label9.BackColor = System.Drawing.Color.Transparent;
             this.Label9.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label9.ForeColor = System.Drawing.Color.Black;
-            this.Label9.Location = new System.Drawing.Point(19, 576);
+            this.Label9.Location = new System.Drawing.Point(19, 606);
             this.Label9.Name = "Label9";
             this.Label9.Size = new System.Drawing.Size(120, 22);
-            this.Label9.TabIndex = 26;
+            this.Label9.TabIndex = 28;
             this.Label9.Text = "Investment Amount";
             //
             // txtEditInvAmt
@@ -544,11 +570,11 @@
             this.txtEditInvAmt.BackColor = System.Drawing.SystemColors.Window;
             this.txtEditInvAmt.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtEditInvAmt.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtEditInvAmt.Location = new System.Drawing.Point(145, 576);
+            this.txtEditInvAmt.Location = new System.Drawing.Point(145, 606);
             this.txtEditInvAmt.MaxLength = 20;
             this.txtEditInvAmt.Name = "txtEditInvAmt";
             this.txtEditInvAmt.Size = new System.Drawing.Size(157, 20);
-            this.txtEditInvAmt.TabIndex = 27;
+            this.txtEditInvAmt.TabIndex = 29;
             this.txtEditInvAmt.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtEditInvAmt.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Signed_KeyPress);
             //
@@ -557,10 +583,10 @@
             this.CmdUpdate.BackColor = System.Drawing.SystemColors.Control;
             this.CmdUpdate.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdUpdate.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdUpdate.Location = new System.Drawing.Point(145, 608);
+            this.CmdUpdate.Location = new System.Drawing.Point(145, 638);
             this.CmdUpdate.Name = "CmdUpdate";
             this.CmdUpdate.Size = new System.Drawing.Size(100, 27);
-            this.CmdUpdate.TabIndex = 28;
+            this.CmdUpdate.TabIndex = 30;
             this.CmdUpdate.Text = "&Update";
             this.CmdUpdate.UseVisualStyleBackColor = false;
             this.CmdUpdate.Click += new System.EventHandler(this.CmdUpdate_Click);
@@ -570,10 +596,10 @@
             this.CmdCancelEdit.BackColor = System.Drawing.SystemColors.Control;
             this.CmdCancelEdit.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdCancelEdit.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdCancelEdit.Location = new System.Drawing.Point(255, 608);
+            this.CmdCancelEdit.Location = new System.Drawing.Point(255, 638);
             this.CmdCancelEdit.Name = "CmdCancelEdit";
             this.CmdCancelEdit.Size = new System.Drawing.Size(85, 27);
-            this.CmdCancelEdit.TabIndex = 29;
+            this.CmdCancelEdit.TabIndex = 31;
             this.CmdCancelEdit.Text = "Cancel";
             this.CmdCancelEdit.UseVisualStyleBackColor = false;
             this.CmdCancelEdit.Click += new System.EventHandler(this.CmdCancelEdit_Click);
@@ -583,10 +609,10 @@
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(594, 650);
+            this.CmdBack.Location = new System.Drawing.Point(594, 680);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(85, 27);
-            this.CmdBack.TabIndex = 30;
+            this.CmdBack.TabIndex = 32;
             this.CmdBack.Text = "&Back";
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
@@ -597,13 +623,15 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(700, 690);
+            this.ClientSize = new System.Drawing.Size(700, 720);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdCancelEdit);
             this.Controls.Add(this.CmdUpdate);
             this.Controls.Add(this.txtEditInvAmt);
             this.Controls.Add(this.Label9);
+            this.Controls.Add(this.txtEditCashUSD);
+            this.Controls.Add(this.Label10);
             this.Controls.Add(this.txtEditCash);
             this.Controls.Add(this.Label8);
             this.Controls.Add(this.CmbEditCurrency);
@@ -694,6 +722,8 @@
         public System.Windows.Forms.ComboBox CmbEditCurrency;
         public System.Windows.Forms.Label Label8;
         public System.Windows.Forms.TextBox txtEditCash;
+        public System.Windows.Forms.Label Label10;
+        public System.Windows.Forms.TextBox txtEditCashUSD;
         public System.Windows.Forms.Label Label9;
         public System.Windows.Forms.TextBox txtEditInvAmt;
         public System.Windows.Forms.Button CmdUpdate;

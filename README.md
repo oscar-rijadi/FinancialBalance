@@ -222,7 +222,7 @@ flowchart LR
 | `ETF_Stocks_Purchase` | Add / update / delete ETF and stock **buys** for one date, including lots that came free and why. |
 | `ETF_Stocks_Sale` | Add / update / delete ETF and stock **sells** for one date. A sale is built against the purchase lots it draws from, which it then settles. |
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
-| `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. |
+| `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. `Cash`, `Cash in USD` and `Investment_Amount` can be corrected by hand. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
 | `ETF_Stocks_Tax_Interest` | Shown as **ETF/Stock Tax Deductable Interest**. What the borrowing behind the portfolio cost, month by month, with a financial year filter, the total for whichever year is showing, what the deduction on it is worth, and what it therefore really cost. Add, update and delete, one figure per month. |
@@ -585,6 +585,7 @@ erDiagram
         text    Currency "3 chars"
         decimal Cash "2 dp, running balance"
         decimal Investment_Amount "2 dp"
+        decimal Cash_In_USD "2 dp, running USD balance"
     }
     TblETFStocksPortfolioInvestment {
         text    Investment_Date "yyyyMMdd"
@@ -777,6 +778,29 @@ Investment_Amount = Investment_Amount + <shift>
 | **Update** | `new Real_Total_Cost_Base - stored Real_Total_Cost_Base` — the difference, so only what changed moves |
 | **Delete** | `- stored Real_Total_Cost_Base`, giving the whole cost back |
 
+**Which cash a purchase comes out of** depends on its currency against the portfolio's own
+`Currency`:
+
+| Purchase currency | What moves |
+| --- | --- |
+| **Same as the portfolio** (or the portfolio has no currency, or no row yet) | `Cash` and `Investment_Amount`, as above |
+| **`USD`**, in a portfolio held in something else | `Cash_In_USD = Cash_In_USD - <shift>` only |
+| **Anything else** | nothing — the purchase is still saved, and the success message says the cash was left alone |
+
+`Cash_In_USD` is a second, US dollar cash balance on the same row, for buying US-listed securities
+out of a portfolio held in, say, AUD. `Investment_Amount` is a figure in the portfolio's currency, so
+a USD purchase out of an AUD portfolio **does not add to it** — dollars and Australian dollars cannot
+be summed. An **Update that changes the currency** (or the portfolio) gives the stored cost back
+under the stored currency and takes the new cost under the new one, so a purchase switched from
+`AUD` to `USD` moves its cost from `Cash` to `Cash_In_USD` rather than leaving it on the wrong
+balance.
+
+The column was added with `ALTER TABLE TblETFStocksPortfolio ADD COLUMN Cash_In_USD DECIMAL(22,2)`,
+so it sits last, and existing rows were stamped `0`. A new row written by the Purchase or Investment
+page starts it at `0`; one written by the Sale page does not set it and lands as `Null`, which the pages
+that read it treat as `0`. It can be corrected by hand in the
+[ETF/Stock Investment](#etfstock-investment-rules) edit panel.
+
 **ETF/Stock Sale.** The proceeds come into the cash, and the real cost of the lots the sale closed
 leaves the invested amount — releasing exactly what the purchase put there:
 
@@ -824,12 +848,14 @@ back in, with the lot held again.
   `TblETFStocksPortfolioCode` and the balances in `TblETFStocksPortfolio`, so a purchase can name a
   code that has never had a balance. Updating nothing would lose the movement silently; this is
   what `ETF_Stocks_Investment` does with a movement against a new portfolio.
-- **A purchase or sale in a currency the portfolio is not held in is refused**, on both Add and
-  Update, before anything is written. `Cash` and `Investment_Amount` are single figures and amounts
-  in different currencies cannot be added together — the same rule `ETF_Stocks_Investment`
-  applies. Change the currency, or edit the portfolio first.
-- **The success message says where the portfolio now stands**, so the movement is visible without
-  going to another page.
+- **A sale in a currency the portfolio is not held in is refused**, on both Add and Update,
+  before anything is written. `Cash` and `Investment_Amount` are single figures and amounts in
+  different currencies cannot be added together — the same rule `ETF_Stocks_Investment` applies.
+  Change the currency, or edit the portfolio first. **A purchase is not refused**: in `USD` it moves
+  `Cash_In_USD`, and in any other foreign currency it is saved without touching the balance — see
+  the table above.
+- **The success message says where the portfolio now stands** — cash, cash in USD and invested —
+  so the movement is visible without going to another page.
 
 > **A sale with no `Sale_Id`** — only rows predating that field — cannot say which lots it
 > closed, so it releases nothing from the invested amount. Its proceeds still move the cash.
@@ -1180,12 +1206,14 @@ taken out, separate from what has been spent on securities. It writes two tables
 | Table | Holds |
 | --- | --- |
 | `TblETFStocksPortfolioInvestment` | Every movement, one row each, never amended. |
-| `TblETFStocksPortfolio` | One running row per portfolio code: its currency, `Cash` and `Investment_Amount`. |
+| `TblETFStocksPortfolio` | One running row per portfolio code: its currency, `Cash`, `Investment_Amount` and `Cash_In_USD` (moved only by USD purchases — see [Both pages move the portfolio's balance](#both-pages-move-the-portfolios-balance)). |
 
 The grid shows the running rows, with `Portfolio` resolved from `TblETFStocksPortfolioCode` by
-matching `Portfolio_Code`. `Cash` and `Investment_Amount` follow the same rule as everywhere else —
-a `$` for AUD and USD, bare otherwise, and a negative reads `-$1,234.56`. A code with no matching
-description shows `-` rather than a blank.
+matching `Portfolio_Code`. The columns are **Portfolio Code, Portfolio, Currency, Cash, Cash in USD
+and Investment Amount**. `Cash` and `Investment_Amount` follow the same rule as everywhere else —
+a `$` for AUD and USD, bare otherwise, and a negative reads `-$1,234.56`. **Cash in USD** is always
+US dollars whatever the portfolio is held in, so it always carries a `$`; a `Null` reads `$0.00`. A
+code with no matching description shows `-` rather than a blank.
 
 Adding a movement takes a date, a portfolio code, a type, a currency and an amount. The chosen
 code's `Description` is shown beside the dropdown, since a five-character code on its own is easy
@@ -1196,14 +1224,19 @@ appended to `TblETFStocksPortfolioInvestment`, and then:
 
 - **The portfolio already exists** — `Cash` moves by the signed amount.
 - **It does not** — a row is created with the chosen currency, `Cash` set to the signed amount and
-  `Investment_Amount` set to `0`.
+  `Cash_In_USD` and `Investment_Amount` both set to `0`.
 
-> `Investment_Amount` is **not** touched by adding a movement. It only changes through the edit
-> panel. Paying cash in does not by itself mean it has been invested.
+> `Investment_Amount` and `Cash_In_USD` are **not** touched by adding a movement. They only change
+> through the edit panel (and, for `Cash_In_USD`, a USD purchase — see
+> [Both pages move the portfolio's balance](#both-pages-move-the-portfolios-balance)). Paying cash in
+> does not by itself mean it has been invested.
 
-Selecting a row in the grid reveals an edit panel for that portfolio's `Currency`, `Cash` and
-`Investment_Amount`. Those two amounts are running balances that can legitimately go negative, so
-they accept a leading minus that the shared numeric guard would otherwise reject.
+Selecting a row in the grid reveals an edit panel for that portfolio's `Currency`, `Cash`,
+**`Cash in USD`** and `Investment_Amount`, in that order. The three amounts are running balances
+that can legitimately go negative, so they accept a leading minus that the shared numeric guard
+would otherwise reject, and each allows at most 2 decimal places. **Update** writes all four back
+to the row. Changing the `Currency` there does not convert anything — the figures are stored
+exactly as typed.
 
 Two things are worth knowing:
 
@@ -1714,10 +1747,14 @@ The note line under the filters says which of the two rules is in force.
 
 #### The columns
 
-`Currency` is the currency of the **earliest purchase** for that portfolio and ticker. It is read off
-the purchases rather than grouped on, so a payment entered in the wrong currency cannot split one
-holding into two rows. It says what the figures beside it were converted **out of**, not what they
-are in — everything on the page is in AUD.
+There is **no `Currency` column** in either table. Every amount on the page is converted to AUD
+before it is shown, so a column naming the currency would only repeat what the line above the table
+already says. The summary table reads **Full Ticker, Portfolio Code, Investment, Total, Yield, Total
+Reinvested, Total Not Reinvested**; the per-payment table reads **Pay Date, Portfolio Code, Amount,
+Amount Reinvested, Amount Not Reinvested**. A holding is grouped by portfolio and ticker alone, so a
+payment entered in the wrong currency cannot split one holding into two rows — each row is
+converted out of its own currency as it is added in. The Excel and Google Drive exports copy the
+grid's columns as they are, so they lose the column too.
 
 `Investment` is the **money actually put in and not yet taken back out**:
 
@@ -1759,15 +1796,15 @@ and what is in it can never disagree. `Yield` is worked out from the two grand t
 averaging the per-row yields, which would weigh a small holding the same as a large one.
 
 Worked through on seeded data, with the year closing `30-Jun-2025` and both portfolios in scope.
-The USD row is shown at a one-for-one rate so the conversion does not obscure what the example is
+`VGS.AX` was bought in USD, and is shown at a one-for-one rate so the conversion does not obscure what the example is
 about:
 
-| Full Ticker | Portfolio Code | Currency | Investment | Total | Yield | Total Reinvested | Total Not Reinvested |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| VAS.AX | MAIN | AUD | `$1,200.00` | `$80.00` | `6.67 %` | `$30.00` | `$50.00` |
-| VAS.AX | SUPER | AUD | `$2,000.00` | `$80.00` | `4.00 %` | `$0.00` | `$80.00` |
-| VGS.AX | MAIN | USD | `$3,000.00` | `$0.00` | `0.00 %` | `$0.00` | `$0.00` |
-| **Grand** | | | **`$6,200.00`** | **`$160.00`** | **`2.58 %`** | **`$30.00`** | **`$130.00`** |
+| Full Ticker | Portfolio Code | Investment | Total | Yield | Total Reinvested | Total Not Reinvested |
+| --- | --- | --- | --- | --- | --- | --- |
+| VAS.AX | MAIN | `$1,200.00` | `$80.00` | `6.67 %` | `$30.00` | `$50.00` |
+| VAS.AX | SUPER | `$2,000.00` | `$80.00` | `4.00 %` | `$0.00` | `$80.00` |
+| VGS.AX | MAIN | `$3,000.00` | `$0.00` | `0.00 %` | `$0.00` | `$0.00` |
+| **Grand** | | **`$6,200.00`** | **`$160.00`** | **`2.58 %`** | **`$30.00`** | **`$130.00`** |
 
 `VGS.AX` is listed on nil payments because it was bought before the cut-off, and its own later sale
 and later payment are both excluded by it. A holding bought *after* the cut-off produces no row at
@@ -1808,8 +1845,7 @@ each group is converted out of what it is actually in before the parts are added
 | the payment view's own investment | nothing — one `Sum` over everything | `Currency` |
 
 The purchases were already read row by row, so each lot converts out of its own currency without
-any regrouping — which matters, because the `Currency` column shows only the *earliest* lot's and
-the later ones do not have to agree with it.
+any regrouping — which matters, because the lots of one holding do not have to share a currency.
 
 **The yield is what this buys.** `Total / Investment x 100` divides two figures that have to be in
 one currency to mean anything; before, a holding paid in USD against a cost in AUD produced a
@@ -1834,7 +1870,7 @@ up in Currency Setup but never used raises nothing.
 
 Writes what is on screen to a `.xlsx` — the four filters, the note, the aggregate labels, then the
 table. **Whichever of the two tables is showing is the one exported**, with its own headings: the
-eight-column summary on `All`, the six-column payment list for a single ticker. The aggregate rows
+seven-column summary on `All`, the five-column payment list for a single ticker. The aggregate rows
 follow the same view, so the sheet always matches the screen it was taken from.
 
 The file is named:
