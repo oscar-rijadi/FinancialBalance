@@ -1293,14 +1293,16 @@ namespace FinancialBalance
         //that. A reinvested lot cost nothing real, so it releases nothing.
 
         private bool Portfolio_Exists(string parCode, out string parCurrency,
-                                      out decimal parCash, out decimal parInvAmt)
+                                      out decimal parCash, out decimal parCashUSD,
+                                      out decimal parInvAmt)
         {
             parCurrency = "";
             parCash = 0;
+            parCashUSD = 0;
             parInvAmt = 0;
             bool Found = false;
 
-            Mdl1.Ssql = "select [Currency], [Cash], Investment_Amount from TblETFStocksPortfolio"
+            Mdl1.Ssql = "select [Currency], [Cash], Cash_In_USD, Investment_Amount from TblETFStocksPortfolio"
                       + " where Portfolio_Code = '" + parCode + "'";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
@@ -1308,6 +1310,7 @@ namespace FinancialBalance
             {
                 parCurrency = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
                 parCash = Read_Decimal(reader["Cash"]);
+                parCashUSD = Read_Decimal(reader["Cash_In_USD"]);
                 parInvAmt = Read_Decimal(reader["Investment_Amount"]);
                 Found = true;
             }
@@ -1329,15 +1332,30 @@ namespace FinancialBalance
             return 0;
         }
 
-        //Moves the two figures by their own amounts, so a sale can raise the cash and release the
-        //invested cost in one write. A portfolio code with no running row yet gets one, rather
-        //than the update matching nothing and the movement being silently lost.
+        //Moves the portfolio by a sale. Which cash the proceeds land in depends on the sale's
+        //currency against the portfolio's own, mirroring what the Purchase page takes them out of:
+        //
+        //    same currency  ->  Cash              = Cash + parCash
+        //                       Investment_Amount = Investment_Amount + parInvested
+        //    USD            ->  Cash_In_USD       = Cash_In_USD + parCash
+        //    anything else  ->  nothing moves
+        //
+        //Investment_Amount is a figure in the portfolio's currency, so a USD sale out of a
+        //portfolio held in another one leaves it alone - and it has nothing to release anyway,
+        //since the USD purchase that opened the lot never added to it. The two sides round-trip:
+        //what a USD purchase takes out of Cash_In_USD, a USD sale puts back.
+        //
+        //A negative figure runs it backwards, which is what Delete and a reduced Update need.
+        //
+        //A portfolio code with no running row yet gets one, rather than the update matching
+        //nothing and the movement being silently lost. The new row is held in the sale's own
+        //currency, so it is Cash that the proceeds go to and Cash_In_USD that starts at zero.
+        //
+        //parNote says where the portfolio now stands, or why it was left alone.
         private bool Move_Portfolio(string parCode, string parCurrency, decimal parCash,
-                                    decimal parInvested, out decimal parNewCash,
-                                    out decimal parNewInvAmt)
+                                    decimal parInvested, out string parNote)
         {
-            parNewCash = 0;
-            parNewInvAmt = 0;
+            parNote = "";
             if (parCode == "" || (parCash == 0 && parInvested == 0))
             {
                 return false;
@@ -1345,27 +1363,44 @@ namespace FinancialBalance
 
             string TmpHeldIn;
             decimal TmpCash;
+            decimal TmpCashUSD;
             decimal TmpInvAmt;
-            bool TmpExists = Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpInvAmt);
+            bool TmpExists = Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpCashUSD, out TmpInvAmt);
 
-            parNewCash = TmpCash + parCash;
-            parNewInvAmt = TmpInvAmt + parInvested;
-
-            if (TmpExists)
+            if (!TmpExists)
             {
+                TmpCash = TmpCash + parCash;
+                TmpInvAmt = TmpInvAmt + parInvested;
+                Mdl1.Ssql = "Insert into TblETFStocksPortfolio (Portfolio_Code, [Currency], [Cash],"
+                          + " Cash_In_USD, Investment_Amount) values ('" + parCode + "', '" + parCurrency + "', "
+                          + Db_Money(TmpCash) + ", 0, " + Db_Money(TmpInvAmt) + ")";
+            }
+            else if (TmpHeldIn == "" || TmpHeldIn == parCurrency)
+            {
+                TmpCash = TmpCash + parCash;
+                TmpInvAmt = TmpInvAmt + parInvested;
                 Mdl1.Ssql = "Update TblETFStocksPortfolio set"
-                          + " [Cash] = " + Db_Money(parNewCash) + ","
-                          + " Investment_Amount = " + Db_Money(parNewInvAmt)
+                          + " [Cash] = " + Db_Money(TmpCash) + ","
+                          + " Investment_Amount = " + Db_Money(TmpInvAmt)
+                          + " where Portfolio_Code = '" + parCode + "'";
+            }
+            else if (parCurrency == "USD")
+            {
+                TmpCashUSD = TmpCashUSD + parCash;
+                Mdl1.Ssql = "Update TblETFStocksPortfolio set"
+                          + " Cash_In_USD = " + Db_Money(TmpCashUSD)
                           + " where Portfolio_Code = '" + parCode + "'";
             }
             else
             {
-                Mdl1.Ssql = "Insert into TblETFStocksPortfolio (Portfolio_Code, [Currency], [Cash],"
-                          + " Investment_Amount) values ('" + parCode + "', '" + parCurrency + "', "
-                          + Db_Money(parNewCash) + ", " + Db_Money(parNewInvAmt) + ")";
+                parNote = Environment.NewLine + "Portfolio " + parCode + " is held in " + TmpHeldIn
+                        + "; a " + parCurrency + " sale leaves its cash unchanged.";
+                return false;
             }
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
+
+            parNote = Portfolio_Note(parCode, TmpCash, TmpCashUSD, TmpInvAmt);
             return true;
         }
 
@@ -1375,18 +1410,24 @@ namespace FinancialBalance
         }
 
         //Cash and Investment_Amount are single figures, so an amount in another currency cannot
-        //be added to them. Checked before anything is written - the same rule the Purchase page
-        //and ETF_Stocks_Investment apply.
+        //be added to them. USD is the exception: the portfolio keeps a second balance for it in
+        //Cash_In_USD, which is where a USD sale's proceeds go and where a USD purchase's cost
+        //came from. Everything else is still refused before anything is written.
         private bool Currency_Fits(string parCode, string parCurrency, decimal parAmount)
         {
             if (parAmount <= 0 || parCode == "")
             {
                 return true;
             }
+            if (parCurrency == "USD")
+            {
+                return true;
+            }
             string TmpHeldIn;
             decimal TmpCash;
+            decimal TmpCashUSD;
             decimal TmpInvAmt;
-            if (!Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpInvAmt))
+            if (!Portfolio_Exists(parCode, out TmpHeldIn, out TmpCash, out TmpCashUSD, out TmpInvAmt))
             {
                 return true;
             }
@@ -1397,15 +1438,17 @@ namespace FinancialBalance
             MessageBox.Show("Portfolio " + parCode + " is held in " + TmpHeldIn
                 + " but this sale is in " + parCurrency + "."
                 + Environment.NewLine + Environment.NewLine
-                + "Amounts in different currencies cannot be added together. Change the currency,"
-                + " or edit the portfolio first.", "Error Message");
+                + "Amounts in different currencies cannot be added together, and only USD has a"
+                + " balance of its own. Change the currency, or edit the portfolio first.", "Error Message");
             return false;
         }
 
-        private string Portfolio_Note(string parCode, decimal parCash, decimal parInvAmt)
+        private string Portfolio_Note(string parCode, decimal parCash, decimal parCashUSD,
+                                      decimal parInvAmt)
         {
             return Environment.NewLine + "Portfolio " + parCode + " : cash "
-                 + Mdl1.FormatAmt((double)parCash) + ", invested "
+                 + Mdl1.FormatAmt((double)parCash) + ", cash in USD "
+                 + Mdl1.FormatAmt((double)parCashUSD) + ", invested "
                  + Mdl1.FormatAmt((double)parInvAmt) + ".";
         }
 
@@ -1482,15 +1525,9 @@ namespace FinancialBalance
                 Apply_Sale_To_Lots(Get_Trans_Date(), TmpSaleId);
 
                 //the proceeds come in, the lots' real cost is released
-                string TmpExtra = "";
-                decimal TmpNewCash;
-                decimal TmpNewInv;
-                if (Move_Portfolio(CmbSellPortfolio.Text.Trim(), CmbCurrency.Text.Trim(),
-                                   TmpSellingTotal, -(decimal)TmpRealCost,
-                                   out TmpNewCash, out TmpNewInv))
-                {
-                    TmpExtra = Portfolio_Note(CmbSellPortfolio.Text.Trim(), TmpNewCash, TmpNewInv);
-                }
+                string TmpExtra;
+                Move_Portfolio(CmbSellPortfolio.Text.Trim(), CmbCurrency.Text.Trim(),
+                               TmpSellingTotal, -(decimal)TmpRealCost, out TmpExtra);
 
                 MessageBox.Show("Create successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
 
@@ -1533,6 +1570,7 @@ namespace FinancialBalance
                 string TmpCode = CmbSellPortfolio.Text.Trim();
                 string TmpCurrency = CmbCurrency.Text.Trim();
                 string TmpWasCode = (OrgSellPortfolioCode == null ? "" : OrgSellPortfolioCode.Trim());
+                string TmpWasCurrency = (OrgCurrency == null ? "" : OrgCurrency.Trim());
                 decimal TmpWasTotal = Read_Decimal(OrgSellingTotalAmount);
                 decimal TmpLotCost = Stored_Real_Cost(OrgSaleId);
 
@@ -1572,32 +1610,34 @@ namespace FinancialBalance
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
+                //Which balance a sale sits on is decided by its portfolio AND its currency, so both
+                //have to be unchanged for the difference to be the only thing that moves. Change
+                //either and the whole sale is taken off the balance it was on - under the currency it
+                //was STORED in, not the new one - and put on the one it now belongs to. Moving the
+                //difference across a change would leave the old balance still carrying figures that
+                //are no longer its own.
                 string TmpExtra = "";
-                decimal TmpNewCash;
-                decimal TmpNewInv;
-                if (TmpCode == TmpWasCode)
+                string TmpNote;
+                if (TmpCode == TmpWasCode && TmpCurrency == TmpWasCurrency)
                 {
                     //the usual case: the cash moves by the difference in proceeds
                     if (Move_Portfolio(TmpCode, TmpCurrency,
-                                       (TmpSellingTotal - TmpWasTotal) * TmpRows, 0,
-                                       out TmpNewCash, out TmpNewInv))
+                                       (TmpSellingTotal - TmpWasTotal) * TmpRows, 0, out TmpNote))
                     {
-                        TmpExtra = Portfolio_Note(TmpCode, TmpNewCash, TmpNewInv);
+                        TmpExtra = TmpNote;
                     }
                 }
                 else
                 {
-                    //The portfolio was changed as well, so the whole sale leaves one balance and
-                    //lands on the other - proceeds and released cost together.
-                    if (Move_Portfolio(TmpWasCode, TmpCurrency, -TmpWasTotal * TmpRows,
-                                       TmpLotCost * TmpRows, out TmpNewCash, out TmpNewInv))
+                    if (Move_Portfolio(TmpWasCode, TmpWasCurrency, -TmpWasTotal * TmpRows,
+                                       TmpLotCost * TmpRows, out TmpNote))
                     {
-                        TmpExtra = Portfolio_Note(TmpWasCode, TmpNewCash, TmpNewInv);
+                        TmpExtra = TmpNote;
                     }
                     if (Move_Portfolio(TmpCode, TmpCurrency, TmpSellingTotal * TmpRows,
-                                       -TmpLotCost * TmpRows, out TmpNewCash, out TmpNewInv))
+                                       -TmpLotCost * TmpRows, out TmpNote))
                     {
-                        TmpExtra = TmpExtra + Portfolio_Note(TmpCode, TmpNewCash, TmpNewInv);
+                        TmpExtra = TmpExtra + TmpNote;
                     }
                 }
 
@@ -1647,14 +1687,9 @@ namespace FinancialBalance
 
                 //the sale is undone, so the proceeds leave the cash and the lots' cost goes back
                 //into the invested amount - the lots themselves are held again
-                string TmpExtra = "";
-                decimal TmpNewCash;
-                decimal TmpNewInv;
-                if (Move_Portfolio(TmpWasCode, OrgCurrency, -TmpWasTotal * TmpRows,
-                                   TmpLotCost * TmpRows, out TmpNewCash, out TmpNewInv))
-                {
-                    TmpExtra = Portfolio_Note(TmpWasCode, TmpNewCash, TmpNewInv);
-                }
+                string TmpExtra;
+                Move_Portfolio(TmpWasCode, (OrgCurrency == null ? "" : OrgCurrency.Trim()),
+                               -TmpWasTotal * TmpRows, TmpLotCost * TmpRows, out TmpExtra);
 
                 MessageBox.Show("Delete successfully for " + OrgFullTicker + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
 

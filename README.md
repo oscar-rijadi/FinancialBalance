@@ -797,8 +797,8 @@ balance.
 
 The column was added with `ALTER TABLE TblETFStocksPortfolio ADD COLUMN Cash_In_USD DECIMAL(22,2)`,
 so it sits last, and existing rows were stamped `0`. A new row written by the Purchase or Investment
-page starts it at `0`; one written by the Sale page does not set it and lands as `Null`, which the pages
-that read it treat as `0`. It can be corrected by hand in the
+page starts it at `0`, and so does one written by the Sale page. Rows that predate all three can
+still hold `Null`, which the pages that read it treat as `0`. It can be corrected by hand in the
 [ETF/Stock Investment](#etfstock-investment-rules) edit panel.
 
 **ETF/Stock Sale.** The proceeds come into the cash, and the real cost of the lots the sale closed
@@ -812,8 +812,31 @@ Investment_Amount = Investment_Amount - <real cost of the lots closed>
 | Button | Movement |
 | --- | --- |
 | **Add** | cash `+ Selling_Total_Amount`, invested `-` the closed lots' `Real_Total_Cost_Base` |
-| **Update** | cash by the **difference in proceeds** only. Which lots a sale closed is fixed by its `Sale_Id` and an update does not re-settle them, so the released cost is the same before and after |
+| **Update** | cash by the **difference in proceeds** only, as long as neither the portfolio nor the currency changed. Which lots a sale closed is fixed by its `Sale_Id` and an update does not re-settle them, so the released cost is the same before and after |
 | **Delete** | the whole sale undone: cash `- stored Selling_Total_Amount`, invested `+` the closed lots' cost, which are held again |
+
+**Which cash the proceeds go into** depends on the sale's currency against the portfolio's own,
+the mirror of the purchase table above:
+
+| Sale currency | What moves |
+| --- | --- |
+| **Same as the portfolio** (or the portfolio has no currency, or no row yet) | `Cash` and `Investment_Amount`, as above |
+| **`USD`**, in a portfolio held in something else | `Cash_In_USD = Cash_In_USD + <proceeds>` only |
+| **Anything else** | refused before anything is written |
+
+**The two USD sides round-trip.** A `USD` purchase out of an AUD portfolio takes its cost out
+of `Cash_In_USD` and adds nothing to `Investment_Amount`, because that figure is in the
+portfolio's own currency and dollars cannot be summed into it. The sale puts the proceeds back
+into `Cash_In_USD` and releases nothing — there is nothing to release, since the purchase never
+put anything there. Buy for `200.00` and `Cash_In_USD` falls `200.00`; sell for `300.00` and it
+rises `300.00`, leaving the hundred of profit exactly where it belongs and `Cash` and
+`Investment_Amount` untouched throughout.
+
+> A sale in a **third** currency is still refused, because there is nowhere for it to go: the
+> portfolio keeps two balances, its own and a US dollar one. That is the one place the sale
+> page is stricter than the purchase page, which saves such a row and leaves the cash alone.
+> The difference is deliberate — a purchase that moves no cash is a lot you still hold and can
+> correct later, while a sale that moves no cash is proceeds that have vanished.
 
 The gap between the two sale figures is the sale's **real profit**, so net worth moves by exactly
 that. Sell 4 units for `36.00` out of lots that cost `25.00` real and the cash rises `36.00` while
@@ -848,12 +871,20 @@ back in, with the lot held again.
   `TblETFStocksPortfolioCode` and the balances in `TblETFStocksPortfolio`, so a purchase can name a
   code that has never had a balance. Updating nothing would lose the movement silently; this is
   what `ETF_Stocks_Investment` does with a movement against a new portfolio.
-- **A sale in a currency the portfolio is not held in is refused**, on both Add and Update,
-  before anything is written. `Cash` and `Investment_Amount` are single figures and amounts in
-  different currencies cannot be added together — the same rule `ETF_Stocks_Investment` applies.
-  Change the currency, or edit the portfolio first. **A purchase is not refused**: in `USD` it moves
-  `Cash_In_USD`, and in any other foreign currency it is saved without touching the balance — see
-  the table above.
+- **A sale in a currency the portfolio is not held in is refused unless it is `USD`**, on both
+  Add and Update, before anything is written. `Cash` and `Investment_Amount` are single figures
+  and amounts in different currencies cannot be added together — the same rule
+  `ETF_Stocks_Investment` applies. `USD` is the exception because the portfolio keeps a second
+  balance for it. For anything else, change the currency or edit the portfolio first.
+  **A purchase is not refused at all**: in `USD` it moves `Cash_In_USD`, and in any other
+  foreign currency it is saved without touching the balance.
+- **An Update that changes the portfolio *or the currency* moves the whole sale**, not the
+  difference — off the balance it was on, under the currency it was **stored** in, and onto
+  the one it now belongs to under the new one. Which balance a sale sits on is decided by both
+  together, so a sale switched from `AUD` to `USD` in the same portfolio moves its proceeds
+  from `Cash` to `Cash_In_USD` and puts the released cost back into `Investment_Amount` on the
+  way, exactly as the purchase page does. Moving only the difference across such a change would
+  leave the old balance carrying figures that are no longer its own.
 - **The success message says where the portfolio now stands** — cash, cash in USD and invested —
   so the movement is visible without going to another page.
 
