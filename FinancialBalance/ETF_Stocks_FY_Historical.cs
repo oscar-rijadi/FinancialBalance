@@ -457,19 +457,28 @@ namespace FinancialBalance
             Add_Money("Total Real Profit/Loss", parRealPL, TmpCurr, true);
             Add_Percent("Percentage Real Profit/Loss",
                         Percent_Of_Ending(parRealPL, parEndInv), true);
+
+            //What the year came to with the unrealised side counted in: what the holdings are worth
+            //over what they cost, plus what was actually banked. The two are not double counting -
+            //On Paper is the gain still sitting in the holdings, Real is the gain taken out of them.
+            double TmpEOFY = parOnPaperPL + parRealPL;
+            Add_Money("EOFY Profit/Loss Including On Paper", TmpEOFY, TmpCurr, true);
+            Add_Percent("Percentage EOFY Profit/Loss Including On Paper",
+                        Percent_Of_Ending(TmpEOFY, parEndInv), true);
         }
 
         private Label[] Agg_Caps()
         {
             return new Label[] { LblAgg1Cap, LblAgg2Cap, LblAgg3Cap, LblAgg4Cap, LblAgg5Cap,
                                  LblAgg6Cap, LblAgg7Cap, LblAgg8Cap, LblAgg9Cap, LblAgg10Cap,
-                                 LblAgg11Cap, LblAgg12Cap };
+                                 LblAgg11Cap, LblAgg12Cap, LblAgg13Cap, LblAgg14Cap };
         }
 
         private Label[] Agg_Vals()
         {
             return new Label[] { LblAgg1, LblAgg2, LblAgg3, LblAgg4, LblAgg5, LblAgg6,
-                                 LblAgg7, LblAgg8, LblAgg9, LblAgg10, LblAgg11, LblAgg12 };
+                                 LblAgg7, LblAgg8, LblAgg9, LblAgg10, LblAgg11, LblAgg12,
+                                 LblAgg13, LblAgg14 };
         }
 
         //The figures were asked for on the "All" view only.  Picking one portfolio puts them

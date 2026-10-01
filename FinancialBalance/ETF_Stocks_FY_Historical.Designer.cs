@@ -61,6 +61,10 @@
             this.LblAgg11 = new System.Windows.Forms.Label();
             this.LblAgg12Cap = new System.Windows.Forms.Label();
             this.LblAgg12 = new System.Windows.Forms.Label();
+            this.LblAgg13Cap = new System.Windows.Forms.Label();
+            this.LblAgg13 = new System.Windows.Forms.Label();
+            this.LblAgg14Cap = new System.Windows.Forms.Label();
+            this.LblAgg14 = new System.Windows.Forms.Label();
             this.CmdExcel = new System.Windows.Forms.Button();
             this.CmdDrive = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
@@ -172,7 +176,7 @@
             this.LblAgg1Cap.ForeColor = System.Drawing.Color.Black;
             this.LblAgg1Cap.Location = new System.Drawing.Point(19, 390);
             this.LblAgg1Cap.Name = "LblAgg1Cap";
-            this.LblAgg1Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg1Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg1Cap.TabIndex = 8;
             //
             // LblAgg1
@@ -180,7 +184,7 @@
             this.LblAgg1.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg1.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg1.Location = new System.Drawing.Point(335, 390);
+            this.LblAgg1.Location = new System.Drawing.Point(355, 390);
             this.LblAgg1.Name = "LblAgg1";
             this.LblAgg1.Size = new System.Drawing.Size(170, 20);
             this.LblAgg1.TabIndex = 9;
@@ -193,7 +197,7 @@
             this.LblAgg2Cap.ForeColor = System.Drawing.Color.Black;
             this.LblAgg2Cap.Location = new System.Drawing.Point(19, 414);
             this.LblAgg2Cap.Name = "LblAgg2Cap";
-            this.LblAgg2Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg2Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg2Cap.TabIndex = 10;
             //
             // LblAgg2
@@ -201,7 +205,7 @@
             this.LblAgg2.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg2.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg2.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg2.Location = new System.Drawing.Point(335, 414);
+            this.LblAgg2.Location = new System.Drawing.Point(355, 414);
             this.LblAgg2.Name = "LblAgg2";
             this.LblAgg2.Size = new System.Drawing.Size(170, 20);
             this.LblAgg2.TabIndex = 11;
@@ -214,7 +218,7 @@
             this.LblAgg3Cap.ForeColor = System.Drawing.Color.Black;
             this.LblAgg3Cap.Location = new System.Drawing.Point(19, 438);
             this.LblAgg3Cap.Name = "LblAgg3Cap";
-            this.LblAgg3Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg3Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg3Cap.TabIndex = 12;
             //
             // LblAgg3
@@ -222,7 +226,7 @@
             this.LblAgg3.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg3.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg3.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg3.Location = new System.Drawing.Point(335, 438);
+            this.LblAgg3.Location = new System.Drawing.Point(355, 438);
             this.LblAgg3.Name = "LblAgg3";
             this.LblAgg3.Size = new System.Drawing.Size(170, 20);
             this.LblAgg3.TabIndex = 13;
@@ -235,7 +239,7 @@
             this.LblAgg4Cap.ForeColor = System.Drawing.Color.Black;
             this.LblAgg4Cap.Location = new System.Drawing.Point(19, 462);
             this.LblAgg4Cap.Name = "LblAgg4Cap";
-            this.LblAgg4Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg4Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg4Cap.TabIndex = 14;
             //
             // LblAgg4
@@ -243,7 +247,7 @@
             this.LblAgg4.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg4.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg4.Location = new System.Drawing.Point(335, 462);
+            this.LblAgg4.Location = new System.Drawing.Point(355, 462);
             this.LblAgg4.Name = "LblAgg4";
             this.LblAgg4.Size = new System.Drawing.Size(170, 20);
             this.LblAgg4.TabIndex = 15;
@@ -256,7 +260,7 @@
             this.LblAgg5Cap.ForeColor = System.Drawing.Color.Black;
             this.LblAgg5Cap.Location = new System.Drawing.Point(19, 486);
             this.LblAgg5Cap.Name = "LblAgg5Cap";
-            this.LblAgg5Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg5Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg5Cap.TabIndex = 16;
             //
             // LblAgg5
@@ -264,7 +268,7 @@
             this.LblAgg5.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg5.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg5.Location = new System.Drawing.Point(335, 486);
+            this.LblAgg5.Location = new System.Drawing.Point(355, 486);
             this.LblAgg5.Name = "LblAgg5";
             this.LblAgg5.Size = new System.Drawing.Size(170, 20);
             this.LblAgg5.TabIndex = 17;
@@ -277,7 +281,7 @@
             this.LblAgg6Cap.ForeColor = System.Drawing.Color.Black;
             this.LblAgg6Cap.Location = new System.Drawing.Point(19, 510);
             this.LblAgg6Cap.Name = "LblAgg6Cap";
-            this.LblAgg6Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg6Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg6Cap.TabIndex = 18;
             //
             // LblAgg6
@@ -285,7 +289,7 @@
             this.LblAgg6.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg6.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg6.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg6.Location = new System.Drawing.Point(335, 510);
+            this.LblAgg6.Location = new System.Drawing.Point(355, 510);
             this.LblAgg6.Name = "LblAgg6";
             this.LblAgg6.Size = new System.Drawing.Size(170, 20);
             this.LblAgg6.TabIndex = 19;
@@ -296,9 +300,9 @@
             this.LblAgg7Cap.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg7Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg7Cap.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg7Cap.Location = new System.Drawing.Point(545, 390);
+            this.LblAgg7Cap.Location = new System.Drawing.Point(19, 534);
             this.LblAgg7Cap.Name = "LblAgg7Cap";
-            this.LblAgg7Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg7Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg7Cap.TabIndex = 20;
             //
             // LblAgg7
@@ -306,7 +310,7 @@
             this.LblAgg7.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg7.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg7.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg7.Location = new System.Drawing.Point(861, 390);
+            this.LblAgg7.Location = new System.Drawing.Point(355, 534);
             this.LblAgg7.Name = "LblAgg7";
             this.LblAgg7.Size = new System.Drawing.Size(170, 20);
             this.LblAgg7.TabIndex = 21;
@@ -317,9 +321,9 @@
             this.LblAgg8Cap.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg8Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg8Cap.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg8Cap.Location = new System.Drawing.Point(545, 414);
+            this.LblAgg8Cap.Location = new System.Drawing.Point(545, 390);
             this.LblAgg8Cap.Name = "LblAgg8Cap";
-            this.LblAgg8Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg8Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg8Cap.TabIndex = 22;
             //
             // LblAgg8
@@ -327,7 +331,7 @@
             this.LblAgg8.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg8.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg8.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg8.Location = new System.Drawing.Point(861, 414);
+            this.LblAgg8.Location = new System.Drawing.Point(881, 390);
             this.LblAgg8.Name = "LblAgg8";
             this.LblAgg8.Size = new System.Drawing.Size(170, 20);
             this.LblAgg8.TabIndex = 23;
@@ -338,9 +342,9 @@
             this.LblAgg9Cap.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg9Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg9Cap.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg9Cap.Location = new System.Drawing.Point(545, 438);
+            this.LblAgg9Cap.Location = new System.Drawing.Point(545, 414);
             this.LblAgg9Cap.Name = "LblAgg9Cap";
-            this.LblAgg9Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg9Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg9Cap.TabIndex = 24;
             //
             // LblAgg9
@@ -348,7 +352,7 @@
             this.LblAgg9.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg9.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg9.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg9.Location = new System.Drawing.Point(861, 438);
+            this.LblAgg9.Location = new System.Drawing.Point(881, 414);
             this.LblAgg9.Name = "LblAgg9";
             this.LblAgg9.Size = new System.Drawing.Size(170, 20);
             this.LblAgg9.TabIndex = 25;
@@ -359,9 +363,9 @@
             this.LblAgg10Cap.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg10Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg10Cap.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg10Cap.Location = new System.Drawing.Point(545, 462);
+            this.LblAgg10Cap.Location = new System.Drawing.Point(545, 438);
             this.LblAgg10Cap.Name = "LblAgg10Cap";
-            this.LblAgg10Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg10Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg10Cap.TabIndex = 26;
             //
             // LblAgg10
@@ -369,7 +373,7 @@
             this.LblAgg10.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg10.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg10.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg10.Location = new System.Drawing.Point(861, 462);
+            this.LblAgg10.Location = new System.Drawing.Point(881, 438);
             this.LblAgg10.Name = "LblAgg10";
             this.LblAgg10.Size = new System.Drawing.Size(170, 20);
             this.LblAgg10.TabIndex = 27;
@@ -380,9 +384,9 @@
             this.LblAgg11Cap.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg11Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg11Cap.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg11Cap.Location = new System.Drawing.Point(545, 486);
+            this.LblAgg11Cap.Location = new System.Drawing.Point(545, 462);
             this.LblAgg11Cap.Name = "LblAgg11Cap";
-            this.LblAgg11Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg11Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg11Cap.TabIndex = 28;
             //
             // LblAgg11
@@ -390,7 +394,7 @@
             this.LblAgg11.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg11.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg11.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg11.Location = new System.Drawing.Point(861, 486);
+            this.LblAgg11.Location = new System.Drawing.Point(881, 462);
             this.LblAgg11.Name = "LblAgg11";
             this.LblAgg11.Size = new System.Drawing.Size(170, 20);
             this.LblAgg11.TabIndex = 29;
@@ -401,9 +405,9 @@
             this.LblAgg12Cap.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg12Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg12Cap.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg12Cap.Location = new System.Drawing.Point(545, 510);
+            this.LblAgg12Cap.Location = new System.Drawing.Point(545, 486);
             this.LblAgg12Cap.Name = "LblAgg12Cap";
-            this.LblAgg12Cap.Size = new System.Drawing.Size(310, 20);
+            this.LblAgg12Cap.Size = new System.Drawing.Size(330, 20);
             this.LblAgg12Cap.TabIndex = 30;
             //
             // LblAgg12
@@ -411,17 +415,61 @@
             this.LblAgg12.BackColor = System.Drawing.Color.Transparent;
             this.LblAgg12.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblAgg12.ForeColor = System.Drawing.Color.Black;
-            this.LblAgg12.Location = new System.Drawing.Point(861, 510);
+            this.LblAgg12.Location = new System.Drawing.Point(881, 486);
             this.LblAgg12.Name = "LblAgg12";
             this.LblAgg12.Size = new System.Drawing.Size(170, 20);
             this.LblAgg12.TabIndex = 31;
             this.LblAgg12.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
+            // LblAgg13Cap
+            //
+            this.LblAgg13Cap.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg13Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg13Cap.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg13Cap.Location = new System.Drawing.Point(545, 510);
+            this.LblAgg13Cap.Name = "LblAgg13Cap";
+            this.LblAgg13Cap.Size = new System.Drawing.Size(330, 20);
+            this.LblAgg13Cap.TabIndex = 32;
+            //
+            // LblAgg13
+            //
+            this.LblAgg13.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg13.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg13.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg13.Location = new System.Drawing.Point(881, 510);
+            this.LblAgg13.Name = "LblAgg13";
+            this.LblAgg13.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.LblAgg13.Size = new System.Drawing.Size(170, 20);
+            this.LblAgg13.TabIndex = 33;
+            this.LblAgg13.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblAgg14Cap
+            //
+            this.LblAgg14Cap.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg14Cap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg14Cap.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg14Cap.Location = new System.Drawing.Point(545, 534);
+            this.LblAgg14Cap.Name = "LblAgg14Cap";
+            this.LblAgg14Cap.Size = new System.Drawing.Size(330, 20);
+            this.LblAgg14Cap.TabIndex = 34;
+            //
+            // LblAgg14
+            //
+            this.LblAgg14.BackColor = System.Drawing.Color.Transparent;
+            this.LblAgg14.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblAgg14.ForeColor = System.Drawing.Color.Black;
+            this.LblAgg14.Location = new System.Drawing.Point(881, 534);
+            this.LblAgg14.Name = "LblAgg14";
+            this.LblAgg14.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.LblAgg14.Size = new System.Drawing.Size(170, 20);
+            this.LblAgg14.TabIndex = 35;
+            this.LblAgg14.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
             // CmdExcel
             //
             this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
             this.CmdExcel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdExcel.Location = new System.Drawing.Point(834, 552);
+            this.CmdExcel.Location = new System.Drawing.Point(834, 572);
             this.CmdExcel.Name = "CmdExcel";
             this.CmdExcel.Size = new System.Drawing.Size(110, 30);
             this.CmdExcel.TabIndex = 40;
@@ -434,7 +482,7 @@
             this.CmdDrive.BackColor = System.Drawing.SystemColors.Control;
             this.CmdDrive.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDrive.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDrive.Location = new System.Drawing.Point(954, 552);
+            this.CmdDrive.Location = new System.Drawing.Point(954, 572);
             this.CmdDrive.Name = "CmdDrive";
             this.CmdDrive.Size = new System.Drawing.Size(170, 30);
             this.CmdDrive.TabIndex = 42;
@@ -446,7 +494,7 @@
             //
             this.CmdBack.BackColor = System.Drawing.SystemColors.Control;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmdBack.Location = new System.Drawing.Point(1134, 552);
+            this.CmdBack.Location = new System.Drawing.Point(1134, 572);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.Size = new System.Drawing.Size(110, 30);
             this.CmdBack.TabIndex = 41;
@@ -460,12 +508,16 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(1264, 620);
+            this.ClientSize = new System.Drawing.Size(1264, 640);
             this.ControlBox = false;
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.CmdDrive);
             this.Controls.Add(this.LblAgg12);
+            this.Controls.Add(this.LblAgg13Cap);
+            this.Controls.Add(this.LblAgg13);
+            this.Controls.Add(this.LblAgg14Cap);
+            this.Controls.Add(this.LblAgg14);
             this.Controls.Add(this.LblAgg12Cap);
             this.Controls.Add(this.LblAgg11);
             this.Controls.Add(this.LblAgg11Cap);
@@ -543,6 +595,10 @@
         public System.Windows.Forms.Label LblAgg11;
         public System.Windows.Forms.Label LblAgg12Cap;
         public System.Windows.Forms.Label LblAgg12;
+        public System.Windows.Forms.Label LblAgg13Cap;
+        public System.Windows.Forms.Label LblAgg13;
+        public System.Windows.Forms.Label LblAgg14Cap;
+        public System.Windows.Forms.Label LblAgg14;
         public System.Windows.Forms.Button CmdExcel;
         public System.Windows.Forms.Button CmdDrive;
         public System.Windows.Forms.Button CmdBack;

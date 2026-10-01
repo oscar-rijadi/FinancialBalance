@@ -237,7 +237,7 @@ flowchart LR
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
-| `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with twelve totals across the selection and an Excel export. |
+| `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with fourteen totals across the selection and an Excel export. |
 | `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads `TblETFStocks` and the diversification tables, and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads five ETF/stock tables and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Allocation` | Shown as **ETF/Stock Forecast Dividend Allocation**. Build a list of tickers and amounts, and see what that money would pay: each ticker's yield, its yearly distribution and its share of the whole, with the totals per year, per month and as one yield. Reads `TblETFStocks` and writes nothing. |
@@ -1711,7 +1711,7 @@ Gains, Real Profit/Loss and Percentage Real Profit/Loss. Rows are ordered by por
 
 #### The totals
 
-Twelve figures sit under the table, in two columns of six. **They appear only while Portfolio is
+Fourteen figures sit under the table, in two columns of seven. **They appear only while Portfolio is
 `All`** — choosing one portfolio puts them away rather than repeating that portfolio's own row
 back at the reader.
 
@@ -1729,9 +1729,27 @@ back at the reader.
 | Total Real Capital Gains | sum of `Real Capital Gains` | no |
 | Total Real Profit/Loss | sum of `Real Profit/Loss` | yes |
 | Percentage Real Profit/Loss | `Total Real Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 | yes |
+| EOFY Profit/Loss Including On Paper | `Total On Paper Profit/Loss` + `Total Real Profit/Loss` | yes |
+| Percentage EOFY Profit/Loss Including On Paper | `EOFY Profit/Loss Including On Paper` ÷ `Total Ending Investment` × 100, or 0 | yes |
 
-Every percentage divides by **Total Ending Investment**, including the two that measure real
+Every percentage divides by **Total Ending Investment**, including the ones that measure real
 rather than on-paper results, and each guards its own divide-by-zero.
+
+**The last two read the year whole.** Every other total on the page reports one side of it or
+the other: what the holdings are worth over what they cost, or what was actually banked.
+**EOFY Profit/Loss Including On Paper** adds the two together, so a year that gave back on
+paper what it made in the hand shows as the wash it was.
+
+> **The two sides are not the same money counted twice.** `On_Paper_Profit_Or_Loss` is the gain
+> still sitting inside holdings that have not been sold, measured at the year's closing prices.
+> `Real_Profit_Or_Loss` is what came out of the ones that were — distributions received, gains
+> realised on sale, less loan interest and tax. A holding leaves the first figure at the moment
+> it enters the second, so adding them is the whole year rather than any part of it twice.
+
+Its percentage follows the same rule as the others and divides by **Total Ending Investment**,
+which is what was carried through the year to earn both halves. With nothing invested there is
+nothing to measure the result against, so it reads `0.00 %` rather than an infinity — while the
+amount above it still shows whatever the year came to.
 
 Amounts carry a dollar sign only when the rows that fed the total all share one dollar currency
 (AUD or USD). A selection spanning AUD and USD totals to a number that is in neither, so it is
@@ -1745,7 +1763,7 @@ all has no currency to name, so its zeros are bare too.
 
 #### Generate Excel
 
-Writes what is on screen to a `.xlsx` — the filters, the note, the twelve totals (only when they
+Writes what is on screen to a `.xlsx` — the filters, the note, the fourteen totals (only when they
 are showing), then the table. The file is named:
 
 ```
