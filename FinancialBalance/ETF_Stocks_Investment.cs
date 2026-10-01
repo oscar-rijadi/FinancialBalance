@@ -197,7 +197,14 @@ namespace FinancialBalance
         private void Fill_Portfolio_Code()
         {
             CmbPortfolioCode.Items.Clear();
-            Mdl1.Ssql = "Select Portfolio_Code from TblETFStocksPortfolioCode order by Portfolio_Code";
+            //Main portfolios first here too, so the dropdown and the table above it read in the
+            //same order. This one needs no join: it is already reading the table Is_Main lives
+            //on, which is why it can say it plainly where the balance list has to join for it.
+            //
+            //It also changes what the page opens on, since the first entry is still the one
+            //selected: a main portfolio rather than whichever code happened to sort first.
+            Mdl1.Ssql = "Select Portfolio_Code from TblETFStocksPortfolioCode"
+                      + " order by IIf(Is_Main = True, 0, 1), Portfolio_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -433,7 +440,18 @@ namespace FinancialBalance
 
             gvPortfolio.Rows.Clear();
 
-            Mdl1.Ssql = "select Portfolio_Code, [Currency], [Cash], Cash_In_USD, Investment_Amount from TblETFStocksPortfolio order by Portfolio_Code";
+            //Main portfolios first, each group alphabetical within itself. Is_Main lives on
+            //TblETFStocksPortfolioCode rather than here, so the balances are joined to the codes
+            //just to sort by it - nothing is selected from the join, and Portfolio_Code is the
+            //setup table's key, so no row can be doubled by it. A code with no setup row at all
+            //sorts with the non-main ones, which is where an unrecognised one belongs.
+            //
+            //It has to be a join: Jet will not take a subquery inside IIf, so the In (select ...)
+            //form this application uses in its WHERE clauses is a syntax error in an ORDER BY.
+            Mdl1.Ssql = "select A.Portfolio_Code, A.[Currency], A.[Cash], A.Cash_In_USD, A.Investment_Amount"
+                      + " from TblETFStocksPortfolio A left join TblETFStocksPortfolioCode B"
+                      + " on B.Portfolio_Code = A.Portfolio_Code"
+                      + " order by IIf(B.Is_Main = True, 0, 1), A.Portfolio_Code";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())

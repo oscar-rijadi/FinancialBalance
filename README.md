@@ -222,7 +222,7 @@ flowchart LR
 | `ETF_Stocks_Purchase` | Add / update / delete ETF and stock **buys** for one date, including lots that came free and why. |
 | `ETF_Stocks_Sale` | Add / update / delete ETF and stock **sells** for one date. A sale is built against the purchase lots it draws from, which it then settles. |
 | `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
-| `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio. Every movement is kept; the portfolio's running `Cash` moves with it. `Cash`, `Cash in USD` and `Investment_Amount` can be corrected by hand. |
+| `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio, main portfolios listed first. Every movement is kept; the portfolio's running `Cash` moves with it. `Cash`, `Cash in USD` and `Investment_Amount` can be corrected by hand. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
 | `ETF_Stocks_Tax_Interest` | Shown as **ETF/Stock Tax Deductable Interest**. What the borrowing behind the portfolio cost, month by month, with a financial year filter, the total for whichever year is showing, what the deduction on it is worth, and what it therefore really cost. Add, update and delete, one figure per month. |
@@ -1237,14 +1237,43 @@ taken out, separate from what has been spent on securities. It writes two tables
 | Table | Holds |
 | --- | --- |
 | `TblETFStocksPortfolioInvestment` | Every movement, one row each, never amended. |
-| `TblETFStocksPortfolio` | One running row per portfolio code: its currency, `Cash`, `Investment_Amount` and `Cash_In_USD` (moved only by USD purchases — see [Both pages move the portfolio's balance](#both-pages-move-the-portfolios-balance)). |
+| `TblETFStocksPortfolio` | One running row per portfolio code: its currency, `Cash`, `Investment_Amount` and `Cash_In_USD` (moved by USD purchases and USD sales — see [Both pages move the portfolio's balance](#both-pages-move-the-portfolios-balance)). |
 
-The grid shows the running rows, with `Portfolio` resolved from `TblETFStocksPortfolioCode` by
-matching `Portfolio_Code`. The columns are **Portfolio Code, Portfolio, Currency, Cash, Cash in USD
-and Investment Amount**. `Cash` and `Investment_Amount` follow the same rule as everywhere else —
-a `$` for AUD and USD, bare otherwise, and a negative reads `-$1,234.56`. **Cash in USD** is always
-US dollars whatever the portfolio is held in, so it always carries a `$`; a `Null` reads `$0.00`. A
-code with no matching description shows `-` rather than a blank.
+The grid shows the running rows **main portfolios first**, each group alphabetical within
+itself, with `Portfolio` resolved from `TblETFStocksPortfolioCode` by matching
+`Portfolio_Code`. The columns are **Portfolio Code, Portfolio, Currency, Cash, Cash in USD
+and Investment Amount**. `Cash` and `Investment_Amount` follow the same rule as everywhere
+else — a `$` for AUD and USD, bare otherwise, and a negative reads `-$1,234.56`.
+**Cash in USD** is always US dollars whatever the portfolio is held in, so it always
+carries a `$`; a `Null` reads `$0.00`. A code with no matching description shows `-`
+rather than a blank.
+
+`Is_Main` lives on `TblETFStocksPortfolioCode` rather than on the balances, so the two are
+**joined purely to sort by it** — nothing is selected from the join, and `Portfolio_Code` is
+the setup table's key, so no row can be doubled by it. A balance whose code was never set up
+has no `Is_Main` to read and sorts with the non-main ones, which is where an unrecognised code
+belongs.
+
+The **Portfolio Code dropdown** in the entry area below reads the same way, so the two halves of
+the page agree on what comes first. It needs no join for it: it is already reading
+`TblETFStocksPortfolioCode`, the table `Is_Main` lives on, so it can say
+`order by IIf(Is_Main = True, 0, 1), Portfolio_Code` plainly where the balance list has to join
+to reach the same column.
+
+> **The table has to join; the dropdown does not.** Everywhere else this application asks
+> whether a code is main it writes `Portfolio_Code In (select Portfolio_Code from
+> TblETFStocksPortfolioCode where Is_Main = True)`, and that form is fine in a `WHERE` clause.
+> Inside an `IIf`, in an `ORDER BY`, Jet rejects it outright — *Syntax error in query
+> expression* — because it will not take a subquery as an `IIf` argument. So the balance list,
+> which reads `TblETFStocksPortfolio`, joins to reach `Is_Main` and sorts on
+> `IIf(B.Is_Main = True, 0, 1)`. The dropdown reads the code table directly and needs none of
+> that. The same sort, two different costs, decided by which table is already open.
+
+> **It also changes what the page opens on.** The first entry is still the one selected, and the
+> first entry is now a main portfolio rather than whichever code happened to sort first
+> alphabetically — `JB` instead of `AB` on the live data. Adding a movement is far more often
+> about a main portfolio than a dormant one, so this is the better default, but it is a change
+> in what a blind Add would have written.
 
 Adding a movement takes a date, a portfolio code, a type, a currency and an amount. The chosen
 code's `Description` is shown beside the dropdown, since a five-character code on its own is easy
@@ -1258,7 +1287,7 @@ appended to `TblETFStocksPortfolioInvestment`, and then:
   `Cash_In_USD` and `Investment_Amount` both set to `0`.
 
 > `Investment_Amount` and `Cash_In_USD` are **not** touched by adding a movement. They only change
-> through the edit panel (and, for `Cash_In_USD`, a USD purchase — see
+> through the edit panel (and, for `Cash_In_USD`, a USD purchase or sale — see
 > [Both pages move the portfolio's balance](#both-pages-move-the-portfolios-balance)). Paying cash in
 > does not by itself mean it has been invested.
 
