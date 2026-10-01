@@ -831,7 +831,14 @@ namespace FinancialBalance
 
         //Last year's closing position becomes this year's opening one.  The preceding year is
         //the one whose End_Date falls latest before this year starts.
-        private double Previous_Ending(string parYear, string parCode, string parStart)
+        //
+        //That position is Ending Investment *plus* the distributions that year put back into
+        //holdings.  Reinvested income bought units, so it is invested money from the moment it
+        //was paid - but it never passed through the portfolio as a deposit, so Investment never
+        //counted it and Ending Investment does not carry it.  Opening on Ending Investment alone
+        //therefore started each year short by every dollar the one before it had reinvested, and
+        //the shortfall compounded: the understated close became the next year's understated open.
+        private double Previous_Closing(string parYear, string parCode, string parStart)
         {
             string TmpPrevYear = "";
             Mdl1.Ssql = "select top 1 [Name] from TblFinancialYear where [End_Date] < '" + parStart + "'"
@@ -846,14 +853,19 @@ namespace FinancialBalance
             if (TmpPrevYear == "") { return 0; }
 
             double Result = 0;
-            Mdl1.Ssql = "select [Ending_Investment] from TblETFStocksFinancialYear"
+            Mdl1.Ssql = "select [Ending_Investment], [Total_DistributionDividend_Reinvested]"
+                      + " from TblETFStocksFinancialYear"
                       + " where [Financial_Year] = '" + TmpPrevYear + "'"
                       + " and [Portfolio_Code] = '" + parCode + "'";
             cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                Result = Read_Double(reader["Ending_Investment"]);
+                //Both come off the one row, so they are in the one currency and can be added
+                //without asking what that currency is.  A row written before the reinvested
+                //column existed holds Null there, which Read_Double answers as nothing.
+                Result = Read_Double(reader["Ending_Investment"])
+                       + Read_Double(reader["Total_DistributionDividend_Reinvested"]);
             }
             reader.Close();
             return Result;
@@ -1097,7 +1109,7 @@ namespace FinancialBalance
                 }
                 else
                 {
-                    Set_Box(txtPrevInv, Previous_Ending(TmpYear, TmpCode, TmpStart));
+                    Set_Box(txtPrevInv, Previous_Closing(TmpYear, TmpCode, TmpStart));
                     //Amount is always stored positive, with the direction in Investment_Type,
                     //so the two signs have to be summed apart and subtracted - adding the
                     //column outright would count a withdrawal as money going in.

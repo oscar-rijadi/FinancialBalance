@@ -669,9 +669,10 @@ A year whose `End_Date` falls before its `Start_Date` is rejected.
 
 `TblETFStocksFinancialYear` holds one row per financial year per portfolio code, carrying that
 year's opening and closing investment, what was sold, the on-paper and realised results,
-distribution totals, capital gains, loan interest and tax. **No screen reads or writes either table
-yet** beyond Financial Year Setup maintaining the years themselves — both stand ready for whatever
-is built on them.
+distribution totals, capital gains, loan interest and tax.
+[Financial year reconciliation](#financial-year-reconciliation) writes it,
+[Financial year historical](#financial-year-historical) reads it back, and Financial Year Setup
+maintains the years themselves.
 
 ### ETF/stock purchase and sale rules
 
@@ -1576,7 +1577,7 @@ database, all of them still editable afterwards:
 
 | Field | Default |
 | --- | --- |
-| `Previous_Investment` | The preceding year's `Ending_Investment` for the same code — the year whose `End_Date` falls latest before this one starts. `0` when there is none. |
+| `Previous_Investment` | The preceding year's **closing position** for the same code: its `Ending_Investment` **plus** its `Total_DistributionDividend_Reinvested` — from the year whose `End_Date` falls latest before this one starts. `0` when there is none — see below. |
 | `Investment` | Money **in less money out less what is still cash**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash` — see below. |
 | `Sold_Amount` | `SUM(Real_Total_Cost_Base)` from sold purchases inside the year. |
 | `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
@@ -1584,6 +1585,27 @@ database, all of them still editable afterwards:
 | `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year, **converted into the entry's Currency** — see below. |
 | `Capital_Gains_On_Paper`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
 | `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
+
+**Last year's reinvested distributions are added in.** Reinvested income bought units, so it is
+invested money from the moment it was paid — but it never passed through the portfolio as a
+deposit, so `Investment` never counted it and `Ending_Investment` does not carry it. The year
+therefore has to open on the two together:
+
+```
+Previous_Investment = last year's Ending_Investment + last year's Distribution/Dividend Reinvested
+```
+
+Opening on `Ending_Investment` alone started every year short by whatever the one before it had
+reinvested, and the shortfall **compounded**: the understated close became the next year's
+understated open, and the gap grew with each year that reinvested anything. A year that
+reinvested nothing opens exactly where it used to, so nothing already reconciled changes
+unless it had reinvested distributions to begin with.
+
+> Both figures come off the **one stored row**, so they are in the one currency and can be added
+> without asking what that currency is. A row written before the reinvested column existed holds
+> `Null` there, which counts as nothing rather than breaking the sum. And the default is only a
+> default — it stays editable like every other box, and a row loaded from the table still shows
+> the `Previous_Investment` that was **stored** with it rather than one worked out afresh.
 
 **The portfolio's `Cash` is subtracted.** Money paid in is not all of it invested: whatever is
 still sitting as cash has not bought anything, and this figure is meant to be what actually went
@@ -1729,7 +1751,7 @@ back at the reader.
 | Total Real Capital Gains | sum of `Real Capital Gains` | no |
 | Total Real Profit/Loss | sum of `Real Profit/Loss` | yes |
 | Percentage Real Profit/Loss | `Total Real Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 | yes |
-| EOFY Profit/Loss Including On Paper | `Total On Paper Profit/Loss` + `Total Real Profit/Loss` | yes |
+| EOFY Profit/Loss Including On Paper | `Total On Paper Profit/Loss` + `Total Real Profit/Loss` - `Total Distribution/Dividend Reinvested` — see below | yes |
 | Percentage EOFY Profit/Loss Including On Paper | `EOFY Profit/Loss Including On Paper` ÷ `Total Ending Investment` × 100, or 0 | yes |
 
 Every percentage divides by **Total Ending Investment**, including the ones that measure real
@@ -1737,14 +1759,33 @@ rather than on-paper results, and each guards its own divide-by-zero.
 
 **The last two read the year whole.** Every other total on the page reports one side of it or
 the other: what the holdings are worth over what they cost, or what was actually banked.
-**EOFY Profit/Loss Including On Paper** adds the two together, so a year that gave back on
-paper what it made in the hand shows as the wash it was.
+**EOFY Profit/Loss Including On Paper** brings the two together, so a year that gave back on
+paper what it made in the hand shows as the wash it was:
 
-> **The two sides are not the same money counted twice.** `On_Paper_Profit_Or_Loss` is the gain
-> still sitting inside holdings that have not been sold, measured at the year's closing prices.
-> `Real_Profit_Or_Loss` is what came out of the ones that were — distributions received, gains
-> realised on sale, less loan interest and tax. A holding leaves the first figure at the moment
-> it enters the second, so adding them is the whole year rather than any part of it twice.
+```
+EOFY = Total On Paper Profit/Loss
+     + Total Real Profit/Loss
+     - Total Distribution/Dividend Reinvested
+```
+
+> **Why the reinvested distributions come back off.** As a rule the two sides are not the same
+> money twice: `On_Paper_Profit_Or_Loss` is the gain still sitting inside holdings that have not
+> been sold, measured at the year's closing prices, and `Real_Profit_Or_Loss` is what came out of
+> the ones that were — distributions received, gains realised on sale, less loan interest and
+> tax. A holding leaves the first figure at the moment it enters the second.
+>
+> **Reinvested distributions are the exception.** They are inside `Real_Profit_Or_Loss` already,
+> as income received. They are also inside `On_Paper_Profit_Or_Loss`, because the units they
+> bought are valued in `On_Paper_Ending_Value` while their cost never reached
+> `Ending_Investment` — reinvestment is not a deposit, so `Investment` never saw it. Adding the
+> two sides outright would count every reinvested dollar as income **and** as unrealised gain;
+> taking it off once leaves it counted once.
+
+A year that reinvested nothing is therefore the plain sum of the two sides, exactly as it would
+have read without the subtraction, and a row written before the reinvested column existed holds
+`Null` there, which counts as nothing rather than breaking the sum. A year whose reinvested
+total is larger than what the two sides made between them comes out **negative**, which is the
+answer rather than a fault in it.
 
 Its percentage follows the same rule as the others and divides by **Total Ending Investment**,
 which is what was carried through the year to earn both halves. With nothing invested there is

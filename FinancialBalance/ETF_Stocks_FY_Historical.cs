@@ -459,9 +459,16 @@ namespace FinancialBalance
                         Percent_Of_Ending(parRealPL, parEndInv), true);
 
             //What the year came to with the unrealised side counted in: what the holdings are worth
-            //over what they cost, plus what was actually banked. The two are not double counting -
-            //On Paper is the gain still sitting in the holdings, Real is the gain taken out of them.
-            double TmpEOFY = parOnPaperPL + parRealPL;
+            //over what they cost, plus what was actually banked, less what was banked and put
+            //straight back into holdings.
+            //
+            //That last subtraction is what keeps the reinvested money from being counted twice.
+            //It is inside Real Profit/Loss already, as distribution income received.  It is also
+            //inside On Paper Profit/Loss, because the units it bought are valued in On Paper Ending
+            //Value while their cost never reached Ending Investment - reinvestment is not a deposit,
+            //so Investment never saw it.  Adding the two sides outright would count every reinvested
+            //dollar as income and as unrealised gain both; taking it off once leaves it counted once.
+            double TmpEOFY = parOnPaperPL + parRealPL - parDDYes;
             Add_Money("EOFY Profit/Loss Including On Paper", TmpEOFY, TmpCurr, true);
             Add_Percent("Percentage EOFY Profit/Loss Including On Paper",
                         Percent_Of_Ending(TmpEOFY, parEndInv), true);
