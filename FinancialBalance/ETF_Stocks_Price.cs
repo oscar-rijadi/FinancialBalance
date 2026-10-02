@@ -227,15 +227,13 @@ namespace FinancialBalance
         }
 
         //Any ticker that is set up can be priced, so the button needs a ticker chosen and
-        //nothing else.  It used to be gated on In_YahooFinance, which made sense while Yahoo
-        //was the only source: a holding Yahoo did not carry could not be priced at all, and a
-        //disabled button said so before the attempt.  The ASX prices its own listings now and
-        //Yahoo the rest, between them covering everything here, so the flag has nothing left to
-        //say on this page.  A ticker neither source carries still fails, with a message naming
-        //both - which is a better answer than a greyed button, because it says what was tried.
-        //
-        //The flag itself stays where it is used: ETF/Stock Setup still reads it to decide which
-        //tickers to fetch yields and expense ratios for, and those do come from Yahoo alone.
+        //nothing else.  It used to be gated on an In Yahoo Finance flag, which made sense while
+        //Yahoo was the only source: a holding Yahoo did not carry could not be priced at all,
+        //and a disabled button said so before the attempt.  The ASX prices its own listings now
+        //and Yahoo the rest, between them covering everything here, so the flag had nothing left
+        //to say and has since been dropped from TblETFStocks altogether.  A ticker neither
+        //source carries still fails, with a message naming both - which is a better answer than
+        //a greyed button, because it says what was tried.
         private void Apply_Ticker_Rules()
         {
             string Ticker = CmbFullTicker.Text.Trim();

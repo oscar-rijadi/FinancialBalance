@@ -27,7 +27,6 @@ namespace FinancialBalance
         {
             Filling = true;
             Mdl1.Fill_ETF_Stocks_Exchange_Suffix(CmbExchangeSuffix);
-            Mdl1.Fill_Yes_No(CmbInYahooFinance);
             Fill_Interval();
             Filling = false;
 
@@ -368,14 +367,6 @@ namespace FinancialBalance
                 MessageBox.Show("Ticker cannot be empty !", "Error Message");
                 return;
             }
-            //the same gate the price page puts on its sync, read off the form rather than
-            //the table so it also answers for a ticker not saved yet
-            if (CmbInYahooFinance.Text.Trim() != "Y")
-            {
-                MessageBox.Show(TmpTicker + " is not flagged as In Yahoo Finance.", "Error Message");
-                return;
-            }
-
             Cursor.Current = Cursors.WaitCursor;
             Buttons(false);
             try
@@ -437,9 +428,10 @@ namespace FinancialBalance
         //a whole list cannot, so these are saved as they come back - the same bargain
         //Get All Latest Currency makes on Currency Rate Setup.
         //
-        //A ticker that is not in Yahoo Finance is not an error here, it is simply not asked
-        //about: In_YahooFinance is what the list is drawn from, which is the table-side form of
-        //the gate the one-ticker button puts on the dropdown.
+        //Every ticker that is set up is asked about.  The list used to be narrowed by an
+        //In_YahooFinance flag, which is gone from the table: a ticker Yahoo does not carry is
+        //reported as one it could not answer for rather than left silently out of the run,
+        //which is the more honest of the two and costs one request to find out.
         private void CmdGetAllYield_Click(object sender, EventArgs e)
         {
             List<string> Tickers = new List<string>();
@@ -451,8 +443,7 @@ namespace FinancialBalance
                 //the whole list is read and the reader closed before any of it is fetched or
                 //written.  Jet will not carry a second command on this connection while a reader
                 //is open on it, and the updates below go down the same one.
-                Mdl1.Ssql = "select Full_Ticker from TblETFStocks where In_YahooFinance = True"
-                          + " order by Full_Ticker";
+                Mdl1.Ssql = "select Full_Ticker from TblETFStocks order by Full_Ticker";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -473,7 +464,7 @@ namespace FinancialBalance
 
             if (Tickers.Count == 0)
             {
-                MessageBox.Show("No ETF or stock is flagged as In Yahoo Finance.", "Error Message");
+                MessageBox.Show("No ETF or stock is set up.", "Error Message");
                 return;
             }
 
@@ -737,11 +728,12 @@ namespace FinancialBalance
         //Every ticker in one pass, saved as each comes back - the bargain Get All Dividend
         //Yield makes, for the same reason: a whole list cannot be looked over first.
         //
-        //Where a ticker is asked depends on where it trades.  One on the ASX is asked of the
-        //ASX, whatever its In Yahoo Finance flag says, since Yahoo is not where its fee comes
-        //from.  Anything else is asked of Yahoo, so it has to be flagged In Yahoo Finance; one
-        //that is neither has nowhere to be asked and is left out of the run, the way the
-        //yield button leaves out a ticker Yahoo does not carry.
+        //Where a ticker is asked depends on where it trades, and on nothing else: one on the
+        //ASX is asked of the ASX, since Yahoo is not where its fee comes from, and anything
+        //else is asked of Yahoo.  That used to need an In_YahooFinance flag to decide the
+        //second half, and a ticker with neither the suffix nor the flag was dropped from the
+        //run; with the flag gone from the table the suffix decides it on its own and nothing
+        //is dropped.
         private void CmdGetAllExpenseRatio_Click(object sender, EventArgs e)
         {
             List<string> Tickers = new List<string>();
@@ -753,7 +745,7 @@ namespace FinancialBalance
             {
                 //read whole and closed before anything is fetched or written, for the same
                 //reason as the yield run: the updates go down this same connection
-                Mdl1.Ssql = "select Ticker, Exchange_Suffix, Full_Ticker, In_YahooFinance"
+                Mdl1.Ssql = "select Ticker, Exchange_Suffix, Full_Ticker"
                           + " from TblETFStocks order by Full_Ticker";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
@@ -764,14 +756,10 @@ namespace FinancialBalance
                     {
                         continue;
                     }
+                    Tickers.Add(TmpTicker);
                     if (reader["Exchange_Suffix"].ToString().Trim() == "AX")
                     {
-                        Tickers.Add(TmpTicker);
                         AsxCodes[TmpTicker] = reader["Ticker"].ToString().Trim();
-                    }
-                    else if (reader["In_YahooFinance"].ToString().Trim() == "True")
-                    {
-                        Tickers.Add(TmpTicker);
                     }
                 }
                 reader.Close();
@@ -784,7 +772,7 @@ namespace FinancialBalance
 
             if (Tickers.Count == 0)
             {
-                MessageBox.Show("No ETF or stock is on the ASX or flagged as In Yahoo Finance.", "Error Message");
+                MessageBox.Show("No ETF or stock is set up.", "Error Message");
                 return;
             }
 
@@ -883,35 +871,31 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvETFStocks.Columns.Clear();
-            gvETFStocks.ColumnCount = 7;
+            gvETFStocks.ColumnCount = 6;
             gvETFStocks.Columns[0].Name = "Ticker";
-            gvETFStocks.Columns[0].FillWeight = 12;
+            gvETFStocks.Columns[0].FillWeight = 14;
             gvETFStocks.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvETFStocks.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvETFStocks.Columns[1].Name = "Exchange Suffix";
-            gvETFStocks.Columns[1].FillWeight = 14;
+            gvETFStocks.Columns[1].FillWeight = 17;
             gvETFStocks.Columns[1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             gvETFStocks.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             gvETFStocks.Columns[2].Name = "Full Ticker";
-            gvETFStocks.Columns[2].FillWeight = 16;
+            gvETFStocks.Columns[2].FillWeight = 19;
             gvETFStocks.Columns[2].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvETFStocks.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            gvETFStocks.Columns[3].Name = "In Yahoo Finance";
-            gvETFStocks.Columns[3].FillWeight = 16;
-            gvETFStocks.Columns[3].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvETFStocks.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvETFStocks.Columns[4].Name = "Yield";
-            gvETFStocks.Columns[4].FillWeight = 13;
-            gvETFStocks.Columns[4].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvETFStocks.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvETFStocks.Columns[5].Name = "Interval";
-            gvETFStocks.Columns[5].FillWeight = 14;
-            gvETFStocks.Columns[5].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvETFStocks.Columns[5].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            gvETFStocks.Columns[6].Name = "Expense Ratio";
-            gvETFStocks.Columns[6].FillWeight = 15;
-            gvETFStocks.Columns[6].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvETFStocks.Columns[6].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvETFStocks.Columns[3].Name = "Yield";
+            gvETFStocks.Columns[3].FillWeight = 15;
+            gvETFStocks.Columns[3].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvETFStocks.Columns[3].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvETFStocks.Columns[4].Name = "Interval";
+            gvETFStocks.Columns[4].FillWeight = 17;
+            gvETFStocks.Columns[4].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvETFStocks.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            gvETFStocks.Columns[5].Name = "Expense Ratio";
+            gvETFStocks.Columns[5].FillWeight = 18;
+            gvETFStocks.Columns[5].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvETFStocks.Columns[5].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
 
         private void Get_Data()
@@ -921,9 +905,8 @@ namespace FinancialBalance
             Clear_Grid();
 
             string[] row;
-            string strInYahooFinance;
 
-            Mdl1.Ssql = "select Ticker, Exchange_Suffix, Full_Ticker, In_YahooFinance,"
+            Mdl1.Ssql = "select Ticker, Exchange_Suffix, Full_Ticker,"
                       + " Distribution_Dividend_Yield, Distribution_Dividend_Interval, Expense_Ratio"
                       + " from TblETFStocks order by Full_Ticker";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
@@ -932,18 +915,9 @@ namespace FinancialBalance
             {
                 while (reader.Read())
                 {
-                    if (reader["In_YahooFinance"].ToString().Trim() == "True")
-                    {
-                        strInYahooFinance = "Y";
-                    }
-                    else
-                    {
-                        strInYahooFinance = "N";
-                    }
                     row = new string[] { reader["Ticker"].ToString().Trim(),
                                          reader["Exchange_Suffix"].ToString().Trim(),
                                          reader["Full_Ticker"].ToString().Trim(),
-                                         strInYahooFinance,
                                          Percent(Read_Double(reader["Distribution_Dividend_Yield"])),
                                          reader["Distribution_Dividend_Interval"].ToString().Trim(),
                                          Percent(Read_Double(reader["Expense_Ratio"])) };
@@ -972,15 +946,14 @@ namespace FinancialBalance
             Filling = true;
             Ticker.Text = gvETFStocks.CurrentRow.Cells[0].Value.ToString().Trim();
             CmbExchangeSuffix.Text = gvETFStocks.CurrentRow.Cells[1].Value.ToString().Trim();
-            CmbInYahooFinance.Text = gvETFStocks.CurrentRow.Cells[3].Value.ToString().Trim();
             //the grid carries the yield and the expense ratio dressed with a per-cent sign; the
             //boxes hold a bare figure, since that is what may be typed back into them
-            txtYield.Text = Read_Double(gvETFStocks.CurrentRow.Cells[4].Value.ToString()
+            txtYield.Text = Read_Double(gvETFStocks.CurrentRow.Cells[3].Value.ToString()
                                 .Replace("%", "").Replace(",", "").Trim())
                             .ToString("0.00", CultureInfo.InvariantCulture);
-            CmbInterval.Text = (gvETFStocks.CurrentRow.Cells[5].Value == null
-                                ? "" : gvETFStocks.CurrentRow.Cells[5].Value.ToString().Trim());
-            txtExpenseRatio.Text = Read_Double(gvETFStocks.CurrentRow.Cells[6].Value.ToString()
+            CmbInterval.Text = (gvETFStocks.CurrentRow.Cells[4].Value == null
+                                ? "" : gvETFStocks.CurrentRow.Cells[4].Value.ToString().Trim());
+            txtExpenseRatio.Text = Read_Double(gvETFStocks.CurrentRow.Cells[5].Value.ToString()
                                        .Replace("%", "").Replace(",", "").Trim())
                                    .ToString("0.00", CultureInfo.InvariantCulture);
             Filling = false;
@@ -993,7 +966,6 @@ namespace FinancialBalance
             try
             {
                 bool FlagRecNotExist;
-                string strInYahooFinance;
 
                 if (Ticker.Text.Trim() == "")
                 {
@@ -1008,15 +980,6 @@ namespace FinancialBalance
                 }
 
                 Calculate_Full_Ticker();
-
-                if (CmbInYahooFinance.Text.Trim() == "Y")
-                {
-                    strInYahooFinance = "1";
-                }
-                else
-                {
-                    strInYahooFinance = "0";
-                }
 
                 Mdl1.Ssql = "select * from TblETFStocks where Full_Ticker = '" + Full_Ticker.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
@@ -1034,10 +997,10 @@ namespace FinancialBalance
                 if (FlagRecNotExist)
                 {
                     Mdl1.Ssql = "Insert into TblETFStocks (Ticker, Exchange_Suffix, Full_Ticker,"
-                              + " In_YahooFinance, Distribution_Dividend_Yield,"
+                              + " Distribution_Dividend_Yield,"
                               + " Distribution_Dividend_Interval, Expense_Ratio) values ('"
                               + Ticker.Text.Trim() + "', '" + CmbExchangeSuffix.Text.Trim() + "', '"
-                              + Full_Ticker.Text.Trim() + "', " + strInYahooFinance + ", "
+                              + Full_Ticker.Text.Trim() + "', "
                               + Read_Box(txtYield).ToString("0.00", CultureInfo.InvariantCulture) + ", '"
                               + CmbInterval.Text.Trim().Replace("'", "''") + "', "
                               + Read_Box(txtExpenseRatio).ToString("0.00", CultureInfo.InvariantCulture) + ")";
@@ -1046,8 +1009,7 @@ namespace FinancialBalance
                 {
                     Mdl1.Ssql = "Update TblETFStocks set Ticker = '" + Ticker.Text.Trim()
                               + "', Exchange_Suffix = '" + CmbExchangeSuffix.Text.Trim()
-                              + "', In_YahooFinance = " + strInYahooFinance
-                              + ", Distribution_Dividend_Yield = "
+                              + "', Distribution_Dividend_Yield = "
                               + Read_Box(txtYield).ToString("0.00", CultureInfo.InvariantCulture)
                               + ", Distribution_Dividend_Interval = '" + CmbInterval.Text.Trim().Replace("'", "''")
                               + "', Expense_Ratio = "

@@ -61,7 +61,6 @@
             this.Ticker = new System.Windows.Forms.TextBox();
             this.CmbExchangeSuffix = new System.Windows.Forms.ComboBox();
             this.Full_Ticker = new System.Windows.Forms.TextBox();
-            this.CmbInYahooFinance = new System.Windows.Forms.ComboBox();
             this.Label5 = new System.Windows.Forms.Label();
             this.txtYield = new System.Windows.Forms.TextBox();
             this.Label6 = new System.Windows.Forms.Label();
@@ -74,7 +73,6 @@
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
-            this.Label4 = new System.Windows.Forms.Label();
             this.gvETFStocks = new System.Windows.Forms.DataGridView();
             this.MainMenu1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvETFStocks)).BeginInit();
@@ -87,7 +85,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(484, 496);
+            this.CmdBack.Location = new System.Drawing.Point(484, 470);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -315,7 +313,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(396, 496);
+            this.CmdDel.Location = new System.Drawing.Point(396, 470);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -329,7 +327,7 @@
             this.Label5.BackColor = System.Drawing.Color.Transparent;
             this.Label5.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label5.ForeColor = System.Drawing.Color.Black;
-            this.Label5.Location = new System.Drawing.Point(16, 380);
+            this.Label5.Location = new System.Drawing.Point(16, 354);
             this.Label5.Name = "Label5";
             this.Label5.Size = new System.Drawing.Size(200, 20);
             this.Label5.TabIndex = 24;
@@ -338,7 +336,7 @@
             // txtYield
             // 
             this.txtYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtYield.Location = new System.Drawing.Point(224, 378);
+            this.txtYield.Location = new System.Drawing.Point(224, 352);
             this.txtYield.MaxLength = 10;
             this.txtYield.Name = "txtYield";
             this.txtYield.Size = new System.Drawing.Size(140, 20);
@@ -351,7 +349,7 @@
             this.Label6.BackColor = System.Drawing.Color.Transparent;
             this.Label6.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label6.ForeColor = System.Drawing.Color.Black;
-            this.Label6.Location = new System.Drawing.Point(16, 406);
+            this.Label6.Location = new System.Drawing.Point(16, 380);
             this.Label6.Name = "Label6";
             this.Label6.Size = new System.Drawing.Size(200, 20);
             this.Label6.TabIndex = 25;
@@ -362,7 +360,7 @@
             this.CmbInterval.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.CmbInterval.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmbInterval.FormattingEnabled = true;
-            this.CmbInterval.Location = new System.Drawing.Point(224, 404);
+            this.CmbInterval.Location = new System.Drawing.Point(224, 378);
             this.CmbInterval.Name = "CmbInterval";
             this.CmbInterval.Size = new System.Drawing.Size(140, 22);
             this.CmbInterval.TabIndex = 18;
@@ -372,7 +370,7 @@
             this.Label7.BackColor = System.Drawing.Color.Transparent;
             this.Label7.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Label7.ForeColor = System.Drawing.Color.Black;
-            this.Label7.Location = new System.Drawing.Point(16, 432);
+            this.Label7.Location = new System.Drawing.Point(16, 406);
             this.Label7.Name = "Label7";
             this.Label7.Size = new System.Drawing.Size(200, 20);
             this.Label7.TabIndex = 27;
@@ -381,7 +379,7 @@
             // txtExpenseRatio
             //
             this.txtExpenseRatio.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtExpenseRatio.Location = new System.Drawing.Point(224, 430);
+            this.txtExpenseRatio.Location = new System.Drawing.Point(224, 404);
             this.txtExpenseRatio.MaxLength = 10;
             this.txtExpenseRatio.Name = "txtExpenseRatio";
             this.txtExpenseRatio.Size = new System.Drawing.Size(140, 20);
@@ -395,7 +393,7 @@
             this.CmdGetYield.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetYield.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetYield.Location = new System.Drawing.Point(43, 462);
+            this.CmdGetYield.Location = new System.Drawing.Point(43, 436);
             this.CmdGetYield.Name = "CmdGetYield";
             this.CmdGetYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetYield.Size = new System.Drawing.Size(250, 27);
@@ -410,7 +408,7 @@
             this.CmdGetAllYield.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetAllYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetAllYield.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetAllYield.Location = new System.Drawing.Point(308, 462);
+            this.CmdGetAllYield.Location = new System.Drawing.Point(308, 436);
             this.CmdGetAllYield.Name = "CmdGetAllYield";
             this.CmdGetAllYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetAllYield.Size = new System.Drawing.Size(265, 27);
@@ -425,7 +423,7 @@
             this.CmdGetAllExpenseRatio.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetAllExpenseRatio.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetAllExpenseRatio.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetAllExpenseRatio.Location = new System.Drawing.Point(43, 496);
+            this.CmdGetAllExpenseRatio.Location = new System.Drawing.Point(43, 470);
             this.CmdGetAllExpenseRatio.Name = "CmdGetAllExpenseRatio";
             this.CmdGetAllExpenseRatio.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetAllExpenseRatio.Size = new System.Drawing.Size(250, 27);
@@ -440,7 +438,7 @@
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(308, 496);
+            this.CmdSetup.Location = new System.Drawing.Point(308, 470);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -489,16 +487,6 @@
             this.Full_Ticker.TabIndex = 15;
             this.Full_Ticker.TabStop = false;
             //
-            // CmbInYahooFinance
-            //
-            this.CmbInYahooFinance.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CmbInYahooFinance.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CmbInYahooFinance.FormattingEnabled = true;
-            this.CmbInYahooFinance.Location = new System.Drawing.Point(224, 352);
-            this.CmbInYahooFinance.Name = "CmbInYahooFinance";
-            this.CmbInYahooFinance.Size = new System.Drawing.Size(48, 22);
-            this.CmbInYahooFinance.TabIndex = 16;
-            //
             // Label1
             //
             this.Label1.BackColor = System.Drawing.Color.Transparent;
@@ -538,19 +526,6 @@
             this.Label3.TabIndex = 22;
             this.Label3.Text = "Full Ticker";
             //
-            // Label4
-            //
-            this.Label4.BackColor = System.Drawing.Color.Transparent;
-            this.Label4.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Label4.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label4.ForeColor = System.Drawing.Color.Black;
-            this.Label4.Location = new System.Drawing.Point(16, 354);
-            this.Label4.Name = "Label4";
-            this.Label4.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.Label4.Size = new System.Drawing.Size(200, 20);
-            this.Label4.TabIndex = 23;
-            this.Label4.Text = "In Yahoo Finance";
-            //
             // gvETFStocks
             //
             this.gvETFStocks.AllowUserToAddRows = false;
@@ -571,10 +546,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 542);
+            this.ClientSize = new System.Drawing.Size(616, 516);
             this.ControlBox = false;
             this.Controls.Add(this.gvETFStocks);
-            this.Controls.Add(this.Label4);
             this.Controls.Add(this.Label3);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
@@ -587,7 +561,6 @@
             this.Controls.Add(this.Label6);
             this.Controls.Add(this.txtYield);
             this.Controls.Add(this.Label5);
-            this.Controls.Add(this.CmbInYahooFinance);
             this.Controls.Add(this.Full_Ticker);
             this.Controls.Add(this.CmbExchangeSuffix);
             this.Controls.Add(this.Ticker);
@@ -646,7 +619,6 @@
         public System.Windows.Forms.TextBox Ticker;
         public System.Windows.Forms.ComboBox CmbExchangeSuffix;
         public System.Windows.Forms.TextBox Full_Ticker;
-        public System.Windows.Forms.ComboBox CmbInYahooFinance;
         public System.Windows.Forms.Label Label5;
         public System.Windows.Forms.TextBox txtYield;
         public System.Windows.Forms.Label Label6;
@@ -659,7 +631,6 @@
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;
-        public System.Windows.Forms.Label Label4;
         private System.Windows.Forms.DataGridView gvETFStocks;
     }
 }

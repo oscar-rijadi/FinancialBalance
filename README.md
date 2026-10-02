@@ -374,7 +374,6 @@ erDiagram
         text Ticker "20 chars"
         text Exchange_Suffix "from the suffix list"
         text Full_Ticker PK "derived, never typed"
-        bool In_YahooFinance
         decimal Distribution_Dividend_Yield "2 dp, a percentage"
         text Distribution_Dividend_Interval "20 chars, from TblInterval, may be blank"
         decimal Expense_Ratio "2 dp, a percentage"
@@ -1105,8 +1104,9 @@ identifier `chkDRIP` still carries the older word, so searching the code for the
 will not find it.
 
 > **Access stores Yes/No `True` as `-1`.** A `WHERE Is_Sold = 1` matches nothing and fails
-> silently. Compare against `True`/`False` instead — the same applies to `In_YahooFinance` and
-> `Is_Main`, which are written as literals rather than `1`/`0`. Likewise, `Currency` is a reserved
+> silently. Compare against `True`/`False` instead — the same applies to `Is_Main`,
+> `Is_Reinvested` and `Is_Sold`, which are written as literals rather than `1`/`0`. Likewise,
+> `Currency` is a reserved
 > word: it needs brackets in DDL (`[Currency]`), though plain DML tolerates it.
 >
 > A Yes/No column **added to an existing table lands as `False` on every row**, so a migration that
@@ -1190,18 +1190,15 @@ Prices arrive two ways:
 | **Get Price for This Ticker** | The ticker chosen above. Enabled as soon as one is chosen. |
 | **Get Latest Price** | Every ticker in `TblETFStocks`, in one pass. |
 
-**Neither button asks whether a ticker is flagged `In_YahooFinance`.** It used to gate both:
-the single-ticker button was greyed out with *Not flagged as In Yahoo Finance* beside it, and
-the bulk run selected only flagged tickers. That made sense while Yahoo was the only source —
-a holding Yahoo did not carry could not be priced at all, and a disabled button said so before
-the attempt. **The ASX prices its own listings now**, and between the two sources everything
-here is covered, so the flag has nothing left to say on this page. A ticker neither source
-carries still fails, with a message naming both — which tells you more than a greyed button
-did, because it says what was actually tried.
-
-> The flag itself is untouched and still means something: [ETF/Stock Setup](#etfstock-setup)
-> reads it to decide which tickers to fetch **yields** and **expense ratios** for, and those
-> do still come from Yahoo alone. It is only prices that have stopped depending on it.
+**Neither button asks whether Yahoo carries a ticker before trying.** `TblETFStocks` used to
+hold an `In_YahooFinance` flag that gated both: the single-ticker button was greyed out with
+*Not flagged as In Yahoo Finance* beside it, and the bulk run selected only flagged tickers.
+That made sense while Yahoo was the only source — a holding Yahoo did not carry could not be
+priced at all, and a disabled button said so before the attempt. **The ASX prices its own
+listings now**, and between the two sources everything here is covered, so the flag had
+nothing left to say and [has since been dropped from the table](#the-in-yahoo-finance-flag-and-why-it-is-gone)
+altogether. A ticker neither source carries still fails, with a message naming both — which
+tells you more than a greyed button did, because it says what was actually tried.
 
 A grid at the top of the page lists **every** ticker in `TblETFStocks` with the currency and
 latest stored price, whether that price was fetched or typed in; a ticker with no price
@@ -5123,10 +5120,33 @@ seven fields, of which one is never typed:
 | Ticker | text | the ticker as the exchange writes it |
 | Exchange Suffix | dropdown from `TblETFStocksExchangeSuffix` | `AX`, or `None` |
 | Full Ticker | read-only | derived from the two above |
-| In Yahoo Finance | `Y` / `N` | whether its **yield and expense ratio** can be pulled from Yahoo. Not prices — see [Where a price comes from](#where-a-price-comes-from) |
 | Distribution/Dividend Yield | text, digits and a point | a percentage, 2 dp |
 | Distribution/Dividend Interval | dropdown, blank plus `TblInterval` | how often it pays |
 | Expense Ratio | text, digits and a point | a percentage, 2 dp |
+
+#### The In Yahoo Finance flag, and why it is gone
+
+`TblETFStocks` carried a Yes/No `In_YahooFinance` alongside those, shown as a `Y`/`N`
+dropdown here and as a column in the grid. **It no longer exists**: it was dropped from the
+table, and nothing reads, writes or shows it.
+
+It meant *Yahoo carries this ticker*, and three things used to turn on it:
+
+| What asked | Then | Now |
+| --- | --- | --- |
+| [ETF/Stock Price](#etfstock-price-rules), both buttons | only flagged tickers could be priced | **the ASX prices its own listings**, so any ticker can be |
+| [Get All Dividend Yield](#get-all-dividend-yield-from-yahoo-finance) | only flagged tickers were asked | every ticker is asked; one Yahoo will not answer for is reported |
+| [Get All Expense Ratio](#get-all-expense-ratio) | the suffix sent ASX holdings to the exchange, the flag let the rest through to Yahoo, and a ticker with neither was dropped | the suffix decides it alone, and nothing is dropped |
+
+Once prices stopped depending on it, what was left was a flag that could only **narrow** two
+runs, and narrowing them bought nothing: a ticker Yahoo does not carry costs one request to
+discover, and being told so is better than being quietly left out. So the field went.
+
+> **Dropping it is a schema change**, applied with
+> `ALTER TABLE TblETFStocks DROP COLUMN In_YahooFinance` against the live database, the
+> sample under `Sample Database/`, and the two copies under `bin/`. **An older build will
+> not run against a migrated database**: every page that still names the column in a
+> `SELECT` fails at the first read. Keep the two together.
 
 **The yield and the interval may both be left empty.** A ticker that pays nothing has a yield
 of `0.00` and a blank interval, which is what the blank first entry in the dropdown is for —
@@ -5147,14 +5167,9 @@ The first of the two buttons on the Yahoo row fills the yield box from Yahoo Fin
 **It fills the box and stops there** — nothing is written until Setup is pressed, so the
 figure can be overtyped like any other. Yahoo's number is a starting point, not the last word.
 
-It is refused unless the ticker resolves and **In Yahoo Finance** is `Y`. This page reads the
-flag off the dropdown in front of you rather than out of `TblETFStocks`, so it also answers
-for a ticker not saved yet.
-
-> [ETF/Stock Price](#etfstock-price-rules) used to apply the same gate and no longer does:
-> it prices an ASX holding from the exchange, so whether Yahoo carries the symbol has stopped
-> mattering there. It still matters here, because a yield has no second source — which is
-> why the flag is still read, and still worth setting correctly.
+It is refused only if the ticker does not resolve. There is nothing else to check: a ticker
+Yahoo does not carry comes back as one it could not answer for, which costs a request and
+says more than a refusal made in advance would have.
 
 **Yahoo has no free endpoint that simply states a yield.** The `quote` and `quoteSummary`
 endpoints that used to carry one now answer `401` without a crumb. The chart endpoint the
@@ -5196,21 +5211,22 @@ duration — one request, so briefly. The button disables while it runs and come
 
 #### Get All Dividend Yield from Yahoo Finance
 
-The button beside it does the same fetch for **every ticker flagged `In_YahooFinance`**, and
+The button beside it does the same fetch for **every ticker that is set up**, and
 **saves each one as it comes back**. That is the one way the two differ: a single figure can
 be looked at before it is taken, so the first button leaves it in the box for you; a whole
 list cannot, so the second writes `Distribution_Dividend_Yield` straight to `TblETFStocks`.
 It is the same bargain [Get All Latest Currency](#get-all-latest-currency) makes one page over.
 
 ```
-select Full_Ticker from TblETFStocks where In_YahooFinance = True order by Full_Ticker
+select Full_Ticker from TblETFStocks order by Full_Ticker
 ```
 
-**The flag is the whole of the selection.** A ticker that is not in Yahoo Finance is not an
-error here, it is simply never asked about — the table-side form of the gate the
-single-ticker button puts on the dropdown in front of you. Nothing else on screen narrows the
-run either: the row selected in the grid and the ticker in the entry boxes make no difference
-to which tickers are fetched.
+**Nothing narrows the selection.** The list used to be drawn `where In_YahooFinance = True`,
+and a ticker without the flag was never asked about; with the flag gone from the table every
+ticker is asked, and one Yahoo does not carry is **reported as a failure rather than left
+silently out** — the more honest of the two, at the cost of one request to find out. Nothing
+on screen narrows it either: the row selected in the grid and the ticker in the entry boxes
+make no difference to which tickers are fetched.
 
 **The list is read and the reader closed before anything is fetched or written.** Jet will not
 carry a second command on a connection while a reader is open on it, and the updates go down
@@ -5264,17 +5280,18 @@ typed into and saved with **Setup** like any other figure.
 | Ticker | Asked of | Endpoint | Read from |
 | --- | --- | --- | --- |
 | `Exchange_Suffix` is `AX` | the ASX | `https://asx.api.markitdigital.com/asx-research/1.0/etfs/{Ticker}/key-statistics` | `fundamentals.managementFeePercent` — already a percentage |
-| anything else, flagged **In Yahoo Finance** | Yahoo Finance | `https://query1.finance.yahoo.com/v10/finance/quoteSummary/{Full_Ticker}?modules=quoteType,fundProfile&crumb={crumb}` | `fundProfile.feesExpensesInvestment.annualReportExpenseRatio.raw` — a fraction, so × 100 |
-| anything else | — | left out of the run, the way the yield button leaves out a ticker Yahoo does not carry | — |
+| anything else | Yahoo Finance | `https://query1.finance.yahoo.com/v10/finance/quoteSummary/{Full_Ticker}?modules=quoteType,fundProfile&crumb={crumb}` | `fundProfile.feesExpensesInvestment.annualReportExpenseRatio.raw` — a fraction, so × 100 |
 
 **Yahoo will not do for an ASX fund.** It knows them, but leaves the expense ratio empty for
 every one — all eleven ASX tickers in the database came back blank, while SCHD came back
 `0.06 %`. Worse, it calls two of them, JPEQ.AX and VVLU.AX — both active ETFs — `EQUITY`,
 which would have had them saved as shares at `0.00`. The research API behind asx.com.au has
 them all, listed investment companies included (AFI and ARG are `0.14 %`), and it is asked by
-the bare code — `A200`, not `A200.AX`. That is also why **an ASX ticker is asked whatever its
-In Yahoo Finance flag says**: Yahoo is not where its fee comes from, so `PMGOLD.AX`, flagged
-`N`, still gets its `0.15 %`.
+the bare code — `A200`, not `A200.AX`. **The suffix decides it on its own.** It used to take
+the suffix *and* an `In_YahooFinance` flag — the suffix to send an ASX holding to the
+exchange, the flag to let anything else through to Yahoo — and a ticker with neither was
+dropped from the run. With the flag gone from the table there is nothing to drop: an ASX
+holding goes to the exchange and everything else to Yahoo.
 
 **A share is saved as `0.00`, not reported.** It is not a fund and charges nothing for holding
 it, so `0.00` is the answer, the same way a ticker that paid nothing has a yield of `0.00`.
@@ -5334,12 +5351,11 @@ for the crumb if anything is asked of Yahoo — under a second a ticker when it 
 `Full_Ticker` is the key, so the single **Setup** button is an upsert on it — see
 [Reference data](#reference-data) for how it is derived. The grid lists the yield and interval
 as **Yield** and **Interval** rather than repeating the full captions, and the entry labels
-below spell them out. At 557px seven columns cannot all have a one-line heading, so the
-headings wrap onto two lines, which the header row — sized to fit — does on its own. The fill
-weights are set so **no figure is cut short**: the widest is a yield in double figures —
-JPEQ's `10.57 %` — which the old weights, spread across a seventh column, showed as
-`10.57...`. *In Yahoo Finance* is given enough to wrap onto two lines rather than three, since
-a third line would cost the grid a visible row.
+below spell them out. At 557px the headings still wrap onto two lines, which the header row —
+sized to fit — does on its own. The fill weights are set so **no figure is cut short**: the
+widest is a yield in double figures — JPEQ's `10.57 %`. **Dropping In Yahoo Finance gave the
+other six columns its 16 points of weight back**, so the grid is roomier than it was with
+seven.
 
 ---
 
