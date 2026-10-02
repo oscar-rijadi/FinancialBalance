@@ -66,8 +66,11 @@
             this.txtYield = new System.Windows.Forms.TextBox();
             this.Label6 = new System.Windows.Forms.Label();
             this.CmbInterval = new System.Windows.Forms.ComboBox();
+            this.Label7 = new System.Windows.Forms.Label();
+            this.txtExpenseRatio = new System.Windows.Forms.TextBox();
             this.CmdGetYield = new System.Windows.Forms.Button();
             this.CmdGetAllYield = new System.Windows.Forms.Button();
+            this.CmdGetAllExpenseRatio = new System.Windows.Forms.Button();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
@@ -84,7 +87,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(484, 470);
+            this.CmdBack.Location = new System.Drawing.Point(484, 496);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -100,7 +103,7 @@
             this.MainMenu1.Location = new System.Drawing.Point(0, 0);
             this.MainMenu1.Name = "MainMenu1";
             this.MainMenu1.Size = new System.Drawing.Size(616, 24);
-            this.MainMenu1.TabIndex = 9;
+            this.MainMenu1.TabIndex = 28;
             // 
             // MnAdmin
             // 
@@ -312,7 +315,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(396, 470);
+            this.CmdDel.Location = new System.Drawing.Point(396, 496);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -329,7 +332,7 @@
             this.Label5.Location = new System.Drawing.Point(16, 380);
             this.Label5.Name = "Label5";
             this.Label5.Size = new System.Drawing.Size(200, 20);
-            this.Label5.TabIndex = 23;
+            this.Label5.TabIndex = 24;
             this.Label5.Text = "Distribution/Dividend Yield";
             // 
             // txtYield
@@ -351,7 +354,7 @@
             this.Label6.Location = new System.Drawing.Point(16, 406);
             this.Label6.Name = "Label6";
             this.Label6.Size = new System.Drawing.Size(200, 20);
-            this.Label6.TabIndex = 24;
+            this.Label6.TabIndex = 25;
             this.Label6.Text = "Distribution/Dividend Interval";
             // 
             // CmbInterval
@@ -363,14 +366,36 @@
             this.CmbInterval.Name = "CmbInterval";
             this.CmbInterval.Size = new System.Drawing.Size(140, 22);
             this.CmbInterval.TabIndex = 18;
-            // 
+            //
+            // Label7
+            //
+            this.Label7.BackColor = System.Drawing.Color.Transparent;
+            this.Label7.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label7.ForeColor = System.Drawing.Color.Black;
+            this.Label7.Location = new System.Drawing.Point(16, 432);
+            this.Label7.Name = "Label7";
+            this.Label7.Size = new System.Drawing.Size(200, 20);
+            this.Label7.TabIndex = 27;
+            this.Label7.Text = "Expense Ratio";
+            //
+            // txtExpenseRatio
+            //
+            this.txtExpenseRatio.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtExpenseRatio.Location = new System.Drawing.Point(224, 430);
+            this.txtExpenseRatio.MaxLength = 10;
+            this.txtExpenseRatio.Name = "txtExpenseRatio";
+            this.txtExpenseRatio.Size = new System.Drawing.Size(140, 20);
+            this.txtExpenseRatio.TabIndex = 19;
+            this.txtExpenseRatio.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtExpenseRatio.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
+            //
             // CmdGetYield
             // 
             this.CmdGetYield.BackColor = System.Drawing.SystemColors.Control;
             this.CmdGetYield.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetYield.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetYield.Location = new System.Drawing.Point(43, 436);
+            this.CmdGetYield.Location = new System.Drawing.Point(43, 462);
             this.CmdGetYield.Name = "CmdGetYield";
             this.CmdGetYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetYield.Size = new System.Drawing.Size(250, 27);
@@ -385,7 +410,7 @@
             this.CmdGetAllYield.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetAllYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetAllYield.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetAllYield.Location = new System.Drawing.Point(308, 436);
+            this.CmdGetAllYield.Location = new System.Drawing.Point(308, 462);
             this.CmdGetAllYield.Name = "CmdGetAllYield";
             this.CmdGetAllYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetAllYield.Size = new System.Drawing.Size(265, 27);
@@ -394,13 +419,28 @@
             this.CmdGetAllYield.UseVisualStyleBackColor = false;
             this.CmdGetAllYield.Click += new System.EventHandler(this.CmdGetAllYield_Click);
             //
+            // CmdGetAllExpenseRatio
+            //
+            this.CmdGetAllExpenseRatio.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdGetAllExpenseRatio.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdGetAllExpenseRatio.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdGetAllExpenseRatio.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdGetAllExpenseRatio.Location = new System.Drawing.Point(43, 496);
+            this.CmdGetAllExpenseRatio.Name = "CmdGetAllExpenseRatio";
+            this.CmdGetAllExpenseRatio.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdGetAllExpenseRatio.Size = new System.Drawing.Size(250, 27);
+            this.CmdGetAllExpenseRatio.TabIndex = 9;
+            this.CmdGetAllExpenseRatio.Text = "Get All &Expense Ratio";
+            this.CmdGetAllExpenseRatio.UseVisualStyleBackColor = false;
+            this.CmdGetAllExpenseRatio.Click += new System.EventHandler(this.CmdGetAllExpenseRatio_Click);
+            //
             // CmdSetup
             //
             this.CmdSetup.BackColor = System.Drawing.SystemColors.Control;
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(308, 470);
+            this.CmdSetup.Location = new System.Drawing.Point(308, 496);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -469,7 +509,7 @@
             this.Label1.Name = "Label1";
             this.Label1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label1.Size = new System.Drawing.Size(200, 20);
-            this.Label1.TabIndex = 19;
+            this.Label1.TabIndex = 20;
             this.Label1.Text = "Ticker";
             //
             // Label2
@@ -482,7 +522,7 @@
             this.Label2.Name = "Label2";
             this.Label2.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label2.Size = new System.Drawing.Size(200, 20);
-            this.Label2.TabIndex = 20;
+            this.Label2.TabIndex = 21;
             this.Label2.Text = "Exchange Suffix";
             //
             // Label3
@@ -495,7 +535,7 @@
             this.Label3.Name = "Label3";
             this.Label3.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label3.Size = new System.Drawing.Size(200, 20);
-            this.Label3.TabIndex = 21;
+            this.Label3.TabIndex = 22;
             this.Label3.Text = "Full Ticker";
             //
             // Label4
@@ -508,7 +548,7 @@
             this.Label4.Name = "Label4";
             this.Label4.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.Label4.Size = new System.Drawing.Size(200, 20);
-            this.Label4.TabIndex = 22;
+            this.Label4.TabIndex = 23;
             this.Label4.Text = "In Yahoo Finance";
             //
             // gvETFStocks
@@ -522,7 +562,7 @@
             this.gvETFStocks.Name = "gvETFStocks";
             this.gvETFStocks.ReadOnly = true;
             this.gvETFStocks.Size = new System.Drawing.Size(557, 190);
-            this.gvETFStocks.TabIndex = 25;
+            this.gvETFStocks.TabIndex = 26;
             this.gvETFStocks.SelectionChanged += new System.EventHandler(this.gvETFStocks_SelectionChanged);
             //
             // Setup_ETF_Stocks
@@ -531,7 +571,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 516);
+            this.ClientSize = new System.Drawing.Size(616, 542);
             this.ControlBox = false;
             this.Controls.Add(this.gvETFStocks);
             this.Controls.Add(this.Label4);
@@ -540,6 +580,9 @@
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.CmdGetYield);
             this.Controls.Add(this.CmdGetAllYield);
+            this.Controls.Add(this.CmdGetAllExpenseRatio);
+            this.Controls.Add(this.txtExpenseRatio);
+            this.Controls.Add(this.Label7);
             this.Controls.Add(this.CmbInterval);
             this.Controls.Add(this.Label6);
             this.Controls.Add(this.txtYield);
@@ -608,8 +651,11 @@
         public System.Windows.Forms.TextBox txtYield;
         public System.Windows.Forms.Label Label6;
         public System.Windows.Forms.ComboBox CmbInterval;
+        public System.Windows.Forms.Label Label7;
+        public System.Windows.Forms.TextBox txtExpenseRatio;
         public System.Windows.Forms.Button CmdGetYield;
         public System.Windows.Forms.Button CmdGetAllYield;
+        public System.Windows.Forms.Button CmdGetAllExpenseRatio;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;

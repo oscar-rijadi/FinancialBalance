@@ -255,7 +255,7 @@ flowchart LR
 | `Setup_Financial_Year` | Shown as **Financial Year Setup**. Names a financial year and the dates it runs between. |
 | `Setup_Interval` | Shown as **Interval Setup**. Maintains the intervals a distribution or dividend can be paid at. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
-| `Setup_ETF_Stocks` | Maintains ETF/stock tickers, with the yield each pays and how often. The yield can be fetched from Yahoo Finance, one ticker at a time or every flagged ticker at once. `Full_Ticker` is derived, not typed. |
+| `Setup_ETF_Stocks` | Maintains ETF/stock tickers, with the yield each pays, how often, and the expense ratio it charges. The yield can be fetched from Yahoo Finance, one ticker at a time or every flagged ticker at once; the expense ratio is fetched for every ticker at once, from the ASX for ASX tickers and from Yahoo Finance for the rest. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
@@ -377,6 +377,7 @@ erDiagram
         bool In_YahooFinance
         decimal Distribution_Dividend_Yield "2 dp, a percentage"
         text Distribution_Dividend_Interval "20 chars, from TblInterval, may be blank"
+        decimal Expense_Ratio "2 dp, a percentage"
     }
     TblInterval {
         text Name PK "20 chars"
@@ -633,8 +634,16 @@ by the rule. `Full_Ticker` is the table's primary key.
 
 The same table also carries what the holding **pays**: `Distribution_Dividend_Yield`, a
 `DECIMAL(22,2)` read as a percentage, and `Distribution_Dividend_Interval`, the name of an
-interval from `TblInterval`. Both are descriptive — nothing calculates from them yet, and
-both may be left at nothing (`0.00` and blank) for a ticker that pays neither.
+interval from `TblInterval`. The two [forecast](#forecast-dividend-allocation)
+[pages](#forecast-dividend-calendar) calculate from them, and both may be left at nothing
+(`0.00` and blank) for a ticker that pays neither.
+
+And what it **costs**: `Expense_Ratio`, also a `DECIMAL(22,2)` read as a percentage — what the
+fund charges each year to run it, `0.04` for 0.04 %. A share is not a fund and has none, so it
+holds `0.00`. Nothing calculates from it yet. The column was added with
+`ALTER TABLE TblETFStocks ADD COLUMN Expense_Ratio DECIMAL(22,2)`, so it sits last, and rows
+that predate it hold `Null` until they are fetched or saved — which reads as `0.00`, the same
+way an empty yield does.
 
 #### Intervals
 
@@ -3073,15 +3082,20 @@ Things worth knowing before changing this code.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
 - **Three pages reach the network**, and only these three: `ETF_Stocks_Price` on either sync
-  button, `Setup_ETF_Stocks` on either Yahoo button, and `Setup_Curr_Rate` on
-  **Get Latest Currency** or **Get All Latest Currency**. All three force TLS 1.2, set a
-  `User-Agent`, and run on the UI thread — the form freezes for the duration. The three bulk
-  buttons — **Sync all**, **Get All Latest Currency** and
-  **Get All Dividend Yield from Yahoo Finance** — make one request per ticker or per currency
-  in sequence, so that freeze scales with how many there are; the other three make one each.
+  button, `Setup_ETF_Stocks` on either Yahoo button or **Get All Expense Ratio**, and
+  `Setup_Curr_Rate` on **Get Latest Currency** or **Get All Latest Currency**. All three force
+  TLS 1.2, set a `User-Agent`, and run on the UI thread — the form freezes for the duration.
+  The four bulk buttons — **Sync all**, **Get All Latest Currency**,
+  **Get All Dividend Yield from Yahoo Finance** and **Get All Expense Ratio** — make one request
+  per ticker or per currency in sequence, so that freeze scales with how many there are; the
+  other three make one each.
   Yahoo's endpoint is undocumented and can change without notice — the `quote` and
   `quoteSummary` endpoints already have, which is why the yield is computed from dividend
-  events rather than read from a field.
+  events rather than read from a field. **Get All Expense Ratio** is the one place that does
+  call `quoteSummary`, by first collecting the cookie and crumb it now insists on, and the one
+  place anything talks to a host other than Yahoo: ASX tickers are asked of
+  `asx.api.markitdigital.com`, the research API behind asx.com.au, which is just as
+  undocumented. See [Get All Expense Ratio](#get-all-expense-ratio).
 - **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
   `Setup_ETF_Stocks_Flag` is displayed as **ETF/Stock Portfolio Code Setup**, and on
   `ETF_Stocks_Purchase` and `ETF_Stocks_Sale` the dropdown is labelled **Portfolio** and the grid column
@@ -4977,7 +4991,7 @@ invariantly, the way every other number this application writes as a bare SQL li
 ### ETF/Stock Setup
 
 `Administration` ▸ ETF/Stock ▸ ETF/Stock Setup maintains `TblETFStocks`. The entry area takes
-six fields, of which one is never typed:
+seven fields, of which one is never typed:
 
 | Field | Control | Holds |
 | --- | --- | --- |
@@ -4987,18 +5001,20 @@ six fields, of which one is never typed:
 | In Yahoo Finance | `Y` / `N` | whether prices can be pulled for it |
 | Distribution/Dividend Yield | text, digits and a point | a percentage, 2 dp |
 | Distribution/Dividend Interval | dropdown, blank plus `TblInterval` | how often it pays |
+| Expense Ratio | text, digits and a point | a percentage, 2 dp |
 
-**Both of the last two may be left empty.** A ticker that pays nothing has a yield of `0.00`
-and a blank interval, which is what the blank first entry in the dropdown is for — the list is
-`CmbInterval.Items.Add("")` followed by `TblInterval` in name order, so blank is always
-reachable and is what a new ticker starts on. The yield box takes digits and a decimal point
-only, through `Mdl1.NumericKeyPress`: a yield cannot be negative, so no minus sign is let
-through. Anything unparseable reads as `0`.
+**The yield and the interval may both be left empty.** A ticker that pays nothing has a yield
+of `0.00` and a blank interval, which is what the blank first entry in the dropdown is for —
+the list is `CmbInterval.Items.Add("")` followed by `TblInterval` in name order, so blank is
+always reachable and is what a new ticker starts on. The yield and expense ratio boxes take
+digits and a decimal point only, through `Mdl1.NumericKeyPress`: neither figure can be
+negative, so no minus sign is let through. Anything unparseable reads as `0`.
 
-The yield is stored as typed and shown back with two places and a per-cent sign — `4.25 %` in
-the grid, `4.25` in the box, since the box is what may be typed over. **It is a percentage
-figure, not a fraction**: `4.25` means 4.25 %, and nothing divides it by a hundred, because
-nothing calculates from it yet.
+Both are rounded to two places and shown back with a per-cent sign — `4.25 %` in the grid,
+`4.25` in the box, since the box is what may be typed over. **Each is a percentage figure, not
+a fraction**: a yield of `4.25` means 4.25 %, and an expense ratio of `0.04` means 0.04 % — not
+4 %. Nothing in the table divides either by a hundred; the forecast pages that use the yield
+do that themselves.
 
 #### Get Dividend Yield from Yahoo Finance
 
@@ -5106,14 +5122,95 @@ used to disable only itself.
 > to hold it. The two fetch buttons sit together because that is where the eye looks for the
 > pair — the arrangement [Currency Rate Setup](#get-all-latest-currency) already uses.
 
+#### Get All Expense Ratio
+
+The button at the left of the **Setup** row fetches the expense ratio of **every ticker it has
+somewhere to ask about**, and **saves each one as it comes back** — the bargain
+[Get All Dividend Yield](#get-all-dividend-yield-from-yahoo-finance) makes, for the same reason:
+a whole list cannot be looked over first. There is no single-ticker version; the box can be
+typed into and saved with **Setup** like any other figure.
+
+**Where a ticker is asked depends on where it trades**, because no one source has them all:
+
+| Ticker | Asked of | Endpoint | Read from |
+| --- | --- | --- | --- |
+| `Exchange_Suffix` is `AX` | the ASX | `https://asx.api.markitdigital.com/asx-research/1.0/etfs/{Ticker}/key-statistics` | `fundamentals.managementFeePercent` — already a percentage |
+| anything else, flagged **In Yahoo Finance** | Yahoo Finance | `https://query1.finance.yahoo.com/v10/finance/quoteSummary/{Full_Ticker}?modules=quoteType,fundProfile&crumb={crumb}` | `fundProfile.feesExpensesInvestment.annualReportExpenseRatio.raw` — a fraction, so × 100 |
+| anything else | — | left out of the run, the way the yield button leaves out a ticker Yahoo does not carry | — |
+
+**Yahoo will not do for an ASX fund.** It knows them, but leaves the expense ratio empty for
+every one — all eleven ASX tickers in the database came back blank, while SCHD came back
+`0.06 %`. Worse, it calls two of them, JPEQ.AX and VVLU.AX — both active ETFs — `EQUITY`,
+which would have had them saved as shares at `0.00`. The research API behind asx.com.au has
+them all, listed investment companies included (AFI and ARG are `0.14 %`), and it is asked by
+the bare code — `A200`, not `A200.AX`. That is also why **an ASX ticker is asked whatever its
+In Yahoo Finance flag says**: Yahoo is not where its fee comes from, so `PMGOLD.AX`, flagged
+`N`, still gets its `0.15 %`.
+
+**A share is saved as `0.00`, not reported.** It is not a fund and charges nothing for holding
+it, so `0.00` is the answer, the same way a ticker that paid nothing has a yield of `0.00`.
+Each source has its own way of saying so:
+
+- **Yahoo** gives a `quoteType` of `EQUITY` for a share — GOOGL — and `ETF` for a fund. It is
+  only trusted with this off the ASX, for the reason above.
+- **The ASX** gives no fee and **no net asset value** for a company — BHP, CBA, and the CDIs
+  and stapled securities as well. Every fund it lists carries a NAV, so a fund that comes back
+  without a fee is a figure the ASX does not have, and **is reported rather than zeroed**:
+  `0.00` against a fund would look like a real figure and be wrong. The API also writes
+  `-32768` for any figure it does not have, so a negative fee is read as no fee.
+
+**`quoteSummary` wants a crumb.** It answers `401` to a bare request; the crumb comes from
+`/v1/test/getcrumb`, which only hands one to a caller holding the cookie `fc.yahoo.com` sets —
+and that page sets it on a `404`, so its failing is expected. `WebClient` keeps no cookies, so
+these requests go through `HttpWebRequest` with a `CookieContainer` (`Download`) instead. The
+crumb is asked for **once per run, by the first ticker that needs it**: a run of nothing but
+ASX tickers never contacts Yahoo, and if no crumb can be had, each Yahoo ticker in that run is
+listed with the reason while the ASX ones carry on.
+
+**The same field turns up twice in Yahoo's answer**: once for the fund, and again under
+`feesExpensesInvestmentCat` as the average for its category — `0.85 %` against SCHD's own
+`0.06 %`. Only the fund's own block is searched, so a fund Yahoo has no figure for is reported
+as such rather than quietly handed its category's.
+
+**One ticker that cannot be answered for stops that ticker, not the run**, and whatever is
+already on record for it is left alone. The dialog counts what was saved against what was
+asked about and lists the rest:
+
+> 14 of 15 expense ratio(s) updated.
+>
+> Not updated :
+>
+> ZZNOSUCH.AX : The ASX does not recognise the code ZZNOSUCH.
+
+An unknown ASX code comes back as `400 Symbol not found` rather than a `404`, and is named as
+such; an unknown Yahoo ticker is the `404` the yield button already reports. A clean run is a
+**Success**, and one that left anything out is an **Error Message** carrying the list, as on
+every other bulk button.
+
+Afterwards the grid is redrawn, and the expense ratio box is moved to the new figure if it is
+showing one of the tickers that changed — otherwise the next **Setup** would write the old
+figure back over it. Every button on the page is disabled for the run and comes back in a
+`finally`, the same lock the two yield buttons take. A run is one request per ticker, plus two
+for the crumb if anything is asked of Yahoo — under a second a ticker when it was tried.
+
+> The Expense Ratio row went in under the interval, which moved both button rows down 26px
+> and grew the form from 516px to 542px. The button took the empty slot at the left of the
+> **Setup** row, directly under **Get Dividend Yield from Yahoo Finance** and the same width.
+> In tab order the box comes straight after the interval and the button straight after the
+> two yield buttons; the labels and the menu strip were renumbered to make room, and none of
+> them takes focus.
+
 #### The rest of the page
 
 `Full_Ticker` is the key, so the single **Setup** button is an upsert on it — see
-[Reference data](#reference-data) for how it is derived. The grid lists both new columns as
-**Yield** and **Interval** rather than repeating the full captions: at 557px six columns do not
-leave room for two headings that wide, and the entry labels below spell them out. Rebalancing
-the fill weights to fit them also fixed *Exchange Suffix* and *In Yahoo Finance*, which had
-been clipped since the fourth column was added.
+[Reference data](#reference-data) for how it is derived. The grid lists the yield and interval
+as **Yield** and **Interval** rather than repeating the full captions, and the entry labels
+below spell them out. At 557px seven columns cannot all have a one-line heading, so the
+headings wrap onto two lines, which the header row — sized to fit — does on its own. The fill
+weights are set so **no figure is cut short**: the widest is a yield in double figures —
+JPEQ's `10.57 %` — which the old weights, spread across a seventh column, showed as
+`10.57...`. *In Yahoo Finance* is given enough to wrap onto two lines rather than three, since
+a third line would cost the grid a visible row.
 
 ---
 
