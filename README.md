@@ -221,7 +221,7 @@ flowchart LR
 | `Monthly_Closing` | Snapshots `TblAsset` and `TblLiability` into `TblMonthlyTrans` for a chosen month. Defaults to the month after the last close. |
 | `ETF_Stocks_Purchase` | Add / update / delete ETF and stock **buys** for one date, including lots that came free and why. |
 | `ETF_Stocks_Sale` | Add / update / delete ETF and stock **sells** for one date. A sale is built against the purchase lots it draws from, which it then settles. |
-| `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or pulled from Yahoo Finance for tickers flagged `In_YahooFinance`. |
+| `ETF_Stocks_Price` | Daily closing price per ticker. Entered by hand, or fetched for any ticker that is set up — from the ASX for its own listings and from Yahoo Finance for the rest. |
 | `ETF_Stocks_Investment` | Cash paid into and taken out of each portfolio, main portfolios listed first. Every movement is kept; the portfolio's running `Cash` moves with it. `Cash`, `Cash in USD` and `Investment_Amount` can be corrected by hand. |
 | `ETF_Stocks_Distribution` | Shown as **ETF/Stock Distribution/Dividend**. Distributions and dividends paid per ticker per portfolio, with the units they were paid on. |
 | `ETF_Stocks_Cost_Base_Adjustment` | Shown as **ETF/Stock Cost Base Adjustment**. Records a per-year adjustment to a holding's cost base, and can spread it across the purchase lots that year rests on. |
@@ -1187,8 +1187,21 @@ Prices arrive two ways:
 | Route | Behaviour |
 | --- | --- |
 | **Manual** | Pick a date, a currency and type a price — numeric, not negative, at most 2 decimal places. |
-| **Get Price for This Ticker** | One ticker. Enabled only when its `In_YahooFinance` is `True`, otherwise greyed with a note. |
-| **Get Latest Price** | Every ticker flagged `In_YahooFinance`, in one pass. |
+| **Get Price for This Ticker** | The ticker chosen above. Enabled as soon as one is chosen. |
+| **Get Latest Price** | Every ticker in `TblETFStocks`, in one pass. |
+
+**Neither button asks whether a ticker is flagged `In_YahooFinance`.** It used to gate both:
+the single-ticker button was greyed out with *Not flagged as In Yahoo Finance* beside it, and
+the bulk run selected only flagged tickers. That made sense while Yahoo was the only source —
+a holding Yahoo did not carry could not be priced at all, and a disabled button said so before
+the attempt. **The ASX prices its own listings now**, and between the two sources everything
+here is covered, so the flag has nothing left to say on this page. A ticker neither source
+carries still fails, with a message naming both — which tells you more than a greyed button
+did, because it says what was actually tried.
+
+> The flag itself is untouched and still means something: [ETF/Stock Setup](#etfstock-setup)
+> reads it to decide which tickers to fetch **yields** and **expense ratios** for, and those
+> do still come from Yahoo alone. It is only prices that have stopped depending on it.
 
 A grid at the top of the page lists **every** ticker in `TblETFStocks` with the currency and
 latest stored price, whether that price was fetched or typed in; a ticker with no price
@@ -5110,7 +5123,7 @@ seven fields, of which one is never typed:
 | Ticker | text | the ticker as the exchange writes it |
 | Exchange Suffix | dropdown from `TblETFStocksExchangeSuffix` | `AX`, or `None` |
 | Full Ticker | read-only | derived from the two above |
-| In Yahoo Finance | `Y` / `N` | whether prices can be pulled for it |
+| In Yahoo Finance | `Y` / `N` | whether its **yield and expense ratio** can be pulled from Yahoo. Not prices — see [Where a price comes from](#where-a-price-comes-from) |
 | Distribution/Dividend Yield | text, digits and a point | a percentage, 2 dp |
 | Distribution/Dividend Interval | dropdown, blank plus `TblInterval` | how often it pays |
 | Expense Ratio | text, digits and a point | a percentage, 2 dp |
@@ -5134,10 +5147,14 @@ The first of the two buttons on the Yahoo row fills the yield box from Yahoo Fin
 **It fills the box and stops there** — nothing is written until Setup is pressed, so the
 figure can be overtyped like any other. Yahoo's number is a starting point, not the last word.
 
-It is refused unless the ticker resolves and **In Yahoo Finance** is `Y` — the same gate
-[ETF/Stock Price](#etfstock-price-rules) puts on its sync, except that this page reads the
+It is refused unless the ticker resolves and **In Yahoo Finance** is `Y`. This page reads the
 flag off the dropdown in front of you rather than out of `TblETFStocks`, so it also answers
 for a ticker not saved yet.
+
+> [ETF/Stock Price](#etfstock-price-rules) used to apply the same gate and no longer does:
+> it prices an ASX holding from the exchange, so whether Yahoo carries the symbol has stopped
+> mattering there. It still matters here, because a yield has no second source — which is
+> why the flag is still read, and still worth setting correctly.
 
 **Yahoo has no free endpoint that simply states a yield.** The `quote` and `quoteSummary`
 endpoints that used to carry one now answer `401` without a crumb. The chart endpoint the

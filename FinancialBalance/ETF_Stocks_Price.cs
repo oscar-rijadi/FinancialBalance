@@ -226,21 +226,16 @@ namespace FinancialBalance
             return "AUD";
         }
 
-        private bool In_Yahoo_Finance(string parFullTicker)
-        {
-            bool Result = false;
-            Mdl1.Ssql = "Select In_YahooFinance from TblETFStocks where Full_Ticker = '" + parFullTicker + "'";
-            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
-            OleDbDataReader reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                Result = (reader["In_YahooFinance"].ToString().Trim() == "True");
-            }
-            reader.Close();
-            return Result;
-        }
-
-        //The sync button only makes sense for tickers Yahoo actually carries
+        //Any ticker that is set up can be priced, so the button needs a ticker chosen and
+        //nothing else.  It used to be gated on In_YahooFinance, which made sense while Yahoo
+        //was the only source: a holding Yahoo did not carry could not be priced at all, and a
+        //disabled button said so before the attempt.  The ASX prices its own listings now and
+        //Yahoo the rest, between them covering everything here, so the flag has nothing left to
+        //say on this page.  A ticker neither source carries still fails, with a message naming
+        //both - which is a better answer than a greyed button, because it says what was tried.
+        //
+        //The flag itself stays where it is used: ETF/Stock Setup still reads it to decide which
+        //tickers to fetch yields and expense ratios for, and those do come from Yahoo alone.
         private void Apply_Ticker_Rules()
         {
             string Ticker = CmbFullTicker.Text.Trim();
@@ -248,23 +243,12 @@ namespace FinancialBalance
             if (Ticker == "")
             {
                 CmdSync.Enabled = false;
-                LblSyncNote.Text = "";
                 LblGridCaption.Text = "Last " + MaxRows.ToString() + " prices";
                 return;
             }
 
+            CmdSync.Enabled = true;
             LblGridCaption.Text = "Last " + MaxRows.ToString() + " prices for " + Ticker;
-
-            if (In_Yahoo_Finance(Ticker))
-            {
-                CmdSync.Enabled = true;
-                LblSyncNote.Text = "";
-            }
-            else
-            {
-                CmdSync.Enabled = false;
-                LblSyncNote.Text = "Not flagged as In Yahoo Finance";
-            }
         }
 
         private void CmbFullTicker_SelectedIndexChanged(object sender, EventArgs e)
@@ -462,7 +446,7 @@ namespace FinancialBalance
 
             try
             {
-                Mdl1.Ssql = "select Full_Ticker from TblETFStocks where In_YahooFinance = True order by Full_Ticker";
+                Mdl1.Ssql = "select Full_Ticker from TblETFStocks order by Full_Ticker";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -479,7 +463,7 @@ namespace FinancialBalance
 
             if (Tickers.Count == 0)
             {
-                MessageBox.Show("No ticker is flagged as In Yahoo Finance in ETF/Stock Setup.", "Error Message");
+                MessageBox.Show("No ticker is set up in ETF/Stock Setup.", "Error Message");
                 return;
             }
 
@@ -1055,12 +1039,6 @@ namespace FinancialBalance
                 MessageBox.Show("Full Ticker must be selected !", "Error Message");
                 return;
             }
-            if (!In_Yahoo_Finance(Ticker))
-            {
-                MessageBox.Show(Ticker + " is not flagged as In Yahoo Finance in ETF/Stock Setup.", "Error Message");
-                return;
-            }
-
             Cursor.Current = Cursors.WaitCursor;
             CmdSync.Enabled = false;
             try

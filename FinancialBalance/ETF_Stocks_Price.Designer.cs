@@ -52,7 +52,6 @@
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbFullTicker = new System.Windows.Forms.ComboBox();
             this.CmdSync = new System.Windows.Forms.Button();
-            this.LblSyncNote = new System.Windows.Forms.Label();
             this.gvPrice = new System.Windows.Forms.DataGridView();
             this.CmdSyncAll = new System.Windows.Forms.Button();
             this.LblAllCaption = new System.Windows.Forms.Label();
@@ -317,17 +316,6 @@
             this.CmdSync.UseVisualStyleBackColor = false;
             this.CmdSync.Click += new System.EventHandler(this.CmdSync_Click);
             //
-            // LblSyncNote
-            //
-            this.LblSyncNote.BackColor = System.Drawing.Color.Transparent;
-            this.LblSyncNote.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LblSyncNote.ForeColor = System.Drawing.Color.DimGray;
-            this.LblSyncNote.Location = new System.Drawing.Point(475, 290);
-            this.LblSyncNote.Name = "LblSyncNote";
-            this.LblSyncNote.Size = new System.Drawing.Size(210, 20);
-            this.LblSyncNote.TabIndex = 5;
-            this.LblSyncNote.Text = "";
-            //
             // LblGridCaption
             //
             this.LblGridCaption.BackColor = System.Drawing.Color.Transparent;
@@ -542,7 +530,6 @@
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.gvPrice);
             this.Controls.Add(this.LblGridCaption);
-            this.Controls.Add(this.LblSyncNote);
             this.Controls.Add(this.CmdSync);
             this.Controls.Add(this.CmbFullTicker);
             this.Controls.Add(this.Label1);
@@ -593,7 +580,6 @@
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbFullTicker;
         public System.Windows.Forms.Button CmdSync;
-        public System.Windows.Forms.Label LblSyncNote;
         public System.Windows.Forms.Label LblGridCaption;
         private System.Windows.Forms.DataGridView gvPrice;
         public System.Windows.Forms.Button CmdSyncAll;
