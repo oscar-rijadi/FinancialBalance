@@ -496,7 +496,7 @@ namespace FinancialBalance
                     string TmpError;
                     bool WasUpdate;
 
-                    if (Fetch_Yahoo_Price(Tickers[i], out TmpPrice, out TmpDate, out TmpCurrency, out TmpError))
+                    if (Fetch_Price(Tickers[i], out TmpPrice, out TmpDate, out TmpCurrency, out TmpError))
                     {
                         Save_Price(Tickers[i], TmpDate, TmpPrice, Resolve_Currency(Tickers[i], TmpCurrency), out WasUpdate);
                         Saved++;
@@ -510,7 +510,7 @@ namespace FinancialBalance
                 Get_All_Prices();
                 Get_Data();
 
-                string strMsg = Saved.ToString() + " of " + Tickers.Count.ToString() + " ticker(s) updated from Yahoo Finance.";
+                string strMsg = Saved.ToString() + " of " + Tickers.Count.ToString() + " ticker(s) updated.";
                 if (Failed.Count > 0)
                 {
                     strMsg = strMsg + Environment.NewLine + Environment.NewLine + "Not updated :" + Environment.NewLine;
@@ -776,9 +776,153 @@ namespace FinancialBalance
             }
         }
 
-        //Yahoo's chart endpoint carries the last traded price and its timestamp in the
-        //meta block.  Only those two values are needed, so they are pulled out directly
-        //rather than pulling in a JSON library.
+        //The ASX quotes its own listings, and for PMGOLD.AX it is the only source that has the
+        //price right at all: Yahoo answers 17.94 against the 59.97 the exchange is showing.
+        //Where both can answer they agree exactly - checked across every ASX holding here:
+        //A200 144.90, BGBL 86.75, BSUB 25.59, DHHF 41.63, JPEQ 62.30, NDQ 64.18, SEMI 40.18,
+        //VHY 82.48, VTEK 69.33, VVLU 80.30, every one identical.  So going to the exchange
+        //first costs nothing and takes away the question of whether Yahoo has the symbol right.
+        //
+        //priceLast is the last traded price.  The payload carries no timestamp of any kind, and
+        //neither does any other endpoint on this API - price-history, prices, intraday-prices
+        //and price-chart are all 404 - so the date is today.  This is the latest price rather
+        //than a historical one, and the table is keyed per day, so fetching twice in a day
+        //updates the row rather than adding a second.
+        //
+        //Nothing in the payload names a currency either.  The ASX quotes in Australian dollars,
+        //so that is what is recorded, rather than leaving it for Resolve_Currency to guess at.
+        private bool Fetch_ASX_Price(string parCode, out decimal parPrice, out string parDate,
+                                     out string parCurrency, out string parError)
+        {
+            parPrice = 0;
+            parDate = "";
+            parCurrency = "";
+            parError = "";
+
+            try
+            {
+                ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol | SecurityProtocolType.Tls12;
+
+                string Url = "https://asx.api.markitdigital.com/asx-research/1.0/companies/"
+                           + Uri.EscapeDataString(parCode) + "/header";
+
+                string Json;
+                using (WebClient Client = new WebClient())
+                {
+                    Client.Headers.Add("User-Agent", "Mozilla/5.0");
+                    Json = Client.DownloadString(Url);
+                }
+
+                Match PriceMatch = Regex.Match(Json, "\"priceLast\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
+                if (!PriceMatch.Success)
+                {
+                    parError = "The ASX did not return a price for " + parCode + ".";
+                    return false;
+                }
+                if (!decimal.TryParse(PriceMatch.Groups[1].Value, NumberStyles.Number,
+                                      CultureInfo.InvariantCulture, out parPrice) || parPrice <= 0)
+                {
+                    parError = "Could not read the price the ASX returned for " + parCode + ".";
+                    return false;
+                }
+
+                //the figures come back in full binary precision - JPEQ answers 62.300000000000004
+                parPrice = Math.Round(parPrice, 2);
+                parCurrency = "AUD";
+                parDate = DateTime.Now.ToString("yyyyMMdd");
+                return true;
+            }
+            catch (WebException ex)
+            {
+                //a code the exchange does not list comes back 400, not 404
+                HttpWebResponse Response = ex.Response as HttpWebResponse;
+                if (Response != null && (Response.StatusCode == HttpStatusCode.NotFound
+                                         || Response.StatusCode == HttpStatusCode.BadRequest))
+                {
+                    parError = "The ASX does not list the code " + parCode + ".";
+                }
+                else
+                {
+                    parError = "Could not reach the ASX : " + ex.Message;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                parError = ex.Message;
+                return false;
+            }
+        }
+
+        //A holding on the Australian exchange, by the suffix ETF/Stock Setup builds into the
+        //full ticker.  Everything without one is quoted somewhere the ASX cannot be asked about.
+        private bool Is_ASX(string parFullTicker)
+        {
+            return parFullTicker.Trim().ToUpper().EndsWith(".AX");
+        }
+
+        //PMGOLD.AX is plain PMGOLD to the exchange's own API
+        private string ASX_Code(string parFullTicker)
+        {
+            string TmpTicker = parFullTicker.Trim().ToUpper();
+            int TmpDot = TmpTicker.LastIndexOf('.');
+            return (TmpDot > 0 ? TmpTicker.Substring(0, TmpDot) : TmpTicker);
+        }
+
+        //Where a price comes from: the exchange that lists it where that can be asked, and
+        //Yahoo for everything else.  An ASX holding the exchange will not answer for falls
+        //through to Yahoo rather than failing outright, and that fallback is safe now that the
+        //Yahoo side reads the daily series - even a symbol whose Yahoo quote is broken comes
+        //back with a real price there, just the previous close rather than the last trade.
+        private bool Fetch_Price(string parFullTicker, out decimal parPrice, out string parDate,
+                                 out string parCurrency, out string parError)
+        {
+            parPrice = 0;
+            parDate = "";
+            parCurrency = "";
+            parError = "";
+
+            string TmpAsxError = "";
+            if (Is_ASX(parFullTicker))
+            {
+                if (Fetch_ASX_Price(ASX_Code(parFullTicker), out parPrice, out parDate,
+                                    out parCurrency, out TmpAsxError))
+                {
+                    return true;
+                }
+            }
+
+            string TmpYahooError;
+            if (Fetch_Yahoo_Price(parFullTicker, out parPrice, out parDate, out parCurrency,
+                                  out TmpYahooError))
+            {
+                return true;
+            }
+
+            //both sides named, so a failure says what was actually tried rather than half of it
+            parError = (TmpAsxError == "" ? TmpYahooError : TmpAsxError + "  " + TmpYahooError);
+            return false;
+        }
+
+        //Yahoo's chart endpoint carries a last traded price in its meta block, and for most
+        //symbols that is the figure to take.  For some it is simply wrong.  PMGOLD.AX answers
+        //a regularMarketPrice of 17.94 against a real price near 60, alongside a
+        //regularMarketTime of 0, no volume, no day high or low and a null currency - which is
+        //Yahoo saying it holds no current quote for the symbol rather than that the price is
+        //that.  The daily series in the same payload is right.
+        //
+        //So the price is read off the series - the last bar in the window that has actually
+        //closed - and the meta price is kept only for a symbol that returns no series at all.
+        //For a symbol whose quote does work the two are the same figure to the cent: checked
+        //against A200.AX, VHY.AX, NDQ.AX, GOOGL and SCHD, all five agreed exactly.
+        //
+        //The window is five days rather than one because it is the series being read now.  A
+        //one day range holds a single bar, and that bar is empty until the day has closed.
+        //
+        //Still no JSON library: the two arrays are pulled out with a regular expression like
+        //everything else here.  The quote block comes before the adjusted one in the payload
+        //and "adjclose" does not match a search for "close" that includes its opening quote,
+        //so the first match of each is the pair wanted.
         private bool Fetch_Yahoo_Price(string parTicker, out decimal parPrice, out string parDate, out string parCurrency, out string parError)
         {
             parPrice = 0;
@@ -791,7 +935,7 @@ namespace FinancialBalance
                 ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol | SecurityProtocolType.Tls12;
 
                 string Url = "https://query1.finance.yahoo.com/v8/finance/chart/"
-                           + Uri.EscapeDataString(parTicker) + "?interval=1d&range=1d";
+                           + Uri.EscapeDataString(parTicker) + "?interval=1d&range=5d";
 
                 string Json;
                 using (WebClient Client = new WebClient())
@@ -800,18 +944,52 @@ namespace FinancialBalance
                     Json = Client.DownloadString(Url);
                 }
 
-                Match PriceMatch = Regex.Match(Json, "\"regularMarketPrice\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
-                if (!PriceMatch.Success)
+                //the day each bar belongs to, and what it closed at
+                string TmpSeriesDate = "";
+                Match TimesMatch = Regex.Match(Json, "\"timestamp\"\\s*:\\s*\\[([^\\]]*)\\]");
+                Match ClosesMatch = Regex.Match(Json, "\"close\"\\s*:\\s*\\[([^\\]]*)\\]");
+                if (TimesMatch.Success && ClosesMatch.Success)
                 {
-                    parError = "Yahoo Finance did not return a price for " + parTicker + ".";
-                    return false;
+                    string[] Times = TimesMatch.Groups[1].Value.Split(',');
+                    string[] Closes = ClosesMatch.Groups[1].Value.Split(',');
+
+                    //backwards, because the last bar is empty while its own day is still running
+                    for (int i = Closes.Length - 1; i >= 0; i--)
+                    {
+                        decimal TmpClose;
+                        if (!decimal.TryParse(Closes[i].Trim(), NumberStyles.Number,
+                                              CultureInfo.InvariantCulture, out TmpClose) || TmpClose <= 0)
+                        {
+                            continue;
+                        }
+                        parPrice = Math.Round(TmpClose, 2);
+
+                        long TmpWhen;
+                        if (i < Times.Length && long.TryParse(Times[i].Trim(), out TmpWhen) && TmpWhen > 0)
+                        {
+                            TmpSeriesDate = DateTimeOffset.FromUnixTimeSeconds(TmpWhen)
+                                                .LocalDateTime.ToString("yyyyMMdd");
+                        }
+                        break;
+                    }
                 }
-                if (!decimal.TryParse(PriceMatch.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out parPrice))
+
+                //nothing in the series, so fall back on whatever the quote block says
+                if (parPrice <= 0)
                 {
-                    parError = "Could not read the price returned for " + parTicker + ".";
-                    return false;
+                    Match PriceMatch = Regex.Match(Json, "\"regularMarketPrice\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
+                    if (!PriceMatch.Success)
+                    {
+                        parError = "Yahoo Finance did not return a price for " + parTicker + ".";
+                        return false;
+                    }
+                    if (!decimal.TryParse(PriceMatch.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out parPrice))
+                    {
+                        parError = "Could not read the price returned for " + parTicker + ".";
+                        return false;
+                    }
+                    parPrice = Math.Round(parPrice, 2);
                 }
-                parPrice = Math.Round(parPrice, 2);
 
                 //currency the price is quoted in, straight from the same meta block
                 Match CurrMatch = Regex.Match(Json, "\"currency\"\\s*:\\s*\"([A-Za-z]{2,5})\"");
@@ -820,15 +998,22 @@ namespace FinancialBalance
                     parCurrency = CurrMatch.Groups[1].Value.Trim();
                 }
 
-                //date the price belongs to, from the market timestamp where available
+                //Date the price belongs to, from the market timestamp where Yahoo has one - which is
+                //what this has always used, so a symbol with a working quote files where it always
+                //did.  A regularMarketTime of 0 is no timestamp rather than midnight in 1970, which
+                //is where PMGOLD.AX was being filed; that falls through to the bar's own day.
                 Match TimeMatch = Regex.Match(Json, "\"regularMarketTime\"\\s*:\\s*([0-9]+)");
                 if (TimeMatch.Success)
                 {
                     long Epoch;
-                    if (long.TryParse(TimeMatch.Groups[1].Value, out Epoch))
+                    if (long.TryParse(TimeMatch.Groups[1].Value, out Epoch) && Epoch > 0)
                     {
                         parDate = DateTimeOffset.FromUnixTimeSeconds(Epoch).LocalDateTime.ToString("yyyyMMdd");
                     }
+                }
+                if (parDate == "")
+                {
+                    parDate = TmpSeriesDate;
                 }
                 if (parDate == "")
                 {
@@ -880,7 +1065,7 @@ namespace FinancialBalance
             CmdSync.Enabled = false;
             try
             {
-                if (!Fetch_Yahoo_Price(Ticker, out TmpPrice, out TmpDate, out TmpCurrency, out TmpError))
+                if (!Fetch_Price(Ticker, out TmpPrice, out TmpDate, out TmpCurrency, out TmpError))
                 {
                     MessageBox.Show(TmpError, "Error Message");
                     return;
@@ -893,7 +1078,7 @@ namespace FinancialBalance
                 Select_Currency(TmpCurrency);
                 txtPrice.Text = TmpPrice.ToString("0.00", CultureInfo.InvariantCulture);
 
-                MessageBox.Show("Yahoo Finance price for " + Ticker + " on " + Mdl1.toLongDate(TmpDate)
+                MessageBox.Show("Latest price for " + Ticker + " on " + Mdl1.toLongDate(TmpDate)
                     + " is " + TmpCurrency + " " + Mdl1.FormatAmt((double)TmpPrice) + " and has been "
                     + (WasUpdate ? "updated" : "saved") + ".", "Success");
 

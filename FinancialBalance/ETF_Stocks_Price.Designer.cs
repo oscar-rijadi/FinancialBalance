@@ -251,8 +251,8 @@
             this.CmdSyncAll.Location = new System.Drawing.Point(19, 78);
             this.CmdSyncAll.Name = "CmdSyncAll";
             this.CmdSyncAll.Size = new System.Drawing.Size(200, 27);
-            this.CmdSyncAll.TabIndex = 20;
-            this.CmdSyncAll.Text = "Sync &all with Yahoo Finance";
+            this.CmdSyncAll.TabIndex = 23;
+            this.CmdSyncAll.Text = "Get &Latest Price";
             this.CmdSyncAll.UseVisualStyleBackColor = false;
             this.CmdSyncAll.Click += new System.EventHandler(this.CmdSyncAll_Click);
             //
@@ -264,7 +264,7 @@
             this.LblAllCaption.Location = new System.Drawing.Point(232, 84);
             this.LblAllCaption.Name = "LblAllCaption";
             this.LblAllCaption.Size = new System.Drawing.Size(450, 20);
-            this.LblAllCaption.TabIndex = 21;
+            this.LblAllCaption.TabIndex = 24;
             this.LblAllCaption.Text = "Latest price of every ticker";
             //
             // gvAllPrices
@@ -313,7 +313,7 @@
             this.CmdSync.Name = "CmdSync";
             this.CmdSync.Size = new System.Drawing.Size(175, 27);
             this.CmdSync.TabIndex = 4;
-            this.CmdSync.Text = "Sync with &Yahoo Finance";
+            this.CmdSync.Text = "Get Price for This &Ticker";
             this.CmdSync.UseVisualStyleBackColor = false;
             this.CmdSync.Click += new System.EventHandler(this.CmdSync_Click);
             //

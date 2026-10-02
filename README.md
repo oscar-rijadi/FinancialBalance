@@ -1187,31 +1187,141 @@ Prices arrive two ways:
 | Route | Behaviour |
 | --- | --- |
 | **Manual** | Pick a date, a currency and type a price — numeric, not negative, at most 2 decimal places. |
-| **Sync with Yahoo Finance** | One ticker. Enabled only when its `In_YahooFinance` is `True`, otherwise greyed with a note. |
-| **Sync all with Yahoo Finance** | Every ticker flagged `In_YahooFinance`, in one pass. |
+| **Get Price for This Ticker** | One ticker. Enabled only when its `In_YahooFinance` is `True`, otherwise greyed with a note. |
+| **Get Latest Price** | Every ticker flagged `In_YahooFinance`, in one pass. |
 
 A grid at the top of the page lists **every** ticker in `TblETFStocks` with the currency and
-latest stored price, whether that price came from Yahoo or was typed in; a ticker with no price
+latest stored price, whether that price was fetched or typed in; a ticker with no price
 shows `-`. It refreshes after any add, update, delete or sync, so it never goes stale. Its
 columns are `Full Ticker`, `Currency`, `Current Price`; the per-ticker grid below shows
 `Price Date`, `Currency`, `Price`.
 
 The bulk sync attempts each ticker independently — one failure does not abort the run. Results
 are reported once at the end as *"n of m ticker(s) updated"*, with any failures listed, rather
-than a dialog per ticker. Both sync buttons disable while it runs.
+than a dialog per ticker. Both buttons disable while it runs.
 
-The sync calls Yahoo's chart endpoint and reads three values out of the response:
+> **Both buttons were named after Yahoo** — *Sync all with Yahoo Finance* and *Sync with
+> Yahoo Finance* — and neither name survived the page learning to ask the ASX as well. They
+> are **Get Latest Price** (Alt+L) and **Get Price for This Ticker** (Alt+T), which say what
+> the button is for rather than where it goes for it. The first rename also freed the **A**
+> key: the old caption underlined the `a` of *all*, which **Add / Update** on the same form
+> had already taken. Every button on the page now answers a key of its own.
+
+#### Where a price comes from
+
+**A holding on the ASX is priced by the ASX.** Anything else goes to Yahoo. The suffix
+[ETF/Stock Setup](#etfstock-setup) builds into `Full_Ticker` is what decides it: a ticker
+ending `.AX` is asked of the exchange, and `PMGOLD.AX` becomes plain `PMGOLD` to its API.
 
 ```
-https://query1.finance.yahoo.com/v8/finance/chart/{Full_Ticker}?interval=1d&range=1d
-  regularMarketPrice  ->  Price      (rounded to 2 dp)
-  regularMarketTime   ->  Price_Date (epoch, converted to LOCAL date)
-  currency            ->  Currency   (as quoted by the exchange)
+ASX, for a .AX ticker
+https://asx.api.markitdigital.com/asx-research/1.0/companies/{CODE}/header
+  priceLast                  ->  Price      the last traded price, rounded to 2 dp
+  (nothing)                  ->  Price_Date today
+  (nothing)                  ->  Currency   AUD
+
+Yahoo, for everything else
+https://query1.finance.yahoo.com/v8/finance/chart/{Full_Ticker}?interval=1d&range=5d
+  indicators.quote[0].close  ->  Price      the last bar that closed, rounded to 2 dp
+  regularMarketTime          ->  Price_Date epoch, converted to LOCAL date
+  currency                   ->  Currency   as quoted by the exchange
 ```
 
-There is no JSON library in the project, so those three fields are pulled out with regular
-expressions rather than adding a dependency. An unknown ticker returns HTTP 404 and is reported
-as such; network failures report the underlying error.
+There is no JSON library in the project, so those fields are pulled out with regular
+expressions rather than adding a dependency. An unknown ticker is reported as such — the ASX
+answers **HTTP 400** for a code it does not list, Yahoo **404** — and network failures report
+the underlying error.
+
+**An ASX holding the exchange will not answer for falls through to Yahoo** rather than
+failing outright, and only a ticker neither side carries fails. When that happens the
+message names both, so it says what was actually tried:
+
+> The ASX does not list the code ZZNOSUCH.  Yahoo Finance does not recognise the ticker
+> ZZNOSUCH.AX.
+
+##### Why the exchange, and not Yahoo
+
+Because for one holding Yahoo is simply wrong, and for the rest it makes no difference.
+`PMGOLD.AX` was being priced at **`17.94`** against the **`59.97`** the exchange was showing
+at the same moment. Every other ASX holding came back **identical** from both:
+
+| | ASX `priceLast` | Yahoo |
+| --- | --- | --- |
+| `PMGOLD.AX` | **59.97** | **17.94** |
+| `A200.AX` | 144.90 | 144.90 |
+| `BGBL.AX` | 86.75 | 86.75 |
+| `BSUB.AX` | 25.59 | 25.59 |
+| `DHHF.AX` | 41.63 | 41.63 |
+| `JPEQ.AX` | 62.30 | 62.30 |
+| `NDQ.AX` | 64.18 | 64.18 |
+| `SEMI.AX` | 40.18 | 40.18 |
+| `VHY.AX` | 82.48 | 82.48 |
+| `VTEK.AX` | 69.33 | 69.33 |
+| `VVLU.AX` | 80.30 | 80.30 |
+
+So asking the exchange first costs nothing and takes away the question of whether Yahoo has
+a given symbol right. It is also the source that **is** right by definition: the ASX is what
+the holding trades on.
+
+Two things the ASX payload does not carry, and what is recorded instead:
+
+- **No timestamp of any kind.** Neither does any other endpoint on that API —
+  `price-history`, `prices`, `intraday-prices` and `price-chart` are all 404 — so the price
+  is dated **today**. It is the latest price rather than a historical one, and the table is
+  keyed per day, so fetching twice in a day updates the row rather than adding a second.
+- **No currency.** The ASX quotes in Australian dollars, so `AUD` is recorded outright
+  rather than left for the fallback in [Currency on a price](#currency-on-a-price) to
+  work out.
+
+> `priceLast` comes back in full binary precision — `JPEQ` answers `62.300000000000004` —
+> so it is rounded to the cent like every other price this page stores.
+
+##### And why Yahoo's own price comes off the series
+
+The Yahoo side matters for `GOOGL` and `SCHD`, and as the fallback for an ASX holding the
+exchange will not answer for — so it had to stop reading the field that was wrong.
+
+Yahoo's `meta` block carries a `regularMarketPrice`, and for most symbols that is the figure
+to take. **For some it is simply wrong.** `PMGOLD.AX` answers `17.94` against a real price
+near `60`, and the rest of its quote block says why:
+
+| Field | `PMGOLD.AX` | a symbol Yahoo does quote |
+| --- | --- | --- |
+| `regularMarketPrice` | `17.94` | the last traded price |
+| `regularMarketTime` | **`0`** | an epoch in the current session |
+| `regularMarketVolume` | **`0`** | the day's volume |
+| `regularMarketDayHigh` / `Low` | **`0`** | the day's range |
+| `currency` | **`null`** | `AUD`, `USD`, ... |
+
+All of that together is Yahoo saying **it holds no current quote for the symbol**, not that
+the price is 17.94. The daily series in the same payload is perfectly good:
+
+```
+2026-09-30   59.47
+2026-10-01   59.86
+2026-10-02   null      <- today, which has not closed yet
+```
+
+So the price is read off **`indicators.quote[0].close`**, walking back from the end to the
+last bar that actually closed, and `regularMarketPrice` is kept only for a symbol that
+returns no series at all. For a symbol whose quote *does* work the two are **the same figure
+to the cent** — checked against `A200.AX`, `VHY.AX`, `NDQ.AX`, `GOOGL` and `SCHD`, all five
+agreed exactly — so nothing but the broken symbol moves.
+
+The window is **five days** rather than one for the same reason: a one-day range holds a
+single bar, and that bar is empty until its day has closed.
+
+> **The best Yahoo can do for `PMGOLD.AX` is its previous close.** It publishes no intraday
+> series for the symbol either — `interval=1h`, `5m` and `1m` all come back with no points at
+> all — and `v7/finance/quote`, which might carry a live figure, answers `401` without a
+> crumb. That is why the exchange is asked first: the ASX has the last traded price, which
+> is the figure that was wanted. The series is what the fallback rests on, and a previous
+> close is a far better answer than a third of the value.
+
+**A `regularMarketTime` of `0` is no timestamp, not midnight in 1970.** It used to be taken
+at face value, so `PMGOLD.AX` was being filed under `19700101` as well as at the wrong price.
+The date now falls through to the bar's own day when the quote carries no usable time, and
+only then to today — so a symbol whose quote works files exactly where it always did.
 
 > The synced date is the market timestamp **converted to local time**, not the exchange's own
 > date. A US close therefore lands under the following Australian date, so US and ASX tickers
@@ -3081,11 +3191,13 @@ Things worth knowing before changing this code.
 - **`decimal` columns are read through `double`**, which introduces rounding on large IDR figures.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
-- **Three pages reach the network**, and only these three: `ETF_Stocks_Price` on either sync
-  button, `Setup_ETF_Stocks` on either Yahoo button or **Get All Expense Ratio**, and
+- **Three pages reach the network**, and only these three: `ETF_Stocks_Price` on either of its
+  two price buttons — the one page that talks to **two** hosts, the ASX for its own listings
+  and Yahoo for the rest — `Setup_ETF_Stocks` on either Yahoo button or
+  **Get All Expense Ratio**, and
   `Setup_Curr_Rate` on **Get Latest Currency** or **Get All Latest Currency**. All three force
   TLS 1.2, set a `User-Agent`, and run on the UI thread — the form freezes for the duration.
-  The four bulk buttons — **Sync all**, **Get All Latest Currency**,
+  The four bulk buttons — **Get Latest Price**, **Get All Latest Currency**,
   **Get All Dividend Yield from Yahoo Finance** and **Get All Expense Ratio** — make one request
   per ticker or per currency in sequence, so that freeze scales with how many there are; the
   other three make one each.
@@ -4960,7 +5072,7 @@ ZZZ : Yahoo Finance does not quote ZZZIDR=X, so there is no rate to fetch for ZZ
 ```
 
 It comes up as a **Success** when everything landed and as an **Error Message** when anything
-did not — the same shape **Sync all with Yahoo Finance** uses on the price page, for the same
+did not — the same shape **Get Latest Price** uses on the price page, for the same
 reason: a partial result is not a failure, but it is not something to dismiss unread either.
 
 It moves the date pickers to today and redraws the list exactly as the single-currency button
