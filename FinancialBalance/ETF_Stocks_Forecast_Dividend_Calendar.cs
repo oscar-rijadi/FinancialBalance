@@ -194,6 +194,32 @@ namespace FinancialBalance
             }
         }
 
+        //A ticker with no exchange suffix is one held on the US market.  ETF/Stock Setup writes
+        //the suffix as "None" or leaves it empty for those, and Full_Ticker is then the ticker
+        //on its own - GOOGL rather than A200.AX.
+        private bool No_Suffix(string parSuffix)
+        {
+            string TmpSuffix = parSuffix.Trim().ToUpper();
+            return (TmpSuffix == "" || TmpSuffix == "NONE");
+        }
+
+        //Which month a fallback cycle is counted from when there is no payment history to step
+        //off.  January for anything carrying an exchange suffix, which is the cycle the funds
+        //on the local exchange actually pay on; March for a quarterly payer without one,
+        //because the US quarterly cycle is March, June, September and December.
+        //
+        //Only the quarterly case differs.  A monthly payer pays every month whatever it is
+        //counted from, and nothing says a half yearly or yearly payer without a suffix keeps
+        //to a cycle of its own, so those are left where they were.
+        private int Cycle_Base(int parStep, string parSuffix)
+        {
+            if (parStep == 3 && No_Suffix(parSuffix))
+            {
+                return 3;
+            }
+            return 1;
+        }
+
         //The month a ticker last actually paid in, whatever portfolio it was held under - the
         //schedule belongs to the holding, not to the portfolio it sits in.  Returns false when
         //nothing has ever been received for it.
@@ -232,7 +258,8 @@ namespace FinancialBalance
         //year: a quarterly payer that last paid in July is due again in October, not in January.
         //With nothing on record there is no month to anchor to, so the run starts at the first
         //column and the note says how many were placed that way.
-        private double[] Spread(double parPerPayment, int parStep, bool parAnchored, DateTime parAnchor)
+        private double[] Spread(double parPerPayment, int parStep, bool parAnchored,
+                                DateTime parAnchor, int parBase)
         {
             double[] Result = new double[12];
 
@@ -248,12 +275,17 @@ namespace FinancialBalance
             else
             {
                 //Nothing to anchor to, so fall back on the cycle the calendar itself implies:
-                //January, and every step from it - April, July and October for a quarterly
-                //payer, January and July for a half yearly one. That is the cycle every
-                //holding that does have a history actually pays on, so a holding with none
-                //lands in step with the rest instead of on whichever month the page is opened.
+                //parBase, and every step from it - April, July and October for a quarterly
+                //payer counted from January, March, June, September and December for one
+                //counted from March, January and July for a half yearly one. That is the cycle
+                //holdings of the same sort that do have a history actually pay on, so a holding
+                //with none lands in step with the rest instead of on whichever month the page
+                //happens to be opened in.
+                //
+                //The remainder is folded back into range by hand: parBase can be later in the
+                //year than the month being tested, and C# gives a negative remainder for that.
                 TmpNext = Months[0];
-                while ((TmpNext.Month - 1) % parStep != 0)
+                while (((TmpNext.Month - parBase) % parStep + parStep) % parStep != 0)
                 {
                     TmpNext = TmpNext.AddMonths(1);
                 }
@@ -429,7 +461,9 @@ namespace FinancialBalance
 
                     double TmpYield = 0;
                     string TmpInterval = "";
-                    Mdl1.Ssql = "select Distribution_Dividend_Yield, Distribution_Dividend_Interval"
+                    string TmpSuffix = "";
+                    Mdl1.Ssql = "select Distribution_Dividend_Yield, Distribution_Dividend_Interval,"
+                              + " Exchange_Suffix"
                               + " from TblETFStocks where Full_Ticker = '" + Tickers[i].Replace("'", "''") + "'";
                     OleDbCommand cmd2 = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                     OleDbDataReader reader2 = cmd2.ExecuteReader();
@@ -438,6 +472,8 @@ namespace FinancialBalance
                         TmpYield = Read_Double(reader2["Distribution_Dividend_Yield"]);
                         TmpInterval = (reader2["Distribution_Dividend_Interval"] == DBNull.Value
                                        ? "" : reader2["Distribution_Dividend_Interval"].ToString().Trim());
+                        TmpSuffix = (reader2["Exchange_Suffix"] == DBNull.Value
+                                     ? "" : reader2["Exchange_Suffix"].ToString().Trim());
                     }
                     reader2.Close();
 
@@ -478,7 +514,8 @@ namespace FinancialBalance
                         Guessed++;
                     }
 
-                    double[] TmpRow = Spread(TmpPer, TmpStep, Anchored, TmpAnchor);
+                    double[] TmpRow = Spread(TmpPer, TmpStep, Anchored, TmpAnchor,
+                                             Cycle_Base(TmpStep, TmpSuffix));
                     double[] TmpPaid = Actuals(Tickers[i], TmpPortfolioAnd);
 
                     double TmpRowTotal = 0;
@@ -587,9 +624,9 @@ namespace FinancialBalance
             if (parGuessed > 0)
             {
                 TmpText = TmpText + "   -   " + parGuessed.ToString()
-                    + " holding(s) have never paid, so their run falls on the January cycle"
-                    + " (Jan/Apr/Jul/Oct quarterly, Jan/Jul half yearly) rather than on a month"
-                    + " of their own.";
+                    + " holding(s) have never paid, so their run falls on a standard cycle rather"
+                    + " than on a month of their own - Jan/Apr/Jul/Oct quarterly and Jan/Jul half"
+                    + " yearly with an exchange suffix, Mar/Jun/Sep/Dec quarterly without one.";
             }
             if (parActual > 0)
             {

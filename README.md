@@ -3554,20 +3554,38 @@ known and one that is worked out is the whole answer.
 #### When there is nothing to anchor to
 
 A holding that has never paid has no month to step forward from. Rather than start the run
-at whichever month the page happens to be opened, it falls on the **January cycle** —
-January and every step from it:
+at whichever month the page happens to be opened, it falls on a **standard cycle** — a base
+month, and every step from it. **Which base month depends on whether the ticker carries an
+exchange suffix**:
 
-| Interval | Months |
-| --- | --- |
-| `Monthly` | every month |
-| `Quarterly` | January, April, July, October |
-| `Half Yearly` | January, July |
-| `Yearly` | January |
+| Interval | With an exchange suffix | Without one |
+| --- | --- | --- |
+| `Monthly` | every month | every month |
+| `Quarterly` | January, April, July, October | **March, June, September, December** |
+| `Half Yearly` | January, July | January, July |
+| `Yearly` | January | January |
 
-That is the cycle every holding that *does* have a history actually pays on, which is what
-makes it the right default rather than a guess: an Australian ETF distributing for quarters
-ending March, June, September and December pays the month after each. So a holding with no
-history now lines up with its peers instead of sitting a month or two out from all of them.
+**The suffix is what says which market the holding is on.**
+[ETF/Stock Setup](#etfstock-setup) writes `Exchange_Suffix` as `None`, or leaves it empty,
+for a holding that is not on a local exchange — `GOOGL` rather than `A200.AX` — so a ticker
+with no suffix is a US one. US companies pay quarterly on **March, June, September and
+December**; an Australian fund distributing for quarters ending those same months pays the
+month *after* each, which is the January cycle. Either column is the cycle that holdings of
+that sort which *do* have a history actually pay on, which is what makes it the right default
+rather than a guess: a holding with no history lines up with its peers instead of sitting a
+month or two out from all of them.
+
+**Only the quarterly row differs.** A monthly payer pays every month whichever month it is
+counted from, and nothing says a half yearly or yearly holding without a suffix keeps to a
+cycle of its own, so those are left where they were. An `Exchange_Suffix` left **empty** counts
+the same as `None`, since the setup page treats the two alike when it builds `Full_Ticker`.
+
+> **A payment on record still wins.** This is the fallback, not an override: the moment a
+> holding has anything in `TblETFStocksDistributionDividend` the run steps forward from that,
+> and the table above is not consulted at all. The two rarely disagree — a suffix-less
+> quarterly holding that really does pay in March, June, September and December lands on those
+> months either way once it has a history — and where they do, what was actually paid is the
+> better answer. The cycle only decides where a holding sits before it has paid anything.
 
 #### What cannot be forecast
 
@@ -3587,8 +3605,10 @@ An unpriced holding still counts towards **Total Unit** and **Total Investment**
 towards **Total Current Amount** — the same treatment, and the same caveat, that
 [Portfolio Summary](#portfolio-summary) applies to its own current-value total.
 
-Separately, a holding that has **never paid** has no month to anchor to, so its run is
-assumed to start this month. It is still forecast; only its timing is a guess.
+Separately, a holding that has **never paid** has no month to anchor to, so its run falls on
+the standard cycle for its interval and its exchange, set out
+[above](#when-there-is-nothing-to-anchor-to). It is still forecast; only its timing is a
+default rather than its own.
 
 The note under the grid counts all three cases, alongside a standing reminder of what the
 figures rest on.
