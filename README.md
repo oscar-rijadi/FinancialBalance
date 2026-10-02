@@ -255,7 +255,7 @@ flowchart LR
 | `Setup_Financial_Year` | Shown as **Financial Year Setup**. Names a financial year and the dates it runs between. |
 | `Setup_Interval` | Shown as **Interval Setup**. Maintains the intervals a distribution or dividend can be paid at. |
 | `Setup_ETF_Stocks_Suffix` | Maintains the list of ETF/stock exchange suffixes. |
-| `Setup_ETF_Stocks` | Maintains ETF/stock tickers, with the yield each pays and how often. The yield can be fetched from Yahoo Finance. `Full_Ticker` is derived, not typed. |
+| `Setup_ETF_Stocks` | Maintains ETF/stock tickers, with the yield each pays and how often. The yield can be fetched from Yahoo Finance, one ticker at a time or every flagged ticker at once. `Full_Ticker` is derived, not typed. |
 | `Setup_ETF_Stocks_Flag` | Shown as **ETF/Stock Portfolio Code Setup**. Maintains portfolio codes, descriptions and the `Is_Main` marker. |
 | `Setup_ETF_Stocks_Div_Type` | Maintains the diversification types — the categories a holding can be classified along. |
 | `Setup_ETF_Stocks_Div` | Maintains the values within each type. |
@@ -3073,12 +3073,12 @@ Things worth knowing before changing this code.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
 - **Three pages reach the network**, and only these three: `ETF_Stocks_Price` on either sync
-  button, `Setup_ETF_Stocks` on **Get Dividend Yield from Yahoo Finance**, and `Setup_Curr_Rate`
-  on **Get Latest Currency** or **Get All Latest Currency**. All three force TLS 1.2, set a
-  `User-Agent`, and run on the UI thread — the form freezes for the duration. The two bulk
-  buttons, **Sync all** and **Get All Latest Currency**, make one request per ticker or per
-  currency in sequence, so that freeze scales with how many there are; the other two make one
-  each.
+  button, `Setup_ETF_Stocks` on either Yahoo button, and `Setup_Curr_Rate` on
+  **Get Latest Currency** or **Get All Latest Currency**. All three force TLS 1.2, set a
+  `User-Agent`, and run on the UI thread — the form freezes for the duration. The three bulk
+  buttons — **Sync all**, **Get All Latest Currency** and
+  **Get All Dividend Yield from Yahoo Finance** — make one request per ticker or per currency
+  in sequence, so that freeze scales with how many there are; the other three make one each.
   Yahoo's endpoint is undocumented and can change without notice — the `quote` and
   `quoteSummary` endpoints already have, which is why the yield is computed from dividend
   events rather than read from a field.
@@ -4982,9 +4982,9 @@ nothing calculates from it yet.
 
 #### Get Dividend Yield from Yahoo Finance
 
-The button before **Setup** fills the yield box from Yahoo Finance. **It fills the box and
-stops there** — nothing is written until Setup is pressed, so the figure can be overtyped
-like any other. Yahoo's number is a starting point, not the last word.
+The first of the two buttons on the Yahoo row fills the yield box from Yahoo Finance.
+**It fills the box and stops there** — nothing is written until Setup is pressed, so the
+figure can be overtyped like any other. Yahoo's number is a starting point, not the last word.
 
 It is refused unless the ticker resolves and **In Yahoo Finance** is `Y` — the same gate
 [ETF/Stock Price](#etfstock-price-rules) puts on its sync, except that this page reads the
@@ -5028,6 +5028,63 @@ it was**.
 Like the price page's sync, the call runs on the UI thread and the form freezes for its
 duration — one request, so briefly. The button disables while it runs and comes back in a
 `finally`, so a failure cannot leave it dead.
+
+#### Get All Dividend Yield from Yahoo Finance
+
+The button beside it does the same fetch for **every ticker flagged `In_YahooFinance`**, and
+**saves each one as it comes back**. That is the one way the two differ: a single figure can
+be looked at before it is taken, so the first button leaves it in the box for you; a whole
+list cannot, so the second writes `Distribution_Dividend_Yield` straight to `TblETFStocks`.
+It is the same bargain [Get All Latest Currency](#get-all-latest-currency) makes one page over.
+
+```
+select Full_Ticker from TblETFStocks where In_YahooFinance = True order by Full_Ticker
+```
+
+**The flag is the whole of the selection.** A ticker that is not in Yahoo Finance is not an
+error here, it is simply never asked about — the table-side form of the gate the
+single-ticker button puts on the dropdown in front of you. Nothing else on screen narrows the
+run either: the row selected in the grid and the ticker in the entry boxes make no difference
+to which tickers are fetched.
+
+**The list is read and the reader closed before anything is fetched or written.** Jet will not
+carry a second command on a connection while a reader is open on it, and the updates go down
+the same `Mdl1.conn` as the read — so the whole list is collected first and the loop runs
+against that.
+
+**One ticker Yahoo will not answer for stops that ticker, not the run.** Each failure is kept
+with its reason and the loop moves on, so one bad symbol cannot cost you the other forty. The
+dialog afterwards counts what was saved against what was asked for, and lists the rest:
+
+> 2 of 3 dividend yield(s) updated from Yahoo Finance.
+>
+> Not updated :
+>
+> ZZNOSUCH.AX : Yahoo Finance does not recognise the ticker ZZNOSUCH.AX.
+
+A run with nothing left out comes up as a **Success** in one line; a run that left anything
+out comes up as an **Error Message** carrying the list, for the same reason
+[Get All Latest Currency](#get-all-latest-currency) does — a partial result is not a failure,
+but it is not something to dismiss unread either.
+
+**A ticker that paid nothing is saved as `0.00`, not skipped.** Saving it is the point: a
+holding that has stopped paying leaves a yield on record that has stopped being true, and only
+writing the zero clears it.
+
+Afterwards the grid is redrawn, and **if the entry boxes are showing one of the tickers that
+just changed, the yield box is moved to the new figure with it**. Otherwise the next press of
+**Setup** would write the box's stale figure straight back over what was just fetched.
+
+**Every button on the page is disabled for the length of a run**, not just the one pressed.
+A **Setup** in the middle of one would do exactly that overwrite, and **Back** would leave the
+rest of the run talking to a closed form. They come back in a `finally`, so a failure cannot
+leave the page dead — and the single-ticker button now locks the page the same way, where it
+used to disable only itself.
+
+> Fitting the second button in put the two Yahoo buttons on a row of their own, with
+> **Setup**, **Delete** and **Back** on a row beneath, and grew the form from 482px to 516px
+> to hold it. The two fetch buttons sit together because that is where the eye looks for the
+> pair — the arrangement [Currency Rate Setup](#get-all-latest-currency) already uses.
 
 #### The rest of the page
 

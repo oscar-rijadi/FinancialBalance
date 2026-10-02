@@ -67,6 +67,7 @@
             this.Label6 = new System.Windows.Forms.Label();
             this.CmbInterval = new System.Windows.Forms.ComboBox();
             this.CmdGetYield = new System.Windows.Forms.Button();
+            this.CmdGetAllYield = new System.Windows.Forms.Button();
             this.Label1 = new System.Windows.Forms.Label();
             this.Label2 = new System.Windows.Forms.Label();
             this.Label3 = new System.Windows.Forms.Label();
@@ -83,7 +84,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(484, 436);
+            this.CmdBack.Location = new System.Drawing.Point(484, 470);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -311,7 +312,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(396, 436);
+            this.CmdDel.Location = new System.Drawing.Point(396, 470);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -378,13 +379,28 @@
             this.CmdGetYield.UseVisualStyleBackColor = false;
             this.CmdGetYield.Click += new System.EventHandler(this.CmdGetYield_Click);
             //
+            // CmdGetAllYield
+            //
+            this.CmdGetAllYield.BackColor = System.Drawing.SystemColors.Control;
+            this.CmdGetAllYield.Cursor = System.Windows.Forms.Cursors.Default;
+            this.CmdGetAllYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmdGetAllYield.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CmdGetAllYield.Location = new System.Drawing.Point(308, 436);
+            this.CmdGetAllYield.Name = "CmdGetAllYield";
+            this.CmdGetAllYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.CmdGetAllYield.Size = new System.Drawing.Size(265, 27);
+            this.CmdGetAllYield.TabIndex = 8;
+            this.CmdGetAllYield.Text = "Get &All Dividend Yield from Yahoo Finance";
+            this.CmdGetAllYield.UseVisualStyleBackColor = false;
+            this.CmdGetAllYield.Click += new System.EventHandler(this.CmdGetAllYield_Click);
+            //
             // CmdSetup
             //
             this.CmdSetup.BackColor = System.Drawing.SystemColors.Control;
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(308, 436);
+            this.CmdSetup.Location = new System.Drawing.Point(308, 470);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -515,7 +531,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 482);
+            this.ClientSize = new System.Drawing.Size(616, 516);
             this.ControlBox = false;
             this.Controls.Add(this.gvETFStocks);
             this.Controls.Add(this.Label4);
@@ -523,6 +539,7 @@
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.Label1);
             this.Controls.Add(this.CmdGetYield);
+            this.Controls.Add(this.CmdGetAllYield);
             this.Controls.Add(this.CmbInterval);
             this.Controls.Add(this.Label6);
             this.Controls.Add(this.txtYield);
@@ -592,6 +609,7 @@
         public System.Windows.Forms.Label Label6;
         public System.Windows.Forms.ComboBox CmbInterval;
         public System.Windows.Forms.Button CmdGetYield;
+        public System.Windows.Forms.Button CmdGetAllYield;
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.Label Label2;
         public System.Windows.Forms.Label Label3;

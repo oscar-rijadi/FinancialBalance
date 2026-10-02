@@ -376,7 +376,7 @@ namespace FinancialBalance
             }
 
             Cursor.Current = Cursors.WaitCursor;
-            CmdGetYield.Enabled = false;
+            Buttons(false);
             try
             {
                 if (!Fetch_Yahoo_Yield(TmpTicker, out TmpYield, out TmpCount, out TmpTotal,
@@ -414,7 +414,134 @@ namespace FinancialBalance
             finally
             {
                 Cursor.Current = Cursors.Default;
-                CmdGetYield.Enabled = true;
+                Buttons(true);
+            }
+        }
+
+        //Nothing else on the page may be pressed while a run is in the air.  A Setup in the
+        //middle of one would write the entry box's old yield straight back over a figure just
+        //fetched, and Back would leave the rest of the run talking to a closed form.
+        private void Buttons(bool parOn)
+        {
+            CmdGetYield.Enabled = parOn;
+            CmdGetAllYield.Enabled = parOn;
+            CmdSetup.Enabled = parOn;
+            CmdDel.Enabled = parOn;
+            CmdBack.Enabled = parOn;
+        }
+
+        //Every flagged ticker in one pass, and this one writes.  The button beside it fills the
+        //box and leaves saving to Setup, because one figure can be looked at before it is taken;
+        //a whole list cannot, so these are saved as they come back - the same bargain
+        //Get All Latest Currency makes on Currency Rate Setup.
+        //
+        //A ticker that is not in Yahoo Finance is not an error here, it is simply not asked
+        //about: In_YahooFinance is what the list is drawn from, which is the table-side form of
+        //the gate the one-ticker button puts on the dropdown.
+        private void CmdGetAllYield_Click(object sender, EventArgs e)
+        {
+            List<string> Tickers = new List<string>();
+            List<string> Failed = new List<string>();
+            Dictionary<string, double> Saved = new Dictionary<string, double>();
+
+            try
+            {
+                //the whole list is read and the reader closed before any of it is fetched or
+                //written.  Jet will not carry a second command on this connection while a reader
+                //is open on it, and the updates below go down the same one.
+                Mdl1.Ssql = "select Full_Ticker from TblETFStocks where In_YahooFinance = True"
+                          + " order by Full_Ticker";
+                OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                OleDbDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    string TmpTicker = reader["Full_Ticker"].ToString().Trim();
+                    if (TmpTicker != "")
+                    {
+                        Tickers.Add(TmpTicker);
+                    }
+                }
+                reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+                return;
+            }
+
+            if (Tickers.Count == 0)
+            {
+                MessageBox.Show("No ETF or stock is flagged as In Yahoo Finance.", "Error Message");
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+            Buttons(false);
+            try
+            {
+                for (int i = 0; i < Tickers.Count; i++)
+                {
+                    double TmpYield;
+                    int TmpCount;
+                    double TmpTotal;
+                    double TmpPrice;
+                    string TmpCurrency;
+                    string TmpError;
+
+                    if (!Fetch_Yahoo_Yield(Tickers[i], out TmpYield, out TmpCount, out TmpTotal,
+                                           out TmpPrice, out TmpCurrency, out TmpError))
+                    {
+                        //one ticker Yahoo will not answer for stops that ticker, not the run
+                        Failed.Add(Tickers[i] + " : " + TmpError);
+                        continue;
+                    }
+
+                    //a ticker that paid nothing has a yield of 0.00 %, which is an answer rather
+                    //than a failure, and saving it is the point: it clears a figure that has
+                    //stopped being true.
+                    Mdl1.Ssql = "Update TblETFStocks set Distribution_Dividend_Yield = "
+                              + TmpYield.ToString("0.00", CultureInfo.InvariantCulture)
+                              + " where Full_Ticker = '" + Tickers[i].Replace("'", "''") + "'";
+                    OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+                    cmd.ExecuteNonQuery();
+                    Saved[Tickers[i]] = TmpYield;
+                }
+
+                Get_Data();
+
+                //the entry boxes are usually showing one of these tickers, and a box left holding
+                //the old figure would be written straight back over the new one by the next Setup
+                string TmpOnScreen = Full_Ticker.Text.Trim();
+                if (TmpOnScreen != "" && Saved.ContainsKey(TmpOnScreen))
+                {
+                    txtYield.Text = Saved[TmpOnScreen].ToString("0.00", CultureInfo.InvariantCulture);
+                }
+
+                string TmpMsg = Saved.Count.ToString() + " of " + Tickers.Count.ToString()
+                              + " dividend yield(s) updated from Yahoo Finance.";
+                if (Failed.Count > 0)
+                {
+                    TmpMsg = TmpMsg + Environment.NewLine + Environment.NewLine
+                           + "Not updated :" + Environment.NewLine;
+                    for (int i = 0; i < Failed.Count; i++)
+                    {
+                        TmpMsg = TmpMsg + Environment.NewLine + Failed[i];
+                    }
+                    MessageBox.Show(TmpMsg, "Error Message");
+                }
+                else
+                {
+                    MessageBox.Show(TmpMsg, "Success");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error Message");
+            }
+            finally
+            {
+                Buttons(true);
+                Cursor.Current = Cursors.Default;
             }
         }
 
