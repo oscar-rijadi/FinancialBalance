@@ -1750,12 +1750,40 @@ database, all of them still editable afterwards:
 | --- | --- |
 | `Previous_Investment` | The preceding year's **closing position** for the same code: its `Ending_Investment` **plus** its `Total_DistributionDividend_Reinvested` — from the year whose `End_Date` falls latest before this one starts. `0` when there is none — see below. |
 | `Investment` | Money **in less money out less what is still cash**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash` — see below. |
-| `Sold_Amount` | `SUM(Real_Total_Cost_Base)` from sold purchases inside the year. |
+| `Sold_Amount` | What the year's **sales** released: `SUM(Selling_Total_Amount - Profit_Or_Loss_On_Paper)` from `TblETFStocksSale`, for rows whose `Trans_Date` falls inside the year — see below. |
 | `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
 | `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below, **converted into the entry's Currency** — see below. |
 | `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year, **converted into the entry's Currency** — see below. |
 | `Capital_Gains`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
 | `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
+
+**Sold Amount is taken from the sales, not from the purchases they closed.** A sale's
+`Profit_Or_Loss_On_Paper` is what it made over the cost base of the lots it closed, so the
+proceeds less that profit *is* the cost base — which is the figure that leaves the
+investment when a holding is sold:
+
+```
+Sold_Amount = SUM( TblETFStocksSale.Selling_Total_Amount
+                 - TblETFStocksSale.Profit_Or_Loss_On_Paper )
+
+over rows whose Trans_Date falls inside the chosen financial year,
+for the same Portfolio_Code
+```
+
+It used to read `SUM(Real_Total_Cost_Base)` from the **purchases** marked sold inside the
+year. The two answer the same question from opposite ends, and reading the sales is the
+more direct of the two: a sale is the event that releases the investment, and it carries
+both figures the sum needs on the one row.
+
+> **The Nulls are guarded, and only here.** `SUM` ignores a row whose value is `Null`, which
+> is harmless for a single column — it is the same as treating it as nothing. With a
+> subtraction it is not: a `Null` in *either* column would make the whole expression `Null`
+> and drop the row from the total, losing the other half of it too. So each side is wrapped
+> in `IIf(IsNull(...), 0, ...)`. The sums either side of this one read a single column and
+> need no such guard.
+
+Like the other defaults on this side of the entry area, it is **not converted** into the
+entry's currency.
 
 **Last year's reinvested distributions are added in.** Reinvested income bought units, so it is
 invested money from the moment it was paid — but it never passed through the portfolio as a
@@ -1763,7 +1791,10 @@ deposit, so `Investment` never counted it and `Ending_Investment` does not carry
 therefore has to open on the two together:
 
 ```
-Previous_Investment = last year's Ending_Investment + last year's Distribution/Dividend Reinvested
+Previous_Investment = TblETFStocksFinancialYear.Ending_Investment
+                    + TblETFStocksFinancialYear.Total_DistributionDividend_Reinvested
+
+both read from the preceding financial year, for the same Portfolio_Code
 ```
 
 Opening on `Ending_Investment` alone started every year short by whatever the one before it had

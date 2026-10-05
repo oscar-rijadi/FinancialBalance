@@ -1128,8 +1128,19 @@ namespace FinancialBalance
                       - Sum_Between("TblETFStocksPortfolioInvestment", "[Amount]", "Investment_Date",
                                     TmpCode, TmpStart, TmpEnd, " and [Investment_Type] = '-'")
                       - Portfolio_Cash(TmpCode));
-                    Set_Box(txtSold, Sum_Between("TblETFStocksPurchase", "[Real_Total_Cost_Base]",
-                                                 "Trans_Date", TmpCode, TmpStart, TmpEnd, " and Is_Sold = True"));
+                    //What the sales inside the year released, taken from the sales themselves.  A sale's
+                    //Profit_Or_Loss_On_Paper is what it made over the cost base of the lots it closed, so
+                    //the proceeds less that profit is the cost base itself - which is the figure that
+                    //leaves the investment when a holding is sold.
+                    //
+                    //The Nulls are guarded because this is a subtraction: Sum ignores a Null row, and with
+                    //two columns a Null in either one would drop the whole row from the total rather than
+                    //counting the other half of it.  A single column needs no such guard, which is why the
+                    //sums around this one do not have it.
+                    Set_Box(txtSold, Sum_Between("TblETFStocksSale",
+                                                 "IIf(IsNull([Selling_Total_Amount]), 0, [Selling_Total_Amount])"
+                                               + " - IIf(IsNull([Profit_Or_Loss_On_Paper]), 0, [Profit_Or_Loss_On_Paper])",
+                                                 "Trans_Date", TmpCode, TmpStart, TmpEnd, ""));
                     //converted into the currency chosen in the entry area
                     Apply_Currency_Defaults(TmpCode, TmpStart, TmpEnd);
                     Set_Box(txtCapGainPaper, Sum_Between("TblETFStocksSale", "[Profit_Or_Loss_On_Paper]",
