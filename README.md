@@ -475,18 +475,18 @@ erDiagram
         decimal Sold_Amount "2 dp"
         decimal Ending_Investment "2 dp"
         decimal On_Paper_Ending_Value "2 dp"
-        decimal On_Paper_Profit_Or_Loss "2 dp"
-        decimal Percentage_On_Paper_Profit_Or_Loss "2 dp"
+        decimal Unrealised_Profit_Or_Loss "2 dp"
+        decimal Percentage_Unrealised_Profit_Or_Loss "2 dp"
         decimal Total_DistributionDividend "2 dp"
         decimal Total_DistributionDividend_Yield "2 dp"
         decimal Total_DistributionDividend_Reinvested "2 dp"
         decimal Total_DistributionDividend_Not_Reinvested "2 dp"
-        decimal Capital_Gains_On_Paper "2 dp"
+        decimal Capital_Gains "2 dp"
         decimal Real_Capital_Gains "2 dp"
         decimal Investment_Loan_Interest "2 dp"
         decimal Tax "2 dp"
-        decimal Real_Profit_Or_Loss "2 dp"
-        decimal Percentage_Real_Profit_Or_Loss "2 dp"
+        decimal Realised_Profit_Or_Loss "2 dp"
+        decimal Percentage_Realised_Profit_Or_Loss "2 dp"
     }
     TblFinancialYear {
         text Name PK "9 chars"
@@ -681,6 +681,48 @@ distribution totals, capital gains, loan interest and tax.
 [Financial year reconciliation](#financial-year-reconciliation) writes it,
 [Financial year historical](#financial-year-historical) reads it back, and Financial Year Setup
 maintains the years themselves.
+
+#### Five of its columns were renamed, and the captions with them
+
+The names now say **unrealised** and **realised** rather than *on paper* and *real*. The
+stored columns:
+
+| Was | Is |
+| --- | --- |
+| `On_Paper_Profit_Or_Loss` | `Unrealised_Profit_Or_Loss` |
+| `Percentage_On_Paper_Profit_Or_Loss` | `Percentage_Unrealised_Profit_Or_Loss` |
+| `Capital_Gains_On_Paper` | `Capital_Gains` |
+| `Real_Profit_Or_Loss` | `Realised_Profit_Or_Loss` |
+| `Percentage_Real_Profit_Or_Loss` | `Percentage_Realised_Profit_Or_Loss` |
+
+and the captions on [Financial year reconciliation](#financial-year-reconciliation) and
+[Financial year historical](#financial-year-historical), in their grids, their entry labels
+and their totals:
+
+| Was | Is |
+| --- | --- |
+| *On Paper Profit/Loss* | *Unrealised Profit/Loss* |
+| *Percentage On Paper Profit/Loss* | *Percentage Unrealised Profit/Loss* |
+| *Capital Gains On Paper* | *Capital Gains* |
+| *Real Profit/Loss* | *Realised Profit/Loss* |
+| *Percentage Real Profit/Loss* | *Percentage Realised Profit/Loss* |
+
+The totals on the historical page follow from the grid headings, so *Total On Paper
+Profit/Loss* became *Total Unrealised Profit/Loss*, *Percentage Total On Paper Profit/Loss*
+became *Percentage Total Unrealised Profit/Loss*, and so on.
+
+**`TblETFStocksSale.Real_Profit_Or_Loss` keeps its name**, because the rename was of this
+table only — and so does the *Real Profit/Loss* caption on [ETF/Stock Sale](#etfstock-purchase-and-sale-rules).
+The two columns are different things: the sale's is one sale's realised result, this one is
+a whole year's. They used to be spelled alike, and anything touching both has to keep them
+apart. [Financial year reconciliation](#financial-year-reconciliation) is the one page that
+reads both: its **Real Capital Gains** default sums `TblETFStocksSale.Real_Profit_Or_Loss`
+while every other column it reads is this table's.
+
+> **Two captions on these pages still use the old wording**, because they are not among the
+> five: *On Paper Ending Value* (from `On_Paper_Ending_Value`) and *Real Capital Gains*
+> (from `Real_Capital_Gains`). Renaming those columns and captions would finish the job.
+> The EOFY pair was brought across separately and now reads *Including Unrealised*.
 
 ### ETF/stock purchase and sale rules
 
@@ -1712,7 +1754,7 @@ database, all of them still editable afterwards:
 | `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
 | `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below, **converted into the entry's Currency** — see below. |
 | `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year, **converted into the entry's Currency** — see below. |
-| `Capital_Gains_On_Paper`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
+| `Capital_Gains`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
 | `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
 
 **Last year's reinvested distributions are added in.** Reinvested income bought units, so it is
@@ -1812,10 +1854,23 @@ currency is taken as correcting the label rather than asking for new figures; pr
 to get the defaults recalculated. The other defaults (`Previous_Investment`, `Investment`,
 `Sold_Amount`, the capital gains) are not converted.
 
-The rest are derived and re-derive as their inputs change: `On_Paper_Profit_Or_Loss` is
-`On_Paper_Ending_Value - Ending_Investment`, `Real_Profit_Or_Loss` is
-`Distribution + Real_Capital_Gains - Loan_Interest - Tax`, and the three percentages divide by
-`Ending_Investment`.
+The rest are derived and re-derive as their inputs change: **Unrealised Profit/Loss** is
+`On_Paper_Ending_Value - Ending_Investment`, and the three percentages divide by
+`Ending_Investment`. **Realised Profit/Loss** is what the year actually returned:
+
+```
+Realised Profit/Loss = Distribution/Dividend
+                     + Capital Gains
+                     - Investment Loan Interest
+                     - Tax
+```
+
+**The capital gains it adds are the `Capital Gains` box, not `Real Capital Gains`.** The two
+sit next to each other and both default from sales inside the year, so it is worth being
+plain about which one feeds this figure: editing **Capital Gains** moves Realised
+Profit/Loss, and editing **Real Capital Gains** does not. Real Capital Gains is still
+recorded, and still shown on [Financial year historical](#financial-year-historical) as a
+total of its own; it simply no longer feeds this one.
 
 > Every derived box stays editable, and a typed figure stands **until something it depends on
 > changes again** — editing Ending Investment then changing Investment replaces it, the same rule
@@ -1857,8 +1912,8 @@ portfolio, so it drops out with the rest.
 
 The same sixteen columns as the reconciliation page, in the same order, with the same
 formatting and the same red/green rules — negative red, positive green, zero left alone on
-On Paper Profit/Loss, Percentage On Paper Profit/Loss, Capital Gains On Paper, Real Capital
-Gains, Real Profit/Loss and Percentage Real Profit/Loss. Rows are ordered by portfolio code.
+Unrealised Profit/Loss, Percentage Unrealised Profit/Loss, Capital Gains, Real Capital
+Gains, Realised Profit/Loss and Percentage Realised Profit/Loss. Rows are ordered by portfolio code.
 
 #### The totals
 
@@ -1870,41 +1925,41 @@ back at the reader.
 | --- | --- | --- |
 | Total Ending Investment | sum of `Ending Investment` | no |
 | Total On Paper Ending Value | sum of `On Paper Ending Value` | no |
-| Total On Paper Profit/Loss | sum of `On Paper Profit/Loss` | yes |
-| Percentage Total On Paper Profit/Loss | `Total On Paper Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 when the investment is not above zero | yes |
+| Total Unrealised Profit/Loss | sum of `Unrealised Profit/Loss` | yes |
+| Percentage Total Unrealised Profit/Loss | `Total Unrealised Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 when the investment is not above zero | yes |
 | Total Distribution/Dividend | sum of `Distribution/Dividend` | no |
 | Total Distribution/Dividend Yield | `Total Distribution/Dividend` ÷ `Total Ending Investment` × 100, or 0 | no |
 | Total Distribution/Dividend Reinvested | sum of `Distribution/Dividend Reinvested` | no |
 | Total Distribution/Dividend Not Reinvested | sum of `Distribution/Dividend Not Reinvested` | no |
-| Total Capital Gains On Paper | sum of `Capital Gains On Paper` | no |
+| Total Capital Gains | sum of `Capital Gains` | no |
 | Total Real Capital Gains | sum of `Real Capital Gains` | no |
-| Total Real Profit/Loss | sum of `Real Profit/Loss` | yes |
-| Percentage Real Profit/Loss | `Total Real Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 | yes |
-| EOFY Profit/Loss Including On Paper | `Total On Paper Profit/Loss` + `Total Real Profit/Loss` - `Total Distribution/Dividend Reinvested` — see below | yes |
-| Percentage EOFY Profit/Loss Including On Paper | `EOFY Profit/Loss Including On Paper` ÷ `Total Ending Investment` × 100, or 0 | yes |
+| Total Realised Profit/Loss | sum of `Realised Profit/Loss` | yes |
+| Percentage Realised Profit/Loss | `Total Realised Profit/Loss` ÷ `Total Ending Investment` × 100, or 0 | yes |
+| EOFY Profit/Loss Including Unrealised (Minus Reinvested) | `Total Unrealised Profit/Loss` + `Total Realised Profit/Loss` - `Total Distribution/Dividend Reinvested` — see below | yes |
+| Percentage EOFY Profit/Loss Including Unrealised (Minus Reinvested) | `EOFY Profit/Loss Including Unrealised (Minus Reinvested)` ÷ `Total Ending Investment` × 100 when the investment is above zero, and 0 otherwise | yes |
 
 Every percentage divides by **Total Ending Investment**, including the ones that measure real
 rather than on-paper results, and each guards its own divide-by-zero.
 
 **The last two read the year whole.** Every other total on the page reports one side of it or
 the other: what the holdings are worth over what they cost, or what was actually banked.
-**EOFY Profit/Loss Including On Paper** brings the two together, so a year that gave back on
+**EOFY Profit/Loss Including Unrealised (Minus Reinvested)** brings the two together, so a year that gave back on
 paper what it made in the hand shows as the wash it was:
 
 ```
-EOFY = Total On Paper Profit/Loss
-     + Total Real Profit/Loss
+EOFY = Total Unrealised Profit/Loss
+     + Total Realised Profit/Loss
      - Total Distribution/Dividend Reinvested
 ```
 
 > **Why the reinvested distributions come back off.** As a rule the two sides are not the same
-> money twice: `On_Paper_Profit_Or_Loss` is the gain still sitting inside holdings that have not
-> been sold, measured at the year's closing prices, and `Real_Profit_Or_Loss` is what came out of
+> money twice: `Unrealised_Profit_Or_Loss` is the gain still sitting inside holdings that have not
+> been sold, measured at the year's closing prices, and `Realised_Profit_Or_Loss` is what came out of
 > the ones that were — distributions received, gains realised on sale, less loan interest and
 > tax. A holding leaves the first figure at the moment it enters the second.
 >
-> **Reinvested distributions are the exception.** They are inside `Real_Profit_Or_Loss` already,
-> as income received. They are also inside `On_Paper_Profit_Or_Loss`, because the units they
+> **Reinvested distributions are the exception.** They are inside `Realised_Profit_Or_Loss` already,
+> as income received. They are also inside `Unrealised_Profit_Or_Loss`, because the units they
 > bought are valued in `On_Paper_Ending_Value` while their cost never reached
 > `Ending_Investment` — reinvestment is not a deposit, so `Investment` never saw it. Adding the
 > two sides outright would count every reinvested dollar as income **and** as unrealised gain;

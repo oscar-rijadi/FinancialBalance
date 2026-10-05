@@ -569,7 +569,7 @@
             this.Lbl_txtOnPaperPL.Name = "Lbl_txtOnPaperPL";
             this.Lbl_txtOnPaperPL.Size = new System.Drawing.Size(230, 22);
             this.Lbl_txtOnPaperPL.TabIndex = 27;
-            this.Lbl_txtOnPaperPL.Text = "On Paper Profit/Loss";
+            this.Lbl_txtOnPaperPL.Text = "Unrealised Profit/Loss";
             //
             // txtOnPaperPL
             //
@@ -594,7 +594,7 @@
             this.Lbl_txtOnPaperPct.Name = "Lbl_txtOnPaperPct";
             this.Lbl_txtOnPaperPct.Size = new System.Drawing.Size(230, 22);
             this.Lbl_txtOnPaperPct.TabIndex = 29;
-            this.Lbl_txtOnPaperPct.Text = "Percentage On Paper Profit/Loss";
+            this.Lbl_txtOnPaperPct.Text = "Percentage Unrealised Profit/Loss";
             //
             // txtOnPaperPct
             //
@@ -713,22 +713,23 @@
             this.Lbl_txtCapGainPaper.ForeColor = System.Drawing.Color.Black;
             this.Lbl_txtCapGainPaper.Location = new System.Drawing.Point(940, 378);
             this.Lbl_txtCapGainPaper.Name = "Lbl_txtCapGainPaper";
-            this.Lbl_txtCapGainPaper.Size = new System.Drawing.Size(185, 22);
+            this.Lbl_txtCapGainPaper.Size = new System.Drawing.Size(200, 22);
             this.Lbl_txtCapGainPaper.TabIndex = 39;
-            this.Lbl_txtCapGainPaper.Text = "Capital Gains On Paper";
+            this.Lbl_txtCapGainPaper.Text = "Capital Gains";
             //
             // txtCapGainPaper
             //
             this.txtCapGainPaper.BackColor = System.Drawing.SystemColors.Window;
             this.txtCapGainPaper.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtCapGainPaper.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtCapGainPaper.Location = new System.Drawing.Point(1135, 377);
+            this.txtCapGainPaper.Location = new System.Drawing.Point(1150, 377);
             this.txtCapGainPaper.MaxLength = 20;
             this.txtCapGainPaper.Name = "txtCapGainPaper";
-            this.txtCapGainPaper.Size = new System.Drawing.Size(120, 20);
+            this.txtCapGainPaper.Size = new System.Drawing.Size(105, 20);
             this.txtCapGainPaper.TabIndex = 40;
             this.txtCapGainPaper.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtCapGainPaper.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
+            this.txtCapGainPaper.TextChanged += new System.EventHandler(this.txtCapGainPaper_TextChanged);
             //
             // Lbl_txtCapGainReal
             //
@@ -737,7 +738,7 @@
             this.Lbl_txtCapGainReal.ForeColor = System.Drawing.Color.Black;
             this.Lbl_txtCapGainReal.Location = new System.Drawing.Point(940, 406);
             this.Lbl_txtCapGainReal.Name = "Lbl_txtCapGainReal";
-            this.Lbl_txtCapGainReal.Size = new System.Drawing.Size(185, 22);
+            this.Lbl_txtCapGainReal.Size = new System.Drawing.Size(200, 22);
             this.Lbl_txtCapGainReal.TabIndex = 41;
             this.Lbl_txtCapGainReal.Text = "Real Capital Gains";
             //
@@ -746,14 +747,13 @@
             this.txtCapGainReal.BackColor = System.Drawing.SystemColors.Window;
             this.txtCapGainReal.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtCapGainReal.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtCapGainReal.Location = new System.Drawing.Point(1135, 405);
+            this.txtCapGainReal.Location = new System.Drawing.Point(1150, 405);
             this.txtCapGainReal.MaxLength = 20;
             this.txtCapGainReal.Name = "txtCapGainReal";
-            this.txtCapGainReal.Size = new System.Drawing.Size(120, 20);
+            this.txtCapGainReal.Size = new System.Drawing.Size(105, 20);
             this.txtCapGainReal.TabIndex = 42;
             this.txtCapGainReal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtCapGainReal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
-            this.txtCapGainReal.TextChanged += new System.EventHandler(this.txtCapGainReal_TextChanged);
             //
             // Lbl_txtLoanInterest
             //
@@ -762,7 +762,7 @@
             this.Lbl_txtLoanInterest.ForeColor = System.Drawing.Color.Black;
             this.Lbl_txtLoanInterest.Location = new System.Drawing.Point(940, 434);
             this.Lbl_txtLoanInterest.Name = "Lbl_txtLoanInterest";
-            this.Lbl_txtLoanInterest.Size = new System.Drawing.Size(185, 22);
+            this.Lbl_txtLoanInterest.Size = new System.Drawing.Size(200, 22);
             this.Lbl_txtLoanInterest.TabIndex = 43;
             this.Lbl_txtLoanInterest.Text = "Investment Loan Interest";
             //
@@ -771,10 +771,10 @@
             this.txtLoanInterest.BackColor = System.Drawing.SystemColors.Window;
             this.txtLoanInterest.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtLoanInterest.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtLoanInterest.Location = new System.Drawing.Point(1135, 433);
+            this.txtLoanInterest.Location = new System.Drawing.Point(1150, 433);
             this.txtLoanInterest.MaxLength = 20;
             this.txtLoanInterest.Name = "txtLoanInterest";
-            this.txtLoanInterest.Size = new System.Drawing.Size(120, 20);
+            this.txtLoanInterest.Size = new System.Drawing.Size(105, 20);
             this.txtLoanInterest.TabIndex = 44;
             this.txtLoanInterest.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtLoanInterest.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -787,7 +787,7 @@
             this.Lbl_txtTax.ForeColor = System.Drawing.Color.Black;
             this.Lbl_txtTax.Location = new System.Drawing.Point(940, 462);
             this.Lbl_txtTax.Name = "Lbl_txtTax";
-            this.Lbl_txtTax.Size = new System.Drawing.Size(185, 22);
+            this.Lbl_txtTax.Size = new System.Drawing.Size(200, 22);
             this.Lbl_txtTax.TabIndex = 45;
             this.Lbl_txtTax.Text = "Tax";
             //
@@ -796,10 +796,10 @@
             this.txtTax.BackColor = System.Drawing.SystemColors.Window;
             this.txtTax.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTax.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtTax.Location = new System.Drawing.Point(1135, 461);
+            this.txtTax.Location = new System.Drawing.Point(1150, 461);
             this.txtTax.MaxLength = 20;
             this.txtTax.Name = "txtTax";
-            this.txtTax.Size = new System.Drawing.Size(120, 20);
+            this.txtTax.Size = new System.Drawing.Size(105, 20);
             this.txtTax.TabIndex = 46;
             this.txtTax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtTax.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -812,19 +812,19 @@
             this.Lbl_txtRealPL.ForeColor = System.Drawing.Color.Black;
             this.Lbl_txtRealPL.Location = new System.Drawing.Point(940, 490);
             this.Lbl_txtRealPL.Name = "Lbl_txtRealPL";
-            this.Lbl_txtRealPL.Size = new System.Drawing.Size(185, 22);
+            this.Lbl_txtRealPL.Size = new System.Drawing.Size(200, 22);
             this.Lbl_txtRealPL.TabIndex = 47;
-            this.Lbl_txtRealPL.Text = "Real Profit/Loss";
+            this.Lbl_txtRealPL.Text = "Realised Profit/Loss";
             //
             // txtRealPL
             //
             this.txtRealPL.BackColor = System.Drawing.SystemColors.Window;
             this.txtRealPL.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRealPL.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtRealPL.Location = new System.Drawing.Point(1135, 489);
+            this.txtRealPL.Location = new System.Drawing.Point(1150, 489);
             this.txtRealPL.MaxLength = 20;
             this.txtRealPL.Name = "txtRealPL";
-            this.txtRealPL.Size = new System.Drawing.Size(120, 20);
+            this.txtRealPL.Size = new System.Drawing.Size(105, 20);
             this.txtRealPL.TabIndex = 48;
             this.txtRealPL.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtRealPL.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);
@@ -837,19 +837,19 @@
             this.Lbl_txtRealPct.ForeColor = System.Drawing.Color.Black;
             this.Lbl_txtRealPct.Location = new System.Drawing.Point(940, 518);
             this.Lbl_txtRealPct.Name = "Lbl_txtRealPct";
-            this.Lbl_txtRealPct.Size = new System.Drawing.Size(185, 22);
+            this.Lbl_txtRealPct.Size = new System.Drawing.Size(200, 22);
             this.Lbl_txtRealPct.TabIndex = 49;
-            this.Lbl_txtRealPct.Text = "Percentage Real Profit/Loss";
+            this.Lbl_txtRealPct.Text = "Percentage Realised Profit/Loss";
             //
             // txtRealPct
             //
             this.txtRealPct.BackColor = System.Drawing.SystemColors.Window;
             this.txtRealPct.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRealPct.ForeColor = System.Drawing.SystemColors.WindowText;
-            this.txtRealPct.Location = new System.Drawing.Point(1135, 517);
+            this.txtRealPct.Location = new System.Drawing.Point(1150, 517);
             this.txtRealPct.MaxLength = 20;
             this.txtRealPct.Name = "txtRealPct";
-            this.txtRealPct.Size = new System.Drawing.Size(120, 20);
+            this.txtRealPct.Size = new System.Drawing.Size(105, 20);
             this.txtRealPct.TabIndex = 50;
             this.txtRealPct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtRealPct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Number_KeyPress);

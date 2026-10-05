@@ -255,11 +255,11 @@ namespace FinancialBalance
             string[] names = new string[] {
                 "Financial Year", "Portfolio Code", "Currency",
                 "Previous Investment", "Ending Investment", "On Paper Ending Value",
-                "On Paper Profit/Loss", "Percentage On Paper Profit/Loss",
+                "Unrealised Profit/Loss", "Percentage Unrealised Profit/Loss",
                 "Distribution/Dividend", "Distribution/Dividend Yield",
                 "Distribution/Dividend Reinvested", "Distribution/Dividend Not Reinvested",
-                "Capital Gains On Paper", "Real Capital Gains",
-                "Real Profit/Loss", "Percentage Real Profit/Loss" };
+                "Capital Gains", "Real Capital Gains",
+                "Realised Profit/Loss", "Percentage Realised Profit/Loss" };
             int[] weights = new int[] { 8, 7, 5, 9, 9, 10, 10, 11, 9, 10, 11, 12, 10, 9, 9, 10 };
 
             gvHist.ColumnCount = names.Length;
@@ -308,11 +308,11 @@ namespace FinancialBalance
                 if (TmpYear != "")
                 {
                     Mdl1.Ssql = "select [Financial_Year], [Portfolio_Code], [Currency], [Previous_Investment],"
-                              + " [Ending_Investment], [On_Paper_Ending_Value], [On_Paper_Profit_Or_Loss],"
-                              + " [Percentage_On_Paper_Profit_Or_Loss], [Total_DistributionDividend],"
+                              + " [Ending_Investment], [On_Paper_Ending_Value], [Unrealised_Profit_Or_Loss],"
+                              + " [Percentage_Unrealised_Profit_Or_Loss], [Total_DistributionDividend],"
                               + " [Total_DistributionDividend_Yield], [Total_DistributionDividend_Reinvested],"
-                              + " [Total_DistributionDividend_Not_Reinvested], [Capital_Gains_On_Paper],"
-                              + " [Real_Capital_Gains], [Real_Profit_Or_Loss], [Percentage_Real_Profit_Or_Loss]"
+                              + " [Total_DistributionDividend_Not_Reinvested], [Capital_Gains],"
+                              + " [Real_Capital_Gains], [Realised_Profit_Or_Loss], [Percentage_Realised_Profit_Or_Loss]"
                               + " from TblETFStocksFinancialYear"
                               + " where [Financial_Year] = '" + TmpYear + "'"
                               + Portfolio_Filter()
@@ -327,15 +327,15 @@ namespace FinancialBalance
 
                         double TmpEndInv = Read_Double(reader["Ending_Investment"]);
                         double TmpOnPaperVal = Read_Double(reader["On_Paper_Ending_Value"]);
-                        double TmpOnPaperPL = Read_Double(reader["On_Paper_Profit_Or_Loss"]);
-                        double TmpOnPaperPct = Read_Double(reader["Percentage_On_Paper_Profit_Or_Loss"]);
+                        double TmpOnPaperPL = Read_Double(reader["Unrealised_Profit_Or_Loss"]);
+                        double TmpOnPaperPct = Read_Double(reader["Percentage_Unrealised_Profit_Or_Loss"]);
                         double TmpDD = Read_Double(reader["Total_DistributionDividend"]);
                         double TmpDDYes = Read_Double(reader["Total_DistributionDividend_Reinvested"]);
                         double TmpDDNo = Read_Double(reader["Total_DistributionDividend_Not_Reinvested"]);
-                        double TmpCapPaper = Read_Double(reader["Capital_Gains_On_Paper"]);
+                        double TmpCapPaper = Read_Double(reader["Capital_Gains"]);
                         double TmpCapReal = Read_Double(reader["Real_Capital_Gains"]);
-                        double TmpRealPL = Read_Double(reader["Real_Profit_Or_Loss"]);
-                        double TmpRealPct = Read_Double(reader["Percentage_Real_Profit_Or_Loss"]);
+                        double TmpRealPL = Read_Double(reader["Realised_Profit_Or_Loss"]);
+                        double TmpRealPct = Read_Double(reader["Percentage_Realised_Profit_Or_Loss"]);
 
                         gvHist.Rows.Add(new string[] {
                             Read_Text(reader["Financial_Year"]),
@@ -444,18 +444,18 @@ namespace FinancialBalance
 
             Add_Money("Total Ending Investment", parEndInv, TmpCurr, false);
             Add_Money("Total On Paper Ending Value", parOnPaperVal, TmpCurr, false);
-            Add_Money("Total On Paper Profit/Loss", parOnPaperPL, TmpCurr, true);
-            Add_Percent("Percentage Total On Paper Profit/Loss",
+            Add_Money("Total Unrealised Profit/Loss", parOnPaperPL, TmpCurr, true);
+            Add_Percent("Percentage Total Unrealised Profit/Loss",
                         Percent_Of_Ending(parOnPaperPL, parEndInv), true);
             Add_Money("Total Distribution/Dividend", parDD, TmpCurr, false);
             Add_Percent("Total Distribution/Dividend Yield",
                         Percent_Of_Ending(parDD, parEndInv), false);
             Add_Money("Total Distribution/Dividend Reinvested", parDDYes, TmpCurr, false);
             Add_Money("Total Distribution/Dividend Not Reinvested", parDDNo, TmpCurr, false);
-            Add_Money("Total Capital Gains On Paper", parCapPaper, TmpCurr, false);
+            Add_Money("Total Capital Gains", parCapPaper, TmpCurr, false);
             Add_Money("Total Real Capital Gains", parCapReal, TmpCurr, false);
-            Add_Money("Total Real Profit/Loss", parRealPL, TmpCurr, true);
-            Add_Percent("Percentage Real Profit/Loss",
+            Add_Money("Total Realised Profit/Loss", parRealPL, TmpCurr, true);
+            Add_Percent("Percentage Realised Profit/Loss",
                         Percent_Of_Ending(parRealPL, parEndInv), true);
 
             //What the year came to with the unrealised side counted in: what the holdings are worth
@@ -463,14 +463,14 @@ namespace FinancialBalance
             //straight back into holdings.
             //
             //That last subtraction is what keeps the reinvested money from being counted twice.
-            //It is inside Real Profit/Loss already, as distribution income received.  It is also
-            //inside On Paper Profit/Loss, because the units it bought are valued in On Paper Ending
+            //It is inside Realised Profit/Loss already, as distribution income received.  It is also
+            //inside Unrealised Profit/Loss, because the units it bought are valued in On Paper Ending
             //Value while their cost never reached Ending Investment - reinvestment is not a deposit,
             //so Investment never saw it.  Adding the two sides outright would count every reinvested
             //dollar as income and as unrealised gain both; taking it off once leaves it counted once.
             double TmpEOFY = parOnPaperPL + parRealPL - parDDYes;
-            Add_Money("EOFY Profit/Loss Including On Paper", TmpEOFY, TmpCurr, true);
-            Add_Percent("Percentage EOFY Profit/Loss Including On Paper",
+            Add_Money("EOFY Profit/Loss Including Unrealised (Minus Reinvested)", TmpEOFY, TmpCurr, true);
+            Add_Percent("Percentage EOFY Profit/Loss Including Unrealised (Minus Reinvested)",
                         Percent_Of_Ending(TmpEOFY, parEndInv), true);
         }
 

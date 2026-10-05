@@ -351,11 +351,11 @@ namespace FinancialBalance
             string[] names = new string[] {
                 "Financial Year", "Portfolio Code", "Currency",
                 "Previous Investment", "Ending Investment", "On Paper Ending Value",
-                "On Paper Profit/Loss", "Percentage On Paper Profit/Loss",
+                "Unrealised Profit/Loss", "Percentage Unrealised Profit/Loss",
                 "Distribution/Dividend", "Distribution/Dividend Yield",
                 "Distribution/Dividend Reinvested", "Distribution/Dividend Not Reinvested",
-                "Capital Gains On Paper", "Real Capital Gains",
-                "Real Profit/Loss", "Percentage Real Profit/Loss" };
+                "Capital Gains", "Real Capital Gains",
+                "Realised Profit/Loss", "Percentage Realised Profit/Loss" };
             int[] weights = new int[] { 8, 7, 5, 9, 9, 10, 10, 11, 9, 10, 11, 12, 10, 9, 9, 10 };
 
             gvRecon.ColumnCount = names.Length;
@@ -393,12 +393,12 @@ namespace FinancialBalance
                 {
                     Mdl1.Ssql = "select [Financial_Year], [Portfolio_Code], [Currency], [Previous_Investment],"
                               + " [Investment], [Sold_Amount],"
-                              + " [Ending_Investment], [On_Paper_Ending_Value], [On_Paper_Profit_Or_Loss],"
-                              + " [Percentage_On_Paper_Profit_Or_Loss], [Total_DistributionDividend],"
+                              + " [Ending_Investment], [On_Paper_Ending_Value], [Unrealised_Profit_Or_Loss],"
+                              + " [Percentage_Unrealised_Profit_Or_Loss], [Total_DistributionDividend],"
                               + " [Total_DistributionDividend_Yield], [Total_DistributionDividend_Reinvested],"
-                              + " [Total_DistributionDividend_Not_Reinvested], [Capital_Gains_On_Paper],"
+                              + " [Total_DistributionDividend_Not_Reinvested], [Capital_Gains],"
                               + " [Real_Capital_Gains], [Investment_Loan_Interest], [Tax],"
-                              + " [Real_Profit_Or_Loss], [Percentage_Real_Profit_Or_Loss]"
+                              + " [Realised_Profit_Or_Loss], [Percentage_Realised_Profit_Or_Loss]"
                               + " from TblETFStocksFinancialYear"
                               + " where [Financial_Year] = '" + TmpYear + "'"
                               + Portfolio_Filter()
@@ -411,12 +411,12 @@ namespace FinancialBalance
                         //the row now carries its own currency, so nothing has to be inferred
                         string TmpCurr = Read_Text(reader["Currency"]);
 
-                        double TmpOnPaperPL = Read_Double(reader["On_Paper_Profit_Or_Loss"]);
-                        double TmpOnPaperPct = Read_Double(reader["Percentage_On_Paper_Profit_Or_Loss"]);
-                        double TmpCapGainPaper = Read_Double(reader["Capital_Gains_On_Paper"]);
+                        double TmpOnPaperPL = Read_Double(reader["Unrealised_Profit_Or_Loss"]);
+                        double TmpOnPaperPct = Read_Double(reader["Percentage_Unrealised_Profit_Or_Loss"]);
+                        double TmpCapGainPaper = Read_Double(reader["Capital_Gains"]);
                         double TmpCapGainReal = Read_Double(reader["Real_Capital_Gains"]);
-                        double TmpRealPL = Read_Double(reader["Real_Profit_Or_Loss"]);
-                        double TmpRealPct = Read_Double(reader["Percentage_Real_Profit_Or_Loss"]);
+                        double TmpRealPL = Read_Double(reader["Realised_Profit_Or_Loss"]);
+                        double TmpRealPct = Read_Double(reader["Percentage_Realised_Profit_Or_Loss"]);
 
                         gvRecon.Rows.Add(new string[] {
                             Read_Text(reader["Financial_Year"]),
@@ -441,15 +441,15 @@ namespace FinancialBalance
                             Read_Text(reader["Financial_Year"]), TmpCode, TmpCurr,
                             Stored(reader["Previous_Investment"]), Stored(reader["Investment"]),
                             Stored(reader["Sold_Amount"]), Stored(reader["Ending_Investment"]),
-                            Stored(reader["On_Paper_Ending_Value"]), Stored(reader["On_Paper_Profit_Or_Loss"]),
-                            Stored(reader["Percentage_On_Paper_Profit_Or_Loss"]),
+                            Stored(reader["On_Paper_Ending_Value"]), Stored(reader["Unrealised_Profit_Or_Loss"]),
+                            Stored(reader["Percentage_Unrealised_Profit_Or_Loss"]),
                             Stored(reader["Total_DistributionDividend"]),
                             Stored(reader["Total_DistributionDividend_Yield"]),
                             Stored(reader["Total_DistributionDividend_Reinvested"]),
                             Stored(reader["Total_DistributionDividend_Not_Reinvested"]),
-                            Stored(reader["Capital_Gains_On_Paper"]), Stored(reader["Real_Capital_Gains"]),
+                            Stored(reader["Capital_Gains"]), Stored(reader["Real_Capital_Gains"]),
                             Stored(reader["Investment_Loan_Interest"]), Stored(reader["Tax"]),
-                            Stored(reader["Real_Profit_Or_Loss"]), Stored(reader["Percentage_Real_Profit_Or_Loss"]) };
+                            Stored(reader["Realised_Profit_Or_Loss"]), Stored(reader["Percentage_Realised_Profit_Or_Loss"]) };
                         Colour_Cell(Row.Cells[6], TmpOnPaperPL);
                         Colour_Cell(Row.Cells[7], TmpOnPaperPct);
                         Colour_Cell(Row.Cells[12], TmpCapGainPaper);
@@ -704,11 +704,15 @@ namespace FinancialBalance
             Calculating = false;
         }
 
+        //What the year actually returned: the distributions it paid plus the capital gains,
+        //less what the borrowing and the tax took back.  The capital gains it adds are the
+        //**Capital Gains** box, not **Real Capital Gains** - the latter is recorded alongside
+        //but no longer feeds this figure.
         private void Recalc_RealPL()
         {
             if (Calculating) { return; }
             Calculating = true;
-            Set_Box(txtRealPL, Box(txtDD) + Box(txtCapGainReal) - Box(txtLoanInterest) - Box(txtTax));
+            Set_Box(txtRealPL, Box(txtDD) + Box(txtCapGainPaper) - Box(txtLoanInterest) - Box(txtTax));
             Calculating = false;
             Recalc_RealPct();
         }
@@ -764,7 +768,7 @@ namespace FinancialBalance
             Recalc_RealPL();
         }
 
-        private void txtCapGainReal_TextChanged(object sender, EventArgs e)
+        private void txtCapGainPaper_TextChanged(object sender, EventArgs e)
         {
             if (Filling) { return; }
             Recalc_RealPL();
@@ -1209,11 +1213,11 @@ namespace FinancialBalance
 
                 Mdl1.Ssql = "Insert into TblETFStocksFinancialYear ([Financial_Year], [Portfolio_Code], [Currency],"
                           + " [Previous_Investment], [Investment], [Sold_Amount], [Ending_Investment],"
-                          + " [On_Paper_Ending_Value], [On_Paper_Profit_Or_Loss], [Percentage_On_Paper_Profit_Or_Loss],"
+                          + " [On_Paper_Ending_Value], [Unrealised_Profit_Or_Loss], [Percentage_Unrealised_Profit_Or_Loss],"
                           + " [Total_DistributionDividend], [Total_DistributionDividend_Yield],"
                           + " [Total_DistributionDividend_Reinvested], [Total_DistributionDividend_Not_Reinvested],"
-                          + " [Capital_Gains_On_Paper], [Real_Capital_Gains], [Investment_Loan_Interest], [Tax],"
-                          + " [Real_Profit_Or_Loss], [Percentage_Real_Profit_Or_Loss]) values ("
+                          + " [Capital_Gains], [Real_Capital_Gains], [Investment_Loan_Interest], [Tax],"
+                          + " [Realised_Profit_Or_Loss], [Percentage_Realised_Profit_Or_Loss]) values ("
                           + "'" + TmpYear + "', '" + TmpCode + "', '" + CmbEntryCurrency.Text.Trim() + "', "
                           + Num(txtPrevInv) + ", " + Num(txtInvestment) + ", " + Num(txtSold) + ", "
                           + Num(txtEndInv) + ", " + Num(txtOnPaperVal) + ", " + Num(txtOnPaperPL) + ", "
@@ -1255,18 +1259,18 @@ namespace FinancialBalance
                           + "[Sold_Amount] = " + Num(txtSold) + ", "
                           + "[Ending_Investment] = " + Num(txtEndInv) + ", "
                           + "[On_Paper_Ending_Value] = " + Num(txtOnPaperVal) + ", "
-                          + "[On_Paper_Profit_Or_Loss] = " + Num(txtOnPaperPL) + ", "
-                          + "[Percentage_On_Paper_Profit_Or_Loss] = " + Num(txtOnPaperPct) + ", "
+                          + "[Unrealised_Profit_Or_Loss] = " + Num(txtOnPaperPL) + ", "
+                          + "[Percentage_Unrealised_Profit_Or_Loss] = " + Num(txtOnPaperPct) + ", "
                           + "[Total_DistributionDividend] = " + Num(txtDD) + ", "
                           + "[Total_DistributionDividend_Yield] = " + Num(txtDDYield) + ", "
                           + "[Total_DistributionDividend_Reinvested] = " + Num(txtDDReinv) + ", "
                           + "[Total_DistributionDividend_Not_Reinvested] = " + Num(txtDDNotReinv) + ", "
-                          + "[Capital_Gains_On_Paper] = " + Num(txtCapGainPaper) + ", "
+                          + "[Capital_Gains] = " + Num(txtCapGainPaper) + ", "
                           + "[Real_Capital_Gains] = " + Num(txtCapGainReal) + ", "
                           + "[Investment_Loan_Interest] = " + Num(txtLoanInterest) + ", "
                           + "[Tax] = " + Num(txtTax) + ", "
-                          + "[Real_Profit_Or_Loss] = " + Num(txtRealPL) + ", "
-                          + "[Percentage_Real_Profit_Or_Loss] = " + Num(txtRealPct)
+                          + "[Realised_Profit_Or_Loss] = " + Num(txtRealPL) + ", "
+                          + "[Percentage_Realised_Profit_Or_Loss] = " + Num(txtRealPct)
                           + " where [Financial_Year] = '" + TmpYear + "' and [Portfolio_Code] = '" + TmpCode + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
