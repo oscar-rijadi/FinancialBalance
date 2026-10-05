@@ -3691,37 +3691,48 @@ known and one that is worked out is the whole answer.
 
 A holding that has never paid has no month to step forward from. Rather than start the run
 at whichever month the page happens to be opened, it falls on a **standard cycle** — a base
-month, and every step from it. **Which base month depends on whether the ticker carries an
-exchange suffix**:
+month, and every step from it. **Which base month depends on the ticker's exchange suffix**
+as well as its interval:
 
-| Interval | With an exchange suffix | Without one |
-| --- | --- | --- |
-| `Monthly` | every month | every month |
-| `Quarterly` | January, April, July, October | **March, June, September, December** |
-| `Half Yearly` | January, July | January, July |
-| `Yearly` | January | January |
+| Interval | Suffix `AX` | No suffix | Any other suffix |
+| --- | --- | --- | --- |
+| `Monthly` | every month | every month | every month |
+| `Quarterly` | January, April, July, October | **March, June, September, December** | January, April, July, October |
+| `Half Yearly` | January, July | January, July | January, July |
+| `Yearly` | **July** | January | January |
 
 **The suffix is what says which market the holding is on.**
 [ETF/Stock Setup](#etfstock-setup) writes `Exchange_Suffix` as `None`, or leaves it empty,
 for a holding that is not on a local exchange — `GOOGL` rather than `A200.AX` — so a ticker
-with no suffix is a US one. US companies pay quarterly on **March, June, September and
-December**; an Australian fund distributing for quarters ending those same months pays the
-month *after* each, which is the January cycle. Either column is the cycle that holdings of
-that sort which *do* have a history actually pay on, which is what makes it the right default
-rather than a guess: a holding with no history lines up with its peers instead of sitting a
-month or two out from all of them.
+with no suffix is a US one. Each column is the cycle that holdings of that sort which *do*
+have a history actually pay on, which is what makes it the right default rather than a
+guess: a holding with no history lines up with its peers instead of sitting a month or two
+out from all of them.
 
-**Only the quarterly row differs.** A monthly payer pays every month whichever month it is
-counted from, and nothing says a half yearly or yearly holding without a suffix keeps to a
-cycle of its own, so those are left where they were. An `Exchange_Suffix` left **empty** counts
-the same as `None`, since the setup page treats the two alike when it builds `Full_Ticker`.
+**Two of the rows differ, and each for its own reason:**
+
+- **Quarterly with no suffix.** US companies pay quarterly on March, June, September and
+  December. An Australian fund distributing for quarters ending those same months pays the
+  month *after* each, which is the January cycle — so the two sit a month apart, and a US
+  holding put on the local cycle would be wrong in every quarter.
+- **Yearly on the ASX.** A fund that distributes only once a year does it **after the
+  Australian financial year closes on 30 June**, so July is where that single payment goes.
+  January would put it half a year out, which for a once-a-year payer is as wrong as the
+  forecast can be.
+
+The rest keep January. A monthly payer pays every month whichever month it is counted from,
+so the base makes no difference to it, and nothing says a half yearly holding keeps to a
+cycle of its own. An `Exchange_Suffix` left **empty** counts the same as `None`, since the
+setup page treats the two alike when it builds `Full_Ticker`; any other suffix is neither
+`AX` nor absent, so it falls through to January throughout.
 
 > **A payment on record still wins.** This is the fallback, not an override: the moment a
 > holding has anything in `TblETFStocksDistributionDividend` the run steps forward from that,
 > and the table above is not consulted at all. The two rarely disagree — a suffix-less
-> quarterly holding that really does pay in March, June, September and December lands on those
-> months either way once it has a history — and where they do, what was actually paid is the
-> better answer. The cycle only decides where a holding sits before it has paid anything.
+> quarterly holding that really does pay in March, June, September and December lands on
+> those months either way once it has a history, and so does an ASX yearly payer that really
+> does pay in July — and where they do disagree, what was actually paid is the better answer.
+> The cycle only decides where a holding sits before it has paid anything.
 
 #### What cannot be forecast
 

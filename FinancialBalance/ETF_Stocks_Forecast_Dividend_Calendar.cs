@@ -203,19 +203,33 @@ namespace FinancialBalance
             return (TmpSuffix == "" || TmpSuffix == "NONE");
         }
 
+        //A holding on the Australian exchange, by the suffix ETF/Stock Setup builds into the
+        //full ticker - the same test the expense ratio run uses to decide where to ask.
+        private bool Is_AX(string parSuffix)
+        {
+            return (parSuffix.Trim().ToUpper() == "AX");
+        }
+
         //Which month a fallback cycle is counted from when there is no payment history to step
-        //off.  January for anything carrying an exchange suffix, which is the cycle the funds
-        //on the local exchange actually pay on; March for a quarterly payer without one,
-        //because the US quarterly cycle is March, June, September and December.
+        //off.  Three cases, and January for everything they do not cover:
         //
-        //Only the quarterly case differs.  A monthly payer pays every month whatever it is
-        //counted from, and nothing says a half yearly or yearly payer without a suffix keeps
-        //to a cycle of its own, so those are left where they were.
+        //  quarterly, no suffix   March      the US quarterly cycle is Mar/Jun/Sep/Dec
+        //  yearly, suffix AX      July       an ASX fund that distributes once a year pays it
+        //                                    after the Australian financial year closes
+        //  anything else          January    the cycle the local funds on a shorter interval
+        //                                    actually pay on
+        //
+        //A monthly payer pays every month whatever it is counted from, so the base makes no
+        //difference to it, and nothing says a half yearly payer keeps to a cycle of its own.
         private int Cycle_Base(int parStep, string parSuffix)
         {
             if (parStep == 3 && No_Suffix(parSuffix))
             {
                 return 3;
+            }
+            if (parStep == 12 && Is_AX(parSuffix))
+            {
+                return 7;
             }
             return 1;
         }
@@ -275,12 +289,12 @@ namespace FinancialBalance
             else
             {
                 //Nothing to anchor to, so fall back on the cycle the calendar itself implies:
-                //parBase, and every step from it - April, July and October for a quarterly
-                //payer counted from January, March, June, September and December for one
-                //counted from March, January and July for a half yearly one. That is the cycle
-                //holdings of the same sort that do have a history actually pay on, so a holding
-                //with none lands in step with the rest instead of on whichever month the page
-                //happens to be opened in.
+                //parBase, and every step from it - January, April, July and October for a
+                //quarterly payer counted from January, March, June, September and December for
+                //one counted from March, January and July for a half yearly one, and July alone
+                //for a yearly one counted from July. That is the cycle holdings of the same sort
+                //that do have a history actually pay on, so a holding with none lands in step
+                //with the rest instead of on whichever month the page happens to be opened in.
                 //
                 //The remainder is folded back into range by hand: parBase can be later in the
                 //year than the month being tested, and C# gives a negative remainder for that.
@@ -625,8 +639,8 @@ namespace FinancialBalance
             {
                 TmpText = TmpText + "   -   " + parGuessed.ToString()
                     + " holding(s) have never paid, so their run falls on a standard cycle rather"
-                    + " than on a month of their own - Jan/Apr/Jul/Oct quarterly and Jan/Jul half"
-                    + " yearly with an exchange suffix, Mar/Jun/Sep/Dec quarterly without one.";
+                    + " than on a month of their own - Jan/Apr/Jul/Oct quarterly, Jan/Jul half yearly"
+                    + " and July yearly on the ASX, Mar/Jun/Sep/Dec quarterly with no suffix.";
             }
             if (parActual > 0)
             {
