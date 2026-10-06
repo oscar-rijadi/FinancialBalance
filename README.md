@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Ticker Historical Data, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
 | `Inquiry` | **Yearly** | Yearly Statistic, Yearly Summary, Yearly Summary Graph |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
@@ -160,6 +160,7 @@ flowchart LR
     PORTG --> PDVH["ETF_Stocks_Dividend_History"]
     PORTG --> PPCH["ETF_Stocks_Price_Chart"]
     PORTG --> PFYH["ETF_Stocks_FY_Historical"]
+    PORTG --> PTHD["ETF_Stocks_Ticker_Historical_Data"]
     PORTG --> PIVP["ETF_Stocks_Investment_Plan"]
     PORTG --> PIVA["ETF_Stocks_Investment_Plan_By_Amount"]
     PORTG --> PFDC["ETF_Stocks_Forecast_Dividend_Calendar"]
@@ -238,6 +239,7 @@ flowchart LR
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with fourteen totals across the selection and an Excel export. |
+| `ETF_Stocks_Ticker_Historical_Data` | Shown as **ETF/Stock Ticker Historical Data**. Everything on record for one ticker — every purchase, every sale and every distribution or dividend, each in its own table with totals underneath — optionally narrowed to one portfolio and one financial year. Amounts are shown in the ticker's own currency, unconverted. Reads three tables and writes nothing. See [Ticker historical data](#ticker-historical-data). |
 | `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads `TblETFStocks` and the diversification tables, and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads five ETF/stock tables and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Allocation` | Shown as **ETF/Stock Forecast Dividend Allocation**. Build a list of tickers and amounts, and see what that money would pay: each ticker's yield, its yearly distribution and its share of the whole, with the totals per year, per month and as one yield. Reads `TblETFStocks` and writes nothing. |
@@ -2276,6 +2278,135 @@ Two things are this page's own:
   Year** both on `All`, the Sheet carries the whole history first and then one tab per financial
   year.
 
+### Ticker historical data
+
+`ETF_Stocks_Ticker_Historical_Data`, shown as **ETF/Stock Ticker Historical Data** under
+`Inquiry` ▸ ETF/Stock, is everything on record for **one ticker**: every purchase, every sale and
+every distribution or dividend, each in a table of its own with its totals underneath. It reads
+`TblETFStocksPurchase`, `TblETFStocksSale` and `TblETFStocksDistributionDividend`, plus
+`TblETFStocks`, `TblETFStocksPortfolioCode` and `TblFinancialYear` for its dropdowns, and writes
+nothing.
+
+| Control | Does |
+| --- | --- |
+| **Portfolio** and **Main Only** | Exactly what they do on [Dividend history](#dividend-history): descriptions shown, codes filtered on, Main Only ticked when the page opens and narrowing the dropdown as well as the rows. `All` with Main Only ticked keeps main portfolios only, so a row with no portfolio code drops out with the rest. |
+| **Full Ticker** | Every `TblETFStocks.Full_Ticker`, alphabetically, **with no `All`**. The page is one ticker's history, so one is always chosen; it opens on the first. |
+| **Financial Year** | `All`, then `TblFinancialYear.Name` newest-closing first. A year is a **window**: only rows dated inside it, both ends included, by `Trans_Date` for purchases and sales and `Pay_Date` for payments. That differs from Dividend history's summary table, where a year is a cut-off. |
+
+Every change to a control redraws all three tables. Each is **newest first**, and rows on the
+same day are in reverse `Portfolio_Code` order. Sorting by clicking a heading is switched off:
+the order is part of what the page says, and a click would sort the formatted text, putting
+`$9.00` after `$10.00`.
+
+> **Purchase runs the full width, with Sale and Distribution/Dividend side by side beneath it.**
+> Three tables stacked would not fit: the screen's working area is 752px high, and the page
+> already comes up at about 703 — designed 1264×680, grown by the `AutoScaleMode.Font` quirk
+> described under [A note on page sizes](#a-note-on-page-sizes). Purchase gets the width because
+> it has thirteen columns, against eight and four.
+
+#### Purchase
+
+From `TblETFStocksPurchase`, one row per lot:
+
+| Column | From | Shown as |
+| --- | --- | --- |
+| `Purchase Date` | `Trans_Date` | `dd-MMM-yyyy` |
+| `Portfolio Code` | `Portfolio_Code` | |
+| `Unit` | `Unit` | four places, as on every page that lists units |
+| `Original Cost Base` | `Original_Cost_Base` | `$`, two places |
+| `Cost Base` | `Cost_Base` | `$`, two places |
+| `Fee` | `Fee` | `$`, two places |
+| `Original Total Cost Base` | `Original_Total_Cost_Base` | `$`, two places |
+| `Total Cost Base` | `Total_Cost_Base` | `$`, two places |
+| `Real Total Cost Base` | `Real_Total_Cost_Base` | `$`, two places |
+| `Is Sold` | `Is_Sold` | `Y` / `N` |
+| `Sold Date` | `Sold_Date` | `dd-MMM-yyyy`, blank on a lot not sold |
+| `Sale Id` | `Sale_Id` | blank on a lot not sold — see [The Sale Id](#the-sale-id) |
+| `Is Free` | `Is_Free` | `Y` / `N` |
+
+Underneath, in three columns:
+
+| Total | Worked out as |
+| --- | --- |
+| **Total Purchase Unit** | `Unit`, summed |
+| **Total Current Unit** | `Unit` where `Is_Sold` is false |
+| **Total Sold Unit** | `Unit` where `Is_Sold` is true |
+| **Average Cost Base** | sum of `Total_Cost_Base` ÷ Total Purchase Unit |
+| **Average Real Cost Base** | sum of `Real_Total_Cost_Base` ÷ Total Purchase Unit |
+| **Grand Total Cost Base** | `Total_Cost_Base`, summed |
+| **Grand Total Real Cost Base** | `Real_Total_Cost_Base`, summed |
+
+**Every total is taken from the rows in the table**, as they are read, so what is underneath and
+what is above can never disagree — narrow the portfolio or the year and the totals narrow with it.
+Current and Sold always add up to Purchase.
+
+**Both averages divide by every unit bought, sold or not**, so they describe what the ticker cost
+on the way in rather than what is still held. A reinvested or free lot has a
+`Real_Total_Cost_Base` of `0`, which is why Average Real Cost Base sits below Average Cost Base
+for a ticker that has had either. With no units at all there is nothing to divide by, and both
+averages read `$0.00`.
+
+#### Sale
+
+From `TblETFStocksSale`, one row per sale:
+
+| Column | From | Shown as |
+| --- | --- | --- |
+| `Sold Date` | `Trans_Date` | `dd-MMM-yyyy` |
+| `Portfolio Code` | `Portfolio_Code` | |
+| `Sale Id` | `Sale_Id` | the same id the lots it closed carry in the Purchase table |
+| `Unit` | `Unit` | four places |
+| `Sold Price Per Unit` | `Selling_Price_Per_Unit` | `$`, two places |
+| `Sold Total Amount` | `Selling_Total_Amount` | `$`, two places |
+| `Profit/Loss On Paper` | `Profit_Or_Loss_On_Paper` | `$`, two places, **green above zero, red below** |
+| `Real Profit/Loss` | `Real_Profit_Or_Loss` | `$`, two places, **green above zero, red below** |
+
+Underneath: **Total Sold Unit** (`Unit`, summed), **Grand Total Sold Amount**
+(`Selling_Total_Amount`, summed), **Total Profit/Loss On Paper** and **Total Real Profit/Loss**,
+the last two coloured the same way. Zero is left black, in the cells and in the totals: it is
+neither a gain nor a loss. A loss reads `-$2.50`, not `$-2.50`.
+
+> The Sale table's **Total Sold Unit** and the Purchase table's are not the same figure and need
+> not agree. One counts units on sale rows, the other units on lots flagged sold, and a year
+> filter can put a lot bought in one year and the sale that closed it in another.
+
+#### Distribution/Dividend
+
+From `TblETFStocksDistributionDividend`, one row per payment: `Pay Date` (`Pay_Date`,
+`dd-MMM-yyyy`), `Portfolio Code`, `Amount` (`Total_Amount`, `$`, two places) and `Is Reinvested`
+(`Is_Reinvested`, `Y` / `N`). Underneath, **Total Distribution/Dividend** is `Total_Amount`
+summed, reinvested or not.
+
+#### Currency
+
+**Nothing on this page is converted.** Every amount is shown in the currency it was recorded
+in, and the **Currency** at the top right says which. That is the opposite choice to
+[Dividend history](#every-figure-is-in-australian-dollar-currency-by-currency), and deliberate:
+one ticker trades in one currency, so its history reads best in that currency, and converting
+it would mix exchange-rate movements into what the ticker itself did.
+
+The currency shown is the **first one found for the ticker**: its newest purchase, or failing
+any purchase its newest sale, or failing that its newest payment. It is looked up for the
+ticker alone, **ignoring the Portfolio and Financial Year filters**, so a year in which nothing
+happened still says what the ticker trades in. A ticker that has never been bought, sold or
+paid shows `-`. Every amount takes a `$` whatever the currency; the label is what says which
+dollar.
+
+**If the rows on screen are in more than one currency, the note line says so**, naming them,
+and so it does if their one currency is not the one at the top. Their totals are still the
+rows added up as they stand, so a USD payment among AUD ones is counted as though it were AUD.
+No ticker in the live data has rows in two currencies today; the warning is there for a row
+entered against the wrong one.
+
+The note line itself counts what is on screen and names what is narrowing it, for example:
+
+```
+7 purchase(s), 2 sale(s), 4 distribution/dividend(s)   -   main portfolios only, financial year 2025-2026  (01-Jul-2025 to 30-Jun-2026)
+```
+
+A financial year with no dates set up is named in the note as applying no filter, rather than
+silently showing everything.
+
 ### Price chart
 
 `ETF_Stocks_Price_Chart`, shown as **ETF/Stock Price Chart** under `Inquiry` ▸ ETF/Stock, plots
@@ -3157,6 +3288,7 @@ C#.Net/
 │   ├── ETF_Stocks_Portfolio_Summary.*
 │   ├── ETF_Stocks_Portfolio_Diversification.*
 │   ├── ETF_Stocks_Dividend_History.*
+│   ├── ETF_Stocks_Ticker_Historical_Data.*  # one ticker's purchases, sales and payments
 │   ├── ETF_Stocks_Price_Chart.*      # price line chart
 │   ├── images/Project1.ico
 │   └── bin/{Debug,Release}/         # build output + a copy of the .mdb
@@ -3276,9 +3408,13 @@ next to one this README already tells you not to rely on.
 
 Things worth knowing before changing this code.
 
-- **SQL is built by string concatenation throughout**, including values typed by the user. There is
-  no parameterisation anywhere. An apostrophe in an account name is enough to break a query, and
-  the pattern is injectable. Any new query should use `OleDbParameter` instead.
+- **SQL is built by string concatenation almost throughout**, including values typed by the user.
+  An apostrophe in an account name is enough to break a query, and the pattern is injectable. Any
+  new query should use `OleDbParameter` instead. The one page that does is
+  [Ticker historical data](#ticker-historical-data): its `Section_Command` adds each value as a
+  `?` placeholder and a parameter, **in the order the placeholders appear** — Jet matches them by
+  position and ignores the names, so adding them out of order binds the wrong value to each
+  placeholder, and nothing reports an error.
 - **One shared static `OleDbConnection`** (`Mdl1.conn`) is opened at startup and reused by every
   form, along with shared static `reader` / `reader2` fields. Nested reads have to use the second
   reader or close the first, and nothing here is thread-safe.

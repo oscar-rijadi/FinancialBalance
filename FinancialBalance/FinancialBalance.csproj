@@ -134,6 +134,12 @@
     <Compile Include="ETF_Stocks_Dividend_History.Designer.cs">
       <DependentUpon>ETF_Stocks_Dividend_History.cs</DependentUpon>
     </Compile>
+    <Compile Include="ETF_Stocks_Ticker_Historical_Data.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ETF_Stocks_Ticker_Historical_Data.Designer.cs">
+      <DependentUpon>ETF_Stocks_Ticker_Historical_Data.cs</DependentUpon>
+    </Compile>
     <Compile Include="ETF_Stocks_Cost_Base_Adjustment.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -455,6 +461,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Dividend_History.resx">
       <DependentUpon>ETF_Stocks_Dividend_History.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ETF_Stocks_Ticker_Historical_Data.resx">
+      <DependentUpon>ETF_Stocks_Ticker_Historical_Data.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ETF_Stocks_Cost_Base_Adjustment.resx">
       <DependentUpon>ETF_Stocks_Cost_Base_Adjustment.cs</DependentUpon>

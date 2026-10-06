@@ -406,6 +406,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksTickerHistorical_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Ticker_Historical_Data ETF_Stocks_Ticker_Historical_Data = new ETF_Stocks_Ticker_Historical_Data();
+            ETF_Stocks_Ticker_Historical_Data.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksPriceChart_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Price_Chart ETF_Stocks_Price_Chart = new ETF_Stocks_Price_Chart();
