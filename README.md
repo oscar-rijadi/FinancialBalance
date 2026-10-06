@@ -239,7 +239,7 @@ flowchart LR
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with fourteen totals across the selection and an Excel export. |
-| `ETF_Stocks_Ticker_Historical_Data` | Shown as **ETF/Stock Ticker Historical Data**. Everything on record for one ticker — every purchase, every sale and every distribution or dividend, each in its own table with totals underneath — optionally narrowed to one portfolio and one financial year. Amounts are shown in the ticker's own currency, unconverted. Reads three tables and writes nothing. See [Ticker historical data](#ticker-historical-data). |
+| `ETF_Stocks_Ticker_Historical_Data` | Shown as **ETF/Stock Ticker Historical Data**. Everything on record for one ticker — every purchase, every sale and every distribution or dividend, each in its own table with totals underneath, and its latest price beside the average cost — optionally narrowed to one portfolio and one financial year. Amounts are shown in the ticker's own currency, unconverted. Reads four ETF/stock tables and writes nothing. See [Ticker historical data](#ticker-historical-data). |
 | `ETF_Stocks_Investment_Plan_By_Amount` | Shown as **ETF/Stock Investment Plan by Amount**. Type an amount against each ticker and see what mix that money buys: the share each takes, the total, and the same three diversification pies. Reads `TblETFStocks` and the diversification tables, and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads five ETF/stock tables and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Allocation` | Shown as **ETF/Stock Forecast Dividend Allocation**. Build a list of tickers and amounts, and see what that money would pay: each ticker's yield, its yearly distribution and its share of the whole, with the totals per year, per month and as one yield. Reads `TblETFStocks` and writes nothing. |
@@ -2283,9 +2283,9 @@ Two things are this page's own:
 `ETF_Stocks_Ticker_Historical_Data`, shown as **ETF/Stock Ticker Historical Data** under
 `Inquiry` ▸ ETF/Stock, is everything on record for **one ticker**: every purchase, every sale and
 every distribution or dividend, each in a table of its own with its totals underneath. It reads
-`TblETFStocksPurchase`, `TblETFStocksSale` and `TblETFStocksDistributionDividend`, plus
-`TblETFStocks`, `TblETFStocksPortfolioCode` and `TblFinancialYear` for its dropdowns, and writes
-nothing.
+`TblETFStocksPurchase`, `TblETFStocksSale` and `TblETFStocksDistributionDividend`,
+`TblETFStocksPrice` for the [latest price](#latest-price), and `TblETFStocks`,
+`TblETFStocksPortfolioCode` and `TblFinancialYear` for its dropdowns. It writes nothing.
 
 | Control | Does |
 | --- | --- |
@@ -2333,6 +2333,7 @@ Underneath, in three columns:
 | **Total Sold Unit** | `Unit` where `Is_Sold` is true |
 | **Average Cost Base** | sum of `Total_Cost_Base` ÷ Total Purchase Unit |
 | **Average Real Cost Base** | sum of `Real_Total_Cost_Base` ÷ Total Purchase Unit |
+| **Latest Price (*dd-MMM-yyyy*)** | the newest `TblETFStocksPrice.Price` for the ticker, with its date in the caption — see [Latest price](#latest-price) |
 | **Grand Total Cost Base** | `Total_Cost_Base`, summed |
 | **Grand Total Real Cost Base** | `Real_Total_Cost_Base`, summed |
 
@@ -2345,6 +2346,29 @@ on the way in rather than what is still held. A reinvested or free lot has a
 `Real_Total_Cost_Base` of `0`, which is why Average Real Cost Base sits below Average Cost Base
 for a ticker that has had either. With no units at all there is nothing to divide by, and both
 averages read `$0.00`.
+
+##### Latest price
+
+Under the two averages, so what a unit cost can be read straight against what one is worth
+now, is the ticker's **newest price on record**:
+
+```
+select top 1 Price_Date, [Price], [Currency] from TblETFStocksPrice
+ where Full_Ticker = ? order by Price_Date Desc
+```
+
+- **It is the only figure in the Purchase section that ignores the Portfolio and Financial Year
+  filters.** A price belongs to the ticker, not to a portfolio, and "latest" means the newest
+  there is, whatever year is chosen — the same lookup
+  [Portfolio summary](#portfolio-summary) makes. Choosing 2025-2026 narrows the lots and the
+  averages to that year but leaves the price where it is.
+- **Its date goes in the caption** — `Latest Price (06-Oct-2026)` — because nothing on the
+  page refreshes prices. They are recorded on [ETF/Stock Price](#etfstock-price-rules), and
+  one taken weeks ago reads very differently from one taken today.
+- **A price carries a currency of its own**, normally the ticker's. When it is not the one
+  shown at the top of the page, it is named in front of the figure — `USD $12.34` — so it
+  cannot be read as being in the same money as the averages beside it.
+- A ticker that has never been priced shows `Latest Price` and `-`.
 
 #### Sale
 

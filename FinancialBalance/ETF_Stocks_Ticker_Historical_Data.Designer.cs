@@ -70,6 +70,8 @@
             this.LblDistTotalCap = new System.Windows.Forms.Label();
             this.LblDistTotal = new System.Windows.Forms.Label();
             this.CmdBack = new System.Windows.Forms.Button();
+            this.LblPurPriceCap = new System.Windows.Forms.Label();
+            this.LblPurPrice = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.gvPurchase)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvSale)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gvDistribution)).BeginInit();
@@ -557,6 +559,29 @@
             this.CmdBack.UseVisualStyleBackColor = false;
             this.CmdBack.Click += new System.EventHandler(this.CmdBack_Click);
             //
+            // LblPurPriceCap
+            //
+            this.LblPurPriceCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblPurPriceCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblPurPriceCap.ForeColor = System.Drawing.Color.Black;
+            this.LblPurPriceCap.Location = new System.Drawing.Point(440, 384);
+            this.LblPurPriceCap.Name = "LblPurPriceCap";
+            this.LblPurPriceCap.Size = new System.Drawing.Size(195, 20);
+            this.LblPurPriceCap.TabIndex = 41;
+            this.LblPurPriceCap.Text = "Latest Price";
+            this.LblPurPriceCap.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // LblPurPrice
+            //
+            this.LblPurPrice.BackColor = System.Drawing.Color.Transparent;
+            this.LblPurPrice.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblPurPrice.ForeColor = System.Drawing.Color.Black;
+            this.LblPurPrice.Location = new System.Drawing.Point(637, 384);
+            this.LblPurPrice.Name = "LblPurPrice";
+            this.LblPurPrice.Size = new System.Drawing.Size(135, 20);
+            this.LblPurPrice.TabIndex = 42;
+            this.LblPurPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
             // ETF_Stocks_Ticker_Historical_Data
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 14F);
@@ -565,6 +590,8 @@
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(1264, 680);
             this.ControlBox = false;
+            this.Controls.Add(this.LblPurPrice);
+            this.Controls.Add(this.LblPurPriceCap);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.LblDistTotal);
             this.Controls.Add(this.LblDistTotalCap);
@@ -663,5 +690,7 @@
         public System.Windows.Forms.Label LblDistTotalCap;
         public System.Windows.Forms.Label LblDistTotal;
         public System.Windows.Forms.Button CmdBack;
+        public System.Windows.Forms.Label LblPurPriceCap;
+        public System.Windows.Forms.Label LblPurPrice;
     }
 }

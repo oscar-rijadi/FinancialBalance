@@ -414,6 +414,8 @@ namespace FinancialBalance
                     Show_Sale_Totals(0, 0, 0, 0);
                     Show_Distribution_Totals(0);
                     LblCurrency.Text = "Currency : -";
+                    LblPurPriceCap.Text = "Latest Price";
+                    LblPurPrice.Text = "-";
                     LblNote.Text = "No ETF or stock is set up yet - add one in ETF/Stock Setup.";
                     return;
                 }
@@ -423,6 +425,7 @@ namespace FinancialBalance
                 Get_Distributions();
 
                 LblCurrency.Text = "Currency : " + Ticker_Currency();
+                Show_Latest_Price();
                 Show_Note();
             }
             catch (Exception ex)
@@ -501,6 +504,47 @@ namespace FinancialBalance
             LblPurAvgReal.Text = Money(parUnit == 0 ? 0 : parReal / parUnit);
             LblPurTotalCost.Text = Money(parCost);
             LblPurTotalReal.Text = Money(parReal);
+        }
+
+        //The newest price on record for the ticker, under the averages so the two can be read
+        //against each other.  Portfolio and Financial Year are ignored: a price belongs to the
+        //ticker rather than to a portfolio, and "latest" means the newest there is - the same
+        //lookup ETF/Stock Portfolio Summary makes.  The date goes beside the caption, since a
+        //price from weeks ago reads very differently from one taken today.
+        private void Show_Latest_Price()
+        {
+            Mdl1.Ssql = "select top 1 Price_Date, [Price], [Currency] from TblETFStocksPrice"
+                      + " where Full_Ticker = ? order by Price_Date Desc";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            cmd.Parameters.AddWithValue("@Ticker", CmbTicker.Text.Trim());
+            OleDbDataReader reader = cmd.ExecuteReader();
+            bool Found = reader.Read();
+            string TmpDate = "";
+            double TmpPrice = 0;
+            string TmpCurr = "";
+            if (Found)
+            {
+                TmpDate = Read_Text(reader["Price_Date"]);
+                TmpPrice = Read_Double(reader["Price"]);
+                TmpCurr = Read_Text(reader["Currency"]).ToUpper();
+            }
+            reader.Close();
+
+            if (!Found)
+            {
+                //never priced - ETF/Stock Price is where one is recorded
+                LblPurPriceCap.Text = "Latest Price";
+                LblPurPrice.Text = "-";
+                return;
+            }
+
+            LblPurPriceCap.Text = "Latest Price (" + Format_Date(TmpDate) + ")";
+
+            //A price carries a currency of its own, usually the ticker's but not necessarily.
+            //When it differs from the one at the top of the page it is named, so the price
+            //cannot be read as being in the same money as the averages above it.
+            string TmpShown = LblCurrency.Text.Replace("Currency :", "").Trim();
+            LblPurPrice.Text = (TmpCurr != "" && TmpCurr != TmpShown ? TmpCurr + " " : "") + Money(TmpPrice);
         }
 
         //Every sale, with the two profit columns coloured the way the rest of the application
