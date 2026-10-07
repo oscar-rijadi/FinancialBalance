@@ -886,6 +886,20 @@ namespace FinancialBalance
             return false;
         }
 
+        //An epoch read in the exchange's timezone where Yahoo named one, and in this machine's
+        //where it did not.  Only the date is wanted, so the offset only has to be right to
+        //within a day - which is exactly what it decides.
+        private string Exchange_Day(long parEpoch, bool parHasOffset, int parOffsetSeconds)
+        {
+            DateTimeOffset TmpWhen = DateTimeOffset.FromUnixTimeSeconds(parEpoch);
+            if (parHasOffset)
+            {
+                return TmpWhen.ToOffset(TimeSpan.FromSeconds(parOffsetSeconds))
+                              .ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+            }
+            return TmpWhen.LocalDateTime.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+        }
+
         //Yahoo's chart endpoint carries a last traded price in its meta block, and for most
         //symbols that is the figure to take.  For some it is simply wrong.  PMGOLD.AX answers
         //a regularMarketPrice of 17.94 against a real price near 60, alongside a
@@ -926,6 +940,23 @@ namespace FinancialBalance
                     Json = Client.DownloadString(Url);
                 }
 
+                //Which day a price belongs to is a question about the exchange, not about this machine.
+                //Yahoo gives the epoch in UTC and the exchange's offset from it beside the price, so the
+                //offset is what the epoch is read through: a US close at 16:00 EDT is 06:00 or 07:00 the
+                //next morning in Australia, and dating it by local time filed every US price a day late.
+                //
+                //An exchange in this machine's own timezone is unaffected, because the two agree.
+                //Without an offset to read it through there is nothing better than local time, which is
+                //what this did throughout before.
+                bool HasOffset = false;
+                int TmpOffset = 0;
+                Match OffsetMatch = Regex.Match(Json, "\"gmtoffset\"\\s*:\\s*(-?[0-9]+)");
+                if (OffsetMatch.Success && int.TryParse(OffsetMatch.Groups[1].Value, NumberStyles.Integer,
+                                                        CultureInfo.InvariantCulture, out TmpOffset))
+                {
+                    HasOffset = true;
+                }
+
                 //the day each bar belongs to, and what it closed at
                 string TmpSeriesDate = "";
                 Match TimesMatch = Regex.Match(Json, "\"timestamp\"\\s*:\\s*\\[([^\\]]*)\\]");
@@ -949,8 +980,7 @@ namespace FinancialBalance
                         long TmpWhen;
                         if (i < Times.Length && long.TryParse(Times[i].Trim(), out TmpWhen) && TmpWhen > 0)
                         {
-                            TmpSeriesDate = DateTimeOffset.FromUnixTimeSeconds(TmpWhen)
-                                                .LocalDateTime.ToString("yyyyMMdd");
+                            TmpSeriesDate = Exchange_Day(TmpWhen, HasOffset, TmpOffset);
                         }
                         break;
                     }
@@ -990,7 +1020,7 @@ namespace FinancialBalance
                     long Epoch;
                     if (long.TryParse(TimeMatch.Groups[1].Value, out Epoch) && Epoch > 0)
                     {
-                        parDate = DateTimeOffset.FromUnixTimeSeconds(Epoch).LocalDateTime.ToString("yyyyMMdd");
+                        parDate = Exchange_Day(Epoch, HasOffset, TmpOffset);
                     }
                 }
                 if (parDate == "")

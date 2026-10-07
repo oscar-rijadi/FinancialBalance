@@ -1277,7 +1277,8 @@ https://asx.api.markitdigital.com/asx-research/1.0/companies/{CODE}/header
 Yahoo, for everything else
 https://query1.finance.yahoo.com/v8/finance/chart/{Full_Ticker}?interval=1d&range=5d
   indicators.quote[0].close  ->  Price      the last bar that closed, rounded to 2 dp
-  regularMarketTime          ->  Price_Date epoch, converted to LOCAL date
+  regularMarketTime          ->  Price_Date epoch, read in the EXCHANGE's timezone
+  gmtoffset                  ->             how far that timezone is from UTC
   currency                   ->  Currency   as quoted by the exchange
 ```
 
@@ -1377,9 +1378,24 @@ at face value, so `PMGOLD.AX` was being filed under `19700101` as well as at the
 The date now falls through to the bar's own day when the quote carries no usable time, and
 only then to today — so a symbol whose quote works files exactly where it always did.
 
-> The synced date is the market timestamp **converted to local time**, not the exchange's own
-> date. A US close therefore lands under the following Australian date, so US and ASX tickers
-> can sit on different `Price_Date` values for the same trading session.
+**The date is the exchange's, not this machine's.** Which day a price belongs to is a
+question about the market it traded on, so the epoch Yahoo returns is read through the
+`gmtoffset` it returns beside it rather than through the local clock:
+
+```
+SCHD closes 16:00 EDT on 6 October        epoch 1791316800, gmtoffset -14400
+  read in the exchange's timezone  ->  20261006
+  read on an Australian clock      ->  20261007
+```
+
+It used to be the second of those, which filed **every US price a day late** — a close on
+the 6th stored against the 7th, because 16:00 in New York is the following morning in
+Sydney. An ASX holding is unaffected either way, since its exchange keeps the same time as
+the machine: `A200.AX` dates to the same day under both readings.
+
+> Without a `gmtoffset` to read it through there is nothing better than local time, which is
+> what the fallback still does. The ASX side has no timestamp at all and dates to **today**,
+> as described above — which is the exchange's day as well, for a local exchange.
 
 #### Currency on a price
 
