@@ -957,50 +957,69 @@ namespace FinancialBalance
                     HasOffset = true;
                 }
 
-                //the day each bar belongs to, and what it closed at
-                string TmpSeriesDate = "";
-                Match TimesMatch = Regex.Match(Json, "\"timestamp\"\\s*:\\s*\\[([^\\]]*)\\]");
-                Match ClosesMatch = Regex.Match(Json, "\"close\"\\s*:\\s*\\[([^\\]]*)\\]");
-                if (TimesMatch.Success && ClosesMatch.Success)
+                //Yahoo answers in two places, and a price has to be taken together with the day it
+                //belongs to.  Reading the price from one and the date from the other is what filed
+                //SCHD's 7 October close of 32.65 under the 8th: the quote held the 8th's close of
+                //33.15 and a timestamp to match, while the series had not been given the 8th's close
+                //yet - the bar was there, with an open and a volume, but a null close.
+                //
+                //So the quote is taken whole where it is sound, and the series whole where it is not.
+                //regularMarketTime decides which: PMGOLD.AX, whose quote price is simply wrong,
+                //carries 0 there, and that is what sends it to the series.
+                decimal TmpQuote = 0;
+                long TmpQuoteWhen = 0;
+                Match PriceMatch = Regex.Match(Json, "\"regularMarketPrice\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
+                if (PriceMatch.Success)
                 {
-                    string[] Times = TimesMatch.Groups[1].Value.Split(',');
-                    string[] Closes = ClosesMatch.Groups[1].Value.Split(',');
+                    decimal.TryParse(PriceMatch.Groups[1].Value, NumberStyles.Number,
+                                     CultureInfo.InvariantCulture, out TmpQuote);
+                }
+                Match TimeMatch = Regex.Match(Json, "\"regularMarketTime\"\\s*:\\s*([0-9]+)");
+                if (TimeMatch.Success)
+                {
+                    long.TryParse(TimeMatch.Groups[1].Value, out TmpQuoteWhen);
+                }
 
-                    //backwards, because the last bar is empty while its own day is still running
-                    for (int i = Closes.Length - 1; i >= 0; i--)
+                if (TmpQuote > 0 && TmpQuoteWhen > 0)
+                {
+                    parPrice = Math.Round(TmpQuote, 2);
+                    parDate = Exchange_Day(TmpQuoteWhen, HasOffset, TmpOffset);
+                }
+                else
+                {
+                    //the series instead, each close taken with its own bar's day
+                    Match TimesMatch = Regex.Match(Json, "\"timestamp\"\\s*:\\s*\\[([^\\]]*)\\]");
+                    Match ClosesMatch = Regex.Match(Json, "\"close\"\\s*:\\s*\\[([^\\]]*)\\]");
+                    if (TimesMatch.Success && ClosesMatch.Success)
                     {
-                        decimal TmpClose;
-                        if (!decimal.TryParse(Closes[i].Trim(), NumberStyles.Number,
-                                              CultureInfo.InvariantCulture, out TmpClose) || TmpClose <= 0)
-                        {
-                            continue;
-                        }
-                        parPrice = Math.Round(TmpClose, 2);
+                        string[] Times = TimesMatch.Groups[1].Value.Split(',');
+                        string[] Closes = ClosesMatch.Groups[1].Value.Split(',');
 
-                        long TmpWhen;
-                        if (i < Times.Length && long.TryParse(Times[i].Trim(), out TmpWhen) && TmpWhen > 0)
+                        //backwards, because the last bar is empty while its own day is still running
+                        for (int i = Closes.Length - 1; i >= 0; i--)
                         {
-                            TmpSeriesDate = Exchange_Day(TmpWhen, HasOffset, TmpOffset);
+                            decimal TmpClose;
+                            if (!decimal.TryParse(Closes[i].Trim(), NumberStyles.Number,
+                                                  CultureInfo.InvariantCulture, out TmpClose) || TmpClose <= 0)
+                            {
+                                continue;
+                            }
+                            parPrice = Math.Round(TmpClose, 2);
+
+                            long TmpWhen;
+                            if (i < Times.Length && long.TryParse(Times[i].Trim(), out TmpWhen) && TmpWhen > 0)
+                            {
+                                parDate = Exchange_Day(TmpWhen, HasOffset, TmpOffset);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
 
-                //nothing in the series, so fall back on whatever the quote block says
                 if (parPrice <= 0)
                 {
-                    Match PriceMatch = Regex.Match(Json, "\"regularMarketPrice\"\\s*:\\s*(-?[0-9]+(\\.[0-9]+)?)");
-                    if (!PriceMatch.Success)
-                    {
-                        parError = "Yahoo Finance did not return a price for " + parTicker + ".";
-                        return false;
-                    }
-                    if (!decimal.TryParse(PriceMatch.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out parPrice))
-                    {
-                        parError = "Could not read the price returned for " + parTicker + ".";
-                        return false;
-                    }
-                    parPrice = Math.Round(parPrice, 2);
+                    parError = "Yahoo Finance did not return a price for " + parTicker + ".";
+                    return false;
                 }
 
                 //currency the price is quoted in, straight from the same meta block
@@ -1010,23 +1029,8 @@ namespace FinancialBalance
                     parCurrency = CurrMatch.Groups[1].Value.Trim();
                 }
 
-                //Date the price belongs to, from the market timestamp where Yahoo has one - which is
-                //what this has always used, so a symbol with a working quote files where it always
-                //did.  A regularMarketTime of 0 is no timestamp rather than midnight in 1970, which
-                //is where PMGOLD.AX was being filed; that falls through to the bar's own day.
-                Match TimeMatch = Regex.Match(Json, "\"regularMarketTime\"\\s*:\\s*([0-9]+)");
-                if (TimeMatch.Success)
-                {
-                    long Epoch;
-                    if (long.TryParse(TimeMatch.Groups[1].Value, out Epoch) && Epoch > 0)
-                    {
-                        parDate = Exchange_Day(Epoch, HasOffset, TmpOffset);
-                    }
-                }
-                if (parDate == "")
-                {
-                    parDate = TmpSeriesDate;
-                }
+                //Both of the paths above set the date alongside the price.  This is only for a payload
+                //that carried a price with no usable time against it at all.
                 if (parDate == "")
                 {
                     parDate = DateTime.Now.ToString("yyyyMMdd");

@@ -1276,10 +1276,12 @@ https://asx.api.markitdigital.com/asx-research/1.0/companies/{CODE}/header
 
 Yahoo, for everything else
 https://query1.finance.yahoo.com/v8/finance/chart/{Full_Ticker}?interval=1d&range=5d
-  indicators.quote[0].close  ->  Price      the last bar that closed, rounded to 2 dp
-  regularMarketTime          ->  Price_Date epoch, read in the EXCHANGE's timezone
-  gmtoffset                  ->             how far that timezone is from UTC
-  currency                   ->  Currency   as quoted by the exchange
+  regularMarketPrice  + regularMarketTime   ->  Price and Price_Date, where the
+                                                quote carries a usable time
+  indicators.quote[0].close + its timestamp ->  both, where it does not
+  gmtoffset                                 ->  the exchange's distance from UTC,
+                                                which the date is read through
+  currency                                  ->  Currency, as quoted by the exchange
 ```
 
 There is no JSON library in the project, so those fields are pulled out with regular
@@ -1357,14 +1359,27 @@ the price is 17.94. The daily series in the same payload is perfectly good:
 2026-10-02   null      <- today, which has not closed yet
 ```
 
-So the price is read off **`indicators.quote[0].close`**, walking back from the end to the
-last bar that actually closed, and `regularMarketPrice` is kept only for a symbol that
-returns no series at all. For a symbol whose quote *does* work the two are **the same figure
-to the cent** — checked against `A200.AX`, `VHY.AX`, `NDQ.AX`, `GOOGL` and `SCHD`, all five
-agreed exactly — so nothing but the broken symbol moves.
+So Yahoo answers in two places, and **a price is always taken together with the day it
+belongs to** — never one from each:
 
-The window is **five days** rather than one for the same reason: a one-day range holds a
-single bar, and that bar is empty until its day has closed.
+| The quote carries | Then |
+| --- | --- |
+| a price **and** a `regularMarketTime` above zero | both come from the quote |
+| no usable time (`regularMarketTime` is `0`) | both come from the series: the last bar that actually closed, and that bar's own day |
+
+`regularMarketTime` is what tells the two apart, because the symbol whose quote price is
+wrong is also the symbol that reports no time for it.
+
+> **Taking one from each is a real bug, not a theoretical one.** The price came off the
+> series and the date off the quote for a while, and on 8 October 2026 that filed **SCHD's
+> 7 October close of 32.65 under the 8th**. The quote held the 8th's close of 33.15 with a
+> timestamp to match; the series had the 8th's bar — an open of 32.67, a volume of 23.5
+> million — but its close was still `null`, so walking back landed on the 7th. The two
+> sources agree for most of the day and part company only between a close and Yahoo
+> publishing that close into the series, which is exactly when a sync is likely.
+
+The window is **five days** rather than one because the series is the fallback: a one-day
+range holds a single bar, and that bar is empty until its day has closed.
 
 > **The best Yahoo can do for `PMGOLD.AX` is its previous close.** It publishes no intraday
 > series for the symbol either — `interval=1h`, `5m` and `1m` all come back with no points at
