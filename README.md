@@ -814,8 +814,8 @@ statement.
 #### Both pages move the portfolio's balance
 
 `TblETFStocksPortfolio` holds one running row per portfolio code — its `Cash` and the
-`Investment_Amount` bought out of that cash. **Buying and selling both move it**, and between them
-they keep `Investment_Amount` meaning one thing throughout: **the real money currently invested**.
+`Investment_Amount` bought out of that cash. **Buying and selling both move it**: a purchase adds
+what it really cost, and a sale releases what the lots it closed **originally** cost.
 
 **ETF/Stock Purchase.** `Real_Total_Cost_Base` is what a purchase actually cost, so it shifts that
 figure out of the cash and into the invested amount:
@@ -854,19 +854,27 @@ page starts it at `0`, and so does one written by the Sale page. Rows that preda
 still hold `Null`, which the pages that read it treat as `0`. It can be corrected by hand in the
 [ETF/Stock Investment](#etfstock-investment-rules) edit panel.
 
-**ETF/Stock Sale.** The proceeds come into the cash, and the real cost of the lots the sale closed
-leaves the invested amount — releasing exactly what the purchase put there:
+**ETF/Stock Sale.** The proceeds come into the cash, and what the lots the sale closed
+**originally cost** leaves the invested amount:
 
 ```
 Cash              = Cash + Selling_Total_Amount
-Investment_Amount = Investment_Amount - <real cost of the lots closed>
+Investment_Amount = Investment_Amount - SUM( TblETFStocksPurchase.Original_Total_Cost_Base )
+
+over the lots stamped with this sale's Sale_Id
 ```
 
 | Button | Movement |
 | --- | --- |
-| **Add** | cash `+ Selling_Total_Amount`, invested `-` the closed lots' `Real_Total_Cost_Base` |
-| **Update** | cash by the **difference in proceeds** only, as long as neither the portfolio nor the currency changed. Which lots a sale closed is fixed by its `Sale_Id` and an update does not re-settle them, so the released cost is the same before and after |
-| **Delete** | the whole sale undone: cash `- stored Selling_Total_Amount`, invested `+` the closed lots' cost, which are held again |
+| **Add** | cash `+ Selling_Total_Amount`, invested `-` the closed lots' `Original_Total_Cost_Base` |
+| **Update** | invested `+` what the **previously** closed lots originally cost, `-` what the lots closed **now** originally cost. Which lots a sale closed is fixed by its `Sale_Id` and an update does not re-settle them, so those two are the same figure and cancel — leaving the cash to move by the **difference in proceeds** alone. They only come apart when the portfolio or the currency changes, and then the whole sale moves from one balance to the other |
+| **Delete** | the whole sale undone: cash `- stored Selling_Total_Amount`, invested `+` what the closed lots originally cost, which are held again |
+
+All three read that sum **from the database**, over the purchase rows carrying the sale's
+`Sale_Id`, rather than adding up the lot grid. Add reads it back immediately after settling
+the lots, which is the same query Update and Delete will run later — so undoing a sale gives
+back exactly what making it took away, to the cent, including when a lot was **sold in part**
+and its `Original_Total_Cost_Base` was restated for the units that actually went.
 
 **Which cash the proceeds go into** depends on the sale's currency against the portfolio's own,
 the mirror of the purchase table above:
@@ -891,17 +899,37 @@ rises `300.00`, leaving the hundred of profit exactly where it belongs and `Cash
 > The difference is deliberate — a purchase that moves no cash is a lot you still hold and can
 > correct later, while a sale that moves no cash is proceeds that have vanished.
 
-The gap between the two sale figures is the sale's **real profit**, so net worth moves by exactly
-that. Sell 4 units for `36.00` out of lots that cost `25.00` real and the cash rises `36.00` while
-the invested amount falls `25.00` — `11.00` better off, which is what `Real_Profit_Or_Loss` records.
+**Why the original cost and not what the lot is carried at.** Three cost figures sit on a
+purchase row and they are not the same number:
 
-A **reinvested** lot has a `Real_Total_Cost_Base` of `0`, so it moves nothing on either page: buying
-one costs no cash, and selling one releases nothing. The row is still recorded either way. An
-**Update** that changes neither the cost nor the proceeds likewise moves nothing.
+| Column | What it holds |
+| --- | --- |
+| `Original_Total_Cost_Base` | what the units cost when they were **bought**, never restated afterwards except to split a lot |
+| `Total_Cost_Base` | the same figure **plus any cost base adjustment** recorded against the ticker since |
+| `Real_Total_Cost_Base` | `Total_Cost_Base`, or `0` for a lot that arrived as a **reinvested** distribution rather than being paid for |
 
-**The two pages round-trip.** Buy a lot for `800.00` and the invested amount rises by `800.00`;
-sell it and the same `800.00` comes back out, whatever it sold for. Delete the sale and it goes
-back in, with the lot held again.
+A purchase adds its `Real_Total_Cost_Base`, which at the moment of buying is also its
+`Original_Total_Cost_Base`. **ETF/Stock Cost Base Adjustment** then changes `Cost_Base`,
+`Total_Cost_Base` and `Real_Total_Cost_Base` and **does not touch**
+`Investment_Amount` or the original columns. So releasing the adjusted figure on the way out
+left a residue behind — buy at `50.00`, adjust the ticker up by `10.00`, sell, and the
+invested amount ended `10.00` **below** where it began on a holding fully disposed of.
+Releasing the original cost closes that: what the purchase put in is what the sale takes out.
+
+> **A reinvested lot is the one case that does not cancel.** It cost no real money, so buying
+> it added nothing — but it does have a cost base, and selling it now releases that. The
+> units were investment while they were held, and this is the figure that says so; it is also
+> the figure **ETF/Stock Financial Year Reconciliation** takes out of a year through its own
+> `Sold_Amount`, so the two pages now answer the question the same way.
+
+The cash side is unchanged: the proceeds come in whole, so a sale's effect on net worth is
+still the proceeds less whatever left the invested amount. An **Update** that changes neither
+the lots nor the proceeds moves nothing at all.
+
+**The two pages round-trip for a lot that was paid for.** Buy one for `800.00` and the invested
+amount rises `800.00`; sell it and the same `800.00` comes back out, whatever it sold for and
+whatever its cost base has been adjusted to since. Delete the sale and it goes back in, with
+the lot held again.
 
 ##### The details that are easy to get wrong
 

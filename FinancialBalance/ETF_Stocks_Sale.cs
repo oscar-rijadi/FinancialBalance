@@ -1282,15 +1282,23 @@ namespace FinancialBalance
         //---- the portfolio's running balance ---------------------------------------
         //
         //TblETFStocksPortfolio holds one running row per portfolio code - its cash and the amount
-        //invested out of that cash. A sale moves both: the proceeds come into the cash, and the
-        //real cost of the lots it closed leaves the invested amount, which is the same figure
-        //ETF/Stock Purchase put there when those lots were bought.
+        //invested out of that cash. A sale moves both: the proceeds come into the cash, and what
+        //the lots it closed originally cost leaves the invested amount.
         //
         //    Cash              = Cash + Selling_Total_Amount
-        //    Investment_Amount = Investment_Amount - <real cost of the lots closed>
+        //    Investment_Amount = Investment_Amount - Sum(Original_Total_Cost_Base of those lots)
         //
-        //The difference between the two is the sale's real profit, so net worth moves by exactly
-        //that. A reinvested lot cost nothing real, so it releases nothing.
+        //Original_Total_Cost_Base is what the units cost when they were bought, before any cost
+        //base adjustment recorded against the ticker since, and before the reinvestment rule that
+        //zeroes Real_Total_Cost_Base.  Two things follow from that.
+        //
+        //A reinvested lot now DOES release something.  It cost no real money, but it did have a
+        //cost base, and the units it bought are investment that is leaving.
+        //
+        //And the figure released is no longer the same one ETF/Stock Purchase added when the lot
+        //was bought, so a buy and a later sell of the same holding need not cancel to the cent.
+        //Where they differ it is by an adjustment or a reinvestment, both of which are real
+        //changes in what is invested rather than rounding.
 
         private bool Portfolio_Exists(string parCode, out string parCurrency,
                                       out decimal parCash, out decimal parCashUSD,
@@ -1341,9 +1349,9 @@ namespace FinancialBalance
         //    anything else  ->  nothing moves
         //
         //Investment_Amount is a figure in the portfolio's currency, so a USD sale out of a
-        //portfolio held in another one leaves it alone - and it has nothing to release anyway,
-        //since the USD purchase that opened the lot never added to it. The two sides round-trip:
-        //what a USD purchase takes out of Cash_In_USD, a USD sale puts back.
+        //portfolio held in another one leaves it alone - the USD purchase that opened the lot
+        //never added to it either. The two sides round-trip: what a USD purchase takes out of
+        //Cash_In_USD, a USD sale puts back.
         //
         //A negative figure runs it backwards, which is what Delete and a reduced Update need.
         //
@@ -1452,17 +1460,18 @@ namespace FinancialBalance
                  + Mdl1.FormatAmt((double)parInvAmt) + ".";
         }
 
-        //What a stored sale released from the invested amount: the real cost of the lots stamped
-        //with its Sale_Id. Read from the database rather than the grid, so it is right whether or
-        //not the read-back table happens to be on screen.
-        private decimal Stored_Real_Cost(string parSaleId)
+        //What a stored sale released from the invested amount: what the lots stamped with its
+        //Sale_Id originally cost. Read from the database rather than the grid, so it is right
+        //whether or not the read-back table happens to be on screen - and so that Add, Update and
+        //Delete all read the one figure from the one place and cannot drift apart.
+        private decimal Stored_Original_Cost(string parSaleId)
         {
             if (parSaleId == null || parSaleId.Trim() == "")
             {
                 return 0;
             }
             decimal Result = 0;
-            Mdl1.Ssql = "select Sum([Real_Total_Cost_Base]) as N from TblETFStocksPurchase"
+            Mdl1.Ssql = "select Sum([Original_Total_Cost_Base]) as N from TblETFStocksPurchase"
                       + " where [Sale_Id] = '" + parSaleId.Trim() + "'";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
@@ -1524,10 +1533,14 @@ namespace FinancialBalance
                 //the sale also has to take those units out of the purchases they came from
                 Apply_Sale_To_Lots(Get_Trans_Date(), TmpSaleId);
 
-                //the proceeds come in, the lots' real cost is released
+                //The proceeds come in and what the lots originally cost is released.  That figure is
+                //read back off the rows Apply_Sale_To_Lots has just stamped, not worked out from the
+                //grid: a lot sold in part has its Original_Total_Cost_Base restated there for the units
+                //that actually went, and this is the same query Update and Delete will read later, so
+                //undoing a sale gives back exactly what making it took away.
                 string TmpExtra;
                 Move_Portfolio(CmbSellPortfolio.Text.Trim(), CmbCurrency.Text.Trim(),
-                               TmpSellingTotal, -(decimal)TmpRealCost, out TmpExtra);
+                               TmpSellingTotal, -Stored_Original_Cost(TmpSaleId), out TmpExtra);
 
                 MessageBox.Show("Create successfully for " + CmbFullTicker.Text.Trim() + " on " + Mdl1.toLongDate(Get_Trans_Date()) + TmpExtra, "Success");
 
@@ -1564,15 +1577,17 @@ namespace FinancialBalance
                     return;
                 }
 
-                //Which lots a sale closed is fixed by its Sale_Id and an update does not
-                //re-settle them, so the released cost is the same before and after: only the
-                //proceeds can have changed, and only the cash moves with them.
+                //Which lots a sale closed is fixed by its Sale_Id and an update does not re-settle
+                //them, so what it releases is the same lots at the same original cost before and
+                //after.  Adding that back and taking it off again cancels, which is why the usual
+                //case below moves the cash alone; only a change of portfolio or currency makes the
+                //two sides land on different balances and the figure has to travel.
                 string TmpCode = CmbSellPortfolio.Text.Trim();
                 string TmpCurrency = CmbCurrency.Text.Trim();
                 string TmpWasCode = (OrgSellPortfolioCode == null ? "" : OrgSellPortfolioCode.Trim());
                 string TmpWasCurrency = (OrgCurrency == null ? "" : OrgCurrency.Trim());
                 decimal TmpWasTotal = Read_Decimal(OrgSellingTotalAmount);
-                decimal TmpLotCost = Stored_Real_Cost(OrgSaleId);
+                decimal TmpLotCost = Stored_Original_Cost(OrgSaleId);
 
                 if (!Currency_Fits(TmpCode, TmpCurrency, TmpSellingTotal))
                 {
@@ -1667,10 +1682,11 @@ namespace FinancialBalance
                     return;
                 }
 
-                //read before the lots are released, while they still carry this Sale_Id
+                //read before the lots are released, while they still carry this Sale_Id - afterwards
+                //there is nothing left to add up
                 string TmpWasCode = (OrgSellPortfolioCode == null ? "" : OrgSellPortfolioCode.Trim());
                 decimal TmpWasTotal = Read_Decimal(OrgSellingTotalAmount);
-                decimal TmpLotCost = Stored_Real_Cost(OrgSaleId);
+                decimal TmpLotCost = Stored_Original_Cost(OrgSaleId);
 
                 //the lots this sale closed go back to being held, before the sale itself goes
                 if (OrgSaleId != null && OrgSaleId.Trim() != "")
@@ -1685,8 +1701,8 @@ namespace FinancialBalance
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
 
-                //the sale is undone, so the proceeds leave the cash and the lots' cost goes back
-                //into the invested amount - the lots themselves are held again
+                //the sale is undone, so the proceeds leave the cash and what the lots originally cost
+                //goes back into the invested amount - the lots themselves are held again
                 string TmpExtra;
                 Move_Portfolio(TmpWasCode, (OrgCurrency == null ? "" : OrgCurrency.Trim()),
                                -TmpWasTotal * TmpRows, TmpLotCost * TmpRows, out TmpExtra);
