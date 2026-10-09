@@ -1782,38 +1782,52 @@ database, all of them still editable afterwards:
 | Field | Default |
 | --- | --- |
 | `Previous_Investment` | The preceding year's **closing position** for the same code: its `Ending_Investment` **plus** its `Total_DistributionDividend_Reinvested` — from the year whose `End_Date` falls latest before this one starts. `0` when there is none — see below. |
-| `Investment` | Money **in less money out less what is still cash**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash` — see below. |
-| `Sold_Amount` | What the year's **sales** released: `SUM(Selling_Total_Amount - Profit_Or_Loss_On_Paper)` from `TblETFStocksSale`, for rows whose `Trans_Date` falls inside the year — see below. |
+| `Investment` | Money **in, less money out, less what is still cash, plus what the year's sales brought in**: `SUM(Amount)` from `TblETFStocksPortfolioInvestment` inside the year where `Investment_Type` is `+`, less `SUM(Amount)` where it is `-`, less the portfolio's `Cash`, plus `SUM(Selling_Total_Amount)` from `TblETFStocksSale` inside the year — see below. |
+| `Sold_Amount` | What the holdings the year's **sales** closed had **originally cost**: the sales dated inside the year are found first, then `SUM(Original_Total_Cost_Base)` over the `TblETFStocksPurchase` lots carrying their `Sale_Id` — see below. |
 | `Ending_Investment` | `Previous_Investment + Investment - Sold_Amount`. |
 | `On_Paper_Ending_Value` | Each still-open ticker's units, **bought on or before the year closed**, times the price below, **converted into the entry's Currency** — see below. |
 | `Total_DistributionDividend` and its reinvested / not-reinvested split | `SUM(Total_Amount)` from distributions inside the year, **converted into the entry's Currency** — see below. |
 | `Capital_Gains`, `Real_Capital_Gains` | `SUM` of the two profit columns on sales inside the year. |
 | `Investment_Loan_Interest`, `Tax` | `0` — nothing in the database records them. |
 
-**Sold Amount is taken from the sales, not from the purchases they closed.** A sale's
-`Profit_Or_Loss_On_Paper` is what it made over the cost base of the lots it closed, so the
-proceeds less that profit *is* the cost base — which is the figure that leaves the
-investment when a holding is sold:
+**Sold Amount is what the holdings the year's sales closed originally cost.** The sum is
+taken in two steps, because the figure lives in a different table from the event that
+triggers it. The sales dated inside the year are found first; then the purchase lots each
+of those sales closed are added up, at what they originally cost:
 
 ```
-Sold_Amount = SUM( TblETFStocksSale.Selling_Total_Amount
-                 - TblETFStocksSale.Profit_Or_Loss_On_Paper )
+Sold_Amount = SUM( TblETFStocksPurchase.Original_Total_Cost_Base )
 
-over rows whose Trans_Date falls inside the chosen financial year,
-for the same Portfolio_Code
+over the lots whose Sale_Id is one of
+
+    SELECT Sale_Id FROM TblETFStocksSale
+    WHERE  Portfolio_Code = the chosen portfolio
+      AND  Trans_Date falls inside the chosen financial year
+      AND  Sale_Id <> ''
+    GROUP BY Sale_Id
 ```
 
-It used to read `SUM(Real_Total_Cost_Base)` from the **purchases** marked sold inside the
-year. The two answer the same question from opposite ends, and reading the sales is the
-more direct of the two: a sale is the event that releases the investment, and it carries
-both figures the sum needs on the one row.
+`Sale_Id` is the join. A sale writes its id onto every purchase lot it closes, so the lots
+carrying an id are exactly the holdings that left the portfolio, and what they originally
+cost is what left the investment with them.
 
-> **The Nulls are guarded, and only here.** `SUM` ignores a row whose value is `Null`, which
-> is harmless for a single column — it is the same as treating it as nothing. With a
-> subtraction it is not: a `Null` in *either* column would make the whole expression `Null`
-> and drop the row from the total, losing the other half of it too. So each side is wrapped
-> in `IIf(IsNull(...), 0, ...)`. The sums either side of this one read a single column and
-> need no such guard.
+> **The subquery insists on an id that is actually filled in.** A lot still held carries
+> `Null` in `Sale_Id`, and `Null` never matches anything, so unsold holdings fall out on
+> their own. A *blank* would not: it would match the next blank and sweep every such lot
+> into the total. `Sale_Id <> ''` closes that off. Nothing in the database carries a blank
+> there today — the guard is there so nothing ever has to.
+
+Two earlier rules read the figure elsewhere. The first was `SUM(Real_Total_Cost_Base)` over
+the purchases marked sold inside the year; the second was
+`SUM(Selling_Total_Amount - Profit_Or_Loss_On_Paper)` over the sales themselves — the
+proceeds less what the sale made over its cost base, which is the cost base arrived at by
+subtraction. All three circle the same money, and they do **not** always agree:
+`Original_Total_Cost_Base` is what the lot cost when it was bought, while `Cost_Base` and
+everything derived from it carry any **cost base adjustment** recorded against the ticker
+since. On the recorded `OE` portfolio for 2026-2027 the subtraction gives **114.01** and
+the lots give **113.01**; the dollar between them is the `+1.00` adjustment held in
+`TblETFStocksCostBaseAdjustment` for `NDQ.AX`, spread across the three parcels that sale
+closed.
 
 Like the other defaults on this side of the entry area, it is **not converted** into the
 entry's currency.
@@ -1847,7 +1861,17 @@ still sitting as cash has not bought anything, and this figure is meant to be wh
 into holdings.
 
 ```
-Investment = money in - money out - Cash
+Investment = money in
+           - money out
+           - Cash
+           + what the year's sales brought in
+
+money in   = SUM(Amount) from TblETFStocksPortfolioInvestment, Investment_Type '+'
+money out  = SUM(Amount) from TblETFStocksPortfolioInvestment, Investment_Type '-'
+             both inside the financial year, for the same Portfolio_Code
+Cash       = TblETFStocksPortfolio.Cash for that Portfolio_Code
+sales      = SUM(Selling_Total_Amount) from TblETFStocksSale,
+             Trans_Date inside the financial year, same Portfolio_Code
 ```
 
 Two things follow from where `Cash` lives:
@@ -1870,6 +1894,26 @@ editable, so it can be typed over.
 > `Investment_Type`, so the two signs must be summed apart and subtracted. Adding the column
 > outright would count a withdrawal as money going in. A year of withdrawals alone gives a
 > negative `Investment`, which then carries into `Ending_Investment`.
+
+**What the year's sales brought in is added back, because a sale is otherwise counted against
+the year twice.** Selling a holding is recorded on both sides of the reconciliation:
+
+- the proceeds leave the portfolio as a **withdrawal** in `TblETFStocksPortfolioInvestment`,
+  pulling `Investment` down;
+- and the cost of the lots that sale closed leaves again through **`Sold_Amount`**, which
+  `Ending_Investment` subtracts in its own right.
+
+Only the second of those belongs to this page. `+ SUM(Selling_Total_Amount)` cancels the
+first, so a sale costs the year its holdings' cost base and nothing more.
+
+> **It shows up the moment anything is sold.** On the recorded `OE` portfolio for 2026-2027,
+> 115.00 was paid in and a parcel of `NDQ.AX` was sold for 119.61, the proceeds written out
+> as a withdrawal. `Investment` read **-4.61** and `Ending_Investment` **-117.62**: the one
+> sale charged to the year on both sides. It now reads **115.00** and the year closes on
+> **1.99**, which is the 113.01 those lots cost taken off the 115.00 that went in.
+
+> A year in which nothing was sold is **unchanged** — the term is `0`. Every portfolio and
+> year in the database but `OE` for 2026-2027 reads exactly what it read before.
 
 `On_Paper_Ending_Value` looks for a price in three places, in order, and stops at the first that
 has one:

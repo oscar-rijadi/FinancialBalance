@@ -833,6 +833,36 @@ namespace FinancialBalance
             return Result;
         }
 
+        //What the year's sales took out of the investment, read from the holdings they closed
+        //rather than from the sale rows.  Every sale dated inside the year for this portfolio is
+        //found first, and the purchase lots carrying its Sale_Id are the holdings that sale sold;
+        //their Original_Total_Cost_Base is what those holdings originally cost, and that cost is
+        //the money that leaves the investment when they go.
+        //
+        //Sale_Id is the join between the two tables.  The subquery insists on one that is
+        //actually filled in: a lot still held carries Null there, which can never match, but a
+        //blank would match a blank and sweep every unsold holding into the total.
+        private double Sold_Cost_Base(string parCode, string parStart, string parEnd)
+        {
+            double Result = 0;
+            Mdl1.Ssql = "select Sum([Original_Total_Cost_Base]) as N from TblETFStocksPurchase"
+                      + " where [Sale_Id] In ("
+                      + "select [Sale_Id] from TblETFStocksSale"
+                      + " where [Portfolio_Code] = '" + parCode + "'"
+                      + " and [Trans_Date] >= '" + parStart + "'"
+                      + " and [Trans_Date] <= '" + parEnd + "'"
+                      + " and [Sale_Id] <> ''"
+                      + " group by [Sale_Id])";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                Result = Read_Double(reader["N"]);
+            }
+            reader.Close();
+            return Result;
+        }
+
         //Last year's closing position becomes this year's opening one.  The preceding year is
         //the one whose End_Date falls latest before this year starts.
         //
@@ -1122,25 +1152,22 @@ namespace FinancialBalance
                     //invested: whatever is still sitting as cash has not bought anything, and
                     //this figure is meant to be what actually went into holdings. The page used
                     //to carry a label asking for that subtraction to be done by hand.
+                    //
+                    //What the year's sales brought in is then added back.  Selling a holding is
+                    //recorded twice over: the proceeds come out of the portfolio as a withdrawal,
+                    //and the cost of the lots it closed leaves again through Sold Amount below.
+                    //Without this term the one sale is counted against the year on both sides.
                     Set_Box(txtInvestment,
                         Sum_Between("TblETFStocksPortfolioInvestment", "[Amount]", "Investment_Date",
                                     TmpCode, TmpStart, TmpEnd, " and [Investment_Type] = '+'")
                       - Sum_Between("TblETFStocksPortfolioInvestment", "[Amount]", "Investment_Date",
                                     TmpCode, TmpStart, TmpEnd, " and [Investment_Type] = '-'")
-                      - Portfolio_Cash(TmpCode));
-                    //What the sales inside the year released, taken from the sales themselves.  A sale's
-                    //Profit_Or_Loss_On_Paper is what it made over the cost base of the lots it closed, so
-                    //the proceeds less that profit is the cost base itself - which is the figure that
-                    //leaves the investment when a holding is sold.
-                    //
-                    //The Nulls are guarded because this is a subtraction: Sum ignores a Null row, and with
-                    //two columns a Null in either one would drop the whole row from the total rather than
-                    //counting the other half of it.  A single column needs no such guard, which is why the
-                    //sums around this one do not have it.
-                    Set_Box(txtSold, Sum_Between("TblETFStocksSale",
-                                                 "IIf(IsNull([Selling_Total_Amount]), 0, [Selling_Total_Amount])"
-                                               + " - IIf(IsNull([Profit_Or_Loss_On_Paper]), 0, [Profit_Or_Loss_On_Paper])",
-                                                 "Trans_Date", TmpCode, TmpStart, TmpEnd, ""));
+                      - Portfolio_Cash(TmpCode)
+                      + Sum_Between("TblETFStocksSale", "[Selling_Total_Amount]", "Trans_Date",
+                                    TmpCode, TmpStart, TmpEnd, ""));
+                    //What the sales inside the year took out of the investment: the original cost of the
+                    //holdings they closed, found through each sale's own purchase lots.
+                    Set_Box(txtSold, Sold_Cost_Base(TmpCode, TmpStart, TmpEnd));
                     //converted into the currency chosen in the entry area
                     Apply_Currency_Defaults(TmpCode, TmpStart, TmpEnd);
                     Set_Box(txtCapGainPaper, Sum_Between("TblETFStocksSale", "[Profit_Or_Loss_On_Paper]",
