@@ -781,7 +781,7 @@ Two things make a lot cost nothing, and both zero its `Real_Total_Cost_Base`:
 | | Meaning | Held as |
 | --- | --- | --- |
 | **Reinvestment** | a distribution taken as units instead of cash | *inferred* — nothing is stored |
-| **Is Free** | units that arrived at no cost at all | `Is_Free`, with `Reason_for_Free` beside it |
+| **Free** | units that arrived at no cost at all | `Is_Free`, with `Reason_for_Free` beside it |
 
 Ticking either sets Real Total Cost Base to zero as the figures are typed, and saves it as
 zero. The Total Cost Base is untouched by both: the lot still has a cost base for capital
@@ -789,7 +789,7 @@ gains, it just did not cost the portfolio anything on the day.
 
 > **Reinvestment is not a column in the table.** It never has been — it is read back as
 > *"the real total is zero"*, in the grid and in the checkbox alike. That was unambiguous
-> while it was the only thing that could zero it, and stopped being so the moment Is Free
+> while it was the only thing that could zero it, and stopped being so the moment Free
 > arrived: left alone, every free lot would have come back reading as a reinvestment.
 > 
 > Because `Is_Free` **is** stored, the two can still be told apart — a zero real total is a
@@ -797,19 +797,70 @@ gains, it just did not cost the portfolio anything on the day.
 > read it that way, so the three cases — paid for, reinvested, free — come back as the three
 > different things they are.
 
-**Reason for Free** is live only while Is Free is ticked, and is emptied when it is cleared,
+**Reason for Free** is live only while Free is ticked, and is emptied when it is cleared,
 so an unticked lot cannot carry a stale reason into the table. A free lot with nothing said
 about why stores `Null` rather than an empty string, which is how a lot from before the field
 existed reads too. Apostrophes are doubled on the way in, as everywhere free text reaches a
 statement.
 
-> Adding the **Is Free** column meant re-measuring the whole fifteen-column grid, because
+> Adding the **Free** column meant re-measuring the whole fifteen-column grid, because
 > `Portfolio Code`, `Currency`, `Sold` and `Reinvestment` were **already clipping their own
 > headings** before it arrived. The fill weights are now written as the pixel budget they
 > add up to — 943, what the grid has once its scrollbar is off — so each column says what it
 > is being given, and every one is at least as wide as its longest heading word and the
 > longest value across all 102 real purchase rows. Whole-number weights out of 100 were too
 > coarse: the fifteen floors add to 881, leaving 62px of slack that 9.4px steps cannot place.
+
+##### Both flags are presented the same way
+
+`Is_Sold` and `Is_Free` are the same kind of field — Jet `YESNO`, `DBTYPE_BOOL`, holding
+`True` or `False` — but for a long time they did not **look** the same, in two places at
+once.
+
+**In the page**, the sold flag was captioned `Sold` and the free one `Is Free`: one named
+after what the lot *is*, the other after what the column is *called*. Both now read the way
+`Sold` does, on the checkbox and on the grid heading above it — **Reinvestment**, **Free**,
+**Sold**, three flags phrased alike. The column name is untouched; only the caption changed.
+
+**In Access**, opening the table showed `Is_Sold` as a tick box and `Is_Free` as the words
+`True` / `False`. That is not a difference in the data. A Jet field carries display settings
+alongside its type, and the one that decides this is **`DisplayControl`**: `106` is a check
+box, and a field without the property at all falls back to a text box.
+
+`Is_Sold` was created in the Access designer, so it has it. `Is_Free` was added later with
+`ALTER TABLE ... ADD COLUMN ... YESNO`, and **DDL creates none of these properties** — the
+field arrived with the bare 24 that DAO gives every field, against the 33 a designed one
+carries. `Is_Free` has since been given the eight display properties `Is_Sold` holds, read
+off `Is_Sold` itself rather than written down:
+
+| Property | Value | What it does |
+| --- | --- | --- |
+| `DisplayControl` | `106` | **the one that shows** — renders the field as a check box |
+| `ColumnWidth` | `-1` | datasheet column width; `-1` is "fit the heading" |
+| `ColumnOrder` | `0` | datasheet position |
+| `ColumnHidden` | `False` | datasheet visibility |
+| `TextAlign` | `0` | general alignment |
+| `AggregateType`, `ResultType`, `CurrencyLCID` | `-1`, `0`, `0` | totals-row and locale settings Access keeps on every designed field |
+
+`GUID` is the ninth property `Is_Sold` has and `Is_Free` still does not — deliberately. It
+is the identifier Access assigns a field, not a display setting, and two fields must not
+share one. So the two now sit at 33 properties and 32, differing only there.
+
+> **Nothing in the stored data changed, and no code had to.** The column was already a
+> Yes/No; the page already wrote `True` / `False` and read them back the same way for both
+> flags, and already showed each as `Y` / `N` in the grid. All 121 purchase rows, and the
+> 3 of them flagged free, read exactly as before.
+
+> **Only `Prod` needed the change.** The sample database and the two build copies are made
+> by script, so *nothing* in them carries designer properties — there `Is_Sold` is as bare
+> as `Is_Free` and the two already matched. The migration is idempotent and checks that the
+> pair agree rather than that a particular property exists, so it is a no-op on all three.
+
+> `Reason_for_Free` was added by the same `ALTER TABLE` and is equally bare. It is a text
+> field, so there is no `Is_Sold` to follow — matching it would mean following `Sale_Id`,
+> which carries `IMEMode`, `IMESentenceMode` and `UnicodeCompression` as well. Left alone.
+> `TblETFStocksDistributionDividend.Is_Reinvested` and `TblETFStocksPortfolioCode.Is_Main`
+> are bare Yes/No fields for the same reason, and have no designed sibling to differ from.
 
 #### Both pages move the portfolio's balance
 

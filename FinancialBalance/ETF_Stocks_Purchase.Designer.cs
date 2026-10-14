@@ -707,7 +707,7 @@
             this.chkIsFree.Name = "chkIsFree";
             this.chkIsFree.Size = new System.Drawing.Size(80, 24);
             this.chkIsFree.TabIndex = 60;
-            this.chkIsFree.Text = "Is Free";
+            this.chkIsFree.Text = "Free";
             this.chkIsFree.UseVisualStyleBackColor = false;
             this.chkIsFree.CheckedChanged += new System.EventHandler(this.chkIsFree_CheckedChanged);
             // 

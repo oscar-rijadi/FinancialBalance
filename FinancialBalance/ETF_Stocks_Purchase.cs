@@ -433,11 +433,13 @@ namespace FinancialBalance
         {
             gvPurchase.Columns.Clear();
             gvPurchase.ColumnCount = 15;
-            //Is Free sits beside Reinvestment: the two are the only flags that zero the
-            //real total, and reading them together is how a zero is explained
-            string[] names = new string[] { "Portfolio Code", "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "Reinvestment", "Is Free", "Sold", "Sold Date", "Sale Id" };
+            //Free sits beside Reinvestment: the two are the only flags that zero the
+            //real total, and reading them together is how a zero is explained.  Both flags are
+            //headed the way Sold is - the column says what the lot IS, not what the field is
+            //called, which is why none of the three carries the Is_ its column name has.
+            string[] names = new string[] { "Portfolio Code", "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "Reinvestment", "Free", "Sold", "Sold Date", "Sale Id" };
             //Reinvestment is the widest heading and an unbreakable word, so it sets the
-            //floor; Portfolio Code, Currency and Sold were all clipped before Is Free was
+            //floor; Portfolio Code, Currency and Sold were all clipped before Free was
             //added, so the whole row is rebalanced rather than just made room in
             //The weights are the pixel budget, and add to the 943 the grid has once its
             //scrollbar is taken off - only their ratio matters, so writing them this way
@@ -574,7 +576,7 @@ namespace FinancialBalance
         //Total Cost Base          = round(Unit x Cost Base, 2) + Fee
         //Original Total Cost Base = round(Unit x Original Cost Base, 2) + Fee
         //Reinvestment zeroes the real total, because a reinvested lot cost no new money.
-        //Is Free does the same, for the same reason: a lot that came free cost none either.
+        //Free does the same, for the same reason: a lot that came free cost none either.
         private void Calculate_Totals()
         {
             double TmpUnit;
