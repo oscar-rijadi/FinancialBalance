@@ -34,6 +34,7 @@ namespace FinancialBalance
         string OrgSoldDate;
         string OrgSaleId;
         string OrgIsFree;
+        string OrgIsReinvestment;
         string OrgReasonForFree;
 
         //one MonthCalendar serves both the transaction date and the sold date
@@ -433,10 +434,11 @@ namespace FinancialBalance
         {
             gvPurchase.Columns.Clear();
             gvPurchase.ColumnCount = 15;
-            //Free sits beside Reinvestment: the two are the only flags that zero the
-            //real total, and reading them together is how a zero is explained.  Both flags are
-            //headed the way Sold is - the column says what the lot IS, not what the field is
-            //called, which is why none of the three carries the Is_ its column name has.
+            //Free sits beside Reinvestment: the two are the only flags that zero the real
+            //total, and each is now a column of its own rather than something read off that
+            //zero.  Both are headed the way Sold is - the column says what the lot IS, not
+            //what the field is called, which is why none of the three carries the Is_ its
+            //column name has.
             string[] names = new string[] { "Portfolio Code", "Full Ticker", "Currency", "Unit", "Original Cost Base", "Cost Base", "Fee", "Original Total Cost Base", "Total Cost Base", "Real Total Cost Base", "Reinvestment", "Free", "Sold", "Sold Date", "Sale Id" };
             //Reinvestment is the widest heading and an unbreakable word, so it sets the
             //floor; Portfolio Code, Currency and Sold were all clipped before Free was
@@ -467,7 +469,7 @@ namespace FinancialBalance
 
         private string Select_Purchases()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Sale_Id], [Is_Free], [Reason_for_Free] from TblETFStocksPurchase"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Sale_Id], [Is_Free], [Reason_for_Free], [Is_Reinvestment] from TblETFStocksPurchase"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -484,8 +486,10 @@ namespace FinancialBalance
             while (reader.Read())
             {
                 double TmpRealTotal = Read_Double(reader["Real_Total_Cost_Base"]);
-                //a zero real total is a reinvestment only when the lot is not flagged free
                 bool TmpFree = (reader["Is_Free"].ToString().Trim() == "True");
+                //Reinvestment is read, not worked out.  It used to be inferred from a zero real
+                //total, which was only ever a guess at what the row meant; the column says it.
+                bool TmpReinvested = (reader["Is_Reinvestment"].ToString().Trim() == "True");
                 gvPurchase.Rows.Add(new string[] {
                     reader["Portfolio_Code"].ToString().Trim(),
                     reader["Full_Ticker"].ToString().Trim(),
@@ -497,7 +501,7 @@ namespace FinancialBalance
                     Mdl1.FormatAmt(Read_Double(reader["Original_Total_Cost_Base"])),
                     Mdl1.FormatAmt(Read_Double(reader["Total_Cost_Base"])),
                     Mdl1.FormatAmt(TmpRealTotal),
-                    (TmpRealTotal == 0 && !TmpFree ? "Y" : "N"),
+                    (TmpReinvested ? "Y" : "N"),
                     (TmpFree ? "Y" : "N"),
                     (reader["Is_Sold"].ToString().Trim() == "True" ? "Y" : "N"),
                     Format_Sold_Date(reader["Sold_Date"]),
@@ -730,6 +734,7 @@ namespace FinancialBalance
                     OrgSoldDate = (reader["Sold_Date"] == DBNull.Value ? null : reader["Sold_Date"].ToString().Trim());
                     OrgSaleId = (reader["Sale_Id"] == DBNull.Value ? null : reader["Sale_Id"].ToString().Trim());
                     OrgIsFree = (reader["Is_Free"].ToString().Trim() == "True" ? "True" : "False");
+                    OrgIsReinvestment = (reader["Is_Reinvestment"].ToString().Trim() == "True" ? "True" : "False");
                     OrgReasonForFree = (reader["Reason_for_Free"] == DBNull.Value ? null : reader["Reason_for_Free"].ToString().Trim());
                     if (OrgReasonForFree == "")
                     {
@@ -765,9 +770,11 @@ namespace FinancialBalance
             chkIsFree.Checked = (OrgIsFree == "True");
             txtReasonForFree.Text = (OrgReasonForFree == null ? "" : OrgReasonForFree);
             Show_Reason();
-            //the two share one symptom, so the stored flag is what separates them: a zero
-            //real total means reinvestment unless the lot is on record as free
-            chkDRIP.Checked = (Read_Double(OrgRealTotalCostBase) == 0 && OrgIsFree != "True");
+            //Both flags are stored now, so each box simply shows what its own column says.
+            //Reinvestment used to be read as "the real total is zero, and the lot is not free",
+            //which could only ever guess: a lot that genuinely cost nothing looked reinvested,
+            //and a lot ticked as both came back as free alone.
+            chkDRIP.Checked = (OrgIsReinvestment == "True");
             chkSold.Checked = (OrgIsSold == "True");
             Set_Sold_Date(OrgSoldDate);
             if (OrgFlagCode != null && CmbFlagCode.Items.Contains(OrgFlagCode))
@@ -934,6 +941,7 @@ namespace FinancialBalance
                  + (OrgSoldDate == null ? " and [Sold_Date] Is Null" : " and [Sold_Date] = '" + OrgSoldDate + "'")
                  + (OrgSaleId == null ? " and [Sale_Id] Is Null" : " and [Sale_Id] = '" + OrgSaleId + "'")
                  + " and [Is_Free] = " + OrgIsFree
+                 + " and [Is_Reinvestment] = " + OrgIsReinvestment
                  + (OrgReasonForFree == null ? " and [Reason_for_Free] Is Null"
                     : " and [Reason_for_Free] = '" + OrgReasonForFree.Replace("'", "''") + "'");
         }
@@ -1104,7 +1112,7 @@ namespace FinancialBalance
                                     decimal parTotal, decimal parRealTotal,
                                     decimal parOriginalCostBase, decimal parOriginalTotal)
         {
-            Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Is_Free], [Reason_for_Free]) values ("
+            Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Is_Free], [Reason_for_Free], [Is_Reinvestment]) values ("
                 + "'" + Get_Trans_Date() + "', "
                 + "'" + CmbFullTicker.Text.Trim() + "', "
                 + "'" + CmbCurrency.Text.Trim() + "', "
@@ -1119,7 +1127,8 @@ namespace FinancialBalance
                 + "'" + CmbFlagCode.Text.Trim() + "', "
                 + Sql_Sold_Date() + ", "
                 + (chkIsFree.Checked ? "True" : "False") + ", "
-                + Sql_Reason() + ")";
+                + Sql_Reason() + ", "
+                + (chkDRIP.Checked ? "True" : "False") + ")";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
         }
@@ -1212,6 +1221,7 @@ namespace FinancialBalance
                     + "[Portfolio_Code] = '" + CmbFlagCode.Text.Trim() + "', "
                     + "[Sold_Date] = " + Sql_Sold_Date() + ", "
                     + "[Is_Free] = " + (chkIsFree.Checked ? "True" : "False") + ", "
+                    + "[Is_Reinvestment] = " + (chkDRIP.Checked ? "True" : "False") + ", "
                     + "[Reason_for_Free] = " + Sql_Reason()
                     + Where_Original();
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);

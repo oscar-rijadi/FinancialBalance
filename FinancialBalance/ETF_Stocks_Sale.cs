@@ -582,7 +582,7 @@ namespace FinancialBalance
                     string TmpPortfolio = CmbSellPortfolio.Text.Trim();
                     Mdl1.Ssql = "select Trans_Date, Full_Ticker, [Currency], Unit, Cost_Base, Fee,"
                               + " Total_Cost_Base, Real_Total_Cost_Base, [Portfolio_Code],"
-                              + " [Original_Cost_Base]"
+                              + " [Original_Cost_Base], [Is_Free], [Is_Reinvestment]"
                               + " from TblETFStocksPurchase where Is_Sold = False and Full_Ticker = '"
                               + TmpTicker + "'"
                               + (TmpPortfolio == "" ? "" : " and [Portfolio_Code] = '" + TmpPortfolio + "'")
@@ -602,7 +602,10 @@ namespace FinancialBalance
                             Sql_Num(reader["Total_Cost_Base"], 2),
                             Sql_Num(reader["Real_Total_Cost_Base"], 2),
                             (reader["Portfolio_Code"] == DBNull.Value ? null : reader["Portfolio_Code"].ToString().Trim()),
-                            Sql_Num(reader["Original_Cost_Base"], 2)
+                            Sql_Num(reader["Original_Cost_Base"], 2),
+                            //carried so that a lot split in part can leave them on both halves
+                            (reader["Is_Free"].ToString().Trim() == "True" ? "True" : "False"),
+                            (reader["Is_Reinvestment"].ToString().Trim() == "True" ? "True" : "False")
                         });
                     }
                     reader.Close();
@@ -816,6 +819,8 @@ namespace FinancialBalance
                 string OrgReal = o[7];
                 string OrgCode = o[8];
                 string OrgOrigCost = o[9];
+                string OrgFree = o[10];
+                string OrgReinvested = o[11];
 
                 string Where = " where Trans_Date = '" + OrgDate + "'"
                              + " and Full_Ticker = '" + OrgTicker + "'"
@@ -874,8 +879,14 @@ namespace FinancialBalance
                 //across unchanged and the total is restated for the units that remain.
                 double RestOrigTotal = Math.Round(RestUnit * LotOrigCost, 2);
 
+                //Is_Free and Is_Reinvestment travel with the units.  Without them the remainder was
+                //written as a plain paid-for lot: a free lot sold in part stopped being free, and a
+                //reinvested one would stop being reinvested - with a real cost of zero still sitting
+                //on it, which is how it used to go on looking reinvested anyway.  Now that the flag
+                //is what the Purchase page reads, nothing would be left saying so.
                 Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee,"
-                          + " [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date]) values ("
+                          + " [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date],"
+                          + " [Is_Free], [Is_Reinvestment]) values ("
                           + "'" + OrgDate + "', '" + OrgTicker + "', '" + OrgCurr + "', "
                           + RestUnit.ToString("0.0000", CultureInfo.InvariantCulture) + ", "
                           + LotOrigCost.ToString("0.00", CultureInfo.InvariantCulture) + ", "
@@ -885,7 +896,8 @@ namespace FinancialBalance
                           + RestTotal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
                           + RestReal.ToString("0.00", CultureInfo.InvariantCulture) + ", "
                           + "False, "
-                          + (OrgCode == null ? "Null" : "'" + OrgCode + "'") + ", Null)";
+                          + (OrgCode == null ? "Null" : "'" + OrgCode + "'") + ", Null, "
+                          + OrgFree + ", " + OrgReinvested + ")";
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();
             }

@@ -400,6 +400,7 @@ erDiagram
         text    Sale_Id "50 chars, the sale that closed this lot"
         bool    Is_Free
         text    Reason_for_Free "50 chars, null unless free"
+        bool    Is_Reinvestment
     }
     TblETFStocksSale {
         text    Trans_Date "yyyyMMdd"
@@ -780,22 +781,63 @@ Two things make a lot cost nothing, and both zero its `Real_Total_Cost_Base`:
 
 | | Meaning | Held as |
 | --- | --- | --- |
-| **Reinvestment** | a distribution taken as units instead of cash | *inferred* — nothing is stored |
+| **Reinvestment** | a distribution taken as units instead of cash | `Is_Reinvestment` |
 | **Free** | units that arrived at no cost at all | `Is_Free`, with `Reason_for_Free` beside it |
 
 Ticking either sets Real Total Cost Base to zero as the figures are typed, and saves it as
 zero. The Total Cost Base is untouched by both: the lot still has a cost base for capital
 gains, it just did not cost the portfolio anything on the day.
 
-> **Reinvestment is not a column in the table.** It never has been — it is read back as
-> *"the real total is zero"*, in the grid and in the checkbox alike. That was unambiguous
-> while it was the only thing that could zero it, and stopped being so the moment Free
-> arrived: left alone, every free lot would have come back reading as a reinvestment.
-> 
-> Because `Is_Free` **is** stored, the two can still be told apart — a zero real total is a
-> reinvestment *unless the lot is on record as free*. Both the grid column and the checkbox
-> read it that way, so the three cases — paid for, reinvested, free — come back as the three
-> different things they are.
+**Reinvestment is a column of its own.** It did not use to be. For most of the page's life
+it was **inferred** — read back as *"the real total is zero"*, in the grid and in the
+checkbox alike — and later as *"the real total is zero and the lot is not on record as
+free"*, once `Is_Free` arrived and gave a second reason for a zero.
+
+That was always a guess at what a row meant rather than a record of it, and it could only
+ever be wrong in one direction at a time:
+
+| A lot that | The inference said | Which is |
+| --- | --- | --- |
+| was reinvested | reinvested | right |
+| genuinely cost nothing, and was not ticked free | reinvested | **wrong** — there was no way to say so |
+| was ticked both reinvested **and** free | free alone | **wrong** — the page could not show both |
+| was reinvested and later had its cost base adjusted | *whatever the adjusted real total says* | **fragile** |
+
+`Is_Reinvestment` records it instead. Both the grid column and the checkbox now read the
+column, and ticking the box writes it — so the three cases, paid for, reinvested and free,
+are three things the table says rather than three things worked out from one number.
+
+> **The existing rows were filled in from the rule that used to be applied at read time**,
+> so nothing changed on screen the day the column arrived:
+>
+> ```
+> Is_Reinvestment = (Real_Total_Cost_Base = 0  AND  Is_Free = False)
+> ```
+>
+> Of the 121 purchase rows, 16 carried a zero real total, 3 of those were on record as
+> free, and the remaining **13 were stamped as reinvestments**. A `Null` real total counts
+> as zero, the way the page has always read one — there are none today, but a row written
+> before the column existed could hold one.
+
+> **Ticking both is now possible, and is stored as both.** The two boxes have never been
+> mutually exclusive on screen; it was only the read-back that forced them apart, by
+> showing a lot ticked as both as free alone. Each box now shows its own column. Whether
+> a lot can sensibly be both is a question for whoever is entering it — the page records
+> what it is told.
+
+> The field was added **shaped like `Is_Sold`** — the same `dbBoolean` type and the same
+> eight display properties, `DisplayControl` among them — so it opens as a tick box in
+> Access rather than as the words `True` / `False`. See
+> [All three flags are presented the same way](#all-three-flags-are-presented-the-same-way)
+> for why a field made by plain DDL comes out looking different.
+
+**A lot split by a part sale keeps its flags on both halves.** Selling part of a lot closes
+the units that went and opens a new row for the rest — and that new row was being written
+without `Is_Free`, so **a free lot sold in part quietly stopped being free**. That was a
+real defect before this change and would have been a worse one after it: the remainder of a
+reinvested lot would have come back as an ordinary paid-for holding, with nothing left
+saying otherwise now that the flag, rather than the zero beside it, is what the page reads.
+Both flags now travel with the units, onto the closed half and the remainder alike.
 
 **Reason for Free** is live only while Free is ticked, and is emptied when it is cleared,
 so an unticked lot cannot carry a stale reason into the table. A free lot with nothing said
@@ -811,11 +853,11 @@ statement.
 > longest value across all 102 real purchase rows. Whole-number weights out of 100 were too
 > coarse: the fifteen floors add to 881, leaving 62px of slack that 9.4px steps cannot place.
 
-##### Both flags are presented the same way
+##### All three flags are presented the same way
 
-`Is_Sold` and `Is_Free` are the same kind of field — Jet `YESNO`, `DBTYPE_BOOL`, holding
-`True` or `False` — but for a long time they did not **look** the same, in two places at
-once.
+`Is_Sold`, `Is_Free` and `Is_Reinvestment` are the same kind of field — Jet `YESNO`,
+`DBTYPE_BOOL`, holding `True` or `False`. For a long time the first two did not **look** the
+same, in two places at once.
 
 **In the page**, the sold flag was captioned `Sold` and the free one `Is Free`: one named
 after what the lot *is*, the other after what the column is *called*. Both now read the way
@@ -845,6 +887,11 @@ off `Is_Sold` itself rather than written down:
 `GUID` is the ninth property `Is_Sold` has and `Is_Free` still does not — deliberately. It
 is the identifier Access assigns a field, not a display setting, and two fields must not
 share one. So the two now sit at 33 properties and 32, differing only there.
+
+`Is_Reinvestment` was added afterwards and was **given the same eight from the start**, by
+the same script reading the same source. It is the pattern for anything added to this table
+from here: create the field, then copy `Is_Sold`'s display properties onto it, or it opens
+in Access looking unlike everything beside it.
 
 > **Nothing in the stored data changed, and no code had to.** The column was already a
 > Yes/No; the page already wrote `True` / `False` and read them back the same way for both
