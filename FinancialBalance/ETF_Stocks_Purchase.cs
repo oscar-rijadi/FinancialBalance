@@ -35,7 +35,7 @@ namespace FinancialBalance
         string OrgSaleId;
         string OrgIsFree;
         string OrgIsReinvestment;
-        string OrgReasonForFree;
+        string OrgNotes;
 
         //one MonthCalendar serves both the transaction date and the sold date
         string CalTarget = "TRANS";
@@ -469,7 +469,7 @@ namespace FinancialBalance
 
         private string Select_Purchases()
         {
-            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Sale_Id], [Is_Free], [Reason_for_Free], [Is_Reinvestment] from TblETFStocksPurchase"
+            return "select Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Sale_Id], [Is_Free], [Notes], [Is_Reinvestment] from TblETFStocksPurchase"
                  + " where Trans_Date = '" + Get_Trans_Date() + "' order by Full_Ticker";
         }
 
@@ -568,7 +568,7 @@ namespace FinancialBalance
             txtFee.Text = "0.00";
             chkDRIP.Checked = false;
             chkIsFree.Checked = false;
-            txtReasonForFree.Text = "";
+            txtNotes.Text = "";
             chkSold.Checked = false;
             Reset_Sold_Date();
             Set_Default_Flag();
@@ -579,8 +579,14 @@ namespace FinancialBalance
 
         //Total Cost Base          = round(Unit x Cost Base, 2) + Fee
         //Original Total Cost Base = round(Unit x Original Cost Base, 2) + Fee
-        //Reinvestment zeroes the real total, because a reinvested lot cost no new money.
-        //Free does the same, for the same reason: a lot that came free cost none either.
+        //Real Total Cost Base     = Total Cost Base, as a starting point
+        //
+        //The first two are derived and cannot be touched.  The third is only a suggestion:
+        //the box is typed into, and what is in it when Add or Update is pressed is what gets
+        //saved.  Which is why the flags no longer reach it - Reinvestment and Free used to
+        //force it to zero, and a box that is overwritten whenever a tick box moves is not one
+        //that can be typed into.  A lot that cost nothing is marked by its own column now, and
+        //what it cost is whatever is written here.
         private void Calculate_Totals()
         {
             double TmpUnit;
@@ -598,14 +604,7 @@ namespace FinancialBalance
 
             double TmpTotal = Math.Round(Math.Round(TmpUnit * TmpCostBase, 2) + TmpFee, 2);
             txtTotalCostBase.Text = Mdl1.FormatAmt(TmpTotal);
-            if (chkDRIP.Checked || chkIsFree.Checked)
-            {
-                txtRealTotalCostBase.Text = Mdl1.FormatAmt(0);
-            }
-            else
-            {
-                txtRealTotalCostBase.Text = Mdl1.FormatAmt(TmpTotal);
-            }
+            txtRealTotalCostBase.Text = Mdl1.FormatAmt(TmpTotal);
         }
 
         private void Amount_TextChanged(object sender, EventArgs e)
@@ -617,36 +616,10 @@ namespace FinancialBalance
             Calculate_Totals();
         }
 
-        private void chkDRIP_CheckedChanged(object sender, EventArgs e)
-        {
-            if (Filling)
-            {
-                return;
-            }
-            Calculate_Totals();
-        }
-
-        private void chkIsFree_CheckedChanged(object sender, EventArgs e)
-        {
-            Show_Reason();
-            if (Filling)
-            {
-                return;
-            }
-            Calculate_Totals();
-        }
-
-        //A reason only means anything for a lot that came free, so the box is live only
-        //then - and is emptied on the way out, so an unticked lot cannot carry a stale one
-        //into the table.
-        private void Show_Reason()
-        {
-            txtReasonForFree.Enabled = chkIsFree.Checked;
-            if (!chkIsFree.Checked)
-            {
-                txtReasonForFree.Text = "";
-            }
-        }
+        //Reinvestment and Free have no handlers any more.  Both used to recalculate the
+        //totals, which was only ever about forcing Real Total Cost Base to zero; leaving
+        //them in would have put the computed figure back over a typed one every time a tick
+        //box moved.  They are stored flags and nothing else now.
 
         private void CheckKeyPress(KeyPressEventArgs e)
         {
@@ -670,6 +643,11 @@ namespace FinancialBalance
         }
 
         private void txtCostBase_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            CheckKeyPress(e);
+        }
+
+        private void txtRealTotalCostBase_KeyPress(object sender, KeyPressEventArgs e)
         {
             CheckKeyPress(e);
         }
@@ -735,10 +713,10 @@ namespace FinancialBalance
                     OrgSaleId = (reader["Sale_Id"] == DBNull.Value ? null : reader["Sale_Id"].ToString().Trim());
                     OrgIsFree = (reader["Is_Free"].ToString().Trim() == "True" ? "True" : "False");
                     OrgIsReinvestment = (reader["Is_Reinvestment"].ToString().Trim() == "True" ? "True" : "False");
-                    OrgReasonForFree = (reader["Reason_for_Free"] == DBNull.Value ? null : reader["Reason_for_Free"].ToString().Trim());
-                    if (OrgReasonForFree == "")
+                    OrgNotes = (reader["Notes"] == DBNull.Value ? null : reader["Notes"].ToString().Trim());
+                    if (OrgNotes == "")
                     {
-                        OrgReasonForFree = null;
+                        OrgNotes = null;
                     }
                     if (OrgSaleId == "")
                     {
@@ -768,8 +746,7 @@ namespace FinancialBalance
             txtCostBase.Text = (OrgCostBase == null ? "0.00" : OrgCostBase);
             txtFee.Text = (OrgFee == null ? "0.00" : OrgFee);
             chkIsFree.Checked = (OrgIsFree == "True");
-            txtReasonForFree.Text = (OrgReasonForFree == null ? "" : OrgReasonForFree);
-            Show_Reason();
+            txtNotes.Text = (OrgNotes == null ? "" : OrgNotes);
             //Both flags are stored now, so each box simply shows what its own column says.
             //Reinvestment used to be read as "the real total is zero, and the lot is not free",
             //which could only ever guess: a lot that genuinely cost nothing looked reinvested,
@@ -791,6 +768,16 @@ namespace FinancialBalance
             Show_Sold_Date();
             RowSelected = true;
             Calculate_Totals();
+
+            //Real Total Cost Base comes off the row, not out of the arithmetic above.  It is the
+            //one figure here that need not follow from Unit and Cost Base - a reinvested or free
+            //lot cost nothing whatever its cost base says, and any lot can be saved with a figure
+            //typed over the suggested one.  Recomputing it on the way in would have shown
+            //something other than what is actually stored against the row.
+            //
+            //It is set after Calculate_Totals rather than with the boxes above, because that call
+            //is what fills the two totals beside it and would overwrite this one.
+            txtRealTotalCostBase.Text = (OrgRealTotalCostBase == null ? "0.00" : OrgRealTotalCostBase);
         }
 
         //---- validation and SQL helpers -------------------------------------------
@@ -882,21 +869,36 @@ namespace FinancialBalance
 
             parOriginalTotal = Math.Round(Math.Round(parUnit * parOriginalCostBase, 2) + parFee, 2);
             parTotal = Math.Round(Math.Round(parUnit * parCostBase, 2) + parFee, 2);
-            parRealTotal = (chkDRIP.Checked || chkIsFree.Checked ? 0 : parTotal);
+
+            //Real Total Cost Base is whatever the box says.  Calculate_Totals keeps putting a
+            //sensible figure in it - the total, or zero once Reinvestment or Free is ticked - but
+            //the box can be typed into and what is in it is what gets saved.  Working it out again
+            //here would have made the box look editable and then quietly ignored it.
+            //
+            //It is guarded like the figures above it, and for the same reason: this is the amount
+            //that moves the portfolio's balance.
+            if (!Valid_Amount(txtRealTotalCostBase.Text, 2, "Real Total Cost Base", out parRealTotal))
+            {
+                return false;
+            }
             return true;
         }
 
-        //Null rather than an empty string, so a lot with no reason reads the same way a lot
-        //from before this field existed does.  Apostrophes are doubled, as everywhere a
-        //free-text field reaches a statement.
-        private string Sql_Reason()
+        //Null rather than an empty string, so a lot with nothing written against it reads the
+        //same way a lot from before this field existed does.  Apostrophes are doubled, as
+        //everywhere a free-text field reaches a statement.
+        //
+        //The flags no longer come into it.  While the field was Reason_for_Free a note was kept
+        //only on a lot ticked free, and was thrown away otherwise - so a note typed against an
+        //ordinary lot vanished on saving.  Notes belongs to the lot, not to one of its flags.
+        private string Sql_Notes()
         {
-            string TmpReason = txtReasonForFree.Text.Trim();
-            if (!chkIsFree.Checked || TmpReason == "")
+            string TmpNotes = txtNotes.Text.Trim();
+            if (TmpNotes == "")
             {
                 return "Null";
             }
-            return "'" + TmpReason.Replace("'", "''") + "'";
+            return "'" + TmpNotes.Replace("'", "''") + "'";
         }
 
         private string Sql_Sold_Date()
@@ -942,8 +944,8 @@ namespace FinancialBalance
                  + (OrgSaleId == null ? " and [Sale_Id] Is Null" : " and [Sale_Id] = '" + OrgSaleId + "'")
                  + " and [Is_Free] = " + OrgIsFree
                  + " and [Is_Reinvestment] = " + OrgIsReinvestment
-                 + (OrgReasonForFree == null ? " and [Reason_for_Free] Is Null"
-                    : " and [Reason_for_Free] = '" + OrgReasonForFree.Replace("'", "''") + "'");
+                 + (OrgNotes == null ? " and [Notes] Is Null"
+                    : " and [Notes] = '" + OrgNotes.Replace("'", "''") + "'");
         }
 
         //Without a key, identical rows are indistinguishable - warn before touching them all.
@@ -1112,7 +1114,7 @@ namespace FinancialBalance
                                     decimal parTotal, decimal parRealTotal,
                                     decimal parOriginalCostBase, decimal parOriginalTotal)
         {
-            Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Is_Free], [Reason_for_Free], [Is_Reinvestment]) values ("
+            Mdl1.Ssql = "Insert into TblETFStocksPurchase (Trans_Date, Full_Ticker, [Currency], Unit, [Original_Cost_Base], Cost_Base, Fee, [Original_Total_Cost_Base], Total_Cost_Base, Real_Total_Cost_Base, Is_Sold, [Portfolio_Code], [Sold_Date], [Is_Free], [Notes], [Is_Reinvestment]) values ("
                 + "'" + Get_Trans_Date() + "', "
                 + "'" + CmbFullTicker.Text.Trim() + "', "
                 + "'" + CmbCurrency.Text.Trim() + "', "
@@ -1127,7 +1129,7 @@ namespace FinancialBalance
                 + "'" + CmbFlagCode.Text.Trim() + "', "
                 + Sql_Sold_Date() + ", "
                 + (chkIsFree.Checked ? "True" : "False") + ", "
-                + Sql_Reason() + ", "
+                + Sql_Notes() + ", "
                 + (chkDRIP.Checked ? "True" : "False") + ")";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             cmd.ExecuteNonQuery();
@@ -1222,7 +1224,7 @@ namespace FinancialBalance
                     + "[Sold_Date] = " + Sql_Sold_Date() + ", "
                     + "[Is_Free] = " + (chkIsFree.Checked ? "True" : "False") + ", "
                     + "[Is_Reinvestment] = " + (chkDRIP.Checked ? "True" : "False") + ", "
-                    + "[Reason_for_Free] = " + Sql_Reason()
+                    + "[Notes] = " + Sql_Notes()
                     + Where_Original();
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 cmd.ExecuteNonQuery();

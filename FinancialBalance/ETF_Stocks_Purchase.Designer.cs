@@ -86,8 +86,8 @@
             this.chkDRIP = new System.Windows.Forms.CheckBox();
             this.chkSold = new System.Windows.Forms.CheckBox();
             this.chkIsFree = new System.Windows.Forms.CheckBox();
-            this.Lbl_txtReasonForFree = new System.Windows.Forms.Label();
-            this.txtReasonForFree = new System.Windows.Forms.TextBox();
+            this.Lbl_txtNotes = new System.Windows.Forms.Label();
+            this.txtNotes = new System.Windows.Forms.TextBox();
             this.CmdCreate = new System.Windows.Forms.Button();
             this.CmdUpdate = new System.Windows.Forms.Button();
             this.CmdDel = new System.Windows.Forms.Button();
@@ -574,17 +574,17 @@
             //
             // txtRealTotalCostBase
             //
-            this.txtRealTotalCostBase.BackColor = System.Drawing.SystemColors.Control;
-            this.txtRealTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtRealTotalCostBase.BackColor = System.Drawing.SystemColors.Window;
+            this.txtRealTotalCostBase.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRealTotalCostBase.ForeColor = System.Drawing.SystemColors.WindowText;
             this.txtRealTotalCostBase.Location = new System.Drawing.Point(625, 532);
+            this.txtRealTotalCostBase.MaxLength = 20;
             this.txtRealTotalCostBase.Name = "txtRealTotalCostBase";
-            this.txtRealTotalCostBase.ReadOnly = true;
             this.txtRealTotalCostBase.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtRealTotalCostBase.Size = new System.Drawing.Size(140, 20);
             this.txtRealTotalCostBase.TabIndex = 28;
-            this.txtRealTotalCostBase.TabStop = false;
             this.txtRealTotalCostBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtRealTotalCostBase.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtRealTotalCostBase_KeyPress);
             //
             // Label11
             //
@@ -685,7 +685,6 @@
             this.chkDRIP.TabIndex = 29;
             this.chkDRIP.Text = "Reinvestment";
             this.chkDRIP.UseVisualStyleBackColor = false;
-            this.chkDRIP.CheckedChanged += new System.EventHandler(this.chkDRIP_CheckedChanged);
             //
             // chkSold
             //
@@ -709,27 +708,26 @@
             this.chkIsFree.TabIndex = 60;
             this.chkIsFree.Text = "Free";
             this.chkIsFree.UseVisualStyleBackColor = false;
-            this.chkIsFree.CheckedChanged += new System.EventHandler(this.chkIsFree_CheckedChanged);
             // 
-            // Lbl_txtReasonForFree
+            // Lbl_txtNotes
             // 
-            this.Lbl_txtReasonForFree.BackColor = System.Drawing.Color.Transparent;
-            this.Lbl_txtReasonForFree.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Lbl_txtReasonForFree.ForeColor = System.Drawing.Color.Black;
-            this.Lbl_txtReasonForFree.Location = new System.Drawing.Point(19, 532);
-            this.Lbl_txtReasonForFree.Name = "Lbl_txtReasonForFree";
-            this.Lbl_txtReasonForFree.Size = new System.Drawing.Size(125, 22);
-            this.Lbl_txtReasonForFree.TabIndex = 61;
-            this.Lbl_txtReasonForFree.Text = "Reason for Free";
+            this.Lbl_txtNotes.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_txtNotes.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_txtNotes.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_txtNotes.Location = new System.Drawing.Point(19, 532);
+            this.Lbl_txtNotes.Name = "Lbl_txtNotes";
+            this.Lbl_txtNotes.Size = new System.Drawing.Size(125, 22);
+            this.Lbl_txtNotes.TabIndex = 61;
+            this.Lbl_txtNotes.Text = "Notes";
             // 
-            // txtReasonForFree
+            // txtNotes
             // 
-            this.txtReasonForFree.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtReasonForFree.Location = new System.Drawing.Point(150, 532);
-            this.txtReasonForFree.MaxLength = 50;
-            this.txtReasonForFree.Name = "txtReasonForFree";
-            this.txtReasonForFree.Size = new System.Drawing.Size(290, 20);
-            this.txtReasonForFree.TabIndex = 62;
+            this.txtNotes.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtNotes.Location = new System.Drawing.Point(150, 532);
+            this.txtNotes.MaxLength = 50;
+            this.txtNotes.Name = "txtNotes";
+            this.txtNotes.Size = new System.Drawing.Size(290, 20);
+            this.txtNotes.TabIndex = 62;
             //
             // CmdCreate
             //
@@ -796,8 +794,8 @@
             this.Controls.Add(this.CmdDel);
             this.Controls.Add(this.CmdUpdate);
             this.Controls.Add(this.CmdCreate);
-            this.Controls.Add(this.txtReasonForFree);
-            this.Controls.Add(this.Lbl_txtReasonForFree);
+            this.Controls.Add(this.txtNotes);
+            this.Controls.Add(this.Lbl_txtNotes);
             this.Controls.Add(this.chkIsFree);
             this.Controls.Add(this.chkSold);
             this.Controls.Add(this.chkDRIP);
@@ -912,8 +910,8 @@
         public System.Windows.Forms.CheckBox chkDRIP;
         public System.Windows.Forms.CheckBox chkSold;
         public System.Windows.Forms.CheckBox chkIsFree;
-        public System.Windows.Forms.Label Lbl_txtReasonForFree;
-        public System.Windows.Forms.TextBox txtReasonForFree;
+        public System.Windows.Forms.Label Lbl_txtNotes;
+        public System.Windows.Forms.TextBox txtNotes;
         public System.Windows.Forms.Button CmdCreate;
         public System.Windows.Forms.Button CmdUpdate;
         public System.Windows.Forms.Button CmdDel;

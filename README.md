@@ -399,7 +399,7 @@ erDiagram
         text    Sold_Date "yyyyMMdd, null unless sold"
         text    Sale_Id "50 chars, the sale that closed this lot"
         bool    Is_Free
-        text    Reason_for_Free "50 chars, null unless free"
+        text    Notes "50 chars, null when nothing is written"
         bool    Is_Reinvestment
     }
     TblETFStocksSale {
@@ -748,7 +748,7 @@ chosen date and nothing else, so neither grid carries a column that is always bl
 | `Unit` | Buy: typed, numeric, not negative, at most 4 decimal places. **Sell: derived** — see below. |
 | `Cost_Base`, `Fee` | Buy only. Numeric, not negative, at most 2 decimal places. |
 | `Total_Cost_Base` | Buy only, derived: `round(Unit x Cost_Base, 2) + Fee`. Not editable. |
-| `Real_Total_Cost_Base` | Buy only. `0` when the **Reinvestment** box is ticked, otherwise `Total_Cost_Base`. **Add, Update and Delete all move the portfolio's running balance** by it — see below. |
+| `Real_Total_Cost_Base` | Buy only. **Typed**, with the same guard as `Cost_Base`. Filled in for you with `Total_Cost_Base` as the figures are typed, and shown **as stored** when a row is picked from the table. Neither flag touches it. Whatever is in the box when you press Add or Update is what is saved — see below. **Add, Update and Delete all move the portfolio's running balance** by it. |
 | `Original_Cost_Base` | Buy only. Typed, with the same guard as `Cost_Base` — digits and a decimal point, no minus. Holds what the lot originally cost, alongside the `Cost_Base` that later processing may change. |
 | `Original_Total_Cost_Base` | Buy only, derived: `round(Unit x Original_Cost_Base, 2) + Fee`. Not editable. The same shape as `Total_Cost_Base`, the Fee included — the only difference between the two is which cost base they are worked out from. |
 | `Is_Sold` | Buy only. The Sold checkbox. |
@@ -777,16 +777,24 @@ carries a description label beside it.
 
 #### Lots that cost nothing
 
-Two things make a lot cost nothing, and both zero its `Real_Total_Cost_Base`:
+Two things make a lot cost nothing, and each is recorded in a column of its own:
 
 | | Meaning | Held as |
 | --- | --- | --- |
 | **Reinvestment** | a distribution taken as units instead of cash | `Is_Reinvestment` |
-| **Free** | units that arrived at no cost at all | `Is_Free`, with `Reason_for_Free` beside it |
+| **Free** | units that arrived at no cost at all | `Is_Free` |
 
-Ticking either sets Real Total Cost Base to zero as the figures are typed, and saves it as
-zero. The Total Cost Base is untouched by both: the lot still has a cost base for capital
-gains, it just did not cost the portfolio anything on the day.
+Ticking either **records what the lot is**, and nothing else. The Total Cost Base is
+untouched by both — the lot still has a cost base for capital gains — and so, now, is
+**Real Total Cost Base**: a lot that cost the portfolio nothing is one you write `0` against,
+not one the tick box writes `0` for.
+
+> **This is the one change here with teeth.** Both flags used to force Real Total Cost Base
+> to zero, so a reinvested or free lot moved no money whatever else was on screen. They no
+> longer do, which means **a free or reinvested lot added without typing `0` in that box is
+> saved as having cost its full `Total_Cost_Base`** — and the portfolio's
+> `Investment_Amount` moves by it. Nothing already stored changed; this is about what the
+> next lot entered will say.
 
 **Reinvestment is a column of its own.** It did not use to be. For most of the page's life
 it was **inferred** — read back as *"the real total is zero"*, in the grid and in the
@@ -839,11 +847,49 @@ reinvested lot would have come back as an ordinary paid-for holding, with nothin
 saying otherwise now that the flag, rather than the zero beside it, is what the page reads.
 Both flags now travel with the units, onto the closed half and the remainder alike.
 
-**Reason for Free** is live only while Free is ticked, and is emptied when it is cleared,
-so an unticked lot cannot carry a stale reason into the table. A free lot with nothing said
-about why stores `Null` rather than an empty string, which is how a lot from before the field
+**Notes** is a free-text line on the lot, up to 50 characters, **always editable**. Nothing
+written stores `Null` rather than an empty string, which is how a lot from before the field
 existed reads too. Apostrophes are doubled on the way in, as everywhere free text reaches a
 statement.
+
+> **It used to be `Reason_for_Free`, and it belonged to the Free flag rather than to the
+> lot.** The box switched off unless Free was ticked, **emptied itself** when Free was
+> cleared, and the save threw the text away unless Free was ticked at that moment — so a
+> note typed against an ordinary lot silently never reached the table. The column is now
+> `Notes`, the box is always live, nothing clears it behind you, and what is in it is saved
+> whatever the three flags say.
+
+> The rename went through **DAO**, not SQL: Jet has no `ALTER TABLE ... RENAME COLUMN`, so
+> setting the `TableDef` field's `Name` is what does it — in place, keeping the type, the
+> 50-character size and every value already written. The three rows that carried a reason
+> still carry it, now as a note.
+
+**Real Total Cost Base can be typed over.** It is still filled in as you go — with
+`Total_Cost_Base` — but it is no longer read-only, and the figure in the box is the figure
+that is saved and the figure the portfolio balance moves by.
+
+**Picking a row from the table shows the figure stored against it**, not one worked out
+afresh. It is the one box on the page whose value need not follow from Unit and Cost Base,
+so recomputing it on the way in would have shown something other than what is actually on
+the row — a lot stored at `0.00` would have come back reading as its full cost. The two
+totals beside it *are* recomputed, because they can only ever be what the arithmetic says.
+
+> **The two totals above it are still derived and still locked.** `Original_Total_Cost_Base`
+> and `Total_Cost_Base` follow from Unit, the cost bases and the Fee, and there is no sense
+> in editing them independently. Real Total is different: it is what the lot *cost the
+> portfolio*, which is not always what it is worth on paper. The box is white and regular
+> weight, the two above it grey and bold, so the three say what they are.
+
+> **Editing Unit, Cost Base or Fee rewrites it** — it is a default, not a one-off, so type
+> the override last. **Ticking Reinvestment or Free does not**, and neither does clearing
+> them: a box that is overwritten whenever a tick box moves is not one that can really be
+> typed into, so the two flags were taken off it altogether. They have no handlers at all
+> on this page any more.
+
+> It is **guarded like the money boxes around it**: required, numeric, not negative, at
+> most two decimal places, and digits-only on the way in. It has to be — this is the
+> amount Add, Update and Delete move the portfolio's `Investment_Amount` by, so nonsense
+> in it would be nonsense in the running balance.
 
 > Adding the **Free** column meant re-measuring the whole fifteen-column grid, because
 > `Portfolio Code`, `Currency`, `Sold` and `Reinvestment` were **already clipping their own
@@ -903,11 +949,154 @@ in Access looking unlike everything beside it.
 > as `Is_Free` and the two already matched. The migration is idempotent and checks that the
 > pair agree rather than that a particular property exists, so it is a no-op on all three.
 
-> `Reason_for_Free` was added by the same `ALTER TABLE` and is equally bare. It is a text
+> `Notes` — added by the same `ALTER TABLE` as `Is_Free`, back when it was called
+> `Reason_for_Free` — is equally bare, and renaming it did not change that. It is a text
 > field, so there is no `Is_Sold` to follow — matching it would mean following `Sale_Id`,
 > which carries `IMEMode`, `IMESentenceMode` and `UnicodeCompression` as well. Left alone.
-> `TblETFStocksDistributionDividend.Is_Reinvested` and `TblETFStocksPortfolioCode.Is_Main`
-> are bare Yes/No fields for the same reason, and have no designed sibling to differ from.
+
+##### And the two Yes/No fields outside this table
+
+`TblETFStocksDistributionDividend.Is_Reinvested` — the **Reinvested** tick on
+[ETF/Stock Distribution and Dividend](#etfstock-distribution-and-dividend-rules) — was bare
+for the same reason as the rest: it was added by DDL rather than drawn in the Access
+designer, so Access showed it as the words `True` / `False` where every flag on the
+purchase table showed a tick box.
+
+It now carries the **same eight display properties as `TblETFStocksPurchase.Is_Reinvestment`**,
+copied off that field by the same script. The two record the same idea in two places — a
+distribution taken as units, and the lot those units arrived as — so looking unlike each
+other in the table designer was the odd part.
+
+> They match **exactly**, at 32 properties each, with no `GUID` on either. `Is_Sold` has one
+> and sits at 33, because Access assigned it when the field was drawn; the two added by
+> script never got one, and copying a `GUID` from one field onto another is the one thing
+> this script will not do.
+
+> **Nothing changed but how Access draws it.** The column keeps its name, its `dbBoolean`
+> type and all 29 rows — 24 reinvested, 5 not, none `Null`. No code reads it any
+> differently: every statement that names it compares against `True` / `False`, which a
+> display property does not touch. Four pages read it — Distribution and Dividend,
+> Dividend History, Financial Year Reconciliation and Ticker Historical Data — and none
+> needed a line changed.
+
+`TblETFStocksPortfolioCode.Is_Main` — the **Main** marker on
+[ETF/Stock Portfolio Code Setup](#screens), and the column behind the **Main Only** box on
+seven other pages — was the last bare one, and has had the same eight copied onto it from
+the same source.
+
+> **It is read in more places than any other flag in the database** — **25** references
+> across nine files, every one of them either `[Is_Main] = True` in a `WHERE` or an
+> `IIf(Is_Main = True, 0, 1)` in an `ORDER BY`. None of them changed, and none could: a
+> display property is what Access draws the field with, not what the field holds. Its 6
+> rows — 4 main, 2 not, none `Null` — read exactly as before.
+
+**Every Yes/No field in the database now draws as a tick box.** All six carry
+`DisplayControl = 106`:
+
+| Table | Field | Properties | Where it came from |
+| --- | --- | --- | --- |
+| `TblAcctRef` | `Current_Asset` | 31 | drawn in the designer; the one field that also carries an explicit `Format` of `Yes/No` |
+| `TblETFStocksPurchase` | `Is_Sold` | 33 | drawn in the designer, so it has a `GUID` |
+| `TblETFStocksPurchase` | `Is_Free` | 32 | added by DDL, given the eight afterwards |
+| `TblETFStocksPurchase` | `Is_Reinvestment` | 32 | created by script **with** the eight |
+| `TblETFStocksDistributionDividend` | `Is_Reinvested` | 32 | added by DDL, given the eight afterwards |
+| `TblETFStocksPortfolioCode` | `Is_Main` | 32 | added by DDL, given the eight afterwards |
+
+> The four at 32 match each other **exactly**. `Is_Sold` differs only by its `GUID`, which
+> is never copied, and `Current_Asset` sits in a different table with a `Format` of its own.
+
+##### Both were then rebuilt at the end of their tables
+
+`Is_Reinvested` and `Is_Main` are the **last column** of their respective tables. Both
+already were — by `OrdinalPosition`, by the OLE DB column schema and by what `SELECT *`
+hands back — and both have since been rebuilt there explicitly, so the position is one
+the table was given rather than one it happened to have.
+
+> **The rebuild was not what fixed Access, though.** Both fields went on showing up as the
+> *first* column in the table designer afterwards, because the table's own column order is
+> not what Access lays a datasheet out by. See
+> [Why a column can show first when it is stored last](#why-a-column-can-show-first-when-it-is-stored-last)
+> below, which is the actual cause and the actual fix.
+
+**Jet cannot reorder a column in place.** DAO's `OrdinalPosition` is read-only on an
+existing field and there is no `ALTER TABLE ... ALTER COLUMN POSITION`. The only way is to
+build the column again where you want it, which for *last* is five steps:
+
+```
+1.  ALTER TABLE t ADD COLUMN <field>_tmp YESNO      a new column always lands last
+2.  UPDATE t SET <field>_tmp = <field>              carry the values across
+3.  ALTER TABLE t DROP COLUMN <field>               the original goes
+4.  DAO: TableDefs(t).Fields(<field>_tmp).Name      the copy takes its name back
+5.  re-create the 8 display properties              a new field has none
+```
+
+> **Step 3 is the destructive one, so it is fenced on both sides.** The whole column is
+> read into memory first, keyed by enough of the rest of the row to identify it —
+> `Portfolio_Code` for one table, `Pay_Date` + `Full_Ticker` + `Portfolio_Code` +
+> `Total_Amount` for the other, both checked for uniqueness before anything begins. Step 2
+> is then proved row for row **before** step 3 runs, and the whole column is compared
+> against the snapshot afterwards. Any mismatch throws.
+
+> It also refuses to start if the column is part of an index, takes part in a relation, or
+> is named by a saved query — all three would be lost with the column. Neither of these
+> two is, and `TblETFStocksPortfolioCode`'s `PrimaryKey` on `Portfolio_Code` is checked
+> again afterwards and survives.
+
+> **`OrdinalPosition` leaves a gap after a drop.** The surviving fields keep the numbers
+> they had, so an eight-column table reads `0 1 2 3 4 5 6 8` rather than `0`..`7`. "Last"
+> is therefore the **highest** ordinal on the table, not `Fields.Count - 1` — a check
+> written the obvious way fails on a table that is perfectly correct. The OLE DB schema
+> renumbers them contiguously and `SELECT *` is unaffected, which is why the script
+> confirms the position that way too.
+
+> Nothing moved: 29 distributions (24 reinvested) and 6 portfolio codes (4 main), every
+> value unchanged row for row, both columns still `dbBoolean` with the same 32 properties
+> as `Is_Reinvestment`. No code changed either — the names and types are the same, and
+> nothing depends on column *order*: every read in the application is by column **name**
+> (`reader["Is_Main"]`), never by position. A handful of `SELECT *` statements exist
+> elsewhere in the codebase, none against these two tables, and they read by name too.
+
+##### Why a column can show first when it is stored last
+
+Access does **not** lay a datasheet out by the table's column order. It lays it out by
+**`ColumnOrder`**, the per-field display property — and the two can disagree.
+
+A field carrying an explicit `ColumnOrder = 0` has a *position*. A field with no such
+property has *none*. Those are different states, and they do not sort together: the one
+with an explicit position goes to the front, and everything else follows in table order
+behind it. A table is only laid out the way it reads when **every** field agrees.
+
+Thirteen of the sixteen tables here always did. The three that did not were the three
+with a field added or altered by DDL rather than drawn in the designer:
+
+| Table | Carried `ColumnOrder` | Did not | What Access showed |
+| --- | --- | --- | --- |
+| `TblETFStocksDistributionDividend` | `Is_Reinvested` only | the other 7 | `Is_Reinvested` **first** |
+| `TblETFStocksPortfolioCode` | `Is_Main` only | the other 2 | `Is_Main` **first** |
+| `TblETFStocksPurchase` | all but `Notes` | `Notes` | `Notes` **last**, not in its own place |
+
+The first two are self-inflicted: the eight display properties copied onto those flags to
+give them a tick box include `ColumnOrder`, and copying it onto one field in a table where
+no other field had it is exactly what moved them. The third is older — `Notes` arrived by
+`ALTER TABLE` as `Reason_for_Free` and never had them.
+
+All three are now even: **10 fields** were given `ColumnOrder`, `ColumnWidth` and
+`ColumnHidden`, copied from a field in their own table that already carried them, so every
+field in every table agrees and Access falls back to the table's order. Nothing in the
+data moved — these are display properties, and the counts are the same on both sides of
+the change.
+
+> **The lesson for next time.** Copying a field's display properties wholesale is how the
+> last several changes gave new fields their tick box, and it is the right thing to do
+> — but `ColumnOrder` is positional, so it must be copied to **every** field in the
+> target table or to none. Giving it to one field in isolation moves that field to the
+> front of the datasheet, which looks exactly like the column having been added in the
+> wrong place.
+
+> It also explains why the rebuild above changed nothing visible: the physical position
+> was never the problem, so putting the column back in the position it already held could
+> not have been the answer. The rebuild is still sound and still verified — it is just
+> not what was wrong.
 
 #### Both pages move the portfolio's balance
 
