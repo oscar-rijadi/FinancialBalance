@@ -205,12 +205,13 @@ namespace FinancialBalance
             }
         }
 
-        //Purchases default to the OB portfolio code
+        //Purchases default to the B portfolio code - the main Betashares Direct one, which
+        //OB and JB were merged into.  It was the OB code until that merge.
         private void Set_Default_Flag()
         {
-            if (CmbFlagCode.Items.Contains("OB"))
+            if (CmbFlagCode.Items.Contains("B"))
             {
-                CmbFlagCode.Text = "OB";
+                CmbFlagCode.Text = "B";
             }
             Show_Portfolio_Description();
         }

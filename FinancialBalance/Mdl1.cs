@@ -287,7 +287,7 @@ namespace FinancialBalance
                 {
                     string TmpFlag = reader["Portfolio_Code"].ToString().Trim();
                     ComboFlag.Items.Add(TmpFlag);
-                    if (TmpFlag == "OB")
+                    if (TmpFlag == "B")
                     {
                         DefaultExist = true;
                     }
@@ -303,7 +303,7 @@ namespace FinancialBalance
             {
                 if (DefaultExist)
                 {
-                    ComboFlag.Text = "OB";
+                    ComboFlag.Text = "B";
                 }
                 else
                 {

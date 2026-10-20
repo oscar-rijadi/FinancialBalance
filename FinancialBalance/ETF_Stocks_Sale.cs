@@ -204,9 +204,10 @@ namespace FinancialBalance
         //Sells default to the OB portfolio, the same as purchases
         private void Set_Default_Sell_Portfolio()
         {
-            if (CmbSellPortfolio.Items.Contains("OB"))
+            //the main Betashares Direct code, which OB and JB were merged into
+            if (CmbSellPortfolio.Items.Contains("B"))
             {
-                CmbSellPortfolio.Text = "OB";
+                CmbSellPortfolio.Text = "B";
             }
             Show_Sell_Portfolio_Description();
         }
