@@ -1629,6 +1629,45 @@ where the portfolio share is the same `Total Current Amount / Total Portfolio Cu
 the summary page shows in its **Percentage from whole portfolio** column. An unpriced holding has
 no current amount, so it carries no weight into any pie.
 
+**Every holding is valued in Australian Dollar before its share is worked out.** A share is
+one holding's value over the whole portfolio's, so the values have to be in one currency
+before they can be added — and until this was fixed they were not. The page took each
+latest price at face value whatever it was quoted in, so a US holding counted its dollars
+as though they were Australian ones and every slice on every pie was wrong.
+
+> **On the recorded holdings that was worth 2.09 percentage points.** `SCHD`, the one US
+> ticker, is priced at `35.61` USD — `50.7498` AUD at the October 2026 rate. Its share was
+> showing as **5.30 %** and is **7.39 %**. Every Australian holding was correspondingly
+> overstated, each by a fifth of a point or so, and the portfolio's value read `5,466.89`
+> where it should have read `5,590.07`.
+
+The conversion is the one the rest of the application uses — `TblCurrRate` holds IDR per
+one unit of a currency, so a figure reaches AUD by way of the rupiah:
+
+```
+AUD = amount x rate(currency) / rate(AUD)
+```
+
+> **It is deliberately the same arithmetic, at the same month's rate, as
+> [ETF/Stock Portfolio Summary](#portfolio-summary).** That page's Total Current Amount is
+> what these shares are shares *of*, and the price is rounded to four places before the
+> units are applied on both pages. Had the two converted differently the percentages here
+> would not have matched the amounts there, which is a worse failure than not converting
+> at all — it would look right on each page and only disagree between them.
+
+> Every rate a refresh could want is read **before** the first row of data, because the
+> page converts inside its read loops and a second reader on the shared connection while
+> the first is live is the one thing that connection will not stand.
+
+> A price with **no currency** counts as AUD, which is what a blank has always meant on
+> the purchase pages. A price in a currency with **no rate on record** is counted
+> unconverted and the currency is **named in the note**, rather than being quietly folded
+> in at face value — the one thing worse than an unconverted figure is an unconverted
+> figure nobody knows about.
+
+The note above the charts now reads *Unsold holdings only, valued in Australian Dollar*,
+with the portfolio and Main Only qualifiers after it as before.
+
 Because each ticker's allocation totals 100 within a type, and the shares themselves total 100,
 a fully allocated portfolio produces pies that total 100 %. **Any shortfall is drawn as a grey
 `(unallocated)` slice** rather than left out — a pie normalises to the sum of its slices, so

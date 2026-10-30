@@ -111,23 +111,167 @@ namespace FinancialBalance
             return 0;
         }
 
-        //Latest price for a ticker, or false when the ticker has never been priced
-        private bool Get_Latest_Price(string parFullTicker, out double parPrice)
+        //Latest price for a ticker, or false when the ticker has never been priced.  The
+        //currency comes back with it: a price is only a number until you know what it is
+        //quoted in, and this page adds prices together.
+        private bool Get_Latest_Price(string parFullTicker, out double parPrice, out string parCurr)
         {
             parPrice = 0;
+            parCurr = "";
             bool Found = false;
 
-            Mdl1.Ssql = "select top 1 [Price] from TblETFStocksPrice where Full_Ticker = '" + parFullTicker
+            Mdl1.Ssql = "select top 1 [Price], [Currency] from TblETFStocksPrice where Full_Ticker = '" + parFullTicker
                       + "' order by Price_Date Desc";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
                 parPrice = Read_Double(reader["Price"]);
+                parCurr = (reader["Currency"] == DBNull.Value ? "" : reader["Currency"].ToString().Trim());
                 Found = true;
             }
             reader.Close();
             return Found;
+        }
+
+        //---- into Australian Dollar -------------------------------------------------
+        //
+        //Every share on this page is one holding's value over the whole portfolio's, so the
+        //values have to be in one currency before they are added.  They were not: a price was
+        //taken at face value whatever it was quoted in, so a US holding counted its dollars as
+        //though they were Australian ones and took a larger slice than it owns.
+        //
+        //TblCurrRate holds IDR per one unit of a currency, so a figure reaches AUD by way of
+        //the rupiah, which is the pivot the whole application converts through:
+        //
+        //    AUD = amount x rate(currency) / rate(AUD)
+        //
+        //This is the same arithmetic, and the same month's rate, that ETF/Stock Portfolio
+        //Summary uses - which matters, because that page's Total Current Amount is what these
+        //shares are shares OF.  Had the two converted differently the percentages here would
+        //not have matched the amounts there.
+        private const string PageCurr = "AUD";
+
+        //One rate per currency for the length of a refresh, rather than three queries per row.
+        private Dictionary<string, double> RateCache = new Dictionary<string, double>();
+        private Dictionary<string, bool> RateKnown = new Dictionary<string, bool>();
+        private List<string> NoRate = new List<string>();
+        private string RateMonth = "";
+
+        //Every rate a refresh could want, read before a single row of data is.  The page
+        //converts inside its read loops, and a second reader on the shared connection while
+        //the first is still live is the one thing this connection will not stand.
+        private void Begin_Rates()
+        {
+            RateCache.Clear();
+            RateKnown.Clear();
+            NoRate.Clear();
+            RateMonth = DateTime.Now.ToString("yyyyMM");
+
+            List<string> Codes = new List<string>();
+            Codes.Add(PageCurr);
+            Mdl1.Ssql = "select Curr_Code from TblCurrCode order by Curr_Code";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string TmpCode = (reader["Curr_Code"] == DBNull.Value ? "" : reader["Curr_Code"].ToString().Trim().ToUpper());
+                if (TmpCode != "" && !Codes.Contains(TmpCode))
+                {
+                    Codes.Add(TmpCode);
+                }
+            }
+            reader.Close();
+
+            for (int i = 0; i < Codes.Count; i++)
+            {
+                Load_Rate(Codes[i]);
+            }
+        }
+
+        //GetCurrRate answers 1 for a currency it has never heard of, which would leave a figure
+        //unconverted while looking exactly like one that needed no converting; asking the table
+        //directly is what tells those two apart.
+        private void Load_Rate(string parCurr)
+        {
+            if (RateCache.ContainsKey(parCurr))
+            {
+                return;
+            }
+            if (parCurr == "IDR")
+            {
+                //the pivot itself - one rupiah to the rupiah, and never a row to read
+                RateCache[parCurr] = 1;
+                RateKnown[parCurr] = true;
+                return;
+            }
+
+            bool Known = Has_Rate(parCurr);
+            double TmpRate = (Known ? Mdl1.GetCurrRate(parCurr, RateMonth) : 1);
+            RateCache[parCurr] = (TmpRate <= 0 ? 1 : TmpRate);
+            RateKnown[parCurr] = Known;
+        }
+
+        private bool Has_Rate(string parCurr)
+        {
+            bool Found = false;
+            Mdl1.Ssql = "select top 1 Curr_Date from TblCurrRate where Curr_Code = '" + parCurr + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            Found = reader.Read();
+            reader.Close();
+            return Found;
+        }
+
+        //Nothing here reads the database: every rate it can answer with was loaded before the
+        //read loops opened.
+        private double Rate_Of(string parCurr)
+        {
+            string strCurr = (parCurr == null ? "" : parCurr.Trim().ToUpper());
+            if (strCurr == "")
+            {
+                strCurr = PageCurr;
+            }
+
+            if (RateCache.ContainsKey(strCurr))
+            {
+                if (!RateKnown[strCurr] && !NoRate.Contains(strCurr))
+                {
+                    NoRate.Add(strCurr);
+                }
+                return RateCache[strCurr];
+            }
+
+            //a currency on a price but not in Currency Setup, so there can be no rate for it either
+            if (!NoRate.Contains(strCurr))
+            {
+                NoRate.Add(strCurr);
+            }
+            return 1;
+        }
+
+        private double To_AUD(double parAmount, string parCurr)
+        {
+            string strCurr = (parCurr == null ? "" : parCurr.Trim().ToUpper());
+            //nothing said is taken as already being in AUD, which is what an empty Currency has
+            //always meant on the purchase pages
+            if (strCurr == "" || strCurr == PageCurr)
+            {
+                return parAmount;
+            }
+            return parAmount * Rate_Of(strCurr) / Rate_Of(PageCurr);
+        }
+
+        //any currency a price was quoted in that could not be converted
+        private string Rate_Note()
+        {
+            if (NoRate.Count == 0)
+            {
+                return "";
+            }
+            return "   -   no currency rate on record for "
+                 + String.Join(", ", NoRate.ToArray())
+                 + ", counted unconverted";
         }
 
         private void Clear_Charts()
@@ -141,11 +285,15 @@ namespace FinancialBalance
         }
 
         //Each ticker's share of the whole portfolio, exactly as the summary page derives it:
-        //current amount over total current amount.  An unpriced holding has no share.
+        //current amount over total current amount, every amount in AUD.  An unpriced holding
+        //has no share.
         private void Portfolio_Shares(out List<string> parTickers, out List<double> parShares)
         {
             parTickers = new List<string>();
             parShares = new List<double>();
+
+            //before any reader is opened, because converting happens inside one
+            Begin_Rates();
 
             string TmpCode = null;
             int idx = CmbPortfolio.SelectedIndex;
@@ -161,7 +309,7 @@ namespace FinancialBalance
             }
             TmpWhere += Main_Filter();
 
-            LblNote.Text = "Unsold holdings only"
+            LblNote.Text = "Unsold holdings only, valued in Australian Dollar"
                 + (TmpCode == null ? "" : "  (portfolio " + TmpCode + ")")
                 + (chkMainOnly.Checked ? "  (main portfolios only)" : "");
 
@@ -183,10 +331,14 @@ namespace FinancialBalance
             double TotalCurrent = 0;
             for (int i = 0; i < Names.Count; i++)
             {
-                double TmpPrice;
+                double TmpRawPrice;
+                string TmpPriceCurr;
                 double TmpCurrent = 0;
-                if (Get_Latest_Price(Names[i], out TmpPrice))
+                if (Get_Latest_Price(Names[i], out TmpRawPrice, out TmpPriceCurr))
                 {
+                    //to four places before the units are applied, the way the summary page does it,
+                    //so the two pages put the same figure against the same holding
+                    double TmpPrice = Math.Round(To_AUD(TmpRawPrice, TmpPriceCurr), 4);
                     TmpCurrent = Math.Round(Units[i] * TmpPrice, 2);
                     TotalCurrent += TmpCurrent;
                 }
@@ -207,6 +359,9 @@ namespace FinancialBalance
                 parTickers.Add(Names[i]);
                 parShares.Add((Currents[i] / TotalCurrent) * 100);
             }
+
+            //said once every price has been looked at, so only a currency actually used is named
+            LblNote.Text = LblNote.Text + Rate_Note();
         }
 
         //A ticker's share, split by its allocation for one diversification type.
