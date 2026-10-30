@@ -2191,6 +2191,21 @@ Below the table an entry section adds, updates and deletes rows. **`Financial_Ye
 a pair that already exists, and Update and Delete match on that pair. Clicking a row in the table
 loads it back exactly as stored, without re-deriving anything.
 
+**The Portfolio Code dropdown opens on `B`**, the main portfolio, rather than on whichever
+code sorts first. That used to be `AB` — a dormant portfolio — so a reconciliation
+entered without touching the dropdown went against the wrong one. The **Currency** box
+beside it has always worked this way, naming `AUD` and falling back to the first item only
+if it is not on the list; the code now does the same, falling back the same way.
+
+> The **Financial Year** box above it still takes the first item, which is deliberate: the
+> list is ordered newest-closing first, so that is the current year rather than an
+> accident of sorting.
+
+> [ETF/Stock Cost Base Adjustment](#cost-base-adjustment) still opens its own Portfolio
+> Code dropdown on whichever code sorts first, for the same reason this one used to.
+> [ETF/Stock Investment](#etfstock-investment-rules) does not — it orders main portfolios
+> ahead of the rest, so its first entry is already a main one.
+
 Choosing a year or a portfolio pulls a default for almost every figure out of the rest of the
 database, all of them still editable afterwards:
 

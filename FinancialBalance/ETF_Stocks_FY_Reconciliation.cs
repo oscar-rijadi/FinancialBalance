@@ -526,7 +526,11 @@ namespace FinancialBalance
             reader.Close();
 
             if (CmbEntryFinYear.Items.Count > 0) { CmbEntryFinYear.SelectedIndex = 0; }
-            if (CmbEntryCode.Items.Count > 0) { CmbEntryCode.SelectedIndex = 0; }
+            //The main portfolio, not whichever code sorts first - that is AB, which is dormant.
+            //Named the same way the currency below it is, and falling back the same way if it is
+            //ever not on the list.
+            if (CmbEntryCode.Items.Contains("B")) { CmbEntryCode.Text = "B"; }
+            else if (CmbEntryCode.Items.Count > 0) { CmbEntryCode.SelectedIndex = 0; }
             if (CmbEntryCurrency.Items.Contains("AUD")) { CmbEntryCurrency.Text = "AUD"; }
             else if (CmbEntryCurrency.Items.Count > 0) { CmbEntryCurrency.SelectedIndex = 0; }
         }
