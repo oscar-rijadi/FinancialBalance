@@ -238,7 +238,7 @@ flowchart LR
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. Every amount is converted to Australian Dollar. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
-| `ETF_Stocks_Dividend_History_Calendar` | Shown as **ETF/Stock Dividend History Calendar**. What the portfolio was actually paid, month by month, over the last twelve months — the backward-looking twin of the forecast calendar, with the same **Portfolio** dropdown and **Main Only** checkbox, and a Grand Total Investment and Yield under the grid. Every amount is converted to Australian Dollar. Exports to Excel and to Google Drive. Reads `TblETFStocksDistributionDividend`, `TblETFStocksPurchase`, `TblETFStocksSale` and the currency tables, and writes nothing. See [Dividend history calendar](#dividend-history-calendar). |
+| `ETF_Stocks_Dividend_History_Calendar` | Shown as **ETF/Stock Dividend History Calendar**. What the portfolio was actually paid, month by month, over the last twelve months — the backward-looking twin of the forecast calendar, with the same **Portfolio** dropdown and **Main Only** checkbox, a yield per ticker in the table, and a Grand Total Investment and Yield under the grid. Every amount is converted to Australian Dollar. Exports to Excel and to Google Drive. Reads `TblETFStocksDistributionDividend`, `TblETFStocksPurchase`, `TblETFStocksSale` and the currency tables, and writes nothing. See [Dividend history calendar](#dividend-history-calendar). |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with fourteen totals across the selection and an Excel export. |
 | `ETF_Stocks_Ticker_Historical_Data` | Shown as **ETF/Stock Ticker Historical Data**. Everything on record for one ticker — every purchase, every sale and every distribution or dividend, each in its own table with totals underneath, and its latest price beside the average cost — optionally narrowed to one portfolio and one financial year. Amounts are shown in the ticker's own currency, unconverted. Reads four ETF/stock tables and writes nothing. See [Ticker historical data](#ticker-historical-data). |
@@ -2847,8 +2847,25 @@ two can be read side by side.
 The window **ends with the month you are in** and reaches back eleven more, oldest on the left.
 So a distribution already recorded this month shows up, and this month appears on both calendars:
 here as what has been recorded so far, and on the forecast as what is still due. The columns are
-`Full Ticker`, the twelve months headed `MMM yyyy`, and `Total`. A bold totals row closes the grid,
-one figure per month.
+`Full Ticker`, the twelve months headed `MMM yyyy`, `Total` and `Yield`. A bold totals row closes
+the grid, one figure per month.
+
+#### The Yield column
+
+Each ticker's **Yield** is its `Total` ÷ its own investment × 100, so a trailing twelve-month yield
+on cost for that ticker. Its investment is worked out the same way as
+[Grand Total Investment](#under-the-grid), restricted to that ticker: purchases' `Real_Total_Cost_Base`
+less sales' `Selling_Total_Amount` up to today, for the same Portfolio / Main Only selection, each
+grouped by currency and converted to AUD.
+
+- **A ticker with nothing left invested shows `-`.** That covers a ticker sold out since it paid, or
+  one whose sales returned more than it cost. There is no denominator, and `0.00 %` would read as
+  though it had paid nothing.
+- **The totals row shows the overall yield**, the same figure as the **Yield** label under the grid.
+  It is not an average of the rows, which would weigh a small holding the same as a large one.
+  Grand Total Investment is the per-ticker investments added up, so the column and the label come
+  from one set of figures. It also includes holdings that paid nothing in the window, which have no
+  row, so the visible rows' investments can add up to less than the grand total.
 
 #### What counts
 

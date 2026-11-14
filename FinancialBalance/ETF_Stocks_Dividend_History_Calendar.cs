@@ -281,44 +281,42 @@ namespace FinancialBalance
 
         //---- what has been put in -------------------------------------------------
 
-        //One money column added up to today, grouped by currency and converted a group at a
-        //time - adding USD to AUD first would give a figure that is in neither.
-        private double Sum_Money(string parTable, string parField, string parPortfolioAnd)
+        //One money column added up to today per ticker, grouped by currency as well and converted
+        //a group at a time - adding USD to AUD first would give a figure that is in neither.
+        //parSign is +1 to add the column in and -1 to take it away.
+        private void Add_Money(Dictionary<string, double> parInto, string parTable, string parField,
+                               string parPortfolioAnd, int parSign)
         {
-            List<double> Amounts = new List<double>();
-            List<string> Currs = new List<string>();
-
-            Mdl1.Ssql = "select [Currency] as C, Sum(" + parField + ") as N"
+            Mdl1.Ssql = "select Full_Ticker, [Currency] as C, Sum(" + parField + ") as N"
                       + " from " + parTable
                       + " where Trans_Date <= '" + DateTime.Now.ToString("yyyyMMdd") + "'"
                       + parPortfolioAnd
-                      + " group by [Currency]";
+                      + " group by Full_Ticker, [Currency]";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                Amounts.Add(Read_Double(reader["N"]));
-                Currs.Add(Read_Text(reader["C"]));
+                //every rate was loaded before the read, so converting here opens no second reader
+                string TmpTicker = Read_Text(reader["Full_Ticker"]);
+                double TmpAmount = To_AUD(Read_Double(reader["N"]), Read_Text(reader["C"]));
+                double TmpSoFar;
+                parInto.TryGetValue(TmpTicker, out TmpSoFar);
+                parInto[TmpTicker] = TmpSoFar + (parSign * TmpAmount);
             }
             reader.Close();
-
-            double Result = 0;
-            for (int i = 0; i < Amounts.Count; i++)
-            {
-                Result += To_AUD(Amounts[i], Currs[i]);
-            }
-            return Result;
         }
 
-        //Money actually put in and not yet taken back out, the same figure ETF/Stock Dividend
-        //History calls Grand Total Investment: what was really paid, less what selling returned.
+        //Money actually put in and not yet taken back out, per ticker: what was really paid, less
+        //what selling returned - the figure ETF/Stock Dividend History calls Investment.
         //Real_Total_Cost_Base is 0 on a reinvested purchase, so DRIP units add no cost.  Proceeds
-        //can exceed cost, so this can legitimately go negative.
-        private double Net_Cost(string parPortfolioAnd)
+        //can exceed cost, so a figure can legitimately go negative.  Added up over every ticker
+        //it is the Grand Total Investment, so the column and the label cannot disagree.
+        private Dictionary<string, double> Net_Cost_By_Ticker(string parPortfolioAnd)
         {
-            double Bought = Sum_Money("TblETFStocksPurchase", "[Real_Total_Cost_Base]", parPortfolioAnd);
-            double Sold = Sum_Money("TblETFStocksSale", "[Selling_Total_Amount]", parPortfolioAnd);
-            return Math.Round(Bought - Sold, 2);
+            Dictionary<string, double> Result = new Dictionary<string, double>();
+            Add_Money(Result, "TblETFStocksPurchase", "[Real_Total_Cost_Base]", parPortfolioAnd, 1);
+            Add_Money(Result, "TblETFStocksSale", "[Selling_Total_Amount]", parPortfolioAnd, -1);
+            return Result;
         }
 
         //Nothing invested gives no denominator, and the yield is reported as zero rather than
@@ -332,13 +330,18 @@ namespace FinancialBalance
             return 0;
         }
 
+        private string Percent(double parValue)
+        {
+            return parValue.ToString("#,##0.00", CultureInfo.InvariantCulture) + " %";
+        }
+
         //---- the grid -------------------------------------------------------------
 
         private void Clear_Grid()
         {
             gvHistory.Columns.Clear();
             gvHistory.Rows.Clear();
-            gvHistory.ColumnCount = 14;
+            gvHistory.ColumnCount = 15;
 
             gvHistory.Columns[0].Name = "Full Ticker";
             gvHistory.Columns[0].FillWeight = 90;
@@ -357,6 +360,12 @@ namespace FinancialBalance
             gvHistory.Columns[13].FillWeight = 80;
             gvHistory.Columns[13].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
             gvHistory.Columns[13].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+            //after Total, since it is Total measured against what the ticker has tied up
+            gvHistory.Columns[14].Name = "Yield";
+            gvHistory.Columns[14].FillWeight = 55;
+            gvHistory.Columns[14].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvHistory.Columns[14].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
 
         //One row per ticker that was paid anything inside the window, sold or not: a holding
@@ -446,11 +455,16 @@ namespace FinancialBalance
                 }
                 reader.Close();
 
+                //read only now, so no other reader is open on the connection.  It covers every
+                //holding in the selection, paying or not, as it does on ETF/Stock Dividend History.
+                Dictionary<string, double> NetCosts = Net_Cost_By_Ticker(TmpPortfolioAnd);
+                double GrandInvestment = Math.Round(NetCosts.Values.Sum(), 2);
+
                 for (int i = 0; i < Tickers.Count; i++)
                 {
                     double[] TmpRow = Rows[Tickers[i]];
                     double TmpRowTotal = 0;
-                    string[] row = new string[14];
+                    string[] row = new string[15];
                     row[0] = Tickers[i];
                     for (int m = 0; m < 12; m++)
                     {
@@ -458,6 +472,13 @@ namespace FinancialBalance
                         TmpRowTotal += TmpRow[m];
                     }
                     row[13] = Money(TmpRowTotal);
+
+                    //Nothing left invested - sold out, or sold for more than it cost - leaves no
+                    //denominator.  "-" says so; "0.00 %" would read as though it paid nothing.
+                    double TmpInvestment;
+                    NetCosts.TryGetValue(Tickers[i], out TmpInvestment);
+                    TmpInvestment = Math.Round(TmpInvestment, 2);
+                    row[14] = (TmpInvestment > 0 ? Percent(Yield_Of(TmpInvestment, TmpRowTotal)) : "-");
                     gvHistory.Rows.Add(row);
                 }
 
@@ -465,13 +486,16 @@ namespace FinancialBalance
                 //and only the grid knows where each month's column has ended up.
                 if (Tickers.Count > 0)
                 {
-                    string[] totals = new string[14];
+                    string[] totals = new string[15];
                     totals[0] = "Total";
                     for (int m = 0; m < 12; m++)
                     {
                         totals[m + 1] = Money(MonthTotals[m]);
                     }
                     totals[13] = Money(GrandTotal);
+                    //the yield of the whole, not an average of the rows - the same figure as
+                    //the Yield label underneath
+                    totals[14] = Percent(Yield_Of(GrandInvestment, GrandTotal));
                     gvHistory.Rows.Add(totals);
 
                     DataGridViewRow TotalRow = gvHistory.Rows[gvHistory.Rows.Count - 1];
@@ -481,14 +505,10 @@ namespace FinancialBalance
                     TotalRow.DefaultCellStyle.SelectionForeColor = Color.Black;
                 }
 
-                //read only now, so no other reader is open on the connection; it covers every
-                //holding in the selection, paying or not, as it does on ETF/Stock Dividend History
-                double GrandInvestment = Net_Cost(TmpPortfolioAnd);
-
                 LblInv.Text = Money(GrandInvestment);
                 LblGrand.Text = Money(GrandTotal);
                 //twelve months paid against what is tied up today - a trailing yield on cost
-                LblYield.Text = Yield_Of(GrandInvestment, GrandTotal).ToString("#,##0.00", CultureInfo.InvariantCulture) + " %";
+                LblYield.Text = Percent(Yield_Of(GrandInvestment, GrandTotal));
                 LblReinv.Text = Money(TotalReinvested);
                 LblNotReinv.Text = Money(TotalNotReinvested);
                 LblAverage.Text = Money(GrandTotal / 12);
