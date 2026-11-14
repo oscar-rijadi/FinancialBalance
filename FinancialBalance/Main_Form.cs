@@ -399,6 +399,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksDividendHistoryCalendar_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Dividend_History_Calendar ETF_Stocks_Dividend_History_Calendar = new ETF_Stocks_Dividend_History_Calendar();
+            ETF_Stocks_Dividend_History_Calendar.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksFYHistorical_Click(object sender, EventArgs e)
         {
             ETF_Stocks_FY_Historical ETF_Stocks_FY_Historical = new ETF_Stocks_FY_Historical();

@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Ticker Historical Data, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Dividend History Calendar, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Ticker Historical Data, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
 | `Inquiry` | **Yearly** | Yearly Statistic, Yearly Summary, Yearly Summary Graph |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
@@ -158,6 +158,7 @@ flowchart LR
     PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
     PORTG --> PDIV["ETF_Stocks_Portfolio_Diversification"]
     PORTG --> PDVH["ETF_Stocks_Dividend_History"]
+    PORTG --> PDHC["ETF_Stocks_Dividend_History_Calendar"]
     PORTG --> PPCH["ETF_Stocks_Price_Chart"]
     PORTG --> PFYH["ETF_Stocks_FY_Historical"]
     PORTG --> PTHD["ETF_Stocks_Ticker_Historical_Data"]
@@ -237,6 +238,7 @@ flowchart LR
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. Every amount is converted to Australian Dollar. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
+| `ETF_Stocks_Dividend_History_Calendar` | Shown as **ETF/Stock Dividend History Calendar**. What the portfolio was actually paid, month by month, over the last twelve months — the backward-looking twin of the forecast calendar, with the same **Portfolio** dropdown and **Main Only** checkbox, and a Grand Total Investment and Yield under the grid. Every amount is converted to Australian Dollar. Exports to Excel and to Google Drive. Reads `TblETFStocksDistributionDividend`, `TblETFStocksPurchase`, `TblETFStocksSale` and the currency tables, and writes nothing. See [Dividend history calendar](#dividend-history-calendar). |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with fourteen totals across the selection and an Excel export. |
 | `ETF_Stocks_Ticker_Historical_Data` | Shown as **ETF/Stock Ticker Historical Data**. Everything on record for one ticker — every purchase, every sale and every distribution or dividend, each in its own table with totals underneath, and its latest price beside the average cost — optionally narrowed to one portfolio and one financial year. Amounts are shown in the ticker's own currency, unconverted. Reads four ETF/stock tables and writes nothing. See [Ticker historical data](#ticker-historical-data). |
@@ -2829,6 +2831,68 @@ Two things are this page's own:
   Year** both on `All`, the Sheet carries the whole history first and then one tab per financial
   year.
 
+### Dividend history calendar
+
+`Inquiry` ▸ ETF/Stock ▸ ETF/Stock Dividend History Calendar answers **what has the portfolio
+actually been paid, month by month, over the last twelve months**. It is the backward-looking twin
+of [Forecast dividend calendar](#forecast-dividend-calendar) and is laid out the same way, so the
+two can be read side by side.
+
+| Control | What it does |
+| --- | --- |
+| **Portfolio** and **Main Only** | Exactly what they do on [Forecast dividend calendar](#forecast-dividend-calendar): descriptions shown, codes filtered on, Main Only ticked when the page opens and narrowing the dropdown as well as the rows. `All` with Main Only ticked keeps main portfolios only, so a payment with no portfolio code drops out with the rest. |
+
+#### The twelve months
+
+The window **ends with the month you are in** and reaches back eleven more, oldest on the left.
+So a distribution already recorded this month shows up, and this month appears on both calendars:
+here as what has been recorded so far, and on the forecast as what is still due. The columns are
+`Full Ticker`, the twelve months headed `MMM yyyy`, and `Total`. A bold totals row closes the grid,
+one figure per month.
+
+#### What counts
+
+Every row of `TblETFStocksDistributionDividend` whose `Pay_Date` falls inside the window, after the
+two filters. Nothing is estimated. Each ticker paid anything in the window gets one row, **sold or
+not**: a holding sold since still paid what it paid, and leaving it out would understate the year.
+A ticker that paid nothing in the window does not appear. A month with no payment for a ticker is
+left blank rather than showing `$0.00`.
+
+#### Every figure is in Australian Dollar
+
+Each payment is converted to AUD from its own `Currency` as it is read, at the current month's rate.
+This uses the same method as [Dividend history](#dividend-history): every rate is loaded before the
+data reader opens, and a currency with nothing in `TblCurrRate` is shown unconverted and named in the
+note, not passed off as converted.
+
+#### Under the grid
+
+| Label | Is |
+| --- | --- |
+| **Grand Total Investment** | money actually put in and not yet taken back out, as of today, across the same Portfolio / Main Only selection: `Real_Total_Cost_Base` from `TblETFStocksPurchase` less `Selling_Total_Amount` from `TblETFStocksSale`, each grouped by currency and converted to AUD. This is the same figure [Dividend history](#dividend-history) calls Grand Total Investment. Reinvested units add no cost, and the figure can go negative when sales have returned more than was paid. It covers every holding in the selection, whether or not it paid anything in the window |
+| **Grand Total Dividend (Last 12 Months)** | everything in the grid |
+| **Yield** | Grand Total Dividend ÷ Grand Total Investment × 100, so a trailing twelve-month yield on what is tied up today. It reads `0.00 %` when the investment is nil or negative, the same rule Dividend history applies |
+| **Total Reinvested** | the part of it recorded with `Is_Reinvested` ticked |
+| **Total Not Reinvested** | the rest |
+| **Monthly Average** | the grand total divided by twelve |
+
+Below them, a note gives the exact date range, how many payments and tickers it covers, and the
+rate month used for currency conversion.
+
+#### Exports
+
+**Generate Excel** and **Generate to Google Drive** work as they do on the forecast calendar:
+heading, filters, note, the six totals, then the grid with its totals row, every cell written as
+text. The file name is
+
+```
+ETF_Stocks_Dividend_History_Calendar _ yyyyMMddHHmmss _ <Portfolio> _ <Yes|No for Main Only> .xlsx
+```
+
+The Google Sheet is a single file that is reused. It is called **Financial Balance ETFs or Stocks
+Dividend History Calendar**, from `DividendHistoryCalendarGoogleSheetName` in `app.config`. The
+window always ends with the current month, so each run replaces the last, and there are no extra tabs.
+
 ### Ticker historical data
 
 `ETF_Stocks_Ticker_Historical_Data`, shown as **ETF/Stock Ticker Historical Data** under
@@ -3418,15 +3482,16 @@ on it, and nothing on the page that is not one of those two pages' own numbers.
 
 ### Excel exports
 
-Five pages export: [Portfolio summary](#portfolio-summary),
+Six pages export: [Portfolio summary](#portfolio-summary),
 [Dividend history](#dividend-history),
+[Dividend history calendar](#dividend-history-calendar),
 [Financial year historical](#financial-year-historical),
 [Yearly summary](#yearly-summary) and
 [Forecast dividend calendar](#forecast-dividend-calendar). They share these rules.
 
 - **The form's name leads the file name**, so an export says which page produced it before
   anything else — `ETF_Stocks_Portfolio_Summary_...`, `ETF_Stocks_Dividend_History_...`,
-  `ETF_Stocks_FY_Historical_...`, `Yearly_Summary_...`,
+  `ETF_Stocks_Dividend_History_Calendar_...`, `ETF_Stocks_FY_Historical_...`, `Yearly_Summary_...`,
   `ETF_Stocks_Forecast_Dividend_Calendar_...`. It is taken from the form's own `Name`
   property rather than typed out, so it cannot drift from the form it belongs to. The timestamp
   follows the prefix, then that page's own filters — except on
@@ -3438,7 +3503,7 @@ Five pages export: [Portfolio summary](#portfolio-summary),
 - The name is only what the Save dialog is *pre-filled* with; the reader can change it, and the
   dialog opens in Documents but remembers wherever it was last pointed.
 
-All five also export [to Google Drive](#generate-to-google-drive), which builds the same
+All six also export [to Google Drive](#generate-to-google-drive), which builds the same
 workbook and uploads it as a Google Sheet instead of saving it locally.
 
 ---
@@ -3446,6 +3511,7 @@ workbook and uploads it as a Google Sheet instead of saving it locally.
 ### Generate to Google Drive
 
 [Portfolio summary](#portfolio-summary), [Dividend history](#dividend-history),
+[Dividend history calendar](#dividend-history-calendar),
 [Financial year historical](#financial-year-historical), [Yearly summary](#yearly-summary)
 and [Forecast dividend calendar](#forecast-dividend-calendar) each have a button beside their
 **Generate Excel**. It builds **the same workbook**, uploads it to the
@@ -3457,10 +3523,11 @@ On each page both buttons go through one `Build_Sheet`, so the workbook and the 
 same sheet by construction rather than by two lots of layout code happening to agree.
 `Write_Workbook` takes where to write it; only the caller differs. On the three pages that can
 produce several tabs it takes a list of them, and on
-[Financial year historical](#financial-year-historical) and
+[Financial year historical](#financial-year-historical),
+[Dividend history calendar](#dividend-history-calendar) and
 [Forecast dividend calendar](#forecast-dividend-calendar), which cannot, it takes the one sheet.
 
-The five pages keep their own copies of that shape rather than sharing a base class — what they
+The six pages keep their own copies of that shape rather than sharing a base class — what they
 lay out differs enough (different filters, different headings, one grid or four) that the common
 part would be thinner than the plumbing to share it.
 
@@ -3483,6 +3550,7 @@ differs between them.
 | --- | --- | --- | --- |
 | [Portfolio summary](#portfolio-summary) | `PortfolioGoogleSheetName` | *Financial Balance ETFs or Stocks Portfolio Investments* | one |
 | [Dividend history](#dividend-history) | `DividendHistoryGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History* | one |
+| [Dividend history calendar](#dividend-history-calendar) | `DividendHistoryCalendarGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History Calendar* | one |
 | [Financial year historical](#financial-year-historical) | `FinancialHistoricalYearPrefixGoogleSheetName` | *Financial Balance ETFs or Stocks Financial Year Historical* | **a prefix** — one per financial year |
 | [Yearly summary](#yearly-summary) | `YearlySummaryGoogleSheetName` | *Financial Balance Yearly Summary* | one |
 | [Forecast dividend calendar](#forecast-dividend-calendar) | `ForecastDividendCalendarGoogleSheetName` | *Financial Balance ETFs or Stocks Forecast Dividend Calendar* | one |
@@ -3498,7 +3566,7 @@ is joined to the prefix and each year keeps a Sheet of its own. See
 [that page](#financial-year-historical) for what that means in practice.
 
 `Google_Drive` exposes them as `Portfolio_Sheet_Name()`, `Dividend_History_Sheet_Name()`,
-`FY_Historical_Sheet_Name(year)`, `Yearly_Summary_Sheet_Name()` and
+`Dividend_History_Calendar_Sheet_Name()`, `FY_Historical_Sheet_Name(year)`, `Yearly_Summary_Sheet_Name()` and
 `Forecast_Dividend_Calendar_Sheet_Name()` rather than taking the setting
 key as an argument, so a call site cannot ask for a key that does not exist and silently get
 somebody else's default. Only the prefixed one takes anything, which is the signature saying
@@ -3569,6 +3637,7 @@ the filters being wide enough that per-tab detail says something the first tab d
 | [Portfolio summary](#portfolio-summary) | **Full Ticker** is `All` | holding |
 | [Dividend history](#dividend-history) | **Full Ticker** *and* **Financial Year** are both `All` | financial year |
 | [Financial year historical](#financial-year-historical) | never | — it is always one tab |
+| [Dividend history calendar](#dividend-history-calendar) | never | — it is always one tab |
 | [Yearly summary](#yearly-summary) | **always** | year, `All` first — see [that page](#yearly-summary) |
 
 Narrow either dropdown and it is that one view, one tab. Financial year historical has no `All`
@@ -3863,6 +3932,7 @@ C#.Net/
 │   ├── ETF_Stocks_Portfolio_Summary.*
 │   ├── ETF_Stocks_Portfolio_Diversification.*
 │   ├── ETF_Stocks_Dividend_History.*
+│   ├── ETF_Stocks_Dividend_History_Calendar.*  # last twelve months paid, month by month
 │   ├── ETF_Stocks_Ticker_Historical_Data.*  # one ticker's purchases, sales and payments
 │   ├── ETF_Stocks_Price_Chart.*      # price line chart
 │   ├── images/Project1.ico
@@ -3961,13 +4031,14 @@ The `appSettings` entries, however, **are** read:
 | `GoogleClientSecret` | its secret |
 | `PortfolioGoogleSheetName` | what [Portfolio summary](#portfolio-summary)'s Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Portfolio Investments* |
 | `DividendHistoryGoogleSheetName` | what [Dividend history](#dividend-history)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History* |
+| `DividendHistoryCalendarGoogleSheetName` | what [Dividend history calendar](#dividend-history-calendar)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History Calendar* |
 | `FinancialHistoricalYearPrefixGoogleSheetName` | the **prefix** of [Financial year historical](#financial-year-historical)'s Sheets — the financial year on screen is added to the end, so each year keeps its own; empty means *Financial Balance ETFs or Stocks Financial Year Historical* |
 | `YearlySummaryGoogleSheetName` | what [Yearly summary](#yearly-summary)'s Sheet is called; empty means *Financial Balance Yearly Summary* |
 | `ForecastDividendCalendarGoogleSheetName` | what [Forecast dividend calendar](#forecast-dividend-calendar)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Forecast Dividend Calendar* |
 
-All seven ship empty. Until the id and secret are filled in,
+All eight ship empty. Until the id and secret are filled in,
 [Generate to Google Drive](#generate-to-google-drive) says what it needs and does nothing else
-on any of the five pages. The Sheet names are optional and have defaults; each page reads only
+on any of the six pages. The Sheet names are optional and have defaults; each page reads only
 its own, so setting one does not affect the others.
 
 The `.mdb` files carry a database password. It is embedded in the source and in `app.config`, so

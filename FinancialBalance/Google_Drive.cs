@@ -67,6 +67,11 @@ namespace FinancialBalance
         const string DefaultForecastDividendCalendarSheetName =
             "Financial Balance ETFs or Stocks Forecast Dividend Calendar";
 
+        //A whole name, for the same reason : the window always ends with the current month,
+        //so each run replaces the last.
+        const string DefaultDividendHistoryCalendarSheetName =
+            "Financial Balance ETFs or Stocks Dividend History Calendar";
+
         //A whole name, not a prefix : Yearly Summary sends every year in the one workbook, a tab
         //each, so there is nothing for a name to vary by.
         const string DefaultYearlySummarySheetName = "Financial Balance Yearly Summary";
@@ -99,6 +104,12 @@ namespace FinancialBalance
         {
             return Named_Sheet("ForecastDividendCalendarGoogleSheetName",
                                DefaultForecastDividendCalendarSheetName);
+        }
+
+        public static string Dividend_History_Calendar_Sheet_Name()
+        {
+            return Named_Sheet("DividendHistoryCalendarGoogleSheetName",
+                               DefaultDividendHistoryCalendarSheetName);
         }
 
         public static string Yearly_Summary_Sheet_Name()

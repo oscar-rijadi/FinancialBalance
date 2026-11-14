@@ -42,24 +42,24 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="FinancialBalance.exe" size="1142272">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="FinancialBalance.exe" size="1160704">
       <assemblyIdentity name="FinancialBalance" version="1.0.0.7" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>aDi0ewdZw9lWHNWDbqnlJjqXWSicLO6I92xWvLJi0HQ=</dsig:DigestValue>
+        <dsig:DigestValue>OiD/i4i8re8fvmg8i0dRv6H8DtpFYM+ZvuRVevI3x+0=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="FinancialBalance.exe.config" size="3206">
+  <file name="FinancialBalance.exe.config" size="3591">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>cZNSqDecaPrPXRE4cwbmgxalzYbt1JRhywSyiNb3rS8=</dsig:DigestValue>
+      <dsig:DigestValue>6B28soToGA0Pt604OaO6ys6cjW4ikoJBkGUazgoTdts=</dsig:DigestValue>
     </hash>
   </file>
   <file name="images\Project1.ico" size="1078">
