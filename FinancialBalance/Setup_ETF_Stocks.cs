@@ -871,7 +871,7 @@ namespace FinancialBalance
         private void Clear_Grid()
         {
             gvETFStocks.Columns.Clear();
-            gvETFStocks.ColumnCount = 6;
+            gvETFStocks.ColumnCount = 7;
             gvETFStocks.Columns[0].Name = "Ticker";
             gvETFStocks.Columns[0].FillWeight = 14;
             gvETFStocks.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
@@ -896,6 +896,10 @@ namespace FinancialBalance
             gvETFStocks.Columns[5].FillWeight = 18;
             gvETFStocks.Columns[5].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
             gvETFStocks.Columns[5].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvETFStocks.Columns[6].Name = "Look-Through";
+            gvETFStocks.Columns[6].FillWeight = 17;
+            gvETFStocks.Columns[6].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            gvETFStocks.Columns[6].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
         }
 
         private void Get_Data()
@@ -907,7 +911,8 @@ namespace FinancialBalance
             string[] row;
 
             Mdl1.Ssql = "select Ticker, Exchange_Suffix, Full_Ticker,"
-                      + " Distribution_Dividend_Yield, Distribution_Dividend_Interval, Expense_Ratio"
+                      + " Distribution_Dividend_Yield, Distribution_Dividend_Interval, Expense_Ratio,"
+                      + " Look_Through_Ticker"
                       + " from TblETFStocks order by Full_Ticker";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
             OleDbDataReader reader = cmd.ExecuteReader();
@@ -920,7 +925,8 @@ namespace FinancialBalance
                                          reader["Full_Ticker"].ToString().Trim(),
                                          Percent(Read_Double(reader["Distribution_Dividend_Yield"])),
                                          reader["Distribution_Dividend_Interval"].ToString().Trim(),
-                                         Percent(Read_Double(reader["Expense_Ratio"])) };
+                                         Percent(Read_Double(reader["Expense_Ratio"])),
+                                         reader["Look_Through_Ticker"].ToString().Trim() };
                     gvETFStocks.Rows.Add(row);
                 }
             }
@@ -956,6 +962,8 @@ namespace FinancialBalance
             txtExpenseRatio.Text = Read_Double(gvETFStocks.CurrentRow.Cells[5].Value.ToString()
                                        .Replace("%", "").Replace(",", "").Trim())
                                    .ToString("0.00", CultureInfo.InvariantCulture);
+            txtLookThrough.Text = (gvETFStocks.CurrentRow.Cells[6].Value == null
+                                   ? "" : gvETFStocks.CurrentRow.Cells[6].Value.ToString().Trim());
             Filling = false;
 
             Calculate_Full_Ticker();
@@ -981,6 +989,17 @@ namespace FinancialBalance
 
                 Calculate_Full_Ticker();
 
+                //Only ever read by ETF/Stock Investment Plan Top Holdings: blank means the ticker is
+                //looked up as itself.  Pointing a ticker at itself would say the same thing, so it
+                //is stored blank rather than as a loop that only looks like a setting.
+                string TmpLookThrough = txtLookThrough.Text.Trim().ToUpper();
+                if (TmpLookThrough == Full_Ticker.Text.Trim().ToUpper())
+                {
+                    TmpLookThrough = "";
+                }
+                string TmpLookThroughSql = (TmpLookThrough == ""
+                                            ? "Null" : "'" + TmpLookThrough.Replace("'", "''") + "'");
+
                 Mdl1.Ssql = "select * from TblETFStocks where Full_Ticker = '" + Full_Ticker.Text.Trim() + "'";
                 OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
                 OleDbDataReader reader = cmd.ExecuteReader();
@@ -998,12 +1017,13 @@ namespace FinancialBalance
                 {
                     Mdl1.Ssql = "Insert into TblETFStocks (Ticker, Exchange_Suffix, Full_Ticker,"
                               + " Distribution_Dividend_Yield,"
-                              + " Distribution_Dividend_Interval, Expense_Ratio) values ('"
+                              + " Distribution_Dividend_Interval, Expense_Ratio, Look_Through_Ticker) values ('"
                               + Ticker.Text.Trim() + "', '" + CmbExchangeSuffix.Text.Trim() + "', '"
                               + Full_Ticker.Text.Trim() + "', "
                               + Read_Box(txtYield).ToString("0.00", CultureInfo.InvariantCulture) + ", '"
                               + CmbInterval.Text.Trim().Replace("'", "''") + "', "
-                              + Read_Box(txtExpenseRatio).ToString("0.00", CultureInfo.InvariantCulture) + ")";
+                              + Read_Box(txtExpenseRatio).ToString("0.00", CultureInfo.InvariantCulture) + ", "
+                              + TmpLookThroughSql + ")";
                 }
                 else
                 {
@@ -1014,6 +1034,7 @@ namespace FinancialBalance
                               + ", Distribution_Dividend_Interval = '" + CmbInterval.Text.Trim().Replace("'", "''")
                               + "', Expense_Ratio = "
                               + Read_Box(txtExpenseRatio).ToString("0.00", CultureInfo.InvariantCulture)
+                              + ", Look_Through_Ticker = " + TmpLookThroughSql
                               + " where Full_Ticker = '" + Full_Ticker.Text.Trim() + "'";
                 }
                 cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);

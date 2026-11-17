@@ -59,6 +59,7 @@
             this.MnYearSummGraph = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStockPortfolioGroup = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlan = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksInvPlanTopHoldings = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksInvPlanByAmount = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksForecastDivCalendar = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksForecastDivAllocation = new System.Windows.Forms.ToolStripMenuItem();
@@ -368,6 +369,7 @@
             this.MnETFStocksFYHistorical,
             this.MnETFStocksTickerHistorical,
             this.MnETFStocksInvPlan,
+            this.MnETFStocksInvPlanTopHoldings,
             this.MnETFStocksInvPlanByAmount,
             this.MnETFStocksForecastDivCalendar,
             this.MnETFStocksForecastDivAllocation});
@@ -381,6 +383,13 @@
             this.MnETFStocksInvPlan.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksInvPlan.Text = "ETF/Stock In&vestment Plan";
             this.MnETFStocksInvPlan.Click += new System.EventHandler(this.MnETFStocksInvPlan_Click);
+            //
+            // MnETFStocksInvPlanTopHoldings
+            //
+            this.MnETFStocksInvPlanTopHoldings.Name = "MnETFStocksInvPlanTopHoldings";
+            this.MnETFStocksInvPlanTopHoldings.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksInvPlanTopHoldings.Text = "ETF/Stock Investment Plan To&p Holdings";
+            this.MnETFStocksInvPlanTopHoldings.Click += new System.EventHandler(this.MnETFStocksInvPlanTopHoldings_Click);
             // 
             // MnETFStocksInvPlanByAmount
             // 
@@ -1193,6 +1202,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnYearSummGraph;
         public System.Windows.Forms.ToolStripMenuItem MnETFStockPortfolioGroup;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlan;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanTopHoldings;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksInvPlanByAmount;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksForecastDivCalendar;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksForecastDivAllocation;

@@ -238,6 +238,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksInvPlanTopHoldings_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Investment_Plan_Top_Holdings ETF_Stocks_Investment_Plan_Top_Holdings = new ETF_Stocks_Investment_Plan_Top_Holdings();
+            ETF_Stocks_Investment_Plan_Top_Holdings.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksInvPlanSetup_Click(object sender, EventArgs e)
         {
             Setup_ETF_Stocks_Investment_Plan Setup_ETF_Stocks_Investment_Plan = new Setup_ETF_Stocks_Investment_Plan();

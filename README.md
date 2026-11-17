@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Dividend History Calendar, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Ticker Historical Data, ETF/Stock Investment Plan, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Dividend History Calendar, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Ticker Historical Data, ETF/Stock Investment Plan, ETF/Stock Investment Plan Top Holdings, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
 | `Inquiry` | **Yearly** | Yearly Statistic, Yearly Summary, Yearly Summary Graph |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
@@ -163,6 +163,7 @@ flowchart LR
     PORTG --> PFYH["ETF_Stocks_FY_Historical"]
     PORTG --> PTHD["ETF_Stocks_Ticker_Historical_Data"]
     PORTG --> PIVP["ETF_Stocks_Investment_Plan"]
+    PORTG --> PIVT["ETF_Stocks_Investment_Plan_Top_Holdings"]
     PORTG --> PIVA["ETF_Stocks_Investment_Plan_By_Amount"]
     PORTG --> PFDC["ETF_Stocks_Forecast_Dividend_Calendar"]
     PORTG --> PFDA["ETF_Stocks_Forecast_Dividend_Allocation"]
@@ -246,6 +247,7 @@ flowchart LR
 | `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads five ETF/stock tables and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Allocation` | Shown as **ETF/Stock Forecast Dividend Allocation**. Build a list of tickers and amounts, and see what that money would pay: each ticker's yield, its yearly distribution and its share of the whole, with the totals per year, per month and as one yield. Reads `TblETFStocks` and writes nothing. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
+| `ETF_Stocks_Investment_Plan_Top_Holdings` | Shown as **ETF/Stock Investment Plan Top Holdings**. Chooses a plan, shows its **Full Ticker** and **Allocation** table, and on **Get Top 10 Holding** looks each ticker up on Yahoo Finance to show the ten companies the plan holds most of, through its funds. A ticker can be looked through another fund set as its Look-Through Ticker in ETF/Stock Setup. Exports to Excel. Reads the plan tables and `TblETFStocks`, and writes nothing. See [Investment plan top holdings](#investment-plan-top-holdings). |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
 | `Tax_Deductable_Interest_Calculator` | Shown as **Tax Deductable Interest Calculator**. Splits an interest *rate* into bands, taxes each at its own rate, and says what rate is left. Percentages throughout, no money. Reads `TblTaxAllocation` and writes nothing. |
@@ -381,6 +383,7 @@ erDiagram
         decimal Distribution_Dividend_Yield "2 dp, a percentage"
         text Distribution_Dividend_Interval "20 chars, from TblInterval, may be blank"
         decimal Expense_Ratio "2 dp, a percentage"
+        text Look_Through_Ticker "31 chars, may be blank"
     }
     TblInterval {
         text Name PK "20 chars"
@@ -648,6 +651,21 @@ holds `0.00`. Nothing calculates from it yet. The column was added with
 `ALTER TABLE TblETFStocks ADD COLUMN Expense_Ratio DECIMAL(22,2)`, so it sits last, and rows
 that predate it hold `Null` until they are fetched or saved — which reads as `0.00`, the same
 way an empty yield does.
+
+And **whose holdings stand in for it**: `Look_Through_Ticker`, a `TEXT(31)` the same length as
+`Full_Ticker`, normally `Null`. Only [Investment plan top holdings](#investment-plan-top-holdings)
+reads it. When it is set, that page looks the holding up **through this ticker instead**. An
+example is `JEPQ` for `JPEQ.AX`, the ASX fund that invests in JPMorgan's US fund: Yahoo lists
+JEPQ's holdings but has none for JPEQ.AX. It is stored upper case, `Null` when blank, and never
+equal to the row's own `Full_Ticker`; saving a ticker pointed at itself stores `Null`. The column
+was added with `ALTER TABLE TblETFStocks ADD COLUMN Look_Through_Ticker TEXT(31)`, so it sits
+after `Expense_Ratio`.
+
+> **This is a schema change, and this build needs it.** ETF/Stock Setup and Investment Plan Top
+> Holdings both name the column in a `SELECT`, so against a database without it they fail at the
+> first read. An older build runs fine against a migrated database, since it never asks for the
+> column. The column was added to `Sample Database/` and the two copies under `bin/`. The live
+> database has to be migrated with the same `ALTER TABLE` before this build replaces the exe beside it.
 
 #### Intervals
 
@@ -3918,6 +3936,7 @@ C#.Net/
 │   ├── ETF_Stocks_Forecast_Dividend_Calendar.*  # twelve months of expected income
 │   ├── ETF_Stocks_Forecast_Dividend_Allocation.*  # what a mix of amounts would pay
 │   ├── ETF_Stocks_Investment_Plan.*   # a plan applied to an amount
+│   ├── ETF_Stocks_Investment_Plan_Top_Holdings.*  # a plan looked through to its top companies
 │   ├── Compound_Interest_Calculator.*  # savings growth, no database
 │   ├── Dividend_Snowball_Calculator.*  # dividend income growth, no database
 │   ├── Tax_Deductable_Interest_Calculator.*  # interest rate after tax, reads TblTaxAllocation
@@ -4086,23 +4105,26 @@ Things worth knowing before changing this code.
 - **`decimal` columns are read through `double`**, which introduces rounding on large IDR figures.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
-- **Three pages reach the network**, and only these three: `ETF_Stocks_Price` on either of its
+- **Four pages reach the network**, and only these four: `ETF_Stocks_Price` on either of its
   two price buttons — the one page that talks to **two** hosts, the ASX for its own listings
   and Yahoo for the rest — `Setup_ETF_Stocks` on either Yahoo button or
-  **Get All Expense Ratio**, and
-  `Setup_Curr_Rate` on **Get Latest Currency** or **Get All Latest Currency**. All three force
+  **Get All Expense Ratio**,
+  `Setup_Curr_Rate` on **Get Latest Currency** or **Get All Latest Currency**, and
+  `ETF_Stocks_Investment_Plan_Top_Holdings` on **Get Top 10 Holding**. All four force
   TLS 1.2, set a `User-Agent`, and run on the UI thread — the form freezes for the duration.
-  The four bulk buttons — **Get Latest Price**, **Get All Latest Currency**,
-  **Get All Dividend Yield from Yahoo Finance** and **Get All Expense Ratio** — make one request
-  per ticker or per currency in sequence, so that freeze scales with how many there are; the
-  other three make one each.
+  The five bulk buttons — **Get Latest Price**, **Get All Latest Currency**,
+  **Get All Dividend Yield from Yahoo Finance**, **Get All Expense Ratio** and
+  **Get Top 10 Holding** — make one request per ticker or per currency in sequence, so that
+  freeze scales with how many there are; the other three make one each.
   Yahoo's endpoint is undocumented and can change without notice — the `quote` and
   `quoteSummary` endpoints already have, which is why the yield is computed from dividend
-  events rather than read from a field. **Get All Expense Ratio** is the one place that does
-  call `quoteSummary`, by first collecting the cookie and crumb it now insists on, and the one
-  place anything talks to a host other than Yahoo: ASX tickers are asked of
+  events rather than read from a field. **Get All Expense Ratio** and **Get Top 10 Holding**
+  are the two places that do call `quoteSummary`, each by first collecting the cookie and crumb it
+  now insists on. Both also talk to a host other than Yahoo, as the price buttons do:
   `asx.api.markitdigital.com`, the research API behind asx.com.au, which is just as
-  undocumented. See [Get All Expense Ratio](#get-all-expense-ratio).
+  undocumented. **Get All Expense Ratio** asks it for every ASX ticker's fee. **Get Top 10 Holding**
+  asks it only to check an ASX ticker Yahoo calls a share. See [Get All Expense Ratio](#get-all-expense-ratio)
+  and [When Yahoo calls a fund a share](#when-yahoo-calls-a-fund-a-share).
 - **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
   `Setup_ETF_Stocks_Flag` is displayed as **ETF/Stock Portfolio Code Setup**, and on
   `ETF_Stocks_Purchase` and `ETF_Stocks_Sale` the dropdown is labelled **Portfolio** and the grid column
@@ -4781,6 +4803,97 @@ out, so it cannot drift from the form it belongs to. The date and time are separ
 underscore here, unlike the other exports' unbroken `yyyyMMddHHmmss`. An export with nothing on
 screen is refused rather than writing an empty workbook, and every cell is written as **text** for
 the reason given under [Excel exports](#excel-exports).
+
+---
+
+### Investment plan top holdings
+
+`Inquiry` ▸ ETF/Stock ▸ ETF/Stock Investment Plan Top Holdings takes a plan from
+[Investment plans](#investment-plans) and answers **which companies the plan actually ends up
+owning** once each fund is looked through. It is read-only: nothing on it writes to the database.
+
+On the left, the **Investment Plan** dropdown fills the same **Full Ticker** / **Allocation** table
+as [Applying an investment plan](#applying-an-investment-plan), and the note above it gives how many
+allocations there are and what they total. On the right, the **Get Top 10 Holding** button beside the
+dropdown fills the top holdings table.
+
+#### Get Top 10 Holding
+
+The button takes the plan's **Full Ticker** and **Allocation** rows and asks Yahoo Finance about each
+ticker. It uses the same `quoteSummary` endpoint, cookie and crumb as
+[Get All Expense Ratio](#get-all-expense-ratio), with the `quoteType` and `topHoldings` modules.
+
+- **A fund** (an ETF, ASX or US) answers with its own top holdings, normally ten, and each one's
+  weight in the fund.
+- **A share** (`quoteType` `EQUITY`) has no holdings. It is counted as the company itself, at 100 %
+  of its allocation.
+- **A ticker with a [Look-Through Ticker](#look-through-ticker)** set in ETF/Stock Setup is not
+  asked about at all. The look-through ticker is asked instead, and its holdings are used at this
+  ticker's allocation. **Held Through** then reads e.g. `JPEQ.AX via JEPQ 6.99 %`, and the note
+  says how many tickers were looked through this way.
+
+##### When Yahoo calls a fund a share
+
+Yahoo files some ASX funds as `EQUITY`, among them `JPEQ.AX` and `VVLU.AX`, and returns no holdings
+for them. Taken at its word, the page would count the whole fund as **one company** at its full
+allocation and push a real company out of the ten. So when Yahoo says *share* about a ticker with
+the `AX` suffix, the page asks the ASX research API whether it is one. It uses the same
+`key-statistics` request and the same test as [Get All Expense Ratio](#get-all-expense-ratio): a
+fund always carries a `nav` and a company never does.
+
+| Yahoo says | ASX `nav` | Treated as |
+| --- | --- | --- |
+| `EQUITY` | absent, e.g. `BHP`, `CBA` | a share: the company itself at 100 % |
+| `EQUITY` | present, e.g. `JPEQ`, `VVLU` | **not looked through**. It is listed in the note as *Yahoo Finance lists no holdings for … it reports this fund as a share*, with a pointer to the Look-Through Ticker setting |
+| `EQUITY` | the ASX does not answer | a share, since Yahoo's word is all there is |
+
+The check is skipped for tickers without the `AX` suffix and for look-through tickers. A
+look-through ticker was chosen by hand, so if it turns out to be a share, it is taken as that
+company.
+
+Each company's allocation in the plan is then
+
+```
+Allocation = ticker's Allocation in the plan × company's weight in that ticker / 100
+```
+
+**added up across every ticker that holds it**, keyed by Yahoo's symbol. So `BHP.AX` held through
+both `VAS.AX` and `A200.AX` is one row. The ten largest are shown, largest first:
+
+| Column | Holds |
+| --- | --- |
+| **Rank** | 1 to 10 |
+| **Symbol** | Yahoo's symbol for the company, e.g. `BHP.AX`, `TXN` |
+| **Company** | its name as Yahoo gives it |
+| **Allocation** | its share of the whole plan, from the formula above |
+| **Held Through** | each ticker it comes from, with its weight in that ticker, e.g. `VAS.AX 11.19 %, A200.AX 11.78 %` |
+
+The note above the table says how many companies were found in all, what the ten add up to as a
+share of the plan, and how many of the plan's tickers answered. Any ticker that could not be looked
+through is listed with the reason: Yahoo does not recognise it, lists no holdings for it, reports a
+fund as a share, or could not be reached. That ticker is left out of the figures rather than
+guessed at.
+
+> **Each fund contributes only the holdings Yahoo lists for it**, which is its top ten. A company
+> that sits lower down in some fund is missing that part of its weight, so the figures are a floor
+> for each company, not its exact look-through weight. Companies outside every fund's top ten do not
+> appear at all.
+
+The table is **cleared whenever a different plan is chosen**, since what it shows belongs to the plan
+it was looked up for. Each click asks Yahoo again, one request per ticker on the UI thread. The page
+freezes until it finishes, and its buttons and dropdown are disabled meanwhile.
+
+#### The Excel export
+
+**Generate to Excel** writes one sheet: the plan, the two notes, the allocation table, then the top
+holdings table. It is refused until **Get Top 10 Holding** has filled the table, since the holdings
+are the point of the page. The file is named
+
+```
+ETF_Stocks_Investment_Plan_Top_Holdings_yyyyMMddHHmmss_<investment plan>.xlsx
+```
+
+with every cell written as **text** for the reason given under [Excel exports](#excel-exports).
 
 ---
 
@@ -6009,7 +6122,7 @@ invariantly, the way every other number this application writes as a bare SQL li
 ### ETF/Stock Setup
 
 `Administration` ▸ ETF/Stock ▸ ETF/Stock Setup maintains `TblETFStocks`. The entry area takes
-seven fields, of which one is never typed:
+eight fields, of which one is never typed:
 
 | Field | Control | Holds |
 | --- | --- | --- |
@@ -6019,6 +6132,30 @@ seven fields, of which one is never typed:
 | Distribution/Dividend Yield | text, digits and a point | a percentage, 2 dp |
 | Distribution/Dividend Interval | dropdown, blank plus `TblInterval` | how often it pays |
 | Expense Ratio | text, digits and a point | a percentage, 2 dp |
+| Look-Through Ticker | text, upper-cased as typed, optional | another ticker whose holdings stand in for this one — see below |
+
+The grid shows it as a **Look-Through** column after **Expense Ratio**.
+
+#### Look-Through Ticker
+
+Leave it blank for almost everything. It exists for a fund that
+[Investment plan top holdings](#investment-plan-top-holdings) cannot look through by itself because
+Yahoo Finance publishes no holdings for it, but which invests through another fund that Yahoo does
+cover. Typing that fund's ticker here makes the page use **its** holdings, at this ticker's
+allocation:
+
+| Full Ticker | Look-Through Ticker | Why |
+| --- | --- | --- |
+| `JPEQ.AX` | `JEPQ` | JPEQ.AX is the ASX listing of JPMorgan's Nasdaq Equity Premium Income strategy and invests in the US fund JEPQ. Yahoo lists JEPQ's top holdings but none for JPEQ.AX. |
+
+It is the **Yahoo** ticker, written as Yahoo writes it: `JEPQ`, or `VAS.AX` for an ASX fund. It is
+not checked against `TblETFStocks`, since the fund it names is usually not one you hold. Nothing
+else in the application reads it: prices, yields, expense ratios and every other page still treat
+the ticker as itself.
+
+A fund with no such twin, such as **`VVLU.AX`** (Vanguard Global Value Equity Active), stays
+blank. Its holdings are published only on Vanguard's own site, so the top holdings page reports it
+as not looked through.
 
 #### The In Yahoo Finance flag, and why it is gone
 

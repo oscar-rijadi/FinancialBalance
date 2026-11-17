@@ -67,6 +67,9 @@
             this.CmbInterval = new System.Windows.Forms.ComboBox();
             this.Label7 = new System.Windows.Forms.Label();
             this.txtExpenseRatio = new System.Windows.Forms.TextBox();
+            this.Label8 = new System.Windows.Forms.Label();
+            this.txtLookThrough = new System.Windows.Forms.TextBox();
+            this.LblLookThroughHint = new System.Windows.Forms.Label();
             this.CmdGetYield = new System.Windows.Forms.Button();
             this.CmdGetAllYield = new System.Windows.Forms.Button();
             this.CmdGetAllExpenseRatio = new System.Windows.Forms.Button();
@@ -85,7 +88,7 @@
             this.CmdBack.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CmdBack.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdBack.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdBack.Location = new System.Drawing.Point(484, 470);
+            this.CmdBack.Location = new System.Drawing.Point(484, 496);
             this.CmdBack.Name = "CmdBack";
             this.CmdBack.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdBack.Size = new System.Drawing.Size(89, 27);
@@ -313,7 +316,7 @@
             this.CmdDel.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdDel.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdDel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdDel.Location = new System.Drawing.Point(396, 470);
+            this.CmdDel.Location = new System.Drawing.Point(396, 496);
             this.CmdDel.Name = "CmdDel";
             this.CmdDel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdDel.Size = new System.Drawing.Size(73, 25);
@@ -387,13 +390,45 @@
             this.txtExpenseRatio.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtExpenseRatio.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Amount_KeyPress);
             //
+            // Label8
+            //
+            this.Label8.BackColor = System.Drawing.Color.Transparent;
+            this.Label8.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label8.ForeColor = System.Drawing.Color.Black;
+            this.Label8.Location = new System.Drawing.Point(16, 432);
+            this.Label8.Name = "Label8";
+            this.Label8.Size = new System.Drawing.Size(200, 20);
+            this.Label8.TabIndex = 29;
+            this.Label8.Text = "Look-Through Ticker";
+            //
+            // txtLookThrough
+            //
+            this.txtLookThrough.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            this.txtLookThrough.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtLookThrough.Location = new System.Drawing.Point(224, 430);
+            this.txtLookThrough.MaxLength = 31;
+            this.txtLookThrough.Name = "txtLookThrough";
+            this.txtLookThrough.Size = new System.Drawing.Size(140, 20);
+            this.txtLookThrough.TabIndex = 30;
+            //
+            // LblLookThroughHint
+            //
+            this.LblLookThroughHint.BackColor = System.Drawing.Color.Transparent;
+            this.LblLookThroughHint.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblLookThroughHint.ForeColor = System.Drawing.Color.DimGray;
+            this.LblLookThroughHint.Location = new System.Drawing.Point(372, 426);
+            this.LblLookThroughHint.Name = "LblLookThroughHint";
+            this.LblLookThroughHint.Size = new System.Drawing.Size(220, 30);
+            this.LblLookThroughHint.TabIndex = 31;
+            this.LblLookThroughHint.Text = "optional - whose holdings to use for this ticker, e.g. JEPQ";
+            //
             // CmdGetYield
             // 
             this.CmdGetYield.BackColor = System.Drawing.SystemColors.Control;
             this.CmdGetYield.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetYield.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetYield.Location = new System.Drawing.Point(43, 436);
+            this.CmdGetYield.Location = new System.Drawing.Point(43, 462);
             this.CmdGetYield.Name = "CmdGetYield";
             this.CmdGetYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetYield.Size = new System.Drawing.Size(250, 27);
@@ -408,7 +443,7 @@
             this.CmdGetAllYield.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetAllYield.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetAllYield.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetAllYield.Location = new System.Drawing.Point(308, 436);
+            this.CmdGetAllYield.Location = new System.Drawing.Point(308, 462);
             this.CmdGetAllYield.Name = "CmdGetAllYield";
             this.CmdGetAllYield.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetAllYield.Size = new System.Drawing.Size(265, 27);
@@ -423,7 +458,7 @@
             this.CmdGetAllExpenseRatio.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdGetAllExpenseRatio.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdGetAllExpenseRatio.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdGetAllExpenseRatio.Location = new System.Drawing.Point(43, 470);
+            this.CmdGetAllExpenseRatio.Location = new System.Drawing.Point(43, 496);
             this.CmdGetAllExpenseRatio.Name = "CmdGetAllExpenseRatio";
             this.CmdGetAllExpenseRatio.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdGetAllExpenseRatio.Size = new System.Drawing.Size(250, 27);
@@ -438,7 +473,7 @@
             this.CmdSetup.Cursor = System.Windows.Forms.Cursors.Default;
             this.CmdSetup.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CmdSetup.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CmdSetup.Location = new System.Drawing.Point(308, 470);
+            this.CmdSetup.Location = new System.Drawing.Point(308, 496);
             this.CmdSetup.Name = "CmdSetup";
             this.CmdSetup.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.CmdSetup.Size = new System.Drawing.Size(73, 25);
@@ -546,7 +581,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(247)))), ((int)(((byte)(238)))));
             this.CancelButton = this.CmdBack;
-            this.ClientSize = new System.Drawing.Size(616, 516);
+            this.ClientSize = new System.Drawing.Size(616, 542);
             this.ControlBox = false;
             this.Controls.Add(this.gvETFStocks);
             this.Controls.Add(this.Label3);
@@ -555,6 +590,9 @@
             this.Controls.Add(this.CmdGetYield);
             this.Controls.Add(this.CmdGetAllYield);
             this.Controls.Add(this.CmdGetAllExpenseRatio);
+            this.Controls.Add(this.LblLookThroughHint);
+            this.Controls.Add(this.txtLookThrough);
+            this.Controls.Add(this.Label8);
             this.Controls.Add(this.txtExpenseRatio);
             this.Controls.Add(this.Label7);
             this.Controls.Add(this.CmbInterval);
@@ -625,6 +663,9 @@
         public System.Windows.Forms.ComboBox CmbInterval;
         public System.Windows.Forms.Label Label7;
         public System.Windows.Forms.TextBox txtExpenseRatio;
+        public System.Windows.Forms.Label Label8;
+        public System.Windows.Forms.TextBox txtLookThrough;
+        public System.Windows.Forms.Label LblLookThroughHint;
         public System.Windows.Forms.Button CmdGetYield;
         public System.Windows.Forms.Button CmdGetAllYield;
         public System.Windows.Forms.Button CmdGetAllExpenseRatio;
