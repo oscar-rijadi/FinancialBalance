@@ -247,7 +247,7 @@ flowchart LR
 | `ETF_Stocks_Forecast_Dividend_Calendar` | Shown as **ETF/Stock Forecast Dividend Calendar**. What the current portfolio is due to pay, month by month, for the next twelve months — worked out from what each holding is worth today and the yield and interval on record, and placed by its payment history. Exports to Excel and to Google Drive. Reads five ETF/stock tables and writes nothing. |
 | `ETF_Stocks_Forecast_Dividend_Allocation` | Shown as **ETF/Stock Forecast Dividend Allocation**. Build a list of tickers and amounts, and see what that money would pay: each ticker's yield, its yearly distribution and its share of the whole, with the totals per year, per month and as one yield. Reads `TblETFStocks` and writes nothing. |
 | `ETF_Stocks_Investment_Plan` | Shown as **ETF/Stock Investment Plan**. Applies an investment plan to an amount of money: what each ticker's share comes to, the same three diversification pies, and an Excel export. |
-| `ETF_Stocks_Investment_Plan_Top_Holdings` | Shown as **ETF/Stock Investment Plan Top Holdings**. Chooses a plan, shows its **Full Ticker** and **Allocation** table, and on **Get Top 10 Holding** looks each ticker up on Yahoo Finance to show the ten companies the plan holds most of, through its funds. A ticker can be looked through another fund set as its Look-Through Ticker in ETF/Stock Setup. Exports to Excel. Reads the plan tables and `TblETFStocks`, and writes nothing. See [Investment plan top holdings](#investment-plan-top-holdings). |
+| `ETF_Stocks_Investment_Plan_Top_Holdings` | Shown as **ETF/Stock Investment Plan Top Holdings**. Chooses a plan, shows its **Full Ticker** and **Allocation** table, and on **Get Top 10 Holding** looks each ticker up on Yahoo Finance, falling back to Vanguard's own site for a Vanguard ETF Yahoo has no holdings for, to show the ten companies the plan holds most of, through its funds. A ticker can be looked through another fund set as its Look-Through Ticker in ETF/Stock Setup. Exports to Excel. Reads the plan tables and `TblETFStocks`, and writes nothing. See [Investment plan top holdings](#investment-plan-top-holdings). |
 | `Compound_Interest_Calculator` | Shown as **Compound Interest Calculator**. Works out what savings grow to, with a year-by-year chart and table. Reads and writes nothing. |
 | `Dividend_Snowball_Calculator` | Shown as **Dividend Snowball Calculator**. Projects a dividend income stream year by year — contributions, a growing yield, reinvestment — and how long a target income takes to reach. Reads and writes nothing. |
 | `Tax_Deductable_Interest_Calculator` | Shown as **Tax Deductable Interest Calculator**. Splits an interest *rate* into bands, taxes each at its own rate, and says what rate is left. Percentages throughout, no money. Reads `TblTaxAllocation` and writes nothing. |
@@ -4123,8 +4123,12 @@ Things worth knowing before changing this code.
   now insists on. Both also talk to a host other than Yahoo, as the price buttons do:
   `asx.api.markitdigital.com`, the research API behind asx.com.au, which is just as
   undocumented. **Get All Expense Ratio** asks it for every ASX ticker's fee. **Get Top 10 Holding**
-  asks it only to check an ASX ticker Yahoo calls a share. See [Get All Expense Ratio](#get-all-expense-ratio)
-  and [When Yahoo calls a fund a share](#when-yahoo-calls-a-fund-a-share).
+  asks it only to check an ASX ticker Yahoo calls a share. **Get Top 10 Holding** is also the one
+  place that talks to a third host, `www.vanguard.com.au`, for the holdings of a Vanguard ETF Yahoo
+  has none for. Those are the requests Vanguard's own fund pages make, no more documented than the
+  rest. See [Get All Expense Ratio](#get-all-expense-ratio),
+  [When Yahoo calls a fund a share](#when-yahoo-calls-a-fund-a-share) and
+  [Vanguard, when Yahoo has nothing](#vanguard-when-yahoo-has-nothing).
 - **The older "Flag" naming survives inside the code.** Nothing on screen says Flag any more:
   `Setup_ETF_Stocks_Flag` is displayed as **ETF/Stock Portfolio Code Setup**, and on
   `ETF_Stocks_Purchase` and `ETF_Stocks_Sale` the dropdown is labelled **Portfolio** and the grid column
@@ -4844,12 +4848,53 @@ fund always carries a `nav` and a company never does.
 | Yahoo says | ASX `nav` | Treated as |
 | --- | --- | --- |
 | `EQUITY` | absent, e.g. `BHP`, `CBA` | a share: the company itself at 100 % |
-| `EQUITY` | present, e.g. `JPEQ`, `VVLU` | **not looked through**. It is listed in the note as *Yahoo Finance lists no holdings for … it reports this fund as a share*, with a pointer to the Look-Through Ticker setting |
+| `EQUITY` | present, e.g. `JPEQ`, `VVLU` | a fund Yahoo has no holdings for. **Vanguard is asked next** (below). If Vanguard has no holdings for it either, it is **not looked through** and is listed in the note as *Yahoo Finance lists no holdings for … it reports this fund as a share*, with a pointer to the Look-Through Ticker setting |
 | `EQUITY` | the ASX does not answer | a share, since Yahoo's word is all there is |
 
 The check is skipped for tickers without the `AX` suffix and for look-through tickers. A
 look-through ticker was chosen by hand, so if it turns out to be a share, it is taken as that
 company.
+
+##### Vanguard, when Yahoo has nothing
+
+Vanguard Australia publishes the holdings of every one of its ETFs on its own site, and the page
+reads them there. That is the issuer's own figure, and it covers funds Yahoo does not, such as
+`VVLU.AX`.
+
+It applies to a ticker with the `AX` suffix, asked about directly (not through a look-through
+ticker), **only when Yahoo has failed for it**. That means Yahoo did not recognise it, listed no
+holdings for it, could not be reached, or called it a share when the ASX says it is a fund. Funds
+Yahoo does cover, VAS included, stay on Yahoo.
+
+1. **Is it one of Vanguard's?** The page reads Vanguard's list of its ETFs once per click, and only if
+   some ticker needs it:
+   `https://www.vanguard.com.au/personal/api/products/personal/funds/etf`. That gives each ETF's ASX
+   code (`tradingSymbols.TICKER`) and its Vanguard id (`portId`): `VVLU` → `8202`, `VAS` → `8205`,
+   37 ETFs in all. A code not in the list belongs to another issuer, and the ticker is reported with
+   Yahoo's reason alone. Nothing needs setting up: the id is found from the ASX code.
+2. **Its top ten holdings:**
+   `https://www.vanguard.com.au/personal/api/data/products/holdings/<portId>?limit=10`, the same
+   request the Holdings tab on Vanguard's fund page makes. Each item carries `ticker`, `name` /
+   `longName`, `marketValPercent` (already a percentage, `0.58` for 0.58 %), `countryCode` and an
+   `effectiveDate`.
+
+**Held Through** then reads e.g. `VVLU.AX via Vanguard 0.58 %`. The note ends with *From Vanguard :
+VVLU.AX as at 30-Sep-2026*. Vanguard updates some funds monthly (VAS, VGS) and others quarterly
+(VVLU), so the date is worth reading.
+
+Vanguard gives **the bare exchange code**: `BHP`, not Yahoo's `BHP.AX`. So that a company met
+through a Vanguard fund and a Yahoo one is the same row, the code is written the way Yahoo writes
+it where the country says which exchange:
+
+| `countryCode` | Symbol used | Matched to other sources by |
+| --- | --- | --- |
+| `AU` | code + `.AX`, e.g. `BHP.AX` | symbol, then name |
+| `US` | code as is, e.g. `CRM` | symbol, then name |
+| anything else | code as is, e.g. `SHEL` | **name only**, since a bare code names no exchange and could belong to a different company elsewhere |
+
+Like Yahoo's and the ASX's, Vanguard's addresses are the ones its own pages use, not a published
+service, and can change without notice. When Vanguard cannot be reached the ticker is reported as
+not looked through, with both Yahoo's reason and Vanguard's.
 
 Each company's allocation in the plan is then
 
@@ -4857,31 +4902,41 @@ Each company's allocation in the plan is then
 Allocation = ticker's Allocation in the plan × company's weight in that ticker / 100
 ```
 
-**added up across every ticker that holds it**, keyed by Yahoo's symbol. So `BHP.AX` held through
-both `VAS.AX` and `A200.AX` is one row. The ten largest are shown, largest first:
+**added up across every ticker that holds it**. So `BHP.AX` held through both `VAS.AX` and
+`A200.AX` is one row. A company is found **by symbol first, then by name**. Names are compared with
+case and punctuation ignored and a trailing legal form dropped (`Inc`, `Corp`, `Co`, `Ltd`,
+`Limited`, `PLC`, `AG`, `SA`, `NV`, `SE`, `ASA`, `AB`, `SpA`, `LLC`). So *Texas Instruments Inc* and
+*TEXAS INSTRUMENTS INC.* are one company, while *Alphabet Inc Class A* and *Class C* stay two. The
+ten largest are shown, largest first:
 
 | Column | Holds |
 | --- | --- |
 | **Rank** | 1 to 10 |
-| **Symbol** | Yahoo's symbol for the company, e.g. `BHP.AX`, `TXN` |
-| **Company** | its name as Yahoo gives it |
+| **Symbol** | the company's symbol, Yahoo's form where it can be had, e.g. `BHP.AX`, `TXN` |
+| **Company** | its name as the first source to list it gives it |
 | **Allocation** | its share of the whole plan, from the formula above |
 | **Held Through** | each ticker it comes from, with its weight in that ticker, e.g. `VAS.AX 11.19 %, A200.AX 11.78 %` |
 
 The note above the table says how many companies were found in all, what the ten add up to as a
 share of the plan, and how many of the plan's tickers answered. Any ticker that could not be looked
 through is listed with the reason: Yahoo does not recognise it, lists no holdings for it, reports a
-fund as a share, or could not be reached. That ticker is left out of the figures rather than
-guessed at.
+fund as a share, or could not be reached, and Vanguard had nothing either. That ticker is left out
+of the figures rather than guessed at. When any ticker came from Vanguard, the note also gives the
+date its holdings are as at.
 
-> **Each fund contributes only the holdings Yahoo lists for it**, which is its top ten. A company
+> **Each fund contributes only its top ten holdings**, from Yahoo or Vanguard. A company
 > that sits lower down in some fund is missing that part of its weight, so the figures are a floor
 > for each company, not its exact look-through weight. Companies outside every fund's top ten do not
 > appear at all.
 
 The table is **cleared whenever a different plan is chosen**, since what it shows belongs to the plan
-it was looked up for. Each click asks Yahoo again, one request per ticker on the UI thread. The page
-freezes until it finishes, and its buttons and dropdown are disabled meanwhile.
+it was looked up for. Each click asks again, one request per ticker on the UI thread, plus the
+Vanguard list and one Vanguard request per ticker that needs them. The page freezes until it
+finishes, and its buttons and dropdown are disabled meanwhile.
+
+> **A Vanguard fund like `VVLU.AX` rarely moves the ten.** It holds around 930 companies and its
+> largest is under 0.6 %, so its top ten come to about 5 % of the fund. Even at 10 % of a plan, its
+> biggest company is about 0.06 % of the plan. Looking it up mostly makes the result complete.
 
 #### The Excel export
 
@@ -6154,8 +6209,10 @@ else in the application reads it: prices, yields, expense ratios and every other
 the ticker as itself.
 
 A fund with no such twin, such as **`VVLU.AX`** (Vanguard Global Value Equity Active), stays
-blank. Its holdings are published only on Vanguard's own site, so the top holdings page reports it
-as not looked through.
+blank. Being a Vanguard fund, it needs nothing set: the top holdings page reads its holdings from
+Vanguard's own site when Yahoo has none (see
+[Vanguard, when Yahoo has nothing](#vanguard-when-yahoo-has-nothing)). Set a Look-Through Ticker
+only for a fund that neither Yahoo nor Vanguard covers but that invests through one Yahoo does.
 
 #### The In Yahoo Finance flag, and why it is gone
 

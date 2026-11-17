@@ -46,6 +46,7 @@ namespace FinancialBalance
             public string Symbol;
             public string Name;
             public double Weight;   //a percentage of the fund, 11.19 for 11.19 %
+            public bool NameOnly;   //the symbol names no exchange, so it is matched by name alone
         }
 
         public ETF_Stocks_Investment_Plan_Top_Holdings()
@@ -480,6 +481,211 @@ namespace FinancialBalance
             }
         }
 
+        //---- Vanguard --------------------------------------------------------------
+        //
+        //Vanguard Australia's own site carries the holdings of every one of its ETFs, read by
+        //the fund's Vanguard id rather than its ASX code - VVLU is 8202, VAS 8205.  The list of
+        //funds that maps one to the other is asked for once per click, and only when a ticker
+        //actually needs it.  Like Yahoo's and the ASX's, these are the requests the site's own
+        //pages make, not a published service, and can change without notice.
+
+        const string VanguardBase = "https://www.vanguard.com.au/personal/api/";
+
+        //ASX code -> Vanguard id.  null until asked for; empty when the list could not be had.
+        Dictionary<string, string> Vanguard_Funds;
+        string Vanguard_Funds_Error = "";
+
+        private void Load_Vanguard_Funds()
+        {
+            if (Vanguard_Funds != null)
+            {
+                return;
+            }
+            Vanguard_Funds = new Dictionary<string, string>();
+            Vanguard_Funds_Error = "";
+
+            try
+            {
+                string Json = Download(VanguardBase + "products/personal/funds/etf", null);
+                JavaScriptSerializer Serializer = new JavaScriptSerializer();
+                Serializer.MaxJsonLength = int.MaxValue;
+                object[] Rows = Json_Get(Serializer.DeserializeObject(Json), "data") as object[];
+                if (Rows == null)
+                {
+                    Vanguard_Funds_Error = "Vanguard's list of ETFs came back empty.";
+                    return;
+                }
+                foreach (object Row in Rows)
+                {
+                    if (Json_Text(Row, "productType").ToLower() != "etf")
+                    {
+                        continue;
+                    }
+                    string TmpCode = Json_Text(Json_Get(Row, "tradingSymbols"), "TICKER").ToUpper();
+                    string TmpId = Json_Text(Row, "portId");
+                    if (TmpCode != "" && TmpId != "")
+                    {
+                        Vanguard_Funds[TmpCode] = TmpId;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Vanguard_Funds_Error = "Could not reach Vanguard : " + ex.Message;
+            }
+        }
+
+        //The top ten holdings Vanguard publishes for one of its ETFs, asked by the bare ASX code.
+        //Returns false with parError blank when the code is simply not a Vanguard fund, so the
+        //caller can tell "not ours to ask" from "asked and failed".
+        private bool Fetch_Vanguard_Holdings(string parCode, out List<Holding> parHoldings,
+                                             out string parAsOf, out string parError)
+        {
+            parHoldings = new List<Holding>();
+            parAsOf = "";
+            parError = "";
+
+            Load_Vanguard_Funds();
+            string TmpId;
+            if (!Vanguard_Funds.TryGetValue(parCode.ToUpper(), out TmpId))
+            {
+                //a list that could not be read is a failure worth naming; a code missing from a
+                //list that was read just means some other issuer runs the fund
+                parError = Vanguard_Funds_Error;
+                return false;
+            }
+
+            try
+            {
+                string Json = Download(VanguardBase + "data/products/holdings/" + Uri.EscapeDataString(TmpId)
+                                       + "?limit=" + TopCount.ToString(), null);
+                JavaScriptSerializer Serializer = new JavaScriptSerializer();
+                Serializer.MaxJsonLength = int.MaxValue;
+                object[] Rows = Json_Get(Json_Get(Serializer.DeserializeObject(Json), "data"), "items") as object[];
+                if (Rows != null)
+                {
+                    foreach (object Row in Rows)
+                    {
+                        Holding TmpHolding = new Holding();
+                        string TmpTicker = Json_Text(Row, "ticker").ToUpper();
+                        string TmpCountry = Json_Text(Row, "countryCode").ToUpper();
+                        TmpHolding.Name = Json_Text(Row, "longName");
+                        if (TmpHolding.Name == "")
+                        {
+                            TmpHolding.Name = Json_Text(Row, "name");
+                        }
+                        //already a percentage - 0.58 for 0.58 %
+                        TmpHolding.Weight = Json_Number(Json_Get(Row, "marketValPercent"));
+
+                        //Vanguard gives the bare exchange code.  An ASX or US one is written the
+                        //way Yahoo writes it, so it meets the same company from a Yahoo fund by
+                        //symbol; anything else names no exchange, and is matched by name alone.
+                        if (TmpTicker != "" && TmpCountry == "AU")
+                        {
+                            TmpHolding.Symbol = TmpTicker + ".AX";
+                        }
+                        else if (TmpTicker != "" && TmpCountry == "US")
+                        {
+                            TmpHolding.Symbol = TmpTicker;
+                        }
+                        else
+                        {
+                            TmpHolding.Symbol = TmpTicker;
+                            TmpHolding.NameOnly = true;
+                        }
+
+                        if (parAsOf == "")
+                        {
+                            DateTime TmpDate;
+                            if (DateTime.TryParseExact(Json_Text(Row, "effectiveDate"), "yyyy-MM-dd",
+                                                       CultureInfo.InvariantCulture, DateTimeStyles.None, out TmpDate))
+                            {
+                                parAsOf = TmpDate.ToString("dd-MMM-yyyy", CultureInfo.InvariantCulture);
+                            }
+                        }
+
+                        if ((TmpHolding.Symbol != "" || TmpHolding.Name != "") && TmpHolding.Weight > 0)
+                        {
+                            parHoldings.Add(TmpHolding);
+                        }
+                    }
+                }
+
+                if (parHoldings.Count == 0)
+                {
+                    parError = "Vanguard lists no holdings for " + parCode + " either.";
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                parError = "Could not reach Vanguard : " + ex.Message;
+                return false;
+            }
+        }
+
+        //---- one row per company ---------------------------------------------------
+
+        //A name boiled down far enough that two sources' spellings of one company meet:
+        //"Texas Instruments Inc" and "TEXAS INSTRUMENTS INC." both become TEXAS INSTRUMENTS.
+        //Only the legal form is dropped - "Alphabet Inc Class A" and "Class C" stay apart.
+        static readonly string[] LegalForms = new string[] { "INC", "INCORPORATED", "CORP", "CORPORATION",
+            "CO", "COMPANY", "LTD", "LIMITED", "PLC", "AG", "SA", "NV", "SE", "ASA", "AB", "SPA", "LLC" };
+
+        private string Name_Key(string parName)
+        {
+            StringBuilder Clean = new StringBuilder();
+            foreach (char c in (parName ?? "").ToUpper())
+            {
+                Clean.Append(char.IsLetterOrDigit(c) ? c : ' ');
+            }
+            List<string> Words = Clean.ToString().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            while (Words.Count > 1 && LegalForms.Contains(Words[Words.Count - 1]))
+            {
+                Words.RemoveAt(Words.Count - 1);
+            }
+            return String.Join(" ", Words.ToArray());
+        }
+
+        private Company Find_Company(Holding parHolding, Dictionary<string, Company> parBySymbol,
+                                     Dictionary<string, Company> parByName)
+        {
+            Company Found;
+            if (!parHolding.NameOnly && parHolding.Symbol != ""
+                && parBySymbol.TryGetValue(parHolding.Symbol.ToUpper(), out Found))
+            {
+                return Found;
+            }
+            string TmpName = Name_Key(parHolding.Name);
+            if (TmpName != "" && parByName.TryGetValue(TmpName, out Found))
+            {
+                return Found;
+            }
+            return null;
+        }
+
+        //Both ways in are written down, so a later source can arrive by either
+        private void Remember_Company(Company parCompany, Holding parHolding,
+                                      Dictionary<string, Company> parBySymbol, Dictionary<string, Company> parByName)
+        {
+            if (!parHolding.NameOnly && parHolding.Symbol != "" && !parBySymbol.ContainsKey(parHolding.Symbol.ToUpper()))
+            {
+                parBySymbol[parHolding.Symbol.ToUpper()] = parCompany;
+                //a symbol that pins the exchange is the better one to show
+                parCompany.Symbol = parHolding.Symbol;
+            }
+            string TmpName = Name_Key(parHolding.Name);
+            if (TmpName != "" && !parByName.ContainsKey(TmpName))
+            {
+                parByName[TmpName] = parCompany;
+            }
+            if (parCompany.Name == "")
+            {
+                parCompany.Name = parHolding.Name;
+            }
+        }
+
         private void Busy(bool parBusy)
         {
             System.Windows.Forms.Cursor.Current = (parBusy ? Cursors.WaitCursor : Cursors.Default);
@@ -517,12 +723,19 @@ namespace FinancialBalance
                     return;
                 }
 
-                //Keyed by symbol, so one company held through several funds is one row.  A
-                //holding Yahoo gives no symbol for falls back on its name.
-                Dictionary<string, Company> ByKey = new Dictionary<string, Company>();
+                //One company held through several funds is one row.  It is found by symbol
+                //first and by name failing that, so the same company named by two sources -
+                //Yahoo's "TXN" and Vanguard's "TXN", or a European share Vanguard gives no
+                //exchange for - still lands on one row.
+                Dictionary<string, Company> BySymbol = new Dictionary<string, Company>();
+                Dictionary<string, Company> ByName = new Dictionary<string, Company>();
+                List<Company> Companies = new List<Company>();
                 List<string> Failed = new List<string>();
+                List<string> VanguardDates = new List<string>();
                 int Answered = 0;
                 int Through = 0;
+
+                Vanguard_Funds = null;
 
                 foreach (KeyValuePair<string, double> Alloc in Allocs)
                 {
@@ -533,27 +746,55 @@ namespace FinancialBalance
                     //JEPQ's holdings are what Yahoo can name.
                     bool Via = (TmpSetup.LookThrough != "");
                     string TmpSource = (Via ? TmpSetup.LookThrough : Alloc.Key);
+                    bool IsAX = (TmpSetup.Suffix.ToUpper() == "AX" && TmpSetup.Ticker != "");
 
                     LblTopNote.Text = "Asking Yahoo Finance about " + TmpSource + " ...";
                     LblTopNote.Refresh();
 
                     List<Holding> TmpHoldings;
                     bool IsShare;
-                    if (!Fetch_Top_Holdings(TmpSource, Jar, Crumb, out TmpHoldings, out IsShare, out TmpError))
-                    {
-                        Failed.Add(TmpError + (Via ? " (look-through for " + Alloc.Key + ")" : ""));
-                        continue;
-                    }
+                    bool Ok = Fetch_Top_Holdings(TmpSource, Jar, Crumb, out TmpHoldings, out IsShare, out TmpError);
+                    bool FundAsShare = false;
 
                     //Yahoo's "this is a share" is taken on trust except for an ASX listing it is
                     //asked about directly, where it is known to be wrong for some funds.  A
                     //look-through ticker was chosen by hand, so whatever it is, it was meant.
-                    if (IsShare && !Via && TmpSetup.Suffix.ToUpper() == "AX" && TmpSetup.Ticker != ""
-                        && Is_ASX_Fund(TmpSetup.Ticker))
+                    if (Ok && IsShare && !Via && IsAX && Is_ASX_Fund(TmpSetup.Ticker))
                     {
-                        Failed.Add("Yahoo Finance lists no holdings for " + Alloc.Key
-                                 + " - it reports this fund as a share. Set a Look-Through Ticker in"
-                                 + " ETF/Stock Setup if it invests through another fund.");
+                        Ok = false;
+                        FundAsShare = true;
+                        TmpError = "Yahoo Finance lists no holdings for " + Alloc.Key
+                                 + " - it reports this fund as a share.";
+                    }
+
+                    //Where Yahoo has nothing to give for an ASX fund, Vanguard is asked whether it
+                    //is one of theirs - VVLU is.  Vanguard publishes every one of its Australian
+                    //ETFs' holdings itself, so for those it is the issuer's own figure.
+                    string ViaLabel = (Via ? TmpSource : "");
+                    if (!Ok && !Via && IsAX)
+                    {
+                        LblTopNote.Text = "Asking Vanguard about " + Alloc.Key + " ...";
+                        LblTopNote.Refresh();
+
+                        string TmpAsOf;
+                        string TmpVgError;
+                        if (Fetch_Vanguard_Holdings(TmpSetup.Ticker, out TmpHoldings, out TmpAsOf, out TmpVgError))
+                        {
+                            Ok = true;
+                            ViaLabel = "Vanguard";
+                            VanguardDates.Add(Alloc.Key + (TmpAsOf == "" ? "" : " as at " + TmpAsOf));
+                        }
+                        else if (TmpVgError != "")
+                        {
+                            TmpError = TmpError + " " + TmpVgError;
+                        }
+                    }
+
+                    if (!Ok)
+                    {
+                        Failed.Add(TmpError + (Via ? " (look-through for " + Alloc.Key + ")" : "")
+                                 + (FundAsShare ? " Set a Look-Through Ticker in ETF/Stock Setup if it"
+                                                  + " invests through another fund." : ""));
                         continue;
                     }
                     Answered++;
@@ -564,22 +805,22 @@ namespace FinancialBalance
 
                     foreach (Holding TmpHolding in TmpHoldings)
                     {
-                        string TmpKey = (TmpHolding.Symbol != "" ? TmpHolding.Symbol : TmpHolding.Name).ToUpper();
-                        Company TmpCompany;
-                        if (!ByKey.TryGetValue(TmpKey, out TmpCompany))
+                        Company TmpCompany = Find_Company(TmpHolding, BySymbol, ByName);
+                        if (TmpCompany == null)
                         {
                             TmpCompany = new Company();
                             TmpCompany.Symbol = TmpHolding.Symbol;
                             TmpCompany.Name = TmpHolding.Name;
-                            ByKey.Add(TmpKey, TmpCompany);
+                            Companies.Add(TmpCompany);
                         }
+                        Remember_Company(TmpCompany, TmpHolding, BySymbol, ByName);
                         TmpCompany.Allocation += Alloc.Value * TmpHolding.Weight / 100;
-                        TmpCompany.Via.Add(Alloc.Key + (Via ? " via " + TmpSource : "")
+                        TmpCompany.Via.Add(Alloc.Key + (ViaLabel != "" ? " via " + ViaLabel : "")
                                          + " " + Percent(TmpHolding.Weight));
                     }
                 }
 
-                List<Company> Top = ByKey.Values
+                List<Company> Top = Companies
                                          .OrderByDescending(c => c.Allocation)
                                          .ThenBy(c => c.Symbol)
                                          .Take(TopCount)
@@ -599,12 +840,16 @@ namespace FinancialBalance
 
                 //Each fund reports only its own top ten, so a company that sits lower down in
                 //some fund is missing that part of its weight - said rather than left implied.
-                string TmpNote = "Top " + Top.Count.ToString() + " of " + ByKey.Count.ToString()
+                string TmpNote = "Top " + Top.Count.ToString() + " of " + Companies.Count.ToString()
                                + " companies, together " + Percent(TopTotal) + " of the plan, from "
                                + Answered.ToString() + " of " + Allocs.Count.ToString()
                                + " ticker(s)"
                                + (Through > 0 ? ", " + Through.ToString() + " of them through a look-through ticker" : "")
-                               + ". Each fund counts only the top holdings Yahoo Finance lists for it.";
+                               + ". Each fund counts only its top ten holdings.";
+                if (VanguardDates.Count > 0)
+                {
+                    TmpNote = TmpNote + "  From Vanguard : " + String.Join(", ", VanguardDates.ToArray()) + ".";
+                }
                 if (Failed.Count > 0)
                 {
                     TmpNote = TmpNote + "  Not looked through : " + String.Join("  ", Failed.ToArray());
