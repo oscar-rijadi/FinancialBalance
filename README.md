@@ -2931,9 +2931,11 @@ conversion. The note beside the filters names the period too.
 
 #### Exports
 
-**Generate Excel** and **Generate to Google Drive** work as they do on the forecast calendar:
-heading, filters (Portfolio, Main Only and **Period**), note, the six totals, then the grid with its
-totals row, every cell written as text. The file name is
+Each tab of an export is laid out the same way: heading, filters (Portfolio, Main Only and
+**Period**), note, the six totals, then the grid with its totals row, every cell written as text.
+
+**Generate Excel** writes what is on screen and nothing more: one tab, named after the period
+chosen. The file name is
 
 ```
 ETF_Stocks_Dividend_History_Calendar _ yyyyMMddHHmmss _ <Portfolio> _ <Yes|No for Main Only> _ <Period> .xlsx
@@ -2941,11 +2943,29 @@ ETF_Stocks_Dividend_History_Calendar _ yyyyMMddHHmmss _ <Portfolio> _ <Yes|No fo
 
 for example `..._All_Yes_Last 12 months.xlsx` or `..._All_Yes_2025-2026.xlsx`.
 
-The Google Sheet is a single file that is reused. It is called **Financial Balance ETFs or Stocks
-Dividend History Calendar**, from `DividendHistoryCalendarGoogleSheetName` in `app.config`. Each run
-replaces the last **whichever period it shows**, and the Period line at the top of the sheet says
-which. There are no extra tabs. To keep a financial year's calendar alongside another, use
-Generate Excel, whose file name carries the period.
+**Generate to Google Drive writes every period into one Sheet, a tab each.** The Sheet is called
+**Financial Balance ETFs or Stocks Dividend History Calendar**, from
+`DividendHistoryCalendarGoogleSheetName` in `app.config`. It is the same Sheet the page has always
+written to, so an existing link carries on working.
+
+- **The tabs:** the period on screen first, then every other period in the dropdown's order: Last
+  12 months, then each financial year, newest first. With 2026-2027 on screen that is **2026-2027 |
+  Last 12 months | 2025-2026**. Each tab is named after its period, and the first is the one showing
+  when the Sheet opens.
+- **Every period on every run.** Drive replaces the whole file on each upload; it takes a file,
+  not a tab. So the button cannot refresh one period and leave the rest, and writes all of them each
+  time, the way [Yearly summary](#yearly-summary) sends every year. Every tab is as current as the
+  last click.
+- **Portfolio and Main Only apply to every tab.** Only the period varies between them.
+- **Each tab is the page put into that period and read back**, not a second query, so a tab shows
+  exactly what the screen would. The page is put back to the period it was on afterwards. This is
+  the same method [Dividend history](#dividend-history) uses for its per-year tabs.
+- **Nothing on screen is required.** A period with no payments is still a tab, headings and totals
+  with no rows, and the others still carry their figures, so the Drive button does not refuse an
+  empty screen the way the Excel button does.
+- The success dialog lists the tabs that went in.
+
+The rules under [Generate to Google Drive](#generate-to-google-drive) apply as for every page.
 
 ### Ticker historical data
 
@@ -3604,7 +3624,7 @@ differs between them.
 | --- | --- | --- | --- |
 | [Portfolio summary](#portfolio-summary) | `PortfolioGoogleSheetName` | *Financial Balance ETFs or Stocks Portfolio Investments* | one |
 | [Dividend history](#dividend-history) | `DividendHistoryGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History* | one |
-| [Dividend history calendar](#dividend-history-calendar) | `DividendHistoryCalendarGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History Calendar* | one |
+| [Dividend history calendar](#dividend-history-calendar) | `DividendHistoryCalendarGoogleSheetName` | *Financial Balance ETFs or Stocks Dividend History Calendar* | one, **a tab per period**: Last 12 months and every financial year |
 | [Financial year historical](#financial-year-historical) | `FinancialHistoricalYearPrefixGoogleSheetName` | *Financial Balance ETFs or Stocks Financial Year Historical* | **a prefix** — one per financial year |
 | [Yearly summary](#yearly-summary) | `YearlySummaryGoogleSheetName` | *Financial Balance Yearly Summary* | one |
 | [Forecast dividend calendar](#forecast-dividend-calendar) | `ForecastDividendCalendarGoogleSheetName` | *Financial Balance ETFs or Stocks Forecast Dividend Calendar* | one |
@@ -3691,7 +3711,7 @@ the filters being wide enough that per-tab detail says something the first tab d
 | [Portfolio summary](#portfolio-summary) | **Full Ticker** is `All` | holding |
 | [Dividend history](#dividend-history) | **Full Ticker** *and* **Financial Year** are both `All` | financial year |
 | [Financial year historical](#financial-year-historical) | never | — it is always one tab |
-| [Dividend history calendar](#dividend-history-calendar) | never | — it is always one tab |
+| [Dividend history calendar](#dividend-history-calendar) | **always** | period: the one on screen first, then Last 12 months and every financial year — see [that page](#exports) |
 | [Yearly summary](#yearly-summary) | **always** | year, `All` first — see [that page](#yearly-summary) |
 
 Narrow either dropdown and it is that one view, one tab. Financial year historical has no `All`
@@ -4088,7 +4108,7 @@ The `appSettings` entries, however, **are** read:
 | `GoogleClientSecret` | its secret |
 | `PortfolioGoogleSheetName` | what [Portfolio summary](#portfolio-summary)'s Sheet in Drive is called; empty means *Financial Balance ETFs or Stocks Portfolio Investments* |
 | `DividendHistoryGoogleSheetName` | what [Dividend history](#dividend-history)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History* |
-| `DividendHistoryCalendarGoogleSheetName` | what [Dividend history calendar](#dividend-history-calendar)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Dividend History Calendar* |
+| `DividendHistoryCalendarGoogleSheetName` | what [Dividend history calendar](#dividend-history-calendar)'s Sheet is called. It is one Sheet with a tab per period; empty means *Financial Balance ETFs or Stocks Dividend History Calendar* |
 | `FinancialHistoricalYearPrefixGoogleSheetName` | the **prefix** of [Financial year historical](#financial-year-historical)'s Sheets — the financial year on screen is added to the end, so each year keeps its own; empty means *Financial Balance ETFs or Stocks Financial Year Historical* |
 | `YearlySummaryGoogleSheetName` | what [Yearly summary](#yearly-summary)'s Sheet is called; empty means *Financial Balance Yearly Summary* |
 | `ForecastDividendCalendarGoogleSheetName` | what [Forecast dividend calendar](#forecast-dividend-calendar)'s Sheet is called; empty means *Financial Balance ETFs or Stocks Forecast Dividend Calendar* |

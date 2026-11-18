@@ -67,8 +67,8 @@ namespace FinancialBalance
         const string DefaultForecastDividendCalendarSheetName =
             "Financial Balance ETFs or Stocks Forecast Dividend Calendar";
 
-        //A whole name, for the same reason : the window always ends with the current month,
-        //so each run replaces the last.
+        //A whole name : one Sheet, a tab per period - Last 12 months and every financial year -
+        //all written on every run, the way Yearly Summary sends every year.
         const string DefaultDividendHistoryCalendarSheetName =
             "Financial Balance ETFs or Stocks Dividend History Calendar";
 

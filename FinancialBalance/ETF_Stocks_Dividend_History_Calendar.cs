@@ -809,21 +809,129 @@ namespace FinancialBalance
         [DllImport("user32.dll")]
         private static extern int GetWindowThreadProcessId(IntPtr parHwnd, out int parProcessId);
 
-        //Takes where to write as a parameter so the Drive button can send it to a temporary
-        //file instead of one the user chose.  Throws rather than reporting: the callers
-        //differ in what they say afterwards.
-        private void Write_Workbook(List<string[]> parSheet, int parCols, int parTotalsFrom,
-                                    int parTotalsTo, int parHeadRow, string parPath)
+        //One laid-out sheet and the tab it belongs on.
+        private class Tab
         {
-            object[,] Data = new object[parSheet.Count, parCols];
-            for (int r = 0; r < parSheet.Count; r++)
+            public string Name;
+            public List<string[]> Rows;
+            public int Cols;
+            public int TotalsFrom;
+            public int TotalsTo;
+            public int HeadRow;
+        }
+
+        //Excel will not take a tab name longer than 31 characters, and refuses : \ / ? * [ ]
+        //outright.  Names are made unique as well, since two that differ only in a rejected
+        //character would otherwise collide and Excel would refuse the workbook.
+        private string Tab_Name(string parWanted, List<string> parTaken)
+        {
+            string TmpName = (parWanted == null ? "" : parWanted.Trim());
+            foreach (char Bad in new char[] { ':', '\\', '/', '?', '*', '[', ']' })
             {
-                for (int cc = 0; cc < parCols; cc++)
+                TmpName = TmpName.Replace(Bad, '-');
+            }
+            if (TmpName.Length > 31)
+            {
+                TmpName = TmpName.Substring(0, 31);
+            }
+            if (TmpName == "")
+            {
+                TmpName = "Sheet";
+            }
+
+            string TmpTry = TmpName;
+            int TmpNext = 2;
+            while (parTaken.Contains(TmpTry.ToUpper()))
+            {
+                string TmpSuffix = " (" + TmpNext.ToString() + ")";
+                int TmpRoom = 31 - TmpSuffix.Length;
+                TmpTry = (TmpName.Length > TmpRoom ? TmpName.Substring(0, TmpRoom) : TmpName) + TmpSuffix;
+                TmpNext = TmpNext + 1;
+            }
+            parTaken.Add(TmpTry.ToUpper());
+            return TmpTry;
+        }
+
+        //The period on screen, as a tab named after it
+        private Tab One_Tab(List<string> parTaken)
+        {
+            Tab Made = new Tab();
+            Made.Name = Tab_Name(CmbPeriod.Text.Trim(), parTaken);
+            Made.Rows = Build_Sheet(out Made.Cols, out Made.TotalsFrom, out Made.TotalsTo, out Made.HeadRow);
+            return Made;
+        }
+
+        //What goes into the workbook.  Whatever is on screen is always the first tab; with
+        //parAllPeriods every other period in the dropdown follows - Last 12 months, then each
+        //financial year newest first - so one Sheet carries the lot.
+        //
+        //Each of those is produced by putting the page into that period and reading it back,
+        //rather than by a second query written for the purpose - so a tab shows exactly what
+        //the user would see having chosen it, and there is no second copy of the logic to
+        //drift.  The page is put back as it was found before this returns.
+        private List<Tab> Build_Tabs(bool parAllPeriods)
+        {
+            List<Tab> Tabs = new List<Tab>();
+            List<string> Taken = new List<string>();
+            Tabs.Add(One_Tab(Taken));
+
+            if (!parAllPeriods)
+            {
+                return Tabs;
+            }
+
+            //Taken from the dropdown's own items, so a tab can only be built for a period the
+            //page could actually have been put into
+            List<string> Periods = new List<string>();
+            foreach (object Item in CmbPeriod.Items)
+            {
+                string Period = (Item == null ? "" : Item.ToString().Trim());
+                if (Period != "" && Period != CmbPeriod.Text.Trim())
                 {
-                    Data[r, cc] = parSheet[r][cc];
+                    Periods.Add(Period);
                 }
             }
 
+            string TmpWas = CmbPeriod.Text;
+            try
+            {
+                foreach (string Period in Periods)
+                {
+                    //Filling keeps the dropdown's own handler out of it, so the page is
+                    //refreshed once here rather than twice
+                    Filling = true;
+                    CmbPeriod.Text = Period;
+                    Filling = false;
+
+                    //Assigning Text on a DropDownList does nothing at all when the value is not
+                    //among its items, and fails silently - which would leave a tab headed with
+                    //one period over another's figures.  The periods came from the items, so
+                    //this cannot happen; it is checked because being wrong would be a
+                    //plausible-looking sheet of the wrong figures.
+                    if (CmbPeriod.Text.Trim() != Period)
+                    {
+                        throw new Exception("The page could not be put into the period " + Period + ".");
+                    }
+
+                    Get_Data();
+                    Tabs.Add(One_Tab(Taken));
+                }
+            }
+            finally
+            {
+                Filling = true;
+                CmbPeriod.Text = TmpWas;
+                Filling = false;
+                Get_Data();
+            }
+            return Tabs;
+        }
+
+        //Takes where to write as a parameter so the Drive button can send it to a temporary
+        //file instead of one the user chose.  Throws rather than reporting: the callers
+        //differ in what they say afterwards.
+        private void Write_Workbook(List<Tab> parTabs, string parPath)
+        {
             Excel.Application app = null;
             Excel.Workbooks books = null;
             Excel.Workbook wb = null;
@@ -844,46 +952,86 @@ namespace FinancialBalance
                 books = app.Workbooks;
                 wb = books.Add();
                 sheets = wb.Worksheets;
-                ws = (Excel.Worksheet)sheets[1];
-                ws.Name = "Dividend History Calendar";
 
-                all = ws.Range[ws.Cells[1, 1], ws.Cells[parSheet.Count, parCols]];
-                //written as text on purpose, so the cells are kept exactly as displayed
-                all.NumberFormat = "@";
-                all.Value2 = Data;
-
-                one = ws.Range[ws.Cells[1, 1], ws.Cells[1, 1]];
-                one.Font.Bold = true;
-                one.Font.Size = 14;
-                Marshal.ReleaseComObject(one);
-                one = null;
-
-                if (parTotalsTo >= parTotalsFrom)
+                for (int i = 0; i < parTabs.Count; i++)
                 {
-                    one = ws.Range[ws.Cells[parTotalsFrom, 1], ws.Cells[parTotalsTo, 2]];
+                    Tab This = parTabs[i];
+                    List<string[]> Sheet = This.Rows;
+                    int Cols = This.Cols;
+
+                    object[,] Data = new object[Sheet.Count, Cols];
+                    for (int r = 0; r < Sheet.Count; r++)
+                    {
+                        for (int c = 0; c < Cols; c++)
+                        {
+                            Data[r, c] = Sheet[r][c];
+                        }
+                    }
+
+                    //a new workbook opens with one sheet; the rest are added after it, in order
+                    if (i == 0)
+                    {
+                        ws = (Excel.Worksheet)sheets[1];
+                    }
+                    else
+                    {
+                        ws = (Excel.Worksheet)sheets.Add(Type.Missing, sheets[sheets.Count],
+                                                         Type.Missing, Type.Missing);
+                    }
+                    ws.Name = This.Name;
+
+                    all = ws.Range[ws.Cells[1, 1], ws.Cells[Sheet.Count, Cols]];
+                    //written as text on purpose, so the cells are kept exactly as displayed
+                    all.NumberFormat = "@";
+                    all.Value2 = Data;
+
+                    one = ws.Range[ws.Cells[1, 1], ws.Cells[1, 1]];
                     one.Font.Bold = true;
+                    one.Font.Size = 14;
                     Marshal.ReleaseComObject(one);
                     one = null;
-                }
 
-                one = ws.Range[ws.Cells[parHeadRow, 1], ws.Cells[parHeadRow, parCols]];
-                one.Font.Bold = true;
-                one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
-                Marshal.ReleaseComObject(one);
-                one = null;
+                    if (This.TotalsTo >= This.TotalsFrom)
+                    {
+                        one = ws.Range[ws.Cells[This.TotalsFrom, 1], ws.Cells[This.TotalsTo, 2]];
+                        one.Font.Bold = true;
+                        Marshal.ReleaseComObject(one);
+                        one = null;
+                    }
 
-                //the grid's own totals row is the last line of the sheet
-                if (parSheet.Count > parHeadRow)
-                {
-                    one = ws.Range[ws.Cells[parSheet.Count, 1], ws.Cells[parSheet.Count, parCols]];
+                    one = ws.Range[ws.Cells[This.HeadRow, 1], ws.Cells[This.HeadRow, Cols]];
                     one.Font.Bold = true;
                     one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
                     Marshal.ReleaseComObject(one);
                     one = null;
+
+                    //the grid's own totals row is the last line of the sheet, when there is one
+                    if (Sheet.Count > This.HeadRow)
+                    {
+                        one = ws.Range[ws.Cells[Sheet.Count, 1], ws.Cells[Sheet.Count, Cols]];
+                        one.Font.Bold = true;
+                        one.Interior.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Gainsboro);
+                        Marshal.ReleaseComObject(one);
+                        one = null;
+                    }
+
+                    cols = ws.Columns;
+                    cols.AutoFit();
+
+                    //every tab creates its own COM objects, and one left behind keeps an
+                    //invisible EXCEL.EXE alive - so they are released here rather than only
+                    //at the end
+                    Marshal.ReleaseComObject(cols);
+                    cols = null;
+                    Marshal.ReleaseComObject(all);
+                    all = null;
+                    Marshal.ReleaseComObject(ws);
+                    ws = null;
                 }
 
-                cols = ws.Columns;
-                cols.AutoFit();
+                //the first tab is the one showing when it opens
+                ws = (Excel.Worksheet)sheets[1];
+                ws.Activate();
 
                 wb.SaveAs(parPath, Excel.XlFileFormat.xlOpenXMLWorkbook);
                 wb.Close(false);
@@ -913,6 +1061,9 @@ namespace FinancialBalance
             CmdExcel.Enabled = !parBusy;
             CmdDrive.Enabled = !parBusy;
             CmdBack.Enabled = !parBusy;
+            CmbPeriod.Enabled = !parBusy;
+            CmbPortfolio.Enabled = !parBusy;
+            chkMainOnly.Enabled = !parBusy;
         }
 
         private bool Anything_To_Export()
@@ -925,6 +1076,9 @@ namespace FinancialBalance
             return true;
         }
 
+        //The Excel workbook is what is on screen and nothing more - one tab, the period
+        //chosen.  The every-period Sheet is a Google Drive thing, since that file is meant to
+        //stand on its own.
         private void CmdExcel_Click(object sender, EventArgs e)
         {
             if (!Anything_To_Export())
@@ -942,16 +1096,11 @@ namespace FinancialBalance
                 return;
             }
 
-            int TmpCols;
-            int TmpFrom;
-            int TmpTo;
-            int TmpHead;
-            List<string[]> TmpSheet = Build_Sheet(out TmpCols, out TmpFrom, out TmpTo, out TmpHead);
-
+            List<Tab> Tabs = Build_Tabs(false);
             Busy(true);
             try
             {
-                Write_Workbook(TmpSheet, TmpCols, TmpFrom, TmpTo, TmpHead, dlg.FileName);
+                Write_Workbook(Tabs, dlg.FileName);
                 MessageBox.Show("Excel file generated :" + Environment.NewLine + dlg.FileName, "Success");
             }
             catch (Exception ex)
@@ -964,14 +1113,33 @@ namespace FinancialBalance
             }
         }
 
-        //Builds the same workbook into a temporary file, signs in, uploads it as a Google
-        //Sheet and throws the temporary file away.
+        //Names the tabs in the success dialog, so it is obvious what went in without having to
+        //open the Sheet to find out.
+        private string Tabs_Said(List<Tab> parTabs)
+        {
+            if (parTabs == null || parTabs.Count == 0)
+            {
+                return "";
+            }
+            if (parTabs.Count == 1)
+            {
+                return "One tab : " + parTabs[0].Name;
+            }
+            List<string> Names = new List<string>();
+            foreach (Tab One in parTabs)
+            {
+                Names.Add(One.Name);
+            }
+            return parTabs.Count.ToString() + " tabs : " + string.Join(", ", Names.ToArray());
+        }
+
+        //Builds every period into one workbook in a temporary file, signs in, uploads it as a
+        //Google Sheet and throws the temporary file away.  The whole Sheet is replaced on each
+        //upload - Drive takes a file, not a tab - so every period is written every time, the
+        //way Yearly Summary sends every year.  It therefore has nothing on screen to insist on:
+        //an empty period is still a tab, and the others still carry their figures.
         private void CmdDrive_Click(object sender, EventArgs e)
         {
-            if (!Anything_To_Export())
-            {
-                return;
-            }
             if (!Google_Drive.Configured)
             {
                 MessageBox.Show("Google Drive is not set up yet." + Environment.NewLine
@@ -979,25 +1147,22 @@ namespace FinancialBalance
                 return;
             }
 
-            //One Sheet, reused : each run replaces the last, whichever period it shows - the
-            //Period line at the top of the sheet says which - rather than leave a file per run.
+            //One Sheet, reused, a tab per period - so one link carries every period, and each
+            //run brings all of them up to date.
             string TmpTitle = Google_Drive.Dividend_History_Calendar_Sheet_Name();
             string TmpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
                                                     Export_Name("") + ".xlsx");
             string TmpOldNote = LblNote.Text;
 
+            List<Tab> Tabs = null;
             Busy(true);
             try
             {
                 LblNote.Text = "Building the workbook ...";
                 LblNote.Refresh();
-                int TmpCols;
-                int TmpFrom;
-                int TmpTo;
-                int TmpHead;
-                List<string[]> TmpSheet = Build_Sheet(out TmpCols, out TmpFrom, out TmpTo,
-                                                      out TmpHead);
-                Write_Workbook(TmpSheet, TmpCols, TmpFrom, TmpTo, TmpHead, TmpPath);
+                Tabs = Build_Tabs(true);
+                Write_Workbook(Tabs, TmpPath);
+                TmpOldNote = LblNote.Text;
 
                 LblNote.Text = "Waiting for you to sign in to Google in your browser ...";
                 LblNote.Refresh();
@@ -1038,6 +1203,8 @@ namespace FinancialBalance
                     (TmpReplaced ? "Google Sheet updated :" : "Google Sheet created :")
                     + Environment.NewLine + TmpTitle
                     + Environment.NewLine + "(" + TmpHow + ")"
+                    + Environment.NewLine + Environment.NewLine
+                    + Tabs_Said(Tabs)
                     + TmpWarning
                     + Environment.NewLine + Environment.NewLine + TmpLink
                     + Environment.NewLine + Environment.NewLine + "Open it now ?",
