@@ -5083,8 +5083,20 @@ coverage: how many companies, what the ten add up to, how many holdings answered
 through a Look-Through Ticker or taken from Vanguard (with its as-at date), and which were not
 looked through and why.
 
-The table is **cleared whenever Portfolio, Main Only or Full Ticker changes**, since it belongs to
-what was in view when it was looked up.
+Under the table, between **Generate to Excel** and **Back**, two totals add up the ten rows shown:
+
+| Label | Adds up | Answers |
+| --- | --- | --- |
+| **Total Allocation (%)** | the **Allocation (%)** column | how much of the portfolio, or of the chosen ticker, these ten companies make up, e.g. 46.69 % of NDQ.AX |
+| **Total Allocation (AUD)** | the **Allocation (AUD)** column | how much money that is, e.g. $255.80 of NDQ.AX's $548.03 |
+
+Each row is taken as displayed, rounded to two places, before it is added, so each total is its
+column as you see it. The coverage note's *together … %* is worked out the same way and always
+matches **Total Allocation (%)**. On `All` both totals are of the whole portfolio, and with one
+ticker chosen they are of that ticker. They read 0.00 % and $0.00 until the button has been clicked.
+
+The table and its totals are **cleared whenever Portfolio, Main Only or Full Ticker changes**, since
+they belong to what was in view when they were looked up.
 
 > **A fund of funds such as `DHHF.AX` is opened all the way down to companies** (see
 > [Funds inside funds](#funds-inside-funds)). Its VTI, A200, SPDW and SPEM are each looked through,
@@ -5094,8 +5106,9 @@ what was in view when it was looked up.
 #### The Excel export
 
 **Generate to Excel** writes one sheet: the filters, the notes and currency line, the three totals,
-the holdings table, then the top holdings table. Like the plan page, it is refused until **Get Top
-10 Holdings** has filled the table. The file is named
+the holdings table, then the top holdings table. A bold **Total Allocation** line under that table
+carries the two totals in the Allocation (%) and Allocation (AUD) columns. Like the plan page, it
+is refused until **Get Top 10 Holdings** has filled the table. The file is named
 
 ```
 ETF_Stocks_Portfolio_Top_Holdings_yyyyMMddHHmmss_<Portfolio>_<Yes|No for Main Only>_<Full Ticker>.xlsx

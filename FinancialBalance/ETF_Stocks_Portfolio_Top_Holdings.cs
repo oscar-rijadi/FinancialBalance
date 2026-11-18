@@ -526,6 +526,8 @@ namespace FinancialBalance
                 gvTop.Columns[i].HeaderCell.Style.Alignment = TmpAlign;
                 gvTop.Columns[i].DefaultCellStyle.Alignment = TmpAlign;
             }
+            LblTotTopPct.Text = Percent(0);
+            LblTotTopAud.Text = Money(0);
             LblTopNote.Text = "Click Get Top 10 Holdings to look up the companies "
                             + (All_Tickers() ? "this portfolio" : CmbTicker.Text.Trim())
                             + " holds, through each fund.";
@@ -592,17 +594,26 @@ namespace FinancialBalance
                 }
 
                 List<Holdings_Lookup.Company> Top = Outcome.Top();
+                double TmpTopPct = 0;
+                double TmpTopAud = 0;
                 for (int i = 0; i < Top.Count; i++)
                 {
+                    //rounded before they are added, so each total is its column as shown, added up
+                    double TmpPct = Math.Round(Top[i].Allocation, 2);
+                    double TmpAud = Math.Round(Top[i].Amount, 2);
                     gvTop.Rows.Add(new string[] {
                         (i + 1).ToString(),
                         Top[i].Symbol,
                         Top[i].Name,
-                        Percent(Top[i].Allocation),
-                        Money(Math.Round(Top[i].Amount, 2)),
+                        Percent(TmpPct),
+                        Money(TmpAud),
                         String.Join(", ", Top[i].Via.ToArray()) });
+                    TmpTopPct += TmpPct;
+                    TmpTopAud += TmpAud;
                 }
                 gvTop.ClearSelection();
+                LblTotTopPct.Text = Percent(Math.Round(TmpTopPct, 2));
+                LblTotTopAud.Text = Money(Math.Round(TmpTopAud, 2));
 
                 LblTopNote.Text = (WholePortfolio
                                    ? Outcome.Describe("the portfolio")
@@ -749,6 +760,13 @@ namespace FinancialBalance
                 Sheet.Add(Grid_Row(gvTop, r, Cols));
             }
 
+            //each total under the column it adds up
+            int TopTotalRow = Sheet.Count + 1;
+            string[] TmpTopTotal = Line(Cols, "Total Allocation");
+            TmpTopTotal[3] = LblTotTopPct.Text.Trim();
+            TmpTopTotal[4] = LblTotTopAud.Text.Trim();
+            Sheet.Add(TmpTopTotal);
+
             object[,] Data = new object[Sheet.Count, Cols];
             for (int r = 0; r < Sheet.Count; r++)
             {
@@ -808,6 +826,11 @@ namespace FinancialBalance
                     Marshal.ReleaseComObject(one);
                     one = null;
                 }
+
+                one = ws.Range[ws.Cells[TopTotalRow, 1], ws.Cells[TopTotalRow, Cols]];
+                one.Font.Bold = true;
+                Marshal.ReleaseComObject(one);
+                one = null;
 
                 cols = ws.Columns;
                 cols.AutoFit();

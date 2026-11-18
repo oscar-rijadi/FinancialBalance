@@ -36,6 +36,10 @@ namespace FinancialBalance
             this.LblCurrency = new System.Windows.Forms.Label();
             this.LblTopNote = new System.Windows.Forms.Label();
             this.gvTop = new System.Windows.Forms.DataGridView();
+            this.LblTotTopPctCap = new System.Windows.Forms.Label();
+            this.LblTotTopPct = new System.Windows.Forms.Label();
+            this.LblTotTopAudCap = new System.Windows.Forms.Label();
+            this.LblTotTopAud = new System.Windows.Forms.Label();
             this.CmdExcel = new System.Windows.Forms.Button();
             this.CmdBack = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gvSummary)).BeginInit();
@@ -255,6 +259,54 @@ namespace FinancialBalance
             this.gvTop.Size = new System.Drawing.Size(1121, 246);
             this.gvTop.TabIndex = 17;
             //
+            // LblTotTopPctCap
+            //
+            this.LblTotTopPctCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotTopPctCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotTopPctCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotTopPctCap.Location = new System.Drawing.Point(180, 678);
+            this.LblTotTopPctCap.Name = "LblTotTopPctCap";
+            this.LblTotTopPctCap.Size = new System.Drawing.Size(160, 20);
+            this.LblTotTopPctCap.TabIndex = 22;
+            this.LblTotTopPctCap.Text = "Total Allocation (%)";
+            this.LblTotTopPctCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotTopPct
+            //
+            this.LblTotTopPct.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotTopPct.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotTopPct.ForeColor = System.Drawing.Color.Black;
+            this.LblTotTopPct.Location = new System.Drawing.Point(344, 678);
+            this.LblTotTopPct.Name = "LblTotTopPct";
+            this.LblTotTopPct.Size = new System.Drawing.Size(100, 20);
+            this.LblTotTopPct.TabIndex = 23;
+            this.LblTotTopPct.Text = "0.00 %";
+            this.LblTotTopPct.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
+            // LblTotTopAudCap
+            //
+            this.LblTotTopAudCap.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotTopAudCap.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotTopAudCap.ForeColor = System.Drawing.Color.Black;
+            this.LblTotTopAudCap.Location = new System.Drawing.Point(452, 678);
+            this.LblTotTopAudCap.Name = "LblTotTopAudCap";
+            this.LblTotTopAudCap.Size = new System.Drawing.Size(170, 20);
+            this.LblTotTopAudCap.TabIndex = 20;
+            this.LblTotTopAudCap.Text = "Total Allocation (AUD)";
+            this.LblTotTopAudCap.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            //
+            // LblTotTopAud
+            //
+            this.LblTotTopAud.BackColor = System.Drawing.Color.Transparent;
+            this.LblTotTopAud.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LblTotTopAud.ForeColor = System.Drawing.Color.Black;
+            this.LblTotTopAud.Location = new System.Drawing.Point(626, 678);
+            this.LblTotTopAud.Name = "LblTotTopAud";
+            this.LblTotTopAud.Size = new System.Drawing.Size(140, 20);
+            this.LblTotTopAud.TabIndex = 21;
+            this.LblTotTopAud.Text = "$0.00";
+            this.LblTotTopAud.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            //
             // CmdExcel
             //
             this.CmdExcel.BackColor = System.Drawing.SystemColors.Control;
@@ -287,6 +339,10 @@ namespace FinancialBalance
             this.CancelButton = this.CmdBack;
             this.ClientSize = new System.Drawing.Size(1160, 714);
             this.ControlBox = false;
+            this.Controls.Add(this.LblTotTopPct);
+            this.Controls.Add(this.LblTotTopPctCap);
+            this.Controls.Add(this.LblTotTopAud);
+            this.Controls.Add(this.LblTotTopAudCap);
             this.Controls.Add(this.CmdBack);
             this.Controls.Add(this.CmdExcel);
             this.Controls.Add(this.gvTop);
@@ -340,6 +396,10 @@ namespace FinancialBalance
         public System.Windows.Forms.Label LblCurrency;
         public System.Windows.Forms.Label LblTopNote;
         private System.Windows.Forms.DataGridView gvTop;
+        public System.Windows.Forms.Label LblTotTopPctCap;
+        public System.Windows.Forms.Label LblTotTopPct;
+        public System.Windows.Forms.Label LblTotTopAudCap;
+        public System.Windows.Forms.Label LblTotTopAud;
         public System.Windows.Forms.Button CmdExcel;
         public System.Windows.Forms.Button CmdBack;
     }

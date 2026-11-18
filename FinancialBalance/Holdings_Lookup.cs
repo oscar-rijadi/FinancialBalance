@@ -90,7 +90,9 @@ namespace FinancialBalance
             public string Describe(string parOfWhat)
             {
                 List<Company> TmpTop = Top();
-                double TopTotal = TmpTop.Sum(c => c.Allocation);
+                //each figure as the pages show it, to the cent, so the note agrees with a total
+                //added up from the table
+                double TopTotal = TmpTop.Sum(c => Math.Round(c.Allocation, 2));
                 string TmpNote = "Top " + TmpTop.Count.ToString() + " of " + Companies.Count.ToString()
                                + " companies, together " + TopTotal.ToString("#,##0.00") + " % of " + parOfWhat
                                + ", from " + Answered.ToString() + " of " + Asked.ToString() + " ticker(s)"
