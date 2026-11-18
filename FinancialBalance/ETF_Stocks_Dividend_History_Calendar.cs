@@ -14,7 +14,8 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace FinancialBalance
 {
-    //What the portfolio has actually been paid over the last twelve months, month by month -
+    //What the portfolio has actually been paid, month by month, over the last twelve months or
+    //one financial year -
     //the backward-looking twin of ETF/Stock Forecast Dividend Calendar, laid out the same way
     //so the two can be read side by side.  Reads only; writes nothing.
     public partial class ETF_Stocks_Dividend_History_Calendar : Form
@@ -26,7 +27,7 @@ namespace FinancialBalance
         //are not unique in TblETFStocksPortfolioCode.
         List<string> FlagCodes = new List<string>();
 
-        //the twelve months on show, oldest first, each held as the first of that month
+        //the months on show, oldest first, each held as the first of that month
         List<DateTime> Months = new List<DateTime>();
 
         //Every figure is shown in AUD, the same as ETF/Stock Dividend History.  The rates are
@@ -47,10 +48,49 @@ namespace FinancialBalance
         {
             Filling = true;
             Fill_Portfolio();
+            Fill_Period();
             Filling = false;
 
-            Build_Months();
             Get_Data();
+        }
+
+        const string LastTwelve = "Last 12 months";
+
+        //"Last 12 months" first, as the default, then every financial year newest-closing
+        //first - the same order ETF/Stock Dividend History lists them in
+        private void Fill_Period()
+        {
+            CmbPeriod.Items.Clear();
+            CmbPeriod.Items.Add(LastTwelve);
+
+            Mdl1.Ssql = "select [Name] from TblFinancialYear order by [End_Date] Desc";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                string TmpName = Read_Text(reader["Name"]);
+                if (TmpName != "")
+                {
+                    CmbPeriod.Items.Add(TmpName);
+                }
+            }
+            reader.Close();
+
+            CmbPeriod.Text = LastTwelve;
+        }
+
+        private void CmbPeriod_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Filling)
+            {
+                return;
+            }
+            Get_Data();
+        }
+
+        private bool Is_Last_Twelve()
+        {
+            return (CmbPeriod.Text.Trim() == "" || CmbPeriod.Text.Trim() == LastTwelve);
         }
 
         //"All" plus one entry per portfolio code, showing its description
@@ -116,16 +156,76 @@ namespace FinancialBalance
             Get_Data();
         }
 
-        //The window ends with the month we are in, so a distribution already recorded this
-        //month is on the page - the mirror of the forecast, which starts with this month.
+        //The window the calendar covers, as yyyyMMdd, and the date investment is measured at
+        string PeriodFrom = "";
+        string PeriodTo = "";
+        string Cutoff = "";
+
+        //Last 12 months ends with the month we are in, so a distribution already recorded this
+        //month is on the page - the mirror of the forecast, which starts with this month.  A
+        //financial year runs from its Start_Date to its End_Date exactly, one column per month
+        //it touches - twelve for a normal year, more or fewer for one set up otherwise.
         private void Build_Months()
         {
             Months.Clear();
-            DateTime TmpEnd = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-            for (int i = 11; i >= 0; i--)
+
+            DateTime TmpStart;
+            DateTime TmpEnd;
+            if (!Financial_Year_Range(out TmpStart, out TmpEnd))
             {
-                Months.Add(TmpEnd.AddMonths(-i));
+                DateTime TmpThis = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+                TmpStart = TmpThis.AddMonths(-11);
+                TmpEnd = TmpThis.AddMonths(1).AddDays(-1);
             }
+
+            DateTime TmpMonth = new DateTime(TmpStart.Year, TmpStart.Month, 1);
+            while (TmpMonth <= TmpEnd)
+            {
+                Months.Add(TmpMonth);
+                TmpMonth = TmpMonth.AddMonths(1);
+            }
+
+            PeriodFrom = TmpStart.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+            PeriodTo = TmpEnd.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+
+            //Investment is what was tied up at the end of the window, or today if the window
+            //has not closed yet - nothing bought after the year it is set against.
+            Cutoff = (TmpEnd < DateTime.Today ? PeriodTo : DateTime.Today.ToString("yyyyMMdd", CultureInfo.InvariantCulture));
+        }
+
+        //The chosen financial year's two dates, or false on Last 12 months.  A year whose
+        //dates cannot be read is treated as Last 12 months rather than as an empty window.
+        private bool Financial_Year_Range(out DateTime parStart, out DateTime parEnd)
+        {
+            parStart = DateTime.MinValue;
+            parEnd = DateTime.MinValue;
+            if (Is_Last_Twelve())
+            {
+                return false;
+            }
+
+            string TmpStart = "";
+            string TmpEnd = "";
+            Mdl1.Ssql = "select [Start_Date], [End_Date] from TblFinancialYear where [Name] = '"
+                      + CmbPeriod.Text.Trim().Replace("'", "''") + "'";
+            OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
+            OleDbDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                TmpStart = Read_Text(reader["Start_Date"]);
+                TmpEnd = Read_Text(reader["End_Date"]);
+            }
+            reader.Close();
+
+            return DateTime.TryParseExact(TmpStart, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out parStart)
+                && DateTime.TryParseExact(TmpEnd, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out parEnd)
+                && parEnd >= parStart;
+        }
+
+        //How the window is named on screen: "Last 12 Months", or the financial year's name
+        private string Period_Label()
+        {
+            return (Is_Last_Twelve() ? "Last 12 Months" : CmbPeriod.Text.Trim());
         }
 
         private string Money(double parValue)
@@ -281,15 +381,16 @@ namespace FinancialBalance
 
         //---- what has been put in -------------------------------------------------
 
-        //One money column added up to today per ticker, grouped by currency as well and converted
-        //a group at a time - adding USD to AUD first would give a figure that is in neither.
-        //parSign is +1 to add the column in and -1 to take it away.
+        //One money column added up to the cut-off per ticker - today, or the close of a financial
+        //year already over - grouped by currency as well and converted a group at a time:
+        //adding USD to AUD first would give a figure that is in neither.  parSign is +1 to add
+        //the column in and -1 to take it away.
         private void Add_Money(Dictionary<string, double> parInto, string parTable, string parField,
                                string parPortfolioAnd, int parSign)
         {
             Mdl1.Ssql = "select Full_Ticker, [Currency] as C, Sum(" + parField + ") as N"
                       + " from " + parTable
-                      + " where Trans_Date <= '" + DateTime.Now.ToString("yyyyMMdd") + "'"
+                      + " where Trans_Date <= '" + Cutoff + "'"
                       + parPortfolioAnd
                       + " group by Full_Ticker, [Currency]";
             OleDbCommand cmd = new OleDbCommand(Mdl1.Ssql, Mdl1.conn);
@@ -339,16 +440,17 @@ namespace FinancialBalance
 
         private void Clear_Grid()
         {
+            int N = Months.Count;
             gvHistory.Columns.Clear();
             gvHistory.Rows.Clear();
-            gvHistory.ColumnCount = 15;
+            gvHistory.ColumnCount = N + 3;
 
             gvHistory.Columns[0].Name = "Full Ticker";
             gvHistory.Columns[0].FillWeight = 90;
             gvHistory.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             gvHistory.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
 
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < N; i++)
             {
                 gvHistory.Columns[i + 1].Name = Months[i].ToString("MMM yyyy", CultureInfo.InvariantCulture);
                 gvHistory.Columns[i + 1].FillWeight = 65;
@@ -356,16 +458,16 @@ namespace FinancialBalance
                 gvHistory.Columns[i + 1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             }
 
-            gvHistory.Columns[13].Name = "Total";
-            gvHistory.Columns[13].FillWeight = 80;
-            gvHistory.Columns[13].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvHistory.Columns[13].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvHistory.Columns[N + 1].Name = "Total";
+            gvHistory.Columns[N + 1].FillWeight = 80;
+            gvHistory.Columns[N + 1].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvHistory.Columns[N + 1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             //after Total, since it is Total measured against what the ticker has tied up
-            gvHistory.Columns[14].Name = "Yield";
-            gvHistory.Columns[14].FillWeight = 55;
-            gvHistory.Columns[14].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            gvHistory.Columns[14].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvHistory.Columns[N + 2].Name = "Yield";
+            gvHistory.Columns[N + 2].FillWeight = 55;
+            gvHistory.Columns[N + 2].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+            gvHistory.Columns[N + 2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
 
         //One row per ticker that was paid anything inside the window, sold or not: a holding
@@ -374,6 +476,10 @@ namespace FinancialBalance
         {
             try
             {
+                Build_Months();
+                int N = Months.Count;
+                LblGrandCap.Text = "Grand Total Dividend (" + Period_Label() + ")";
+
                 Begin_Rates();
                 Clear_Grid();
 
@@ -391,16 +497,17 @@ namespace FinancialBalance
                 }
                 TmpPortfolioAnd += Main_Filter();
                 LblNote.Text = "Distributions/dividends received"
+                    + "  (" + Period_Label() + ")"
                     + (TmpFlagCode == null ? "" : "  (portfolio " + TmpFlagCode + ")")
                     + (chkMainOnly.Checked ? "  (main portfolios only)" : "");
 
                 //Pay_Date is stored yyyyMMdd, so a plain text comparison brackets the window
-                string TmpFrom = Months[0].ToString("yyyyMM", CultureInfo.InvariantCulture) + "01";
-                string TmpTo = Months[11].ToString("yyyyMM", CultureInfo.InvariantCulture) + "31";
+                string TmpFrom = PeriodFrom;
+                string TmpTo = PeriodTo;
 
                 List<string> Tickers = new List<string>();
                 Dictionary<string, double[]> Rows = new Dictionary<string, double[]>();
-                double[] MonthTotals = new double[12];
+                double[] MonthTotals = new double[N];
                 double GrandTotal = 0;
                 double TotalReinvested = 0;
                 double TotalNotReinvested = 0;
@@ -427,7 +534,7 @@ namespace FinancialBalance
                         continue;
                     }
                     int TmpIdx = ((TmpMonth.Year - Months[0].Year) * 12) + (TmpMonth.Month - Months[0].Month);
-                    if (TmpIdx < 0 || TmpIdx >= 12)
+                    if (TmpIdx < 0 || TmpIdx >= N)
                     {
                         continue;
                     }
@@ -435,7 +542,7 @@ namespace FinancialBalance
                     string TmpTicker = Read_Text(reader["Full_Ticker"]);
                     if (!Rows.ContainsKey(TmpTicker))
                     {
-                        Rows[TmpTicker] = new double[12];
+                        Rows[TmpTicker] = new double[N];
                         Tickers.Add(TmpTicker);
                     }
 
@@ -464,21 +571,21 @@ namespace FinancialBalance
                 {
                     double[] TmpRow = Rows[Tickers[i]];
                     double TmpRowTotal = 0;
-                    string[] row = new string[15];
+                    string[] row = new string[N + 3];
                     row[0] = Tickers[i];
-                    for (int m = 0; m < 12; m++)
+                    for (int m = 0; m < N; m++)
                     {
                         row[m + 1] = (TmpRow[m] == 0 ? "" : Money(TmpRow[m]));
                         TmpRowTotal += TmpRow[m];
                     }
-                    row[13] = Money(TmpRowTotal);
+                    row[N + 1] = Money(TmpRowTotal);
 
                     //Nothing left invested - sold out, or sold for more than it cost - leaves no
                     //denominator.  "-" says so; "0.00 %" would read as though it paid nothing.
                     double TmpInvestment;
                     NetCosts.TryGetValue(Tickers[i], out TmpInvestment);
                     TmpInvestment = Math.Round(TmpInvestment, 2);
-                    row[14] = (TmpInvestment > 0 ? Percent(Yield_Of(TmpInvestment, TmpRowTotal)) : "-");
+                    row[N + 2] = (TmpInvestment > 0 ? Percent(Yield_Of(TmpInvestment, TmpRowTotal)) : "-");
                     gvHistory.Rows.Add(row);
                 }
 
@@ -486,16 +593,16 @@ namespace FinancialBalance
                 //and only the grid knows where each month's column has ended up.
                 if (Tickers.Count > 0)
                 {
-                    string[] totals = new string[15];
+                    string[] totals = new string[N + 3];
                     totals[0] = "Total";
-                    for (int m = 0; m < 12; m++)
+                    for (int m = 0; m < N; m++)
                     {
                         totals[m + 1] = Money(MonthTotals[m]);
                     }
-                    totals[13] = Money(GrandTotal);
+                    totals[N + 1] = Money(GrandTotal);
                     //the yield of the whole, not an average of the rows - the same figure as
                     //the Yield label underneath
-                    totals[14] = Percent(Yield_Of(GrandInvestment, GrandTotal));
+                    totals[N + 2] = Percent(Yield_Of(GrandInvestment, GrandTotal));
                     gvHistory.Rows.Add(totals);
 
                     DataGridViewRow TotalRow = gvHistory.Rows[gvHistory.Rows.Count - 1];
@@ -507,11 +614,11 @@ namespace FinancialBalance
 
                 LblInv.Text = Money(GrandInvestment);
                 LblGrand.Text = Money(GrandTotal);
-                //twelve months paid against what is tied up today - a trailing yield on cost
+                //the window's payments against what was tied up at its end - a yield on cost
                 LblYield.Text = Percent(Yield_Of(GrandInvestment, GrandTotal));
                 LblReinv.Text = Money(TotalReinvested);
                 LblNotReinv.Text = Money(TotalNotReinvested);
-                LblAverage.Text = Money(GrandTotal / 12);
+                LblAverage.Text = Money(N > 0 ? GrandTotal / N : 0);
 
                 Show_Basis(Tickers.Count, Payments);
 
@@ -528,11 +635,15 @@ namespace FinancialBalance
         private void Show_Basis(int parTickers, int parPayments)
         {
             CultureInfo AU = new CultureInfo("en-AU");
-            DateTime TmpLastDay = Months[11].AddMonths(1).AddDays(-1);
+            DateTime TmpFirst = DateTime.ParseExact(PeriodFrom, "yyyyMMdd", CultureInfo.InvariantCulture);
+            DateTime TmpLastDay = DateTime.ParseExact(PeriodTo, "yyyyMMdd", CultureInfo.InvariantCulture);
+            DateTime TmpCutoff = DateTime.ParseExact(Cutoff, "yyyyMMdd", CultureInfo.InvariantCulture);
             string TmpText = "Recorded in ETF/Stock Distribution/Dividend, by Pay Date, from "
-                + Months[0].ToString("dd-MMM-yyyy", AU) + " to " + TmpLastDay.ToString("dd-MMM-yyyy", AU)
+                + TmpFirst.ToString("dd-MMM-yyyy", AU) + " to " + TmpLastDay.ToString("dd-MMM-yyyy", AU)
+                + " (" + Period_Label() + ")"
                 + " - " + parPayments.ToString() + " payment(s) across " + parTickers.ToString()
-                + " ticker(s).   All amounts are in Australian Dollar (" + PageCurr + "), at "
+                + " ticker(s).   Investment is as at " + TmpCutoff.ToString("dd-MMM-yyyy", AU)
+                + ".   All amounts are in Australian Dollar (" + PageCurr + "), at "
                 + DateTime.Now.ToString("MMM yyyy", AU) + " rates.";
 
             if (NoRate.Count > 0)
@@ -610,7 +721,8 @@ namespace FinancialBalance
             return Safe_Name(this.Name)
                  + "_" + DateTime.Now.ToString("yyyyMMddHHmmss")
                  + "_" + Safe_Name(CmbPortfolio.Text)
-                 + "_" + (chkMainOnly.Checked ? "Yes" : "No") + parExtension;
+                 + "_" + (chkMainOnly.Checked ? "Yes" : "No")
+                 + "_" + Safe_Name(CmbPeriod.Text) + parExtension;
         }
 
         //The whole sheet as a rectangle of strings.  Both exports go through here, so the
@@ -629,6 +741,7 @@ namespace FinancialBalance
             Sheet.Add(Line(Cols));
             Sheet.Add(Line(Cols, "Portfolio", CmbPortfolio.Text.Trim()));
             Sheet.Add(Line(Cols, "Main Only", (chkMainOnly.Checked ? "Yes" : "No")));
+            Sheet.Add(Line(Cols, "Period", CmbPeriod.Text.Trim()));
             Sheet.Add(Line(Cols, "Generated", DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss")));
             if (LblNote.Text.Trim() != "")
             {
@@ -851,8 +964,8 @@ namespace FinancialBalance
                 return;
             }
 
-            //One Sheet, reused : the window always ends with the current month, so each run
-            //should replace the last rather than leave a file per day behind.
+            //One Sheet, reused : each run replaces the last, whichever period it shows - the
+            //Period line at the top of the sheet says which - rather than leave a file per run.
             string TmpTitle = Google_Drive.Dividend_History_Calendar_Sheet_Name();
             string TmpPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
                                                     Export_Name("") + ".xlsx");

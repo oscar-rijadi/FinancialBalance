@@ -241,7 +241,7 @@ flowchart LR
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
 | `ETF_Stocks_Portfolio_Top_Holdings` | Shown as **ETF/Stock Portfolio Top Holdings**. The current portfolio's holdings, worked out as Portfolio Summary works them out, with the same **Portfolio**, **Main Only** and **Full Ticker** filters. **Get Top 10 Holdings** looks each holding through to the companies it owns and shows the ten largest, each as a percentage and in AUD: of the whole portfolio on `All`, or of the chosen ticker alone. Exports to Excel. Writes nothing. See [Portfolio top holdings](#portfolio-top-holdings). |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
-| `ETF_Stocks_Dividend_History_Calendar` | Shown as **ETF/Stock Dividend History Calendar**. What the portfolio was actually paid, month by month, over the last twelve months — the backward-looking twin of the forecast calendar, with the same **Portfolio** dropdown and **Main Only** checkbox, a yield per ticker in the table, and a Grand Total Investment and Yield under the grid. Every amount is converted to Australian Dollar. Exports to Excel and to Google Drive. Reads `TblETFStocksDistributionDividend`, `TblETFStocksPurchase`, `TblETFStocksSale` and the currency tables, and writes nothing. See [Dividend history calendar](#dividend-history-calendar). |
+| `ETF_Stocks_Dividend_History_Calendar` | Shown as **ETF/Stock Dividend History Calendar**. What the portfolio was actually paid, month by month, over the last twelve months or one financial year chosen in a **Period** dropdown — the backward-looking twin of the forecast calendar, with the same **Portfolio** dropdown and **Main Only** checkbox, a yield per ticker in the table, and a Grand Total Investment and Yield under the grid. Every amount is converted to Australian Dollar. Exports to Excel and to Google Drive. Reads `TblETFStocksDistributionDividend`, `TblETFStocksPurchase`, `TblETFStocksSale`, `TblFinancialYear` and the currency tables, and writes nothing. See [Dividend history calendar](#dividend-history-calendar). |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
 | `ETF_Stocks_FY_Historical` | Shown as **ETF/Stock Financial Year Historical**. Read-only view of one financial year's stored reconciliation rows, with fourteen totals across the selection and an Excel export. |
 | `ETF_Stocks_Ticker_Historical_Data` | Shown as **ETF/Stock Ticker Historical Data**. Everything on record for one ticker — every purchase, every sale and every distribution or dividend, each in its own table with totals underneath, and its latest price beside the average cost — optionally narrowed to one portfolio and one financial year. Amounts are shown in the ticker's own currency, unconverted. Reads four ETF/stock tables and writes nothing. See [Ticker historical data](#ticker-historical-data). |
@@ -2854,29 +2854,40 @@ Two things are this page's own:
 ### Dividend history calendar
 
 `Inquiry` ▸ ETF/Stock ▸ ETF/Stock Dividend History Calendar answers **what has the portfolio
-actually been paid, month by month, over the last twelve months**. It is the backward-looking twin
-of [Forecast dividend calendar](#forecast-dividend-calendar) and is laid out the same way, so the
-two can be read side by side.
+actually been paid, month by month**, over the last twelve months or over one financial year. It is
+the backward-looking twin of [Forecast dividend calendar](#forecast-dividend-calendar) and is laid
+out the same way, so the two can be read side by side.
 
 | Control | What it does |
 | --- | --- |
 | **Portfolio** and **Main Only** | Exactly what they do on [Forecast dividend calendar](#forecast-dividend-calendar): descriptions shown, codes filtered on, Main Only ticked when the page opens and narrowing the dropdown as well as the rows. `All` with Main Only ticked keeps main portfolios only, so a payment with no portfolio code drops out with the rest. |
+| **Period** | Which months the calendar covers: **Last 12 months** (the default), or one of the financial years in `TblFinancialYear`, listed newest-closing first, the same order [Dividend history](#dividend-history) uses. Changing it redraws the page. |
 
-#### The twelve months
+#### The period
 
-The window **ends with the month you are in** and reaches back eleven more, oldest on the left.
-So a distribution already recorded this month shows up, and this month appears on both calendars:
-here as what has been recorded so far, and on the forecast as what is still due. The columns are
-`Full Ticker`, the twelve months headed `MMM yyyy`, `Total` and `Yield`. A bold totals row closes
-the grid, one figure per month.
+| Period | Columns | Pay dates counted | Investment measured at |
+| --- | --- | --- | --- |
+| **Last 12 months** | the month you are in and the eleven before it, oldest on the left | the 1st of the first month to the last day of the current month | today |
+| **a financial year**, e.g. `2025-2026` | one per month from its `Start_Date` to its `End_Date`: twelve for a normal year, Jul to Jun | `Start_Date` to `End_Date` exactly | its `End_Date` if the year has closed, otherwise today |
+
+On Last 12 months a distribution already recorded this month shows up, and this month appears on
+both calendars: here as what has been recorded so far, and on the forecast as what is still due.
+
+On a financial year that is still running, every month of the year is shown. Payments already
+recorded with a later pay date count too (a December payment entered in November shows under
+December). Months not yet reached are simply empty.
+
+The columns are `Full Ticker`, one per month headed `MMM yyyy`, `Total` and `Yield`. A bold totals
+row closes the grid, one figure per month. The number of month columns follows the period, so a
+financial year set up longer or shorter than twelve months gets as many columns as it spans.
 
 #### The Yield column
 
-Each ticker's **Yield** is its `Total` ÷ its own investment × 100, so a trailing twelve-month yield
-on cost for that ticker. Its investment is worked out the same way as
+Each ticker's **Yield** is its `Total` ÷ its own investment × 100, so the period's yield on cost for
+that ticker. Its investment is worked out the same way as
 [Grand Total Investment](#under-the-grid), restricted to that ticker: purchases' `Real_Total_Cost_Base`
-less sales' `Selling_Total_Amount` up to today, for the same Portfolio / Main Only selection, each
-grouped by currency and converted to AUD.
+less sales' `Selling_Total_Amount` up to the period's investment date (see [The period](#the-period)),
+for the same Portfolio / Main Only selection, each grouped by currency and converted to AUD.
 
 - **A ticker with nothing left invested shows `-`.** That covers a ticker sold out since it paid, or
   one whose sales returned more than it cost. There is no denominator, and `0.00 %` would read as
@@ -2906,29 +2917,34 @@ note, not passed off as converted.
 
 | Label | Is |
 | --- | --- |
-| **Grand Total Investment** | money actually put in and not yet taken back out, as of today, across the same Portfolio / Main Only selection: `Real_Total_Cost_Base` from `TblETFStocksPurchase` less `Selling_Total_Amount` from `TblETFStocksSale`, each grouped by currency and converted to AUD. This is the same figure [Dividend history](#dividend-history) calls Grand Total Investment. Reinvested units add no cost, and the figure can go negative when sales have returned more than was paid. It covers every holding in the selection, whether or not it paid anything in the window |
-| **Grand Total Dividend (Last 12 Months)** | everything in the grid |
-| **Yield** | Grand Total Dividend ÷ Grand Total Investment × 100, so a trailing twelve-month yield on what is tied up today. It reads `0.00 %` when the investment is nil or negative, the same rule Dividend history applies |
+| **Grand Total Investment** | money actually put in and not yet taken back out, as at the period's investment date (today, or the close of a financial year already over), across the same Portfolio / Main Only selection: `Real_Total_Cost_Base` from `TblETFStocksPurchase` less `Selling_Total_Amount` from `TblETFStocksSale`, each grouped by currency and converted to AUD. On Last 12 months this is the same figure [Dividend history](#dividend-history) calls Grand Total Investment; on a closed year it matches Dividend history with that year chosen. Reinvested units add no cost, and the figure can go negative when sales have returned more than was paid. It covers every holding in the selection, whether or not it paid anything in the window |
+| **Grand Total Dividend (*period*)** | everything in the grid. The caption names the period: *(Last 12 Months)* or e.g. *(2025-2026)* |
+| **Yield** | Grand Total Dividend ÷ Grand Total Investment × 100, so the period's payments as a yield on what was tied up at its end. It reads `0.00 %` when the investment is nil or negative, the same rule Dividend history applies |
 | **Total Reinvested** | the part of it recorded with `Is_Reinvested` ticked |
 | **Total Not Reinvested** | the rest |
-| **Monthly Average** | the grand total divided by twelve |
+| **Monthly Average** | the grand total divided by the number of month columns, twelve for Last 12 months or a normal financial year. On a year still running that includes the months not yet reached, so it reads as the year's total spread evenly, not as a rate so far |
 
-Below them, a note gives the exact date range, how many payments and tickers it covers, and the
-rate month used for currency conversion.
+Below them, a note gives the exact date range and the period it belongs to, how many payments and
+tickers it covers, the date the investment is measured at, and the rate month used for currency
+conversion. The note beside the filters names the period too.
 
 #### Exports
 
 **Generate Excel** and **Generate to Google Drive** work as they do on the forecast calendar:
-heading, filters, note, the six totals, then the grid with its totals row, every cell written as
-text. The file name is
+heading, filters (Portfolio, Main Only and **Period**), note, the six totals, then the grid with its
+totals row, every cell written as text. The file name is
 
 ```
-ETF_Stocks_Dividend_History_Calendar _ yyyyMMddHHmmss _ <Portfolio> _ <Yes|No for Main Only> .xlsx
+ETF_Stocks_Dividend_History_Calendar _ yyyyMMddHHmmss _ <Portfolio> _ <Yes|No for Main Only> _ <Period> .xlsx
 ```
+
+for example `..._All_Yes_Last 12 months.xlsx` or `..._All_Yes_2025-2026.xlsx`.
 
 The Google Sheet is a single file that is reused. It is called **Financial Balance ETFs or Stocks
-Dividend History Calendar**, from `DividendHistoryCalendarGoogleSheetName` in `app.config`. The
-window always ends with the current month, so each run replaces the last, and there are no extra tabs.
+Dividend History Calendar**, from `DividendHistoryCalendarGoogleSheetName` in `app.config`. Each run
+replaces the last **whichever period it shows**, and the Period line at the top of the sheet says
+which. There are no extra tabs. To keep a financial year's calendar alongside another, use
+Generate Excel, whose file name carries the period.
 
 ### Ticker historical data
 
@@ -3972,7 +3988,7 @@ C#.Net/
 │   ├── ETF_Stocks_Portfolio_Top_Holdings.*  # the portfolio looked through to its top companies
 │   ├── Holdings_Lookup.cs           # looks tickers through to companies, shared by both top holdings pages
 │   ├── ETF_Stocks_Dividend_History.*
-│   ├── ETF_Stocks_Dividend_History_Calendar.*  # last twelve months paid, month by month
+│   ├── ETF_Stocks_Dividend_History_Calendar.*  # what was paid, month by month, last 12 months or a financial year
 │   ├── ETF_Stocks_Ticker_Historical_Data.*  # one ticker's purchases, sales and payments
 │   ├── ETF_Stocks_Price_Chart.*      # price line chart
 │   ├── images/Project1.ico

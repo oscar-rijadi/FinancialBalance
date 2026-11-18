@@ -33,6 +33,8 @@ namespace FinancialBalance
             this.Label1 = new System.Windows.Forms.Label();
             this.CmbPortfolio = new System.Windows.Forms.ComboBox();
             this.chkMainOnly = new System.Windows.Forms.CheckBox();
+            this.Lbl_CmbPeriod = new System.Windows.Forms.Label();
+            this.CmbPeriod = new System.Windows.Forms.ComboBox();
             this.LblNote = new System.Windows.Forms.Label();
             this.gvHistory = new System.Windows.Forms.DataGridView();
             this.LblInvCap = new System.Windows.Forms.Label();
@@ -104,14 +106,36 @@ namespace FinancialBalance
             this.chkMainOnly.UseVisualStyleBackColor = false;
             this.chkMainOnly.CheckedChanged += new System.EventHandler(this.chkMainOnly_CheckedChanged);
             //
+            // Lbl_CmbPeriod
+            //
+            this.Lbl_CmbPeriod.BackColor = System.Drawing.Color.Transparent;
+            this.Lbl_CmbPeriod.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Lbl_CmbPeriod.ForeColor = System.Drawing.Color.Black;
+            this.Lbl_CmbPeriod.Location = new System.Drawing.Point(492, 76);
+            this.Lbl_CmbPeriod.Name = "Lbl_CmbPeriod";
+            this.Lbl_CmbPeriod.Size = new System.Drawing.Size(56, 22);
+            this.Lbl_CmbPeriod.TabIndex = 24;
+            this.Lbl_CmbPeriod.Text = "Period";
+            //
+            // CmbPeriod
+            //
+            this.CmbPeriod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CmbPeriod.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CmbPeriod.FormattingEnabled = true;
+            this.CmbPeriod.Location = new System.Drawing.Point(552, 74);
+            this.CmbPeriod.Name = "CmbPeriod";
+            this.CmbPeriod.Size = new System.Drawing.Size(210, 22);
+            this.CmbPeriod.TabIndex = 25;
+            this.CmbPeriod.SelectedIndexChanged += new System.EventHandler(this.CmbPeriod_SelectedIndexChanged);
+            //
             // LblNote
             //
             this.LblNote.BackColor = System.Drawing.Color.Transparent;
             this.LblNote.Font = new System.Drawing.Font("Arial", 8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblNote.ForeColor = System.Drawing.Color.DimGray;
-            this.LblNote.Location = new System.Drawing.Point(492, 78);
+            this.LblNote.Location = new System.Drawing.Point(780, 78);
             this.LblNote.Name = "LblNote";
-            this.LblNote.Size = new System.Drawing.Size(969, 20);
+            this.LblNote.Size = new System.Drawing.Size(681, 20);
             this.LblNote.TabIndex = 4;
             this.LblNote.Text = "Distributions/dividends received";
             //
@@ -350,6 +374,8 @@ namespace FinancialBalance
             this.Controls.Add(this.LblInvCap);
             this.Controls.Add(this.gvHistory);
             this.Controls.Add(this.LblNote);
+            this.Controls.Add(this.CmbPeriod);
+            this.Controls.Add(this.Lbl_CmbPeriod);
             this.Controls.Add(this.chkMainOnly);
             this.Controls.Add(this.CmbPortfolio);
             this.Controls.Add(this.Label1);
@@ -372,6 +398,8 @@ namespace FinancialBalance
         public System.Windows.Forms.Label Label1;
         public System.Windows.Forms.ComboBox CmbPortfolio;
         public System.Windows.Forms.CheckBox chkMainOnly;
+        public System.Windows.Forms.Label Lbl_CmbPeriod;
+        public System.Windows.Forms.ComboBox CmbPeriod;
         public System.Windows.Forms.Label LblNote;
         private System.Windows.Forms.DataGridView gvHistory;
         public System.Windows.Forms.Label LblInvCap;
