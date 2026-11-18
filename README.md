@@ -2922,10 +2922,11 @@ note, not passed off as converted.
 | **Yield** | Grand Total Dividend ÷ Grand Total Investment × 100, so the period's payments as a yield on what was tied up at its end. It reads `0.00 %` when the investment is nil or negative, the same rule Dividend history applies |
 | **Total Reinvested** | the part of it recorded with `Is_Reinvested` ticked |
 | **Total Not Reinvested** | the rest |
-| **Monthly Average** | the grand total divided by the number of month columns, twelve for Last 12 months or a normal financial year. On a year still running that includes the months not yet reached, so it reads as the year's total spread evenly, not as a rate so far |
+| **Monthly Average** | the grand total divided by the **months elapsed**: the period's months up to and including the month you are in. That is twelve for Last 12 months and for a closed financial year. On a year still running it is only the months come round so far, so the figure reads as a rate so far: 2026-2027 in November is $53.39 ÷ 5 = $10.68, not ÷ 12. A payment already recorded for a later month is in the grand total, so it lifts the average early. A period wholly in the future has no months elapsed and reads $0.00 |
 
 Below them, a note gives the exact date range and the period it belongs to, how many payments and
-tickers it covers, the date the investment is measured at, and the rate month used for currency
+tickers it covers, the date the investment is measured at, how many of the period's months the
+Monthly Average is over (*over the 5 of 12 month(s) elapsed*), and the rate month used for currency
 conversion. The note beside the filters names the period too.
 
 #### Exports

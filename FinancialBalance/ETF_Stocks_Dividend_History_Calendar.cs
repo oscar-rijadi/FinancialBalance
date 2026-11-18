@@ -618,9 +618,13 @@ namespace FinancialBalance
                 LblYield.Text = Percent(Yield_Of(GrandInvestment, GrandTotal));
                 LblReinv.Text = Money(TotalReinvested);
                 LblNotReinv.Text = Money(TotalNotReinvested);
-                LblAverage.Text = Money(N > 0 ? GrandTotal / N : 0);
+                //Over the months that have actually come round, not every month of the period:
+                //a year five months in is averaged over five, so the figure reads as a rate so
+                //far.  A closed year, or Last 12 months, has seen all of its months.
+                int Elapsed = Months_Elapsed();
+                LblAverage.Text = Money(Elapsed > 0 ? GrandTotal / Elapsed : 0);
 
-                Show_Basis(Tickers.Count, Payments);
+                Show_Basis(Tickers.Count, Payments, Elapsed);
 
                 gvHistory.ClearSelection();
             }
@@ -632,7 +636,16 @@ namespace FinancialBalance
 
         //Says what the figures are and what they were converted at, so an export read away
         //from the screen cannot be mistaken for something it is not.
-        private void Show_Basis(int parTickers, int parPayments)
+        //The months of the period up to and including the one we are in.  The month in progress
+        //counts as come round - Last 12 months has always counted it - and a period wholly in
+        //the future has none.
+        private int Months_Elapsed()
+        {
+            DateTime TmpThis = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            return Months.Count(m => m <= TmpThis);
+        }
+
+        private void Show_Basis(int parTickers, int parPayments, int parElapsed)
         {
             CultureInfo AU = new CultureInfo("en-AU");
             DateTime TmpFirst = DateTime.ParseExact(PeriodFrom, "yyyyMMdd", CultureInfo.InvariantCulture);
@@ -643,6 +656,8 @@ namespace FinancialBalance
                 + " (" + Period_Label() + ")"
                 + " - " + parPayments.ToString() + " payment(s) across " + parTickers.ToString()
                 + " ticker(s).   Investment is as at " + TmpCutoff.ToString("dd-MMM-yyyy", AU)
+                + ".   Monthly Average is over the " + parElapsed.ToString() + " of " + Months.Count.ToString()
+                + " month(s) elapsed"
                 + ".   All amounts are in Australian Dollar (" + PageCurr + "), at "
                 + DateTime.Now.ToString("MMM yyyy", AU) + " rates.";
 
