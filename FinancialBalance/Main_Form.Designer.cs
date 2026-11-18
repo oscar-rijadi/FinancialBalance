@@ -68,6 +68,7 @@
             this.MnSuperBalance = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPortfolioSummary = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksPortfolioDiv = new System.Windows.Forms.ToolStripMenuItem();
+            this.MnETFStocksPortfolioTopHoldings = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDividendHistory = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksDividendHistoryCalendar = new System.Windows.Forms.ToolStripMenuItem();
             this.MnETFStocksTickerHistorical = new System.Windows.Forms.ToolStripMenuItem();
@@ -363,6 +364,7 @@
             this.MnETFStockPortfolioGroup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MnETFStocksPortfolioSummary,
             this.MnETFStocksPortfolioDiv,
+            this.MnETFStocksPortfolioTopHoldings,
             this.MnETFStocksDividendHistory,
             this.MnETFStocksDividendHistoryCalendar,
             this.MnETFStocksPriceChart,
@@ -447,6 +449,13 @@
             this.MnETFStocksPortfolioDiv.Size = new System.Drawing.Size(216, 22);
             this.MnETFStocksPortfolioDiv.Text = "ETF/Stock Portfolio &Diversification";
             this.MnETFStocksPortfolioDiv.Click += new System.EventHandler(this.MnETFStocksPortfolioDiv_Click);
+            //
+            // MnETFStocksPortfolioTopHoldings
+            //
+            this.MnETFStocksPortfolioTopHoldings.Name = "MnETFStocksPortfolioTopHoldings";
+            this.MnETFStocksPortfolioTopHoldings.Size = new System.Drawing.Size(216, 22);
+            this.MnETFStocksPortfolioTopHoldings.Text = "ETF/Stock Portfolio Top Holdin&gs";
+            this.MnETFStocksPortfolioTopHoldings.Click += new System.EventHandler(this.MnETFStocksPortfolioTopHoldings_Click);
             //
             // MnETFStocksDividendHistory
             //
@@ -1211,6 +1220,7 @@
         public System.Windows.Forms.ToolStripMenuItem MnSuperBalance;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioSummary;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioDiv;
+        public System.Windows.Forms.ToolStripMenuItem MnETFStocksPortfolioTopHoldings;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDividendHistory;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksDividendHistoryCalendar;
         public System.Windows.Forms.ToolStripMenuItem MnETFStocksTickerHistorical;

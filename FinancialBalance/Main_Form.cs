@@ -399,6 +399,13 @@ namespace FinancialBalance
             this.Hide();
         }
 
+        private void MnETFStocksPortfolioTopHoldings_Click(object sender, EventArgs e)
+        {
+            ETF_Stocks_Portfolio_Top_Holdings ETF_Stocks_Portfolio_Top_Holdings = new ETF_Stocks_Portfolio_Top_Holdings();
+            ETF_Stocks_Portfolio_Top_Holdings.Show();
+            this.Hide();
+        }
+
         private void MnETFStocksDividendHistory_Click(object sender, EventArgs e)
         {
             ETF_Stocks_Dividend_History ETF_Stocks_Dividend_History = new ETF_Stocks_Dividend_History();

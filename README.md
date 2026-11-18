@@ -91,7 +91,7 @@ Related pages are collected into submenus rather than sitting flat:
 | Menu | Submenu | Contains |
 | --- | --- | --- |
 | `Process` | **ETF/Stock** | ETF/Stock Price, ETF/Stock Investment, ETF/Stock Purchase, ETF/Stock Sale, ETF/Stock Distribution/Dividend, ETF/Stock Cost Base Adjustment, ETF/Stock Tax Deductable Interest, ETF/Stock Financial Year Reconciliation |
-| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Dividend History, ETF/Stock Dividend History Calendar, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Ticker Historical Data, ETF/Stock Investment Plan, ETF/Stock Investment Plan Top Holdings, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
+| `Inquiry` | **ETF/Stock** | ETF/Stock Portfolio Summary, ETF/Stock Portfolio Diversification, ETF/Stock Portfolio Top Holdings, ETF/Stock Dividend History, ETF/Stock Dividend History Calendar, ETF/Stock Price Chart, ETF/Stock Financial Year Historical, ETF/Stock Ticker Historical Data, ETF/Stock Investment Plan, ETF/Stock Investment Plan Top Holdings, ETF/Stock Investment Plan by Amount, ETF/Stock Forecast Dividend Calendar, ETF/Stock Forecast Dividend Allocation |
 | `Inquiry` | **Yearly** | Yearly Statistic, Yearly Summary, Yearly Summary Graph |
 | `Administration` | **Currency** | Currency Setup, Currency Rate Setup |
 | `Administration` | **ETF/Stock** | ETF/Stock Suffix Setup, ETF/Stock Setup, ETF/Stock Portfolio Code Setup, ETF/Stock Diversification Type Setup, ETF/Stock Diversification Setup, ETF/Stock Diversification Allocation, ETF/Stock Investment Plan Setup |
@@ -157,6 +157,7 @@ flowchart LR
     MAIN --> PORTG{{"ETF/Stock"}}
     PORTG --> PSUM["ETF_Stocks_Portfolio_Summary"]
     PORTG --> PDIV["ETF_Stocks_Portfolio_Diversification"]
+    PORTG --> PPTH["ETF_Stocks_Portfolio_Top_Holdings"]
     PORTG --> PDVH["ETF_Stocks_Dividend_History"]
     PORTG --> PDHC["ETF_Stocks_Dividend_History_Calendar"]
     PORTG --> PPCH["ETF_Stocks_Price_Chart"]
@@ -238,6 +239,7 @@ flowchart LR
 | `Yearly_Summary_Graph` | Asset, Liability, Income and Expense as four lines over time — ten years, or one year month by month — each point the total the other two pages already show for that period. Reads five tables and writes nothing. See [Yearly summary graph](#yearly-summary-graph). |
 | `ETF_Stocks_Portfolio_Summary` | Unsold holdings for a chosen portfolio, optionally main portfolios only — summarised per ticker, or drilled into one ticker's individual purchases. Every amount is converted to Australian Dollar. |
 | `ETF_Stocks_Portfolio_Diversification` | The same holdings re-cut as one pie chart per diversification type. |
+| `ETF_Stocks_Portfolio_Top_Holdings` | Shown as **ETF/Stock Portfolio Top Holdings**. The current portfolio's holdings, worked out as Portfolio Summary works them out, with the same **Portfolio**, **Main Only** and **Full Ticker** filters. **Get Top 10 Holdings** looks each holding through to the companies it owns and shows the ten largest, each as a percentage and in AUD: of the whole portfolio on `All`, or of the chosen ticker alone. Exports to Excel. Writes nothing. See [Portfolio top holdings](#portfolio-top-holdings). |
 | `ETF_Stocks_Dividend_History` | What the holdings have paid — summarised per ticker, or every payment for one ticker, optionally within one financial year. Every amount is converted to Australian Dollar. Exports to Excel. |
 | `ETF_Stocks_Dividend_History_Calendar` | Shown as **ETF/Stock Dividend History Calendar**. What the portfolio was actually paid, month by month, over the last twelve months — the backward-looking twin of the forecast calendar, with the same **Portfolio** dropdown and **Main Only** checkbox, a yield per ticker in the table, and a Grand Total Investment and Yield under the grid. Every amount is converted to Australian Dollar. Exports to Excel and to Google Drive. Reads `TblETFStocksDistributionDividend`, `TblETFStocksPurchase`, `TblETFStocksSale` and the currency tables, and writes nothing. See [Dividend history calendar](#dividend-history-calendar). |
 | `ETF_Stocks_Price_Chart` | One ticker's recorded price drawn as a line over time, at most eight points wide, optionally narrowed to one financial year. |
@@ -3967,6 +3969,8 @@ C#.Net/
 │   ├── ETF_Stocks_FY_Historical.*     # read-only view of the above
 │   ├── ETF_Stocks_Portfolio_Summary.*
 │   ├── ETF_Stocks_Portfolio_Diversification.*
+│   ├── ETF_Stocks_Portfolio_Top_Holdings.*  # the portfolio looked through to its top companies
+│   ├── Holdings_Lookup.cs           # looks tickers through to companies, shared by both top holdings pages
 │   ├── ETF_Stocks_Dividend_History.*
 │   ├── ETF_Stocks_Dividend_History_Calendar.*  # last twelve months paid, month by month
 │   ├── ETF_Stocks_Ticker_Historical_Data.*  # one ticker's purchases, sales and payments
@@ -4105,16 +4109,18 @@ Things worth knowing before changing this code.
 - **`decimal` columns are read through `double`**, which introduces rounding on large IDR figures.
 - **Forms are created, shown, and the caller hidden or closed**, so navigating in a loop
   accumulates `Main_Form` instances rather than returning to the existing one.
-- **Four pages reach the network**, and only these four: `ETF_Stocks_Price` on either of its
+- **Five pages reach the network**, and only these five: `ETF_Stocks_Price` on either of its
   two price buttons — the one page that talks to **two** hosts, the ASX for its own listings
   and Yahoo for the rest — `Setup_ETF_Stocks` on either Yahoo button or
   **Get All Expense Ratio**,
-  `Setup_Curr_Rate` on **Get Latest Currency** or **Get All Latest Currency**, and
-  `ETF_Stocks_Investment_Plan_Top_Holdings` on **Get Top 10 Holding**. All four force
+  `Setup_Curr_Rate` on **Get Latest Currency** or **Get All Latest Currency**,
+  `ETF_Stocks_Investment_Plan_Top_Holdings` on **Get Top 10 Holding**, and
+  `ETF_Stocks_Portfolio_Top_Holdings` on **Get Top 10 Holdings**. The last two make their
+  requests through the one shared class, `Holdings_Lookup`. All five force
   TLS 1.2, set a `User-Agent`, and run on the UI thread — the form freezes for the duration.
-  The five bulk buttons — **Get Latest Price**, **Get All Latest Currency**,
-  **Get All Dividend Yield from Yahoo Finance**, **Get All Expense Ratio** and
-  **Get Top 10 Holding** — make one request per ticker or per currency in sequence, so that
+  The six bulk buttons — **Get Latest Price**, **Get All Latest Currency**,
+  **Get All Dividend Yield from Yahoo Finance**, **Get All Expense Ratio** and the two
+  top-holdings buttons — make one request per ticker or per currency in sequence, so that
   freeze scales with how many there are; the other three make one each.
   Yahoo's endpoint is undocumented and can change without notice — the `quote` and
   `quoteSummary` endpoints already have, which is why the yield is computed from dividend
@@ -4821,6 +4827,12 @@ as [Applying an investment plan](#applying-an-investment-plan), and the note abo
 allocations there are and what they total. On the right, the **Get Top 10 Holding** button beside the
 dropdown fills the top holdings table.
 
+> **The looking-through lives in one shared class, `Holdings_Lookup`,** which this page and
+> [Portfolio top holdings](#portfolio-top-holdings) both call. Everything below, from Yahoo, the ASX
+> check and Vanguard to look-through tickers and how companies are matched, applies to both pages
+> alike. The pages differ only in where the tickers and their shares come from: the plan's
+> allocations here, and the portfolio's holdings there.
+
 #### Get Top 10 Holding
 
 The button takes the plan's **Full Ticker** and **Allocation** rows and asks Yahoo Finance about each
@@ -4896,6 +4908,43 @@ Like Yahoo's and the ASX's, Vanguard's addresses are the ones its own pages use,
 service, and can change without notice. When Vanguard cannot be reached the ticker is reported as
 not looked through, with both Yahoo's reason and Vanguard's.
 
+##### Funds inside funds
+
+A fund of funds lists funds, not companies. `DHHF.AX` holds `VTI` 40.43 %, `A200.AX` 37.95 %, `SPDW`
+15.01 % and `SPEM` 6.61 %, and none of those is a company. So once every ticker has answered,
+every holding is checked: **is it a fund itself?** Any that is gets swapped for its own top holdings,
+each at the parent's weight times its own:
+
+```
+weight in the holding = fund's weight in the holding × company's weight in the fund / 100
+```
+
+Apple is 6.70 % of VTI and VTI is 40.43 % of DHHF, so Apple counts as 2.71 % of DHHF. Because the
+companies come out under their own symbols, `BHP.AX` inside DHHF's A200 **merges with** the
+`BHP.AX` of an A200 or VHY held directly.
+
+- **One request finds the funds.** Yahoo's batch quote endpoint,
+  `https://query1.finance.yahoo.com/v7/finance/quote?symbols=<list>&fields=quoteType`, with the same
+  cookie and crumb, answers for up to 50 symbols at a time. A holding Yahoo calls `ETF` or
+  `MUTUALFUND` is a fund. Each fund found then costs one `quoteSummary` request for its holdings,
+  once per click however many tickers hold it.
+- **Level by level, three deep at most.** A fund found inside a fund is checked again at the next
+  level. A fund is never opened inside itself, and the `MaxNesting` cap of 3 keeps any loop finite.
+- **Skipped:** holdings matched by name only (a Vanguard code with no exchange), and a share standing
+  in for itself.
+- **Held Through** shows the route, e.g. `DHHF.AX via VTI 2.80 %`. The weight there is the company's
+  share of the holding (DHHF), not of VTI. With a Look-Through Ticker as well, the route reads
+  `X via LOOKTHROUGH > FUND`.
+- **The note** names the funds inside funds that were opened (*VTI, A200.AX, SPDW, SPEM*). It also
+  names any holding Yahoo calls a fund but lists no holdings for. Such a holding is **counted as it
+  is**, since a share of something unnamed beats dropping the money. In practice it is the odd
+  foreign share Yahoo misfiles, such as `000660.KQ` (SK Hynix) inside SPEM.
+- **If the batch check fails**, nothing is taken to be a fund, the holdings stay as they are, and
+  the note says the check could not be made.
+
+The top-ten-per-fund limit applies at every level, so a fund of funds contributes the top ten of each
+of its funds.
+
 Each company's allocation in the plan is then
 
 ```
@@ -4946,6 +4995,110 @@ are the point of the page. The file is named
 
 ```
 ETF_Stocks_Investment_Plan_Top_Holdings_yyyyMMddHHmmss_<investment plan>.xlsx
+```
+
+with every cell written as **text** for the reason given under [Excel exports](#excel-exports).
+
+---
+
+### Portfolio top holdings
+
+`Inquiry` ▸ ETF/Stock ▸ ETF/Stock Portfolio Top Holdings answers **which companies the portfolio you
+hold today actually owns** once each holding is looked through, as a share of the portfolio and in
+dollars. It sits after Portfolio Diversification on the menu (Alt+G), and is read-only: nothing on
+it writes to the database.
+
+#### The holdings
+
+The top half is [Portfolio summary](#portfolio-summary) cut down to what the look-through needs. It
+uses the same query, the same rules and the same AUD conversion, so the two pages agree to the cent:
+
+| Control | What it does |
+| --- | --- |
+| **Portfolio** and **Main Only** | Exactly as on Portfolio Summary: descriptions shown, codes filtered on, Main Only ticked when the page opens and narrowing the dropdown as well as the rows. |
+| **Full Ticker** | `All`, or one ticker the portfolio holds. Choosing one narrows the table and the look-through to that holding. Its row still shows its **Percentage from whole portfolio**, but its top holdings are measured against **that ticker alone**: each company's percentage and AUD are of the ticker's own Total Current Amount (see below). The note says so. |
+
+| Column | Is |
+| --- | --- |
+| Full Ticker | the holding |
+| Total Unit | `Unit` summed over its unsold purchases |
+| Total Investment | `Real_Total_Cost_Base` summed, in AUD |
+| Current Price | the latest `TblETFStocksPrice`, in AUD |
+| Total Current Amount | `round(Total Unit × Current Price, 2)` |
+| Percentage from whole portfolio | its Total Current Amount ÷ the whole portfolio's × 100, the same figure as Portfolio Summary's column of that name |
+
+Under the table: **Total Investment**, **Total Current Amount** and **Percentage from whole
+portfolio** for what is in view (100.00 % on `All`), then the currency line. Only unsold
+purchases count. A holding with no price on record shows `-` for its derived columns. It has no
+current amount, so it has nothing to spread and is **not looked through**; the note says how many
+there are, and names any currency with no rate on record.
+
+#### Get Top 10 Holdings
+
+The button beside **Full Ticker** sends each priced holding in view to `Holdings_Lookup` with two
+figures: a share and its **Total Current Amount**. Everything described under
+[Get Top 10 Holding](#get-top-10-holding) then applies: Yahoo, the ASX check for funds Yahoo calls
+shares, Vanguard for its own ETFs, Look-Through Tickers, matching by symbol then name, funds inside
+funds, and the top-ten-per-fund limit. What the share is depends on **Full Ticker**:
+
+| Full Ticker | Share sent for each holding | So Allocation (%) is | And Allocation (AUD) is of |
+| --- | --- | --- | --- |
+| `All` | its **Percentage from whole portfolio** | the company's share of the **whole portfolio** | the whole portfolio's Total Current Amount |
+| one ticker | **100 %**, the ticker taken as the whole | the company's **weight in that ticker** | **that ticker's own** Total Current Amount |
+
+On `All`, each company comes back with
+
+```
+Allocation (%)   = Σ  holding's Percentage from whole portfolio × company's weight in it / 100
+Allocation (AUD) = Σ  holding's Total Current Amount            × company's weight in it / 100
+```
+
+summed over every holding that has the company. With one ticker chosen there is only that one
+holding, so the formulas reduce to
+
+```
+Allocation (%)   = company's weight in the ticker
+Allocation (AUD) = ticker's Total Current Amount × company's weight in it / 100
+```
+
+For example, with `NDQ.AX` chosen, Apple shows **8.18 %** and **$44.84**: 8.18 % of NDQ.AX's
+$548.03, not 0.80 % of the whole portfolio. A fund of funds works the same way: `DHHF.AX` chosen
+shows BHP at 4.17 % of DHHF (through its A200).
+
+The ten largest by percentage are shown:
+
+| Column | Holds |
+| --- | --- |
+| **Rank** | 1 to 10 |
+| **Symbol** | the company's symbol, Yahoo's form where it can be had |
+| **Company** | its name |
+| **Allocation (%)** | its share of the whole portfolio on `All`, or of the chosen ticker |
+| **Allocation (AUD)** | the same share in dollars of the matching Total Current Amount |
+| **Held Through** | each holding it comes from, with its weight there, e.g. `NDQ.AX 8.02 %, JPEQ.AX via JEPQ 6.99 %` |
+
+The two allocation columns are the same weights applied to two totals, so **Allocation (AUD) ÷
+the Total Current Amount in view** always equals **Allocation (%)**: the portfolio's on `All`, the
+ticker's when one is chosen. The note above the table says which, then gives the
+coverage: how many companies, what the ten add up to, how many holdings answered, any looked
+through a Look-Through Ticker or taken from Vanguard (with its as-at date), and which were not
+looked through and why.
+
+The table is **cleared whenever Portfolio, Main Only or Full Ticker changes**, since it belongs to
+what was in view when it was looked up.
+
+> **A fund of funds such as `DHHF.AX` is opened all the way down to companies** (see
+> [Funds inside funds](#funds-inside-funds)). Its VTI, A200, SPDW and SPEM are each looked through,
+> so `BHP.AX` reached through DHHF's A200 is the same row as `BHP.AX` from the A200 you hold
+> yourself, and Held Through shows both, e.g. `A200.AX 11.00 %, DHHF.AX via A200.AX 4.17 %`.
+
+#### The Excel export
+
+**Generate to Excel** writes one sheet: the filters, the notes and currency line, the three totals,
+the holdings table, then the top holdings table. Like the plan page, it is refused until **Get Top
+10 Holdings** has filled the table. The file is named
+
+```
+ETF_Stocks_Portfolio_Top_Holdings_yyyyMMddHHmmss_<Portfolio>_<Yes|No for Main Only>_<Full Ticker>.xlsx
 ```
 
 with every cell written as **text** for the reason given under [Excel exports](#excel-exports).
